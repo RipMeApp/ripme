@@ -36,7 +36,7 @@ public class DownloadFileThread extends Thread {
             }
         }
 
-        logger.debug("Downloading file from: " + url);
+        logger.info("Downloading file from: " + url);
         try {
             Response response;
             response = Jsoup.connect(url.toExternalForm())
@@ -49,7 +49,7 @@ public class DownloadFileThread extends Thread {
             logger.error("Exception while downloading file: " + url, e);
             return;
         }
-        logger.debug("Download completed: " + url);
+        logger.info("Download completed: " + url);
     }
 
 }

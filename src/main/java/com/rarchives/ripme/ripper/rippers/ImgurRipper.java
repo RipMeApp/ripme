@@ -32,7 +32,7 @@ public class ImgurRipper extends AbstractRipper {
     }
 
     public void processURL(URL url, String prefix) {
-       logger.info("Found URL: " + url);
+       logger.debug("Found URL: " + url);
        addURLToDownload(url, prefix);
     }
 
@@ -80,7 +80,7 @@ public class ImgurRipper extends AbstractRipper {
 
     private void ripAlbum(URL url) throws IOException {
         int index = 0;
-        logger.debug("Retrieving " + url.toExternalForm());
+        logger.info("Retrieving " + url.toExternalForm());
         Document doc = Jsoup.connect(url.toExternalForm()).get();
         for (Element thumb : doc.select("div.image")) {
             String image;

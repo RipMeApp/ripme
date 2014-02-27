@@ -1,30 +1,85 @@
 package com.rarchives.ripme;
 
+import java.net.MalformedURLException;
 import java.net.URL;
 
+import org.apache.commons.cli.BasicParser;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
 import org.apache.log4j.Logger;
 
-import com.rarchives.ripme.ripper.rippers.ImgurRipper;
+import com.rarchives.ripme.ripper.AbstractRipper;
+import com.rarchives.ripme.utils.Utils;
 
 /**
  *
  */
 public class App {
-    public static void main( String[] args ) throws Exception {
-        Logger logger = Logger.getLogger(App.class);
+
+    public static final Logger logger = Logger.getLogger(App.class);
+
+    public static void main(String[] args) throws MalformedURLException {
         logger.debug("Initialized");
-        //URL url = new URL("http://www.imagefap.com/pictures/4117023/Mirror-flat-stomach-small-firm-tits");
-        URL url = new URL("http://imgur.com/a/Ox6jN");
+
+        CommandLine cl = handleArguments(args);
+
         try {
-                ImgurRipper ir = new ImgurRipper(url);
-                ir.rip();
-        } catch (Exception e) {
-            logger.error("Caught exception:", e);
-            throw e;
+            URL url = new URL(cl.getOptionValue('u'));
+            rip(url);
+        } catch (MalformedURLException e) {
+            logger.error("Given URL is not valid. Expected URL format is http://domain.com/...");
+            System.exit(-1);
         }
     }
-    
-    public static void initialize() {
+
+    public static void rip(URL url) {
+        try {
+            AbstractRipper ripper = AbstractRipper.getRipper(url);
+            ripper.rip();
+        } catch (Exception e) {
+            logger.error("Caught exception:", e);
+            System.exit(-1);
+        }
         
+    }
+    public static CommandLine handleArguments(String[] args) {
+        CommandLine cl = getArgs(args);
+        if (cl.hasOption('h')) {
+            HelpFormatter hf = new HelpFormatter();
+            hf.printHelp("asdf", getOptions());
+            System.exit(0);
+        }
+        if (cl.hasOption('w')) {
+            Utils.setConfigBoolean("file.overwrite", true);
+        }
+        if (!cl.hasOption('u')) {
+            System.err.println("\nRequired URL ('-u' or '--url') not provided");
+            System.err.println("\n\tExample: java -jar ripme.jar -u http://imgur.com/a/abcde");
+            System.exit(-1);
+        }
+        return cl;
+    }
+
+    public static Options getOptions() {
+        Options opts = new Options();
+        opts.addOption("h", "help",      false, "Print the help");
+        opts.addOption("u", "url",       true,  "URL of album to rip");
+        opts.addOption("t", "threads",   true,  "Number of download threads per rip");
+        opts.addOption("w", "overwrite", false, "Overwrite existing files");
+        return opts;
+    }
+
+    public static CommandLine getArgs(String[] args) {
+        BasicParser parser = new BasicParser();
+        try {
+            CommandLine cl = parser.parse(getOptions(), args, false);
+            return cl;
+        } catch (ParseException e) {
+            logger.error("Error while parsing command-line arguments: " + args, e);
+            System.exit(-1);
+            return null;
+        }
     }
 }

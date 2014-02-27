@@ -7,6 +7,8 @@ import java.net.URL;
 
 import org.apache.log4j.Logger;
 
+import com.rarchives.ripme.ripper.rippers.ImagefapRipper;
+import com.rarchives.ripme.ripper.rippers.ImgurRipper;
 import com.rarchives.ripme.utils.Utils;
 
 public abstract class AbstractRipper implements RipperInterface {
@@ -56,7 +58,7 @@ public abstract class AbstractRipper implements RipperInterface {
             logger.error("Error creating save file path for URL '" + url + "':", e);
             return;
         }
-        logger.info("Downloading " + url + " to " + saveFileAs);
+        logger.debug("Downloading " + url + " to " + saveFileAs);
         addURLToDownload(url, saveFileAs);
     }
     /**
@@ -86,5 +88,27 @@ public abstract class AbstractRipper implements RipperInterface {
             this.workingDir.mkdirs();
         }
         logger.debug("Set working directory to: " + this.workingDir);
+    }
+    
+    /**
+     * Finds, instantiates, and returns a compatible ripper for given URL.
+     * @param url
+     *      URL to rip.
+     * @return
+     *      Instantiated ripper ready to rip given URL.
+     * @throws Exception
+     *      If no compatible rippers can be found.
+     */
+    public static AbstractRipper getRipper(URL url) throws Exception {
+        // I know what you're thinking. I'm disappointed too.
+        try {
+            AbstractRipper r = new ImagefapRipper(url);
+            return r;
+        } catch (IOException e) { }
+        try {
+            AbstractRipper r = new ImgurRipper(url);
+            return r;
+        } catch (IOException e) { }
+        throw new Exception("No compatible ripper found");
     }
 }
