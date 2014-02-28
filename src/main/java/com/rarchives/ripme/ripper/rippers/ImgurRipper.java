@@ -75,7 +75,6 @@ public class ImgurRipper extends AbstractRipper {
             // TODO Get all albums by user
             break;
         }
-        logger.info("[ ] Waiting for threads to finish...");
         threadPool.waitForThreads();
     }
 

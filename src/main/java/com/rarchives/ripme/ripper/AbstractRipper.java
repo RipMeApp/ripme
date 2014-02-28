@@ -7,6 +7,7 @@ import java.net.URL;
 
 import org.apache.log4j.Logger;
 
+import com.rarchives.ripme.ripper.rippers.ImagearnRipper;
 import com.rarchives.ripme.ripper.rippers.ImagefapRipper;
 import com.rarchives.ripme.ripper.rippers.ImgurRipper;
 import com.rarchives.ripme.utils.Utils;
@@ -107,6 +108,10 @@ public abstract class AbstractRipper implements RipperInterface {
         } catch (IOException e) { }
         try {
             AbstractRipper r = new ImgurRipper(url);
+            return r;
+        } catch (IOException e) { }
+        try {
+            AbstractRipper r = new ImagearnRipper(url);
             return r;
         } catch (IOException e) { }
         throw new Exception("No compatible ripper found");

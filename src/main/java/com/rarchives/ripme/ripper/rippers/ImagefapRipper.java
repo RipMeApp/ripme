@@ -71,15 +71,9 @@ public class ImagefapRipper extends AbstractRipper {
                     "http://x.*.fap.to/images/thumb/",
                     "http://fap.to/images/full/");
             index += 1;
-            processURL(new URL(image), String.format("%03d_", index));
+            addURLToDownload(new URL(image), String.format("%03d_", index));
         }
-        logger.info("[ ] Waiting for threads to finish...");
         threadPool.waitForThreads();
-    }
-
-    public void processURL(URL url, String prefix) {
-       logger.debug("Found URL: " + url);
-       addURLToDownload(url, prefix);
     }
 
     public boolean canRip(URL url) {

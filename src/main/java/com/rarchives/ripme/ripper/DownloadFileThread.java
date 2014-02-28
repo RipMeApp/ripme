@@ -17,11 +17,13 @@ public class DownloadFileThread extends Thread {
 
     private URL url;
     private File saveAs;
+    private int retries;
 
     public DownloadFileThread(URL url, File saveAs) {
         super();
         this.url = url;
         this.saveAs = saveAs;
+        this.retries = Utils.getConfigInteger("download.retries", 1);
     }
 
     public void run() {
@@ -36,19 +38,27 @@ public class DownloadFileThread extends Thread {
             }
         }
 
-        logger.info("[ ] Downloading file from: " + url);
-        try {
-            Response response;
-            response = Jsoup.connect(url.toExternalForm())
-                                     .ignoreContentType(true)
-                                     .execute();
-            FileOutputStream out = (new FileOutputStream(saveAs));
-            out.write(response.bodyAsBytes());
-            out.close();
-        } catch (IOException e) {
-            logger.error("[!] Exception while downloading file: " + url, e);
-            return;
-        }
+        int tries = 0; // Number of attempts to download
+        do {
+            try {
+                logger.info("[ ] Downloading file from: " + url + (tries > 0 ? " Retry #" + tries : ""));
+                tries += 1;
+                Response response;
+                response = Jsoup.connect(url.toExternalForm())
+                        .ignoreContentType(true)
+                        .execute();
+                FileOutputStream out = (new FileOutputStream(saveAs));
+                out.write(response.bodyAsBytes());
+                out.close();
+                break; // Download successful: break out of infinite loop
+            } catch (IOException e) {
+                logger.error("[!] Exception while downloading file: " + url + " - " + e.getMessage());
+            }
+            if (tries > this.retries) {
+                logger.error("[!] Exceeded maximum retries (" + this.retries + ") for URL " + url);
+                return;
+            }
+        } while (true);
         logger.info("[+] Download completed: " + url);
     }
 
