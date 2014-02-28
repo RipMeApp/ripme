@@ -75,12 +75,13 @@ public class ImgurRipper extends AbstractRipper {
             // TODO Get all albums by user
             break;
         }
+        logger.info("[ ] Waiting for threads to finish...");
         threadPool.waitForThreads();
     }
 
     private void ripAlbum(URL url) throws IOException {
         int index = 0;
-        logger.info("Retrieving " + url.toExternalForm());
+        logger.info("[ ] Retrieving " + url.toExternalForm());
         Document doc = Jsoup.connect(url.toExternalForm()).get();
         for (Element thumb : doc.select("div.image")) {
             String image;
@@ -91,7 +92,7 @@ public class ImgurRipper extends AbstractRipper {
                 image = "http:" + thumb.select("img").attr("src");
             } else {
                 // Unable to find image in this div
-                logger.error("Unable to find image in div: " + thumb.toString());
+                logger.error("[!] Unable to find image in div: " + thumb.toString());
                 continue;
             }
             index += 1;

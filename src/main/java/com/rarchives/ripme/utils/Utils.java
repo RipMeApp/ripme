@@ -19,7 +19,7 @@ public class Utils {
         try {
             config = new PropertiesConfiguration(configFile);
         } catch (ConfigurationException e) {
-            logger.error("Failed to load properties file from " + configFile, e);
+            logger.error("[!] Failed to load properties file from " + configFile, e);
         }
     }
 

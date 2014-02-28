@@ -29,7 +29,7 @@ public class App {
             URL url = new URL(cl.getOptionValue('u'));
             rip(url);
         } catch (MalformedURLException e) {
-            logger.error("Given URL is not valid. Expected URL format is http://domain.com/...");
+            logger.error("[!] Given URL is not valid. Expected URL format is http://domain.com/...");
             System.exit(-1);
         }
     }
@@ -39,11 +39,11 @@ public class App {
             AbstractRipper ripper = AbstractRipper.getRipper(url);
             ripper.rip();
         } catch (Exception e) {
-            logger.error("Caught exception:", e);
+            logger.error("[!] Caught exception: " + e.getMessage(), e);
             System.exit(-1);
         }
-        
     }
+
     public static CommandLine handleArguments(String[] args) {
         CommandLine cl = getArgs(args);
         if (cl.hasOption('h')) {
@@ -77,7 +77,7 @@ public class App {
             CommandLine cl = parser.parse(getOptions(), args, false);
             return cl;
         } catch (ParseException e) {
-            logger.error("Error while parsing command-line arguments: " + args, e);
+            logger.error("[!] Error while parsing command-line arguments: " + args, e);
             System.exit(-1);
             return null;
         }

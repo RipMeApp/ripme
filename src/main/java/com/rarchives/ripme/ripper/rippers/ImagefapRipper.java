@@ -33,7 +33,6 @@ public class ImagefapRipper extends AbstractRipper {
      */
     public URL sanitizeURL(URL url) throws MalformedURLException {
         String gid = getGID(url);
-        logger.debug("GID=" + gid);
         URL newURL = new URL("http://www.imagefap.com/gallery.php?gid="
                             + gid + "&view=2");
         logger.debug("Sanitized URL from " + url + " to " + newURL);
@@ -60,7 +59,8 @@ public class ImagefapRipper extends AbstractRipper {
 
     @Override
     public void rip() throws IOException {
-        logger.debug("Retrieving " + this.url.toExternalForm());
+        int index = 0;
+        logger.info("[ ] Retrieving " + this.url.toExternalForm());
         Document doc = Jsoup.connect(this.url.toExternalForm()).get();
         for (Element thumb : doc.select("#gallery img")) {
             if (!thumb.hasAttr("src") || !thumb.hasAttr("width")) {
@@ -70,12 +70,16 @@ public class ImagefapRipper extends AbstractRipper {
             image = image.replaceAll(
                     "http://x.*.fap.to/images/thumb/",
                     "http://fap.to/images/full/");
-            processURL(new URL(image));
+            index += 1;
+            processURL(new URL(image), String.format("%03d_", index));
         }
+        logger.info("[ ] Waiting for threads to finish...");
+        threadPool.waitForThreads();
     }
 
-    public void processURL(URL url) {
-        logger.info("Found " + url);
+    public void processURL(URL url, String prefix) {
+       logger.debug("Found URL: " + url);
+       addURLToDownload(url, prefix);
     }
 
     public boolean canRip(URL url) {

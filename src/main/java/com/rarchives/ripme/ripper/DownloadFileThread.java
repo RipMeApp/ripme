@@ -28,15 +28,15 @@ public class DownloadFileThread extends Thread {
         // Check if file already exists
         if (saveAs.exists()) {
             if (Utils.getConfigBoolean("file.overwrite", false)) {
-                logger.info("File already exists and 'file.overwrite' is true, deleting: " + saveAs);
+                logger.info("[!] File already exists and 'file.overwrite' is true, deleting: " + saveAs);
                 saveAs.delete();
             } else {
-                logger.info("Not downloading " + url + " because file already exists: " + saveAs);
+                logger.info("[!] Not downloading " + url + " because file already exists: " + saveAs);
                 return;
             }
         }
 
-        logger.info("Downloading file from: " + url);
+        logger.info("[ ] Downloading file from: " + url);
         try {
             Response response;
             response = Jsoup.connect(url.toExternalForm())
@@ -46,10 +46,10 @@ public class DownloadFileThread extends Thread {
             out.write(response.bodyAsBytes());
             out.close();
         } catch (IOException e) {
-            logger.error("Exception while downloading file: " + url, e);
+            logger.error("[!] Exception while downloading file: " + url, e);
             return;
         }
-        logger.info("Download completed: " + url);
+        logger.info("[+] Download completed: " + url);
     }
 
 }

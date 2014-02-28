@@ -55,7 +55,7 @@ public abstract class AbstractRipper implements RipperInterface {
         try {
             saveFileAs = new File(workingDir.getCanonicalPath() + File.separator + prefix + saveAs);
         } catch (IOException e) {
-            logger.error("Error creating save file path for URL '" + url + "':", e);
+            logger.error("[!] Error creating save file path for URL '" + url + "':", e);
             return;
         }
         logger.debug("Downloading " + url + " to " + saveFileAs);
@@ -84,7 +84,7 @@ public abstract class AbstractRipper implements RipperInterface {
         path += getHost() + "_" + getGID(this.url) + File.separator;
         this.workingDir = new File(path);
         if (!this.workingDir.exists()) {
-            logger.info("Creating working directory(s): " + this.workingDir);
+            logger.info("[+] Creating working directory: " + this.workingDir);
             this.workingDir.mkdirs();
         }
         logger.debug("Set working directory to: " + this.workingDir);
