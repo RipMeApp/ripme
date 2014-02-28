@@ -17,12 +17,14 @@ public class DownloadFileThread extends Thread {
 
     private URL url;
     private File saveAs;
+    private String prettySaveAs;
     private int retries;
 
     public DownloadFileThread(URL url, File saveAs) {
         super();
         this.url = url;
         this.saveAs = saveAs;
+        this.prettySaveAs = Utils.removeCWD(saveAs);
         this.retries = Utils.getConfigInteger("download.retries", 1);
     }
 
@@ -30,10 +32,10 @@ public class DownloadFileThread extends Thread {
         // Check if file already exists
         if (saveAs.exists()) {
             if (Utils.getConfigBoolean("file.overwrite", false)) {
-                logger.info("[!] File already exists and 'file.overwrite' is true, deleting: " + saveAs);
+                logger.info("[!] File already exists and 'file.overwrite' is true, deleting: " + prettySaveAs);
                 saveAs.delete();
             } else {
-                logger.info("[!] Not downloading " + url + " because file already exists: " + saveAs);
+                logger.info("[!] Skipping " + url + " -- file already exists: " + prettySaveAs);
                 return;
             }
         }
@@ -41,7 +43,7 @@ public class DownloadFileThread extends Thread {
         int tries = 0; // Number of attempts to download
         do {
             try {
-                logger.info("[ ] Downloading file from: " + url + (tries > 0 ? " Retry #" + tries : ""));
+                logger.info("    Downloading file: " + url + (tries > 0 ? " Retry #" + tries : ""));
                 tries += 1;
                 Response response;
                 response = Jsoup.connect(url.toExternalForm())
@@ -59,7 +61,7 @@ public class DownloadFileThread extends Thread {
                 return;
             }
         } while (true);
-        logger.info("[+] Download completed: " + url);
+        logger.info("[+] Saved " + url + " as " + this.prettySaveAs);
     }
 
 }

@@ -49,4 +49,27 @@ public class Utils {
         config.setProperty(key, value);
     }
 
+    /**
+     * Removes the current working directory (CWD) from a File.
+     * @param saveAs
+     *      The File path
+     * @return
+     *      saveAs in relation to the CWD
+     */
+    public static String removeCWD(File saveAs) {
+        String prettySaveAs;
+        try {
+            String cwd = new File(".").getCanonicalPath() + File.separator;
+            prettySaveAs = saveAs.getCanonicalPath().replace(
+                    cwd,
+                    "");
+        } catch (Exception e) {
+            prettySaveAs = saveAs.toString();
+        }
+        return prettySaveAs;
+    }
+
+    public static String removeCWD(String file) {
+        return removeCWD(new File(file));
+    }
 }

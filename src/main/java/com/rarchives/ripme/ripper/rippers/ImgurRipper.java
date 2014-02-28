@@ -7,6 +7,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -19,6 +22,8 @@ public class ImgurRipper extends AbstractRipper {
                                 HOST   = "imgur";
     private static final Logger logger = Logger.getLogger(ImgurRipper.class);
     
+    private final int SLEEP_BETWEEN_ALBUMS;
+    
     static enum ALBUM_TYPE {
         ALBUM,
         USER,
@@ -29,11 +34,12 @@ public class ImgurRipper extends AbstractRipper {
 
     public ImgurRipper(URL url) throws IOException {
         super(url);
+        SLEEP_BETWEEN_ALBUMS = 1;
     }
 
-    public void processURL(URL url, String prefix) {
+    public void processURL(URL url, String prefix, String subdirectory) {
        logger.debug("Found URL: " + url);
-       addURLToDownload(url, prefix);
+       addURLToDownload(url, prefix, subdirectory);
     }
 
     public boolean canRip(URL url) {
@@ -61,27 +67,83 @@ public class ImgurRipper extends AbstractRipper {
     public void rip() throws IOException {
         switch (albumType) {
         case ALBUM:
-            this.url = new URL(this.url.toExternalForm() + "/noscript");
+            this.url = new URL(this.url.toExternalForm());
             // Fall-through
         case USER_ALBUM:
             ripAlbum(this.url);
             break;
 
         case SERIES_OF_IMAGES:
-            // TODO Get all images
+            ripAlbum(this.url);
             break;
 
         case USER:
             // TODO Get all albums by user
+            ripUserAccount(url);
             break;
         }
         threadPool.waitForThreads();
     }
 
     private void ripAlbum(URL url) throws IOException {
+        ripAlbum(url, "");
+    }
+
+    private void ripAlbum(URL url, String subdirectory) throws IOException {
         int index = 0;
-        logger.info("[ ] Retrieving " + url.toExternalForm());
+        logger.info("    Retrieving " + url.toExternalForm());
         Document doc = Jsoup.connect(url.toExternalForm()).get();
+
+        // Try to use embedded JSON to retrieve images
+        Pattern p = Pattern.compile("^.*Imgur\\.Album\\.getInstance\\((.*)\\);.*$", Pattern.DOTALL);
+        Matcher m = p.matcher(doc.body().html());
+        if (m.matches()) {
+            try {
+                JSONObject json = new JSONObject(m.group(1));
+                JSONArray images = json.getJSONObject("images").getJSONArray("items");
+                int imagesLength = images.length();
+                for (int i = 0; i < imagesLength; i++) {
+                    JSONObject image = images.getJSONObject(i);
+                    URL imageURL = new URL(
+                            // CDN url is provided elsewhere in the document
+                            "http://i.imgur.com/"
+                                    + image.get("hash")
+                                    + image.get("ext"));
+                    index += 1;
+                    processURL(imageURL, String.format("%03d_", index), subdirectory);
+                }
+                return;
+            } catch (JSONException e) {
+                logger.debug("Error while parsing JSON at " + url + ", continuing", e);
+            }
+        }
+        p = Pattern.compile("^.*= new ImgurShare\\((.*)\\);.*$", Pattern.DOTALL);
+        m = p.matcher(doc.body().html());
+        if (m.matches()) {
+            try {
+                JSONObject json = new JSONObject(m.group(1));
+                JSONArray images = json.getJSONArray("hashes");
+                int imagesLength = images.length();
+                for (int i = 0; i < imagesLength; i++) {
+                    JSONObject image = images.getJSONObject(i);
+                    URL imageURL = new URL(
+                            "http:" + json.get("cdnUrl")
+                                    + "/"
+                                    + image.get("hash")
+                                    + image.get("ext"));
+                    index += 1;
+                    processURL(imageURL, String.format("%03d_", index), subdirectory);
+                }
+                return;
+            } catch (JSONException e) {
+                logger.debug("Error while parsing JSON at " + url + ", continuing", e);
+            }
+        }
+
+        logger.info("[!] Falling back to elemental retrieval method");
+
+        // Fall back to parsing HTML elements
+        // NOTE: This does not always get the highest-resolution images!
         for (Element thumb : doc.select("div.image")) {
             String image;
             if (thumb.select("a.zoom").size() > 0) {
@@ -95,7 +157,33 @@ public class ImgurRipper extends AbstractRipper {
                 continue;
             }
             index += 1;
-            processURL(new URL(image), String.format("%03d_", index));
+            processURL(new URL(image), String.format("%03d_", index), subdirectory);
+        }
+    }
+    
+    /**
+     * Rips all albums in an imgur user's account.
+     * @param url
+     *      URL to imgur user account (http://username.imgur.com)
+     * @throws IOException
+     */
+    private void ripUserAccount(URL url) throws IOException {
+        logger.info("[ ] Retrieving " + url.toExternalForm());
+        Document doc = Jsoup.connect(url.toExternalForm()).get();
+        for (Element album : doc.select("div.cover a")) {
+            if (!album.hasAttr("href")
+                    || !album.attr("href").contains("imgur.com/a/")) {
+                continue;
+            }
+            String albumID = album.attr("href").substring(album.attr("href").lastIndexOf('/') + 1);
+            URL albumURL = new URL("http:" + album.attr("href") + "/noscript");
+            try {
+                ripAlbum(albumURL, albumID);
+                Thread.sleep(SLEEP_BETWEEN_ALBUMS * 1000);
+            } catch (Exception e) {
+                logger.error("Error while ripping album: " + e.getMessage(), e);
+                continue;
+            }
         }
     }
 
@@ -115,12 +203,12 @@ public class ImgurRipper extends AbstractRipper {
             this.url = new URL("http://imgur.com/a/" + gid);
             return gid;
         }
-        p = Pattern.compile("^https?://([a-zA-Z0-9\\-])\\.imgur\\.com/?$");
+        p = Pattern.compile("^https?://([a-zA-Z0-9\\-]{1,})\\.imgur\\.com/?$");
         m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             // Root imgur account
             albumType = ALBUM_TYPE.USER;
-            return m.group(m.groupCount());
+            return m.group(1);
         }
         p = Pattern.compile("^https?://([a-zA-Z0-9\\-])\\.imgur\\.com/([a-zA-Z0-9])?$");
         m = p.matcher(url.toExternalForm());
@@ -134,7 +222,7 @@ public class ImgurRipper extends AbstractRipper {
         if (m.matches()) {
             // Series of imgur images
             albumType = ALBUM_TYPE.SERIES_OF_IMAGES;
-            return m.group();
+            return m.group(m.groupCount()).replaceAll(",", "-");
         }
         throw new MalformedURLException("Unexpected URL format: " + url.toExternalForm());
     }

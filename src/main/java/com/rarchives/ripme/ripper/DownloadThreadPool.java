@@ -24,7 +24,6 @@ public class DownloadThreadPool {
     }
     
     public void waitForThreads() {
-        logger.info("[ ] Waiting for threads to finish...");
         threadPool.shutdown();
         try {
             threadPool.awaitTermination(60, TimeUnit.SECONDS);

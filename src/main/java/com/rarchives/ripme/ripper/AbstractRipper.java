@@ -42,28 +42,32 @@ public abstract class AbstractRipper implements RipperInterface {
         this.threadPool = new DownloadThreadPool();
     }
 
+    /**
+     * Queues image to be downloaded and saved.
+     * Uses filename from URL to decide filename.
+     * @param url
+     *      URL to download
+     */
     public void addURLToDownload(URL url) {
-        addURLToDownload(url, "");
+        // Use empty prefix and empty subdirectory
+        addURLToDownload(url, "", "");
     }
 
-    public void addURLToDownload(URL url, String prefix) {
-        String saveAs = url.toExternalForm();
-        saveAs = saveAs.substring(saveAs.lastIndexOf('/')+1);
-        if (saveAs.indexOf('?') >= 0) { saveAs = saveAs.substring(0, saveAs.indexOf('?')); }
-        if (saveAs.indexOf('#') >= 0) { saveAs = saveAs.substring(0, saveAs.indexOf('#')); }
-        if (saveAs.indexOf('&') >= 0) { saveAs = saveAs.substring(0, saveAs.indexOf('&')); }
-        File saveFileAs;
-        try {
-            saveFileAs = new File(workingDir.getCanonicalPath() + File.separator + prefix + saveAs);
-        } catch (IOException e) {
-            logger.error("[!] Error creating save file path for URL '" + url + "':", e);
-            return;
-        }
-        logger.debug("Downloading " + url + " to " + saveFileAs);
-        addURLToDownload(url, saveFileAs);
-    }
     /**
-     * Add image to be downloaded and saved.
+     * Queues image to be downloaded and saved.
+     * Uses filename from URL (and 'prefix') to decide filename.
+     * @param url
+     *      URL to download
+     * @param prefix
+     *      Text to append to saved filename.
+     */
+    public void addURLToDownload(URL url, String prefix) {
+        // Use empty subdirectory
+        addURLToDownload(url, prefix, "");
+    }
+
+    /**
+     * Queues image to be downloaded and saved.
      * @param url
      *      URL of the file
      * @param saveAs
@@ -71,6 +75,35 @@ public abstract class AbstractRipper implements RipperInterface {
      */
     public void addURLToDownload(URL url, File saveAs) {
         threadPool.addThread(new DownloadFileThread(url, saveAs));
+    }
+
+    public void addURLToDownload(URL url, String prefix, String subdirectory) {
+        String saveAs = url.toExternalForm();
+        saveAs = saveAs.substring(saveAs.lastIndexOf('/')+1);
+        if (saveAs.indexOf('?') >= 0) { saveAs = saveAs.substring(0, saveAs.indexOf('?')); }
+        if (saveAs.indexOf('#') >= 0) { saveAs = saveAs.substring(0, saveAs.indexOf('#')); }
+        if (saveAs.indexOf('&') >= 0) { saveAs = saveAs.substring(0, saveAs.indexOf('&')); }
+        File saveFileAs;
+        try {
+            if (!subdirectory.equals("")) {
+                subdirectory = File.separator + subdirectory;
+            }
+            saveFileAs = new File(
+                    workingDir.getCanonicalPath()
+                    + subdirectory
+                    + File.separator
+                    + prefix
+                    + saveAs);
+        } catch (IOException e) {
+            logger.error("[!] Error creating save file path for URL '" + url + "':", e);
+            return;
+        }
+        logger.debug("Downloading " + url + " to " + saveFileAs);
+        if (!saveFileAs.getParentFile().exists()) {
+            logger.info("[+] Creating directory: " + Utils.removeCWD(saveFileAs.getParent()));
+            saveFileAs.getParentFile().mkdirs();
+        }
+        addURLToDownload(url, saveFileAs);
     }
 
     public URL getURL() {
@@ -85,7 +118,7 @@ public abstract class AbstractRipper implements RipperInterface {
         path += getHost() + "_" + getGID(this.url) + File.separator;
         this.workingDir = new File(path);
         if (!this.workingDir.exists()) {
-            logger.info("[+] Creating working directory: " + this.workingDir);
+            logger.info("[+] Creating directory: " + Utils.removeCWD(this.workingDir));
             this.workingDir.mkdirs();
         }
         logger.debug("Set working directory to: " + this.workingDir);
