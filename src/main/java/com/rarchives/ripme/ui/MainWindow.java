@@ -63,7 +63,8 @@ public class MainWindow implements Runnable {
                 URL url = new URL(ripTextfield.getText());
                 AbstractRipper ripper = AbstractRipper.getRipper(url);
                 ripper.setObserver(new RipStatusHandler());
-                ripper.rip();
+                Thread t = new Thread(ripper);
+                t.start();
             } catch (Exception e) {
                 status("Error: " + e.getMessage());
                 return;

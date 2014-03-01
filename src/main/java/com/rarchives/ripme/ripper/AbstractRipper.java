@@ -20,7 +20,7 @@ import com.rarchives.ripme.utils.Utils;
 
 public abstract class AbstractRipper 
                 extends Observable
-                implements RipperInterface {
+                implements RipperInterface, Runnable {
 
     private static final Logger logger = Logger.getLogger(AbstractRipper.class);
 
@@ -221,4 +221,11 @@ public abstract class AbstractRipper
         }
     }
 
+    public void run() {
+        try {
+            rip();
+        } catch (IOException e) {
+            logger.error("Got exception while running ripper:", e);
+        }
+    }
 }

@@ -5,7 +5,7 @@ public class RipStatusMessage {
     public enum STATUS {
         LOADING_RESOURCE("Loading Resource"),
         DOWNLOAD_STARTED("Download Started"),
-        DOWNLOAD_COMPLETE("Download Domplete"),
+        DOWNLOAD_COMPLETE("Download Complete"),
         DOWNLOAD_ERRORED("Download Errored"),
         RIP_COMPLETE("Rip Complete");
 
