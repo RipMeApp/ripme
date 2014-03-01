@@ -4,21 +4,35 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Observable;
+import java.util.Observer;
 
 import org.apache.log4j.Logger;
 
 import com.rarchives.ripme.ripper.rippers.ImagearnRipper;
 import com.rarchives.ripme.ripper.rippers.ImagefapRipper;
 import com.rarchives.ripme.ripper.rippers.ImgurRipper;
+import com.rarchives.ripme.ui.RipStatusMessage;
+import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
 import com.rarchives.ripme.utils.Utils;
 
-public abstract class AbstractRipper implements RipperInterface {
+public abstract class AbstractRipper 
+                extends Observable
+                implements RipperInterface {
 
     private static final Logger logger = Logger.getLogger(AbstractRipper.class);
 
     protected URL url;
     protected File workingDir;
     protected DownloadThreadPool threadPool;
+    protected Observer observer = null;
+
+    protected int itemsTotal;
+    protected Map<URL, File> itemsPending = new HashMap<URL, File>();
+    protected Map<URL, File> itemsCompleted = new HashMap<URL, File>();
+    protected Map<URL, String> itemsErrored = new HashMap<URL, String>();
 
     public abstract void rip() throws IOException;
     public abstract String getHost();
@@ -40,6 +54,10 @@ public abstract class AbstractRipper implements RipperInterface {
         this.url = sanitizeURL(url);
         setWorkingDir(url);
         this.threadPool = new DownloadThreadPool();
+    }
+    
+    public void setObserver(Observer obs) {
+        this.observer = obs;
     }
 
     /**
@@ -74,7 +92,13 @@ public abstract class AbstractRipper implements RipperInterface {
      *      Path of the local file to save the content to.
      */
     public void addURLToDownload(URL url, File saveAs) {
-        threadPool.addThread(new DownloadFileThread(url, saveAs));
+        if (itemsPending.containsKey(url) || itemsCompleted.containsKey(url)) {
+            // Item is already downloaded/downloading, skip it.
+            logger.info("Skipping duplicate URL: " + url);
+            return;
+        }
+        itemsPending.put(url, saveAs);
+        threadPool.addThread(new DownloadFileThread(url, saveAs, this));
     }
 
     public void addURLToDownload(URL url, String prefix, String subdirectory) {
@@ -106,6 +130,46 @@ public abstract class AbstractRipper implements RipperInterface {
         addURLToDownload(url, saveFileAs);
     }
 
+    public void retrievingSource(URL url) {
+        RipStatusMessage msg = new RipStatusMessage(STATUS.LOADING_RESOURCE, url);
+        observer.update(this,  msg);
+        observer.notifyAll();
+    }
+
+    public void downloadCompleted(URL url, File saveAs) {
+        try {
+            String path = saveAs.getCanonicalPath();
+            RipStatusMessage msg = new RipStatusMessage(STATUS.DOWNLOAD_COMPLETE, path);
+            synchronized(observer) {
+                itemsPending.remove(url);
+                itemsCompleted.put(url, saveAs);
+                observer.update(this, msg);
+                observer.notifyAll();
+                checkIfComplete();
+            }
+        } catch (Exception e) {
+            logger.error("Exception while updating observer: ", e);
+        }
+    }
+
+    public void downloadErrored(URL url, String reason) {
+        synchronized(observer) {
+            itemsPending.remove(url);
+            itemsErrored.put(url, reason);
+            observer.update(this, new RipStatusMessage(STATUS.DOWNLOAD_ERRORED, url + " : " + reason));
+            observer.notifyAll();
+            checkIfComplete();
+        }
+    }
+
+    private void checkIfComplete() {
+        if (itemsPending.size() == 0) {
+            logger.info("Rip completed!");
+            observer.update(this, new RipStatusMessage(STATUS.RIP_COMPLETE, workingDir));
+            observer.notifyAll();
+        }
+    }
+
     public URL getURL() {
         return url;
     }
@@ -123,7 +187,7 @@ public abstract class AbstractRipper implements RipperInterface {
         }
         logger.debug("Set working directory to: " + this.workingDir);
     }
-    
+
     /**
      * Finds, instantiates, and returns a compatible ripper for given URL.
      * @param url
@@ -149,4 +213,12 @@ public abstract class AbstractRipper implements RipperInterface {
         } catch (IOException e) { }
         throw new Exception("No compatible ripper found");
     }
+
+    public void sendUpdate(STATUS status, Object message) {
+        synchronized (observer) {
+            observer.update(this, new RipStatusMessage(status, message));
+            observer.notifyAll();
+        }
+    }
+
 }

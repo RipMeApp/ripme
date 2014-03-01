@@ -15,6 +15,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
 import com.rarchives.ripme.ripper.AbstractRipper;
+import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
 
 public class ImgurRipper extends AbstractRipper {
 
@@ -67,7 +68,6 @@ public class ImgurRipper extends AbstractRipper {
     public void rip() throws IOException {
         switch (albumType) {
         case ALBUM:
-            this.url = new URL(this.url.toExternalForm());
             // Fall-through
         case USER_ALBUM:
             ripAlbum(this.url);
@@ -92,6 +92,7 @@ public class ImgurRipper extends AbstractRipper {
     private void ripAlbum(URL url, String subdirectory) throws IOException {
         int index = 0;
         logger.info("    Retrieving " + url.toExternalForm());
+        this.sendUpdate(STATUS.LOADING_RESOURCE, url.toExternalForm());
         Document doc = Jsoup.connect(url.toExternalForm()).get();
 
         // Try to use embedded JSON to retrieve images

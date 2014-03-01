@@ -3,6 +3,8 @@ package com.rarchives.ripme;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import javax.swing.SwingUtilities;
+
 import org.apache.commons.cli.BasicParser;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.HelpFormatter;
@@ -11,6 +13,7 @@ import org.apache.commons.cli.ParseException;
 import org.apache.log4j.Logger;
 
 import com.rarchives.ripme.ripper.AbstractRipper;
+import com.rarchives.ripme.ui.MainWindow;
 import com.rarchives.ripme.utils.Utils;
 
 /**
@@ -23,14 +26,19 @@ public class App {
     public static void main(String[] args) throws MalformedURLException {
         logger.debug("Initialized");
 
-        CommandLine cl = handleArguments(args);
+        if (args.length > 0) {
+            CommandLine cl = handleArguments(args);
 
-        try {
-            URL url = new URL(cl.getOptionValue('u'));
-            rip(url);
-        } catch (MalformedURLException e) {
-            logger.error("[!] Given URL is not valid. Expected URL format is http://domain.com/...");
-            System.exit(-1);
+            try {
+                URL url = new URL(cl.getOptionValue('u'));
+                rip(url);
+            } catch (MalformedURLException e) {
+                logger.error("[!] Given URL is not valid. Expected URL format is http://domain.com/...");
+                System.exit(-1);
+            }
+        } else {
+            MainWindow mw = new MainWindow();
+            SwingUtilities.invokeLater(mw);
         }
     }
 
