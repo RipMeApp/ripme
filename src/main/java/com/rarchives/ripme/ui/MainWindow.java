@@ -241,12 +241,13 @@ public class MainWindow implements Runnable {
             switch(msg.getStatus()) {
             case LOADING_RESOURCE:
             case DOWNLOAD_STARTED:
-                appendLog( "File Downloading: " + (String) msg.getObject(), Color.BLACK);
+                appendLog( "Downloading: " + (String) msg.getObject(), Color.BLACK);
+                break;
             case DOWNLOAD_COMPLETE:
-                appendLog( "File Completed: " + (String) msg.getObject(), Color.GREEN);
+                appendLog( "Completed: " + (String) msg.getObject(), Color.GREEN);
                 break;
             case DOWNLOAD_ERRORED:
-                appendLog( "File Errored: " + (String) msg.getObject(), Color.RED);
+                appendLog( "Error: " + (String) msg.getObject(), Color.RED);
                 break;
 
             case RIP_COMPLETE:
@@ -273,7 +274,9 @@ public class MainWindow implements Runnable {
         }
     }
     
+    /** Simple TextPane that allows horizontal scrolling. */
     class JTextPaneNoWrap extends JTextPane {
+        private static final long serialVersionUID = 1L;
         public boolean getScrollableTracksViewportWidth() {
             return false;
         }
