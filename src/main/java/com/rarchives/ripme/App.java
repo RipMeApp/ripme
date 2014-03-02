@@ -47,7 +47,7 @@ public class App {
             AbstractRipper ripper = AbstractRipper.getRipper(url);
             ripper.rip();
         } catch (Exception e) {
-            logger.error("[!] Caught exception: " + e.getMessage(), e);
+            logger.error("[!] Error while ripping: " + e.getMessage(), e);
             System.exit(-1);
         }
     }

@@ -2,18 +2,19 @@ package com.rarchives.ripme.ripper;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Constructor;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
 
 import org.apache.log4j.Logger;
 
-import com.rarchives.ripme.ripper.rippers.ImagearnRipper;
-import com.rarchives.ripme.ripper.rippers.ImagefapRipper;
-import com.rarchives.ripme.ripper.rippers.ImgurRipper;
 import com.rarchives.ripme.ui.RipStatusMessage;
 import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
 import com.rarchives.ripme.utils.Utils;
@@ -145,6 +146,9 @@ public abstract class AbstractRipper
     }
 
     public void downloadCompleted(URL url, File saveAs) {
+        if (observer == null) {
+            return;
+        }
         try {
             String path = saveAs.getCanonicalPath();
             RipStatusMessage msg = new RipStatusMessage(STATUS.DOWNLOAD_COMPLETE, path);
@@ -161,6 +165,9 @@ public abstract class AbstractRipper
     }
 
     public void downloadErrored(URL url, String reason) {
+        if (observer == null) {
+            return;
+        }
         synchronized(observer) {
             itemsPending.remove(url);
             itemsErrored.put(url, reason);
@@ -208,23 +215,49 @@ public abstract class AbstractRipper
      *      If no compatible rippers can be found.
      */
     public static AbstractRipper getRipper(URL url) throws Exception {
-        // I know what you're thinking. I'm disappointed too.
-        try {
-            AbstractRipper r = new ImagefapRipper(url);
-            return r;
-        } catch (IOException e) { }
-        try {
-            AbstractRipper r = new ImgurRipper(url);
-            return r;
-        } catch (IOException e) { }
-        try {
-            AbstractRipper r = new ImagearnRipper(url);
-            return r;
-        } catch (IOException e) { }
+        for (Constructor<?> constructor : getRipperConstructors()) {
+            try {
+                AbstractRipper ripper = (AbstractRipper) constructor.newInstance(url);
+                return ripper;
+            } catch (Exception e) {
+                // Incompatible rippers *will* throw exceptions during instantiation.
+            }
+        }
         throw new Exception("No compatible ripper found");
+    }
+    
+    /**
+     * Gets constructors for all rippers in the "ripper.rippers" package
+     * @return list of constructors for all rippers.
+     * @throws Exception
+     */
+    private static List<Constructor<?>> getRipperConstructors() throws Exception {
+        List<Constructor<?>> constructors = new ArrayList<Constructor<?>>();
+        String rippersPackage = "com.rarchives.ripme.ripper.rippers";
+        ClassLoader cl = Thread.currentThread().getContextClassLoader();
+        Enumeration<URL> urls = cl.getResources(rippersPackage.replaceAll("\\.", "/"));
+        if (!urls.hasMoreElements()) {
+            return constructors;
+        }
+        URL classURL = urls.nextElement();
+        for (File f : new File(classURL.toURI()).listFiles()) {
+            String className = f.getName();
+            if (!className.endsWith(".class") || className.contains("$")) {
+                // Ignore non-class or nested classes.
+                continue;
+            }
+            className = className.substring(0, className.length() - 6); // Strip .class
+            String fqname = rippersPackage + "." + className;
+            Class<?> clazz = Class.forName(fqname);
+            constructors.add( (Constructor<?>) clazz.getConstructor(URL.class));
+        }
+        return constructors;
     }
 
     public void sendUpdate(STATUS status, Object message) {
+        if (observer == null) {
+            return;
+        }
         synchronized (observer) {
             observer.update(this, new RipStatusMessage(status, message));
             observer.notifyAll();
