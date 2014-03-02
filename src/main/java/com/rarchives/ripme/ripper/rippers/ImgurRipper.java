@@ -82,7 +82,7 @@ public class ImgurRipper extends AbstractRipper {
             ripUserAccount(url);
             break;
         }
-        threadPool.waitForThreads();
+        waitForThreads();
     }
 
     private void ripAlbum(URL url) throws IOException {

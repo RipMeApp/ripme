@@ -33,6 +33,7 @@ public abstract class AbstractRipper
     protected Map<URL, File> itemsPending = new HashMap<URL, File>();
     protected Map<URL, File> itemsCompleted = new HashMap<URL, File>();
     protected Map<URL, String> itemsErrored = new HashMap<URL, String>();
+    protected boolean completed = true;
 
     public abstract void rip() throws IOException;
     public abstract String getHost();
@@ -92,9 +93,11 @@ public abstract class AbstractRipper
      *      Path of the local file to save the content to.
      */
     public void addURLToDownload(URL url, File saveAs) {
-        if (itemsPending.containsKey(url) || itemsCompleted.containsKey(url)) {
+        if (itemsPending.containsKey(url)
+                || itemsCompleted.containsKey(url)
+                || itemsErrored.containsKey(url)) {
             // Item is already downloaded/downloading, skip it.
-            logger.info("Skipping duplicate URL: " + url);
+            logger.info("Skipping " + url + " -- already attempted: " + Utils.removeCWD(saveAs));
             return;
         }
         itemsPending.put(url, saveAs);
@@ -128,6 +131,11 @@ public abstract class AbstractRipper
             saveFileAs.getParentFile().mkdirs();
         }
         addURLToDownload(url, saveFileAs);
+    }
+    
+    protected void waitForThreads() {
+        completed = false;
+        threadPool.waitForThreads();
     }
 
     public void retrievingSource(URL url) {
@@ -163,9 +171,11 @@ public abstract class AbstractRipper
     }
 
     private void checkIfComplete() {
-        if (itemsPending.size() == 0) {
+        System.err.println("Pending: " + itemsPending.size() + ", Completed: " + itemsCompleted.size() + ", Errored: " + itemsErrored.size());
+        if (!completed && itemsPending.size() == 0) {
+            completed = true;
             logger.info("Rip completed!");
-            observer.update(this, new RipStatusMessage(STATUS.RIP_COMPLETE, workingDir));
+            observer.update(this, new RipStatusMessage(STATUS.RIP_COMPLETE, new File(Utils.removeCWD(workingDir))));
             observer.notifyAll();
         }
     }

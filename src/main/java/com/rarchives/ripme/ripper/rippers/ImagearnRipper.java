@@ -69,7 +69,7 @@ public class ImagearnRipper extends AbstractRipper {
             index += 1;
             addURLToDownload(new URL(image), String.format("%03d_", index));
         }
-        threadPool.waitForThreads();
+        waitForThreads();
     }
 
     @Override

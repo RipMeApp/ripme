@@ -73,7 +73,7 @@ public class ImagefapRipper extends AbstractRipper {
             index += 1;
             addURLToDownload(new URL(image), String.format("%03d_", index));
         }
-        threadPool.waitForThreads();
+        waitForThreads();
     }
 
     public boolean canRip(URL url) {
