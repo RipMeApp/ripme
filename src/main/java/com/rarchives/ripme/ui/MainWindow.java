@@ -1,7 +1,9 @@
 package com.rarchives.ripme.ui;
 
-import java.awt.BorderLayout;
+import java.awt.Container;
 import java.awt.Desktop;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -13,14 +15,16 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JProgressBar;
+import javax.swing.JScrollPane;
 import javax.swing.JTextField;
-import javax.swing.SwingConstants;
+import javax.swing.JTextPane;
+import javax.swing.border.EmptyBorder;
 
 import org.apache.log4j.Logger;
 
 import com.rarchives.ripme.ripper.AbstractRipper;
 import com.rarchives.ripme.utils.Utils;
-
 
 public class MainWindow implements Runnable {
 
@@ -29,43 +33,26 @@ public class MainWindow implements Runnable {
     private static final String WINDOW_TITLE = "RipMe";
 
     private static JFrame mainFrame;
-    private static JPanel ripPanel;
     private static JTextField ripTextfield;
     private static JButton ripButton;
 
-    private static JPanel statusPanel;
     private static JLabel statusLabel;
-    private static JButton statusButton;
+    private static JButton openButton;
+    private static JProgressBar statusProgress;
+
+    private static JTextPane textLog;
+    private static JScrollPane textLogScroll;
 
     public MainWindow() {
-        createUI();
+        mainFrame = new JFrame(WINDOW_TITLE);
+        mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        mainFrame.setResizable(false);
+        mainFrame.setLayout(new GridBagLayout());
+
+        createUI(mainFrame.getContentPane());
         setupHandlers();
     }
     
-    private void createUI() {
-        mainFrame = new JFrame(WINDOW_TITLE);
-        mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        
-        ripPanel     = new JPanel();
-        ripTextfield = new JTextField("", 20);
-        ripButton    = new JButton("rip");
-        ripPanel.add(ripTextfield, BorderLayout.WEST);
-        ripPanel.add(ripButton, BorderLayout.EAST);
-        mainFrame.getContentPane().add(ripPanel, BorderLayout.NORTH);
-
-        statusPanel  = new JPanel();
-        statusLabel  = new JLabel("inactive", SwingConstants.LEADING);
-        statusButton = new JButton("open dir");
-        statusButton.setVisible(false);
-        statusPanel.add(statusLabel, BorderLayout.WEST);
-        statusPanel.add(statusButton, BorderLayout.EAST);
-        mainFrame.getContentPane().add(statusPanel, BorderLayout.SOUTH);
-    }
-    
-    private void setupHandlers() {
-        ripButton.addActionListener(new RipButtonHandler());
-    }
-
     public void run() {
         mainFrame.pack();
         mainFrame.setLocationRelativeTo(null);
@@ -74,11 +61,68 @@ public class MainWindow implements Runnable {
 
     public static void status(String text) {
         statusLabel.setText(text);
+        mainFrame.pack();
+    }
+
+    private void createUI(Container pane) {
+        EmptyBorder emptyBorder = new EmptyBorder(5, 5, 5, 5);
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.weightx = 9; gbc.ipadx = 5; gbc.gridx = 0;
+        gbc.weighty = 9; gbc.ipady = 5; gbc.gridy = 0;
+
+        ripTextfield = new JTextField("", 20);
+        ripButton    = new JButton("rip");
+        JPanel ripPanel = new JPanel(new GridBagLayout());
+        ripPanel.setBorder(emptyBorder);
+
+        ripPanel.add(new JLabel("URL:"), gbc);
+        gbc.gridx = 1;
+        ripPanel.add(ripTextfield, gbc);
+        gbc.gridx = 2;
+        ripPanel.add(ripButton, gbc);
+
+        statusLabel  = new JLabel("Inactive");
+        openButton = new JButton();
+        openButton.setVisible(false);
+        JPanel statusPanel = new JPanel(new GridBagLayout());
+        statusPanel.setBorder(emptyBorder);
+        
+        gbc.gridx = 0; gbc.gridy = 1;
+        statusPanel.add(statusLabel, gbc);
+        gbc.gridx = 1;
+        statusPanel.add(openButton, gbc);
+
+        JPanel progressPanel = new JPanel(new GridBagLayout());
+        progressPanel.setBorder(emptyBorder);
+        statusProgress = new JProgressBar(0,  100);
+        progressPanel.add(statusProgress, gbc);
+        
+        JPanel logPanel = new JPanel(new GridBagLayout());
+        logPanel.setBorder(emptyBorder);
+        textLog = new JTextPane();
+        textLogScroll = new JScrollPane(textLog);
+        logPanel.add(textLogScroll, gbc);
+
+        gbc.gridx = 0; gbc.gridy = 0;
+        gbc.fill = GridBagConstraints.BOTH;
+        pane.add(ripPanel, gbc);
+        gbc.gridy = 1;
+        pane.add(statusPanel, gbc);
+        gbc.gridy = 2;
+        pane.add(progressPanel, gbc);
+        gbc.gridy = 3;
+        pane.add(logPanel, gbc);
+    }
+    
+    private void setupHandlers() {
+        ripButton.addActionListener(new RipButtonHandler());
     }
 
     class RipButtonHandler implements ActionListener {
         public void actionPerformed(ActionEvent event) {
-            statusButton.setVisible(false);
+            openButton.setVisible(false);
+            statusLabel.setVisible(true);
+            mainFrame.pack();
             try {
                 URL url = new URL(ripTextfield.getText());
                 AbstractRipper ripper = AbstractRipper.getRipper(url);
@@ -101,12 +145,20 @@ public class MainWindow implements Runnable {
             case DOWNLOAD_STARTED:
             case DOWNLOAD_COMPLETE:
             case DOWNLOAD_ERRORED:
-                status((String) msg.getObject());
+                //status((String) msg.getObject());
+                int completedPercent = ((AbstractRipper) observable).getCompletionPercentage();
+                statusProgress.setValue(completedPercent);
+                status( ((AbstractRipper)observable).getStatusText() );
                 break;
+
             case RIP_COMPLETE:
+                statusProgress.setValue(100);
+                statusLabel.setVisible(false);
+                openButton.setVisible(true);
                 File f = (File) msg.getObject();
-                statusButton.setActionCommand(f.toString());
-                statusButton.addActionListener(new ActionListener() {
+                openButton.setText("Open " + Utils.removeCWD(f));
+                openButton.setActionCommand(f.toString());
+                openButton.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent event) {
                         try {
@@ -116,8 +168,7 @@ public class MainWindow implements Runnable {
                         }
                     }
                 });
-                statusButton.setVisible(true);
-                status("Finished: " + Utils.removeCWD(f));
+                mainFrame.pack();
             }
         }
     }

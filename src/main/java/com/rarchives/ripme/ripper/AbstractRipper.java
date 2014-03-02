@@ -263,6 +263,24 @@ public abstract class AbstractRipper
             observer.notifyAll();
         }
     }
+    
+    public int getCompletionPercentage() {
+        double total = itemsPending.size()  + itemsErrored.size() + itemsCompleted.size();
+        return (int) (100 * ( (total - itemsPending.size()) / total));
+    }
+    
+    public String getStatusText() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(getCompletionPercentage())
+          .append("% - ")
+          .append("Pending: ")
+          .append(itemsPending.size())
+          .append(", Completed: ")
+          .append(itemsCompleted.size())
+          .append(", Errored: ")
+          .append(itemsErrored.size());
+        return sb.toString();
+    }
 
     public void run() {
         try {
