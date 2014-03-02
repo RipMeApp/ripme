@@ -57,7 +57,6 @@ public class DownloadFileThread extends Thread {
                 FileOutputStream out = (new FileOutputStream(saveAs));
                 out.write(response.bodyAsBytes());
                 out.close();
-                observer.downloadCompleted(url, saveAs.getCanonicalFile());
                 break; // Download successful: break out of infinite loop
             } catch (IOException e) {
                 logger.error("[!] Exception while downloading file: " + url + " - " + e.getMessage());

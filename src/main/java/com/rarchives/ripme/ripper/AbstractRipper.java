@@ -150,7 +150,7 @@ public abstract class AbstractRipper
             return;
         }
         try {
-            String path = saveAs.getCanonicalPath();
+            String path = Utils.removeCWD(saveAs);
             RipStatusMessage msg = new RipStatusMessage(STATUS.DOWNLOAD_COMPLETE, path);
             synchronized(observer) {
                 itemsPending.remove(url);
@@ -182,7 +182,10 @@ public abstract class AbstractRipper
         if (!completed && itemsPending.size() == 0) {
             completed = true;
             logger.info("Rip completed!");
-            observer.update(this, new RipStatusMessage(STATUS.RIP_COMPLETE, new File(Utils.removeCWD(workingDir))));
+            observer.update(this,
+                    new RipStatusMessage(
+                            STATUS.RIP_COMPLETE,
+                            workingDir));
             observer.notifyAll();
         }
     }
