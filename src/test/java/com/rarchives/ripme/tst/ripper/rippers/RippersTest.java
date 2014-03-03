@@ -6,6 +6,11 @@ import junit.framework.TestCase;
 
 public class RippersTest extends TestCase {
 
+    public void testNothing() {
+        // Avoid complaints about no test cases in this file.
+        assert(true);
+    }
+
     protected void deleteDir(File dir) {
         return;
         /*

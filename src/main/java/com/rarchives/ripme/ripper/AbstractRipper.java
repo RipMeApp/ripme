@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -12,6 +13,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 
 import org.apache.log4j.Logger;
 
@@ -227,40 +230,76 @@ public abstract class AbstractRipper
                 return ripper;
             } catch (Exception e) {
                 // Incompatible rippers *will* throw exceptions during instantiation.
-                logger.error("Excepion while instantiating: " + constructor.getClass().getName(), e);
+                //logger.error("Exception while instantiating: " + constructor.getName(), e);
             }
         }
         throw new Exception("No compatible ripper found");
     }
     
-    /**
-     * Gets constructors for all rippers in the "ripper.rippers" package
-     * @return list of constructors for all rippers.
-     * @throws Exception
-     */
     private static List<Constructor<?>> getRipperConstructors() throws Exception {
         List<Constructor<?>> constructors = new ArrayList<Constructor<?>>();
-        String rippersPackage = "com.rarchives.ripme.ripper.rippers";
-        ClassLoader cl = Thread.currentThread().getContextClassLoader();
-        Enumeration<URL> urls = cl.getResources(rippersPackage.replaceAll("\\.", "/"));
-        if (!urls.hasMoreElements()) {
-            return constructors;
-        }
-        URL classURL = urls.nextElement();
-        for (File f : new File(classURL.toURI()).listFiles()) {
-            String className = f.getName();
-            if (!className.endsWith(".class")
-                    || className.contains("$")
-                    || className.endsWith("Test.class")) {
-                // Ignore non-class or nested classes.
-                continue;
+        for (Class<?> clazz : getClassesForPackage("com.rarchives.ripme.ripper.rippers")) {
+            if (AbstractRipper.class.isAssignableFrom(clazz)) {
+                constructors.add( (Constructor<?>) clazz.getConstructor(URL.class) );
             }
-            className = className.substring(0, className.length() - 6); // Strip .class
-            String fqname = rippersPackage + "." + className;
-            Class<?> clazz = Class.forName(fqname);
-            constructors.add( (Constructor<?>) clazz.getConstructor(URL.class));
         }
         return constructors;
+    }
+
+    private static ArrayList<Class<?>> getClassesForPackage(String pkgname) {
+        ArrayList<Class<?>> classes = new ArrayList<Class<?>>();
+        String relPath = pkgname.replace('.', '/');
+        URL resource = ClassLoader.getSystemClassLoader().getResource(relPath);
+        if (resource == null) {
+            throw new RuntimeException("No resource for " + relPath);
+        }
+
+        String fullPath = resource.getFile();
+        File directory = null;
+        try {
+            directory = new File(resource.toURI());
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(pkgname + " (" + resource + ") does not appear to be a valid URL / URI.  Strange, since we got it from the system...", e);
+        } catch (IllegalArgumentException e) {
+            directory = null;
+        }
+
+        if (directory != null && directory.exists()) {
+            // Get the list of the files contained in the package
+            String[] files = directory.list();
+            for (String file : files) {
+                if (file.endsWith(".class") && !file.contains("$")) {
+                    String className = pkgname + '.' + file.substring(0, file.length() - 6);
+                    try {
+                        classes.add(Class.forName(className));
+                    } catch (ClassNotFoundException e) {
+                        throw new RuntimeException("ClassNotFoundException loading " + className);
+                    }
+                }
+            }
+        }
+        else {
+            try {
+                String jarPath = fullPath.replaceFirst("[.]jar[!].*", ".jar").replaceFirst("file:", "");
+                JarFile jarFile = new JarFile(jarPath);
+                Enumeration<JarEntry> entries = jarFile.entries();
+                while(entries.hasMoreElements()) {
+                    String entryName = entries.nextElement().getName();
+                    if(entryName.startsWith(relPath)
+                            && entryName.length() > (relPath.length() + "/".length())) {
+                        String className = entryName.replace('/', '.').replace('\\', '.').replace(".class", "");
+                        try {
+                            classes.add(Class.forName(className));
+                        } catch (ClassNotFoundException e) {
+                            throw new RuntimeException("ClassNotFoundException loading " + className);
+                        }
+                    }
+                }
+            } catch (IOException e) {
+                throw new RuntimeException(pkgname + " (" + directory + ") does not appear to be a valid package", e);
+            }
+        }
+        return classes;
     }
 
     public void sendUpdate(STATUS status, Object message) {

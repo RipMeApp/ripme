@@ -46,7 +46,7 @@ public class ImgurRipperTest extends RippersTest {
         for (URL url : passURLs) {
             try {
                 ImgurRipper ripper = new ImgurRipper(url);
-                assertTrue(ripper.canRip(url));
+                assert(ripper.canRip(url));
                 deleteDir(ripper.getWorkingDir());
             } catch (Exception e) {
                 fail("Failed to instantiate ripper for " + url);

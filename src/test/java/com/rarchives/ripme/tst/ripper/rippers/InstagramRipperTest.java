@@ -7,7 +7,6 @@ import java.util.List;
 
 import com.rarchives.ripme.ripper.rippers.InstagramRipper;
 
-
 public class InstagramRipperTest extends RippersTest {
     
     public void testInstagramAlbums() throws IOException {
