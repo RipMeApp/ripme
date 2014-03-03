@@ -22,9 +22,9 @@ public class ImgurRipper extends AbstractRipper {
     private static final String DOMAIN = "imgur.com",
                                 HOST   = "imgur";
     private static final Logger logger = Logger.getLogger(ImgurRipper.class);
-    
+
     private final int SLEEP_BETWEEN_ALBUMS;
-    
+
     static enum ALBUM_TYPE {
         ALBUM,
         USER,
@@ -61,6 +61,8 @@ public class ImgurRipper extends AbstractRipper {
         if (u.indexOf('#') >= 0) {
             u = u.substring(0,  u.indexOf('#'));
         }
+        u = u.replace("https?://m\\.imgur\\.com", "http://imgur.com");
+        u = u.replace("https?://i\\.imgur\\.com", "http://imgur.com");
         return new URL(u);
     }
 
@@ -204,14 +206,18 @@ public class ImgurRipper extends AbstractRipper {
             this.url = new URL("http://imgur.com/a/" + gid);
             return gid;
         }
-        p = Pattern.compile("^https?://([a-zA-Z0-9\\-]{1,})\\.imgur\\.com/?$");
+        p = Pattern.compile("^https?://([a-zA-Z0-9\\-]{3,})\\.imgur\\.com/?$");
         m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             // Root imgur account
+            String gid = m.group(1);
+            if (gid.equals("i")) {
+                throw new MalformedURLException("Ripping i.imgur.com links not supported");
+            }
             albumType = ALBUM_TYPE.USER;
-            return m.group(1);
+            return gid;
         }
-        p = Pattern.compile("^https?://([a-zA-Z0-9\\-])\\.imgur\\.com/([a-zA-Z0-9])?$");
+        p = Pattern.compile("^https?://([a-zA-Z0-9\\-]{3,})\\.imgur\\.com/([a-zA-Z0-9])?$");
         m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             // Imgur account album
@@ -223,9 +229,16 @@ public class ImgurRipper extends AbstractRipper {
         if (m.matches()) {
             // Series of imgur images
             albumType = ALBUM_TYPE.SERIES_OF_IMAGES;
-            return m.group(m.groupCount()).replaceAll(",", "-");
+            String gid = m.group(m.groupCount());
+            if (!gid.contains(",")) {
+                throw new MalformedURLException("Imgur image doesn't contain commas");
+            }
+            return gid.replaceAll(",", "-");
         }
         throw new MalformedURLException("Unexpected URL format: " + url.toExternalForm());
     }
 
+    public ALBUM_TYPE getAlbumType() {
+        return albumType;
+    }
 }

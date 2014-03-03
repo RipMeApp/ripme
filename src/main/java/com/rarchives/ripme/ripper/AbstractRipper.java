@@ -178,7 +178,6 @@ public abstract class AbstractRipper
     }
 
     private void checkIfComplete() {
-        System.err.println("Pending: " + itemsPending.size() + ", Completed: " + itemsCompleted.size() + ", Errored: " + itemsErrored.size());
         if (!completed && itemsPending.size() == 0) {
             completed = true;
             logger.info("Rip completed!");
@@ -192,6 +191,10 @@ public abstract class AbstractRipper
 
     public URL getURL() {
         return url;
+    }
+    
+    public File getWorkingDir() {
+        return workingDir;
     }
 
     public void setWorkingDir(URL url) throws IOException {
@@ -224,6 +227,7 @@ public abstract class AbstractRipper
                 return ripper;
             } catch (Exception e) {
                 // Incompatible rippers *will* throw exceptions during instantiation.
+                logger.error("Excepion while instantiating: " + constructor.getClass().getName(), e);
             }
         }
         throw new Exception("No compatible ripper found");
@@ -245,7 +249,9 @@ public abstract class AbstractRipper
         URL classURL = urls.nextElement();
         for (File f : new File(classURL.toURI()).listFiles()) {
             String className = f.getName();
-            if (!className.endsWith(".class") || className.contains("$")) {
+            if (!className.endsWith(".class")
+                    || className.contains("$")
+                    || className.endsWith("Test.class")) {
                 // Ignore non-class or nested classes.
                 continue;
             }

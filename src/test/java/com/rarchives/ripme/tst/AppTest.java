@@ -1,4 +1,4 @@
-package com.rarchives.ripme;
+package com.rarchives.ripme.tst;
 
 import junit.framework.Test;
 import junit.framework.TestCase;
