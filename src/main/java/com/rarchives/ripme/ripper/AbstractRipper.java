@@ -4,17 +4,13 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.net.MalformedURLException;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
 
 import org.apache.log4j.Logger;
 
@@ -114,6 +110,7 @@ public abstract class AbstractRipper
         if (saveAs.indexOf('?') >= 0) { saveAs = saveAs.substring(0, saveAs.indexOf('?')); }
         if (saveAs.indexOf('#') >= 0) { saveAs = saveAs.substring(0, saveAs.indexOf('#')); }
         if (saveAs.indexOf('&') >= 0) { saveAs = saveAs.substring(0, saveAs.indexOf('&')); }
+        if (saveAs.indexOf(':') >= 0) { saveAs = saveAs.substring(0, saveAs.indexOf(':')); }
         File saveFileAs;
         try {
             if (!subdirectory.equals("")) {
@@ -235,10 +232,10 @@ public abstract class AbstractRipper
         }
         throw new Exception("No compatible ripper found");
     }
-    
+
     private static List<Constructor<?>> getRipperConstructors() throws Exception {
         List<Constructor<?>> constructors = new ArrayList<Constructor<?>>();
-        for (Class<?> clazz : getClassesForPackage("com.rarchives.ripme.ripper.rippers")) {
+        for (Class<?> clazz : Utils.getClassesForPackage("com.rarchives.ripme.ripper.rippers")) {
             if (AbstractRipper.class.isAssignableFrom(clazz)) {
                 constructors.add( (Constructor<?>) clazz.getConstructor(URL.class) );
             }
@@ -246,64 +243,8 @@ public abstract class AbstractRipper
         return constructors;
     }
 
-    private static ArrayList<Class<?>> getClassesForPackage(String pkgname) {
-        ArrayList<Class<?>> classes = new ArrayList<Class<?>>();
-        String relPath = pkgname.replace('.', '/');
-        URL resource = ClassLoader.getSystemClassLoader().getResource(relPath);
-        if (resource == null) {
-            throw new RuntimeException("No resource for " + relPath);
-        }
-
-        String fullPath = resource.getFile();
-        File directory = null;
-        try {
-            directory = new File(resource.toURI());
-        } catch (URISyntaxException e) {
-            throw new RuntimeException(pkgname + " (" + resource + ") does not appear to be a valid URL / URI.  Strange, since we got it from the system...", e);
-        } catch (IllegalArgumentException e) {
-            directory = null;
-        }
-
-        if (directory != null && directory.exists()) {
-            // Get the list of the files contained in the package
-            String[] files = directory.list();
-            for (String file : files) {
-                if (file.endsWith(".class") && !file.contains("$")) {
-                    String className = pkgname + '.' + file.substring(0, file.length() - 6);
-                    try {
-                        classes.add(Class.forName(className));
-                    } catch (ClassNotFoundException e) {
-                        throw new RuntimeException("ClassNotFoundException loading " + className);
-                    }
-                }
-            }
-        }
-        else {
-            try {
-                String jarPath = fullPath.replaceFirst("[.]jar[!].*", ".jar").replaceFirst("file:", "");
-                JarFile jarFile = new JarFile(jarPath);
-                Enumeration<JarEntry> entries = jarFile.entries();
-                while(entries.hasMoreElements()) {
-                    String entryName = entries.nextElement().getName();
-                    if(entryName.startsWith(relPath)
-                            && entryName.length() > (relPath.length() + "/".length())) {
-                        String className = entryName.replace('/', '.').replace('\\', '.').replace(".class", "");
-                        try {
-                            classes.add(Class.forName(className));
-                        } catch (ClassNotFoundException e) {
-                            throw new RuntimeException("ClassNotFoundException loading " + className);
-                        }
-                    }
-                }
-            } catch (IOException e) {
-                throw new RuntimeException(pkgname + " (" + directory + ") does not appear to be a valid package", e);
-            }
-        }
-        return classes;
-    }
-
     public void sendUpdate(STATUS status, Object message) {
-        if (observer == null) {
+        if (observer != null) {
             return;
         }
         synchronized (observer) {
@@ -320,13 +261,10 @@ public abstract class AbstractRipper
     public String getStatusText() {
         StringBuilder sb = new StringBuilder();
         sb.append(getCompletionPercentage())
-          .append("% - ")
-          .append("Pending: ")
-          .append(itemsPending.size())
-          .append(", Completed: ")
-          .append(itemsCompleted.size())
-          .append(", Errored: ")
-          .append(itemsErrored.size());
+          .append("% ")
+          .append("- Pending: "  ).append(itemsPending.size())
+          .append(", Completed: ").append(itemsCompleted.size())
+          .append(", Errored: "  ).append(itemsErrored.size());
         return sb.toString();
     }
 
