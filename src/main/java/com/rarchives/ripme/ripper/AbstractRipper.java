@@ -244,7 +244,7 @@ public abstract class AbstractRipper
     }
 
     public void sendUpdate(STATUS status, Object message) {
-        if (observer != null) {
+        if (observer == null) {
             return;
         }
         synchronized (observer) {
