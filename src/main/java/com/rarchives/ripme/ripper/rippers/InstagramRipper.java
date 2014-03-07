@@ -80,7 +80,10 @@ public class InstagramRipper extends AbstractRipper {
         while (true) {
             String url = baseURL + params;
             logger.info("    Retrieving " + url);
-            String jsonString = Jsoup.connect(url).ignoreContentType(true).execute().body();
+            String jsonString = Jsoup.connect(url)
+                                     .ignoreContentType(true)
+                                     .execute()
+                                     .body();
             JSONObject json = new JSONObject(jsonString);
             JSONArray datas = json.getJSONArray("data");
             String nextMaxID = "";
