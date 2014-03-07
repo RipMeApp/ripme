@@ -14,8 +14,16 @@ public class DownloadThreadPool {
     private ExecutorService threadPool = null;
 
     public DownloadThreadPool() {
+        initialize("Main");
+    }
+    
+    public DownloadThreadPool(String threadPoolName) {
+        initialize(threadPoolName);
+    }
+
+    private void initialize(String threadPoolName) {
         int threads = Utils.getConfigInteger("threads.size", 10);
-        logger.debug("Initializing thread pool with " + threads + " threads");
+        logger.debug("Initializing " + threadPoolName + " thread pool with " + threads + " threads");
         threadPool = Executors.newFixedThreadPool(threads);
     }
 

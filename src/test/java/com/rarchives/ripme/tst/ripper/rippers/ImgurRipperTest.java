@@ -55,6 +55,9 @@ public class ImgurRipperTest extends RippersTest {
     }
 
     public void testImgurAlbums() throws IOException {
+        if (!DOWNLOAD_CONTENT) {
+            return;
+        }
         List<URL> contentURLs = new ArrayList<URL>();
         // URLs that should return more than 1 image
         contentURLs.add(new URL("http://imgur.com/a/hqJIu")); // Vertical layout

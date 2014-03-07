@@ -6,6 +6,9 @@ import junit.framework.TestCase;
 
 public class RippersTest extends TestCase {
 
+    // Flag for avoiding downloading content with every unit test
+    public final boolean DOWNLOAD_CONTENT = false;
+
     public void testNothing() {
         // Avoid complaints about no test cases in this file.
         assert(true);
