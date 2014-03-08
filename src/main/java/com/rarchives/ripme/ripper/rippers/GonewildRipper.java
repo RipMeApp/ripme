@@ -64,6 +64,10 @@ public class GonewildRipper extends AbstractRipper {
                     .execute()
                     .body();
             json = new JSONObject(jsonString);
+            if (json.has("error")) {
+                logger.error("Error while retrieving user posts:" + json.getString("error"));
+                break;
+            }
             posts = json.getJSONArray("posts");
             if (posts.length() == 0) {
                 break; // No more posts to get
