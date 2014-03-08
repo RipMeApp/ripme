@@ -10,11 +10,11 @@ import com.rarchives.ripme.ripper.rippers.VineboxRipper;
 public class VineboxRipperTest extends RippersTest {
     
     public void testVineboxAlbums() throws IOException {
-        if (false && !DOWNLOAD_CONTENT) {
+        if (DOWNLOAD_CONTENT) {
             return;
         }
         List<URL> contentURLs = new ArrayList<URL>();
-        contentURLs.add(new URL("http://vinebox.co/u/wiZS1MvkgEo"));
+        contentURLs.add(new URL("http://vinebox.co/u/wi57hMjc2Ka"));
         for (URL url : contentURLs) {
             try {
                 VineboxRipper ripper = new VineboxRipper(url);

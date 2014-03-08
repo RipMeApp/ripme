@@ -31,12 +31,7 @@ public class VineboxRipper extends AbstractRipper {
 
     @Override
     public URL sanitizeURL(URL url) throws MalformedURLException {
-        Pattern p = Pattern.compile("^https?://(www\\.)?vinebox\\.co/u/([a-zA-Z0-9]{1,}).*$");
-        Matcher m = p.matcher(url.toExternalForm());
-        if (!m.matches()) {
-            throw new MalformedURLException("Expected format: http://vinebox.co/u/USERNAME");
-        }
-        return new URL("http://vinebox.co/u/" + m.group(m.groupCount()));
+        return new URL("http://vinebox.co/u/" + getGID(url));
     }
 
     @Override
@@ -74,7 +69,6 @@ public class VineboxRipper extends AbstractRipper {
     @Override
     public String getGID(URL url) throws MalformedURLException {
         Pattern p = Pattern.compile("^https?://(www\\.)?vinebox\\.co/u/([a-zA-Z0-9]{1,}).*$");
-        System.err.println(url);
         Matcher m = p.matcher(url.toExternalForm());
         if (!m.matches()) {
             throw new MalformedURLException("Expected format: http://vinebox.co/u/USERNAME");
