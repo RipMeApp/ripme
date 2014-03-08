@@ -24,6 +24,7 @@ import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.border.EmptyBorder;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.DefaultCaret;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
@@ -139,7 +140,9 @@ public class MainWindow implements Runnable {
         logPanel.setVisible(false);
         logPanel.setPreferredSize(new Dimension(300, 300));
         logPanel.add(logTextScroll, gbc);
-        
+        DefaultCaret caret = (DefaultCaret) logText.getCaret();
+        caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
+
         historyPanel = new JPanel(new GridBagLayout());
         historyPanel.setBorder(emptyBorder);
         historyList = new JList();
