@@ -177,6 +177,19 @@ public abstract class AbstractRipper
         }
     }
 
+    public void downloadProblem(URL url, String message) {
+        if (observer == null) {
+            return;
+        }
+        synchronized(observer) {
+            itemsPending.remove(url);
+            itemsErrored.put(url, message);
+            observer.update(this, new RipStatusMessage(STATUS.DOWNLOAD_WARN, url + " : " + message));
+            observer.notifyAll();
+            checkIfComplete();
+        }
+    }
+
     private void checkIfComplete() {
         if (!completed && itemsPending.size() == 0) {
             completed = true;
@@ -275,4 +288,5 @@ public abstract class AbstractRipper
             logger.error("Got exception while running ripper:", e);
         }
     }
+
 }

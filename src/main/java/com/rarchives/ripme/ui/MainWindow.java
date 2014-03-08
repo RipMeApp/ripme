@@ -8,11 +8,18 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.util.Observable;
 import java.util.Observer;
 
+import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -22,9 +29,9 @@ import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
+import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.DefaultCaret;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
@@ -39,6 +46,7 @@ public class MainWindow implements Runnable {
     private static final Logger logger = Logger.getLogger(MainWindow.class);
 
     private static final String WINDOW_TITLE = "RipMe";
+    private static final String HISTORY_FILE = ".history";
 
     private static JFrame mainFrame;
     private static JTextField ripTextfield;
@@ -58,7 +66,11 @@ public class MainWindow implements Runnable {
     private static JButton optionHistory;
     private static JPanel historyPanel;
     private static JList historyList;
+    private static DefaultListModel historyListModel;
     private static JScrollPane historyListScroll;
+    private static JButton historyButtonRemove,
+                           historyButtonClear,
+                           historyButtonRerip;
 
     // Configuration
     private static JButton optionConfiguration;
@@ -73,6 +85,7 @@ public class MainWindow implements Runnable {
         mainFrame.setLayout(new GridBagLayout());
 
         createUI(mainFrame.getContentPane());
+        loadHistory();
         setupHandlers();
     }
     
@@ -95,15 +108,13 @@ public class MainWindow implements Runnable {
         gbc.weighty = 2; gbc.ipady = 2; gbc.gridy = 0;
 
         ripTextfield = new JTextField("", 20);
-        ripButton    = new JButton("rip");
+        ripButton    = new JButton("Rip");
         JPanel ripPanel = new JPanel(new GridBagLayout());
         ripPanel.setBorder(emptyBorder);
 
-        ripPanel.add(new JLabel("URL:", JLabel.RIGHT), gbc);
-        gbc.gridx = 1;
-        ripPanel.add(ripTextfield, gbc);
-        gbc.gridx = 2;
-        ripPanel.add(ripButton, gbc);
+        gbc.gridx = 0; ripPanel.add(new JLabel("URL:", JLabel.RIGHT), gbc);
+        gbc.gridx = 1; ripPanel.add(ripTextfield, gbc);
+        gbc.gridx = 2; ripPanel.add(ripButton, gbc);
 
         statusLabel  = new JLabel("Inactive");
         statusLabel.setHorizontalAlignment(JLabel.CENTER);
@@ -126,12 +137,9 @@ public class MainWindow implements Runnable {
         optionLog = new JButton("Log");
         optionHistory = new JButton("History");
         optionConfiguration = new JButton("Configuration");
-        gbc.gridx = 0;
-        optionsPanel.add(optionLog, gbc);
-        gbc.gridx = 1;
-        optionsPanel.add(optionHistory, gbc);
-        gbc.gridx = 2;
-        optionsPanel.add(optionConfiguration, gbc);
+        gbc.gridx = 0; optionsPanel.add(optionLog, gbc);
+        gbc.gridx = 1; optionsPanel.add(optionHistory, gbc);
+        gbc.gridx = 2; optionsPanel.add(optionConfiguration, gbc);
 
         logPanel = new JPanel(new GridBagLayout());
         logPanel.setBorder(emptyBorder);
@@ -140,16 +148,26 @@ public class MainWindow implements Runnable {
         logPanel.setVisible(false);
         logPanel.setPreferredSize(new Dimension(300, 300));
         logPanel.add(logTextScroll, gbc);
-        DefaultCaret caret = (DefaultCaret) logText.getCaret();
-        caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
 
         historyPanel = new JPanel(new GridBagLayout());
         historyPanel.setBorder(emptyBorder);
-        historyList = new JList();
-        historyListScroll = new JScrollPane(historyList);
         historyPanel.setVisible(false);
         historyPanel.setPreferredSize(new Dimension(300, 300));
+        historyListModel  = new DefaultListModel();
+        historyList       = new JList(historyListModel);
+        historyListScroll = new JScrollPane(historyList);
+        historyButtonRemove = new JButton("Remove");
+        historyButtonClear  = new JButton("Clear");
+        historyButtonRerip  = new JButton("Re-rip All");
+        gbc.gridx = 0;
         historyPanel.add(historyListScroll, gbc);
+        JPanel historyButtonPanel = new JPanel(new GridBagLayout());
+        historyButtonPanel.setBorder(emptyBorder);
+        gbc.gridx = 0; historyButtonPanel.add(historyButtonRemove, gbc);
+        gbc.gridx = 1; historyButtonPanel.add(historyButtonClear, gbc);
+        gbc.gridx = 2; historyButtonPanel.add(historyButtonRerip, gbc);
+        gbc.gridy = 1; gbc.gridx = 0;
+        historyPanel.add(historyButtonPanel, gbc);
         
         configurationPanel = new JPanel(new GridBagLayout());
         configurationPanel.setBorder(emptyBorder);
@@ -157,19 +175,13 @@ public class MainWindow implements Runnable {
         configurationPanel.setPreferredSize(new Dimension(300, 300));
         // TODO Configuration components
 
-        pane.add(ripPanel, gbc);
-        gbc.gridy = 1;
-        pane.add(statusPanel, gbc);
-        gbc.gridy = 2;
-        pane.add(progressPanel, gbc);
-        gbc.gridy = 3;
-        pane.add(optionsPanel, gbc);
-        gbc.gridy = 4;
-        pane.add(logPanel, gbc);
-        gbc.gridy = 5;
-        pane.add(historyPanel, gbc);
-        gbc.gridy = 5;
-        pane.add(configurationPanel, gbc);
+        gbc.gridy = 0; pane.add(ripPanel, gbc);
+        gbc.gridy = 1; pane.add(statusPanel, gbc);
+        gbc.gridy = 2; pane.add(progressPanel, gbc);
+        gbc.gridy = 3; pane.add(optionsPanel, gbc);
+        gbc.gridy = 4; pane.add(logPanel, gbc);
+        gbc.gridy = 5; pane.add(historyPanel, gbc);
+        gbc.gridy = 5; pane.add(configurationPanel, gbc);
     }
     
     private void setupHandlers() {
@@ -203,20 +215,75 @@ public class MainWindow implements Runnable {
         });
     }
     
-    private void appendLog(String text, Color color) {
-        SimpleAttributeSet sas = new SimpleAttributeSet();
-        StyleConstants.setForeground(sas, color);
-
-        StyledDocument sd = logText.getStyledDocument();
+    private void appendLog(final String text, final Color color) {
+            try {
+                SwingUtilities.invokeAndWait(new Runnable() {
+                    @Override
+                    public void run() {
+                        SimpleAttributeSet sas = new SimpleAttributeSet();
+                        StyleConstants.setForeground(sas, color);
+                        StyledDocument sd = logText.getStyledDocument();
+                        try {
+                            sd.insertString(sd.getLength(), text + "\n", sas);
+                        } catch (BadLocationException e) { }
+                        logText.setCaretPosition(logText.getText().length());
+                    }
+                });
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } catch (InvocationTargetException e) {
+                e.printStackTrace();
+            }
+    }
+    
+    private void loadHistory() {
+        File f; FileReader fr = null; BufferedReader br;
         try {
-            sd.insertString(sd.getLength(), text + "\n", sas);
-        } catch (BadLocationException e) {
-            e.printStackTrace();
+            f = new File(HISTORY_FILE);
+            fr = new FileReader(f);
+            br = new BufferedReader(fr);
+            String line;
+            while ( (line = br.readLine()) != null ) {
+                historyListModel.addElement(line);
+            }
+        } catch (FileNotFoundException e) {
+            // Do nothing
+        } catch (IOException e) {
+            logger.error("[!] Error while loading history file " + HISTORY_FILE, e);
+        } finally {
+            try {
+                if (fr != null) {
+                    fr.close();
+                }
+            } catch (IOException e) { }
+        }
+    }
+
+    private void saveHistory() {
+        FileWriter fw = null;
+        try {
+            fw = new FileWriter(HISTORY_FILE, false);
+            for (int i = 0; i < historyListModel.size(); i++) {
+                fw.write( (String) historyListModel.get(i) );
+                fw.write("\n");
+                fw.flush();
+            }
+        } catch (IOException e) {
+            logger.error("[!] Error while saving history file " + HISTORY_FILE, e);
+        } finally {
+            try {
+                if (fw != null) {
+                    fw.close();
+                }
+            } catch (IOException e) { }
         }
     }
 
     class RipButtonHandler implements ActionListener {
         public void actionPerformed(ActionEvent event) {
+            ripButton.setEnabled(false);
+            ripTextfield.setEnabled(false);
+            statusProgress.setValue(100);
             openButton.setVisible(false);
             statusLabel.setVisible(true);
             mainFrame.pack();
@@ -227,6 +294,7 @@ public class MainWindow implements Runnable {
                 Thread t = new Thread(ripper);
                 t.start();
             } catch (Exception e) {
+                logger.error("[!] Error while ripping: " + e.getMessage(), e);
                 status("Error: " + e.getMessage());
                 return;
             }
@@ -252,8 +320,16 @@ public class MainWindow implements Runnable {
             case DOWNLOAD_ERRORED:
                 appendLog( "Error: " + (String) msg.getObject(), Color.RED);
                 break;
+             
+            case DOWNLOAD_WARN:
+                appendLog( "Warn: " + (String) msg.getObject(), Color.ORANGE);
+                break;
 
             case RIP_COMPLETE:
+                historyListModel.addElement(ripTextfield.getText());
+                saveHistory();
+                ripButton.setEnabled(true);
+                ripTextfield.setEnabled(true);
                 statusProgress.setValue(100);
                 statusLabel.setVisible(false);
                 openButton.setVisible(true);

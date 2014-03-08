@@ -7,7 +7,8 @@ public class RipStatusMessage {
         DOWNLOAD_STARTED("Download Started"),
         DOWNLOAD_COMPLETE("Download Complete"),
         DOWNLOAD_ERRORED("Download Errored"),
-        RIP_COMPLETE("Rip Complete");
+        RIP_COMPLETE("Rip Complete"), 
+        DOWNLOAD_WARN("Download problem");
 
         String value;
         STATUS(String value) {
