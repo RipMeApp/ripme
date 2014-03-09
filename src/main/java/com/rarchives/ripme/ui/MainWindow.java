@@ -15,6 +15,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Observable;
 import java.util.Observer;
@@ -29,6 +30,7 @@ import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
+import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 import javax.swing.text.BadLocationException;
@@ -44,7 +46,7 @@ import com.rarchives.ripme.utils.Utils;
 public class MainWindow implements Runnable {
 
     private static final Logger logger = Logger.getLogger(MainWindow.class);
-
+    
     private static final String WINDOW_TITLE = "RipMe";
     private static final String HISTORY_FILE = ".history";
 
@@ -68,6 +70,7 @@ public class MainWindow implements Runnable {
     private static JList historyList;
     private static DefaultListModel historyListModel;
     private static JScrollPane historyListScroll;
+    private static JPanel historyButtonPanel;
     private static JButton historyButtonRemove,
                            historyButtonClear,
                            historyButtonRerip;
@@ -155,13 +158,14 @@ public class MainWindow implements Runnable {
         historyPanel.setPreferredSize(new Dimension(300, 300));
         historyListModel  = new DefaultListModel();
         historyList       = new JList(historyListModel);
+        historyList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         historyListScroll = new JScrollPane(historyList);
         historyButtonRemove = new JButton("Remove");
         historyButtonClear  = new JButton("Clear");
         historyButtonRerip  = new JButton("Re-rip All");
         gbc.gridx = 0;
         historyPanel.add(historyListScroll, gbc);
-        JPanel historyButtonPanel = new JPanel(new GridBagLayout());
+        historyButtonPanel = new JPanel(new GridBagLayout());
         historyButtonPanel.setBorder(emptyBorder);
         gbc.gridx = 0; historyButtonPanel.add(historyButtonRemove, gbc);
         gbc.gridx = 1; historyButtonPanel.add(historyButtonClear, gbc);
@@ -213,6 +217,55 @@ public class MainWindow implements Runnable {
                 mainFrame.pack();
             }
         });
+        historyButtonRemove.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent event) {
+                int[] indices = historyList.getSelectedIndices();
+                for (int i = indices.length - 1; i >= 0; i--) {
+                    historyListModel.remove(indices[i]);
+                }
+                saveHistory();
+            }
+        });
+        historyButtonClear.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent event) {
+                historyListModel.clear();
+                saveHistory();
+            }
+        });
+        
+        // Re-rip all history
+        historyButtonRerip.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent event) {
+                Runnable ripAllThread = new Runnable() {
+                    @Override
+                    public void run() {
+                        historyButtonPanel.setEnabled(false);
+                        historyList.setEnabled(false);
+                        for (int i = 0; i < historyListModel.size(); i++) {
+                            historyList.clearSelection();
+                            historyList.setSelectedIndex(i);
+                            Thread t = ripAlbum( (String) historyListModel.get(i) );
+                            try {
+                                synchronized (t) {
+                                    t.wait();
+                                }
+                                t.join();
+                            } catch (InterruptedException e) {
+                                logger.error("[!] Exception while waiting for ripper to finish:", e);
+                            }
+                            System.err.println("Ripper thread finished");
+                        }
+                        historyList.setEnabled(true);
+                        historyButtonPanel.setEnabled(true);
+                    }
+
+                };
+                new Thread(ripAllThread).start();
+            }
+        });
     }
     
     private void appendLog(final String text, final Color color) {
@@ -244,7 +297,9 @@ public class MainWindow implements Runnable {
             br = new BufferedReader(fr);
             String line;
             while ( (line = br.readLine()) != null ) {
-                historyListModel.addElement(line);
+                if (!line.trim().equals("")) {
+                    historyListModel.addElement(line.trim());
+                }
             }
         } catch (FileNotFoundException e) {
             // Do nothing
@@ -279,25 +334,37 @@ public class MainWindow implements Runnable {
         }
     }
 
+    private Thread ripAlbum(String urlString) {
+        URL url = null;
+        try {
+            url = new URL(urlString);
+        } catch (MalformedURLException e) {
+            logger.error("[!] Could not generate URL for '" + urlString + "'", e);
+            return null;
+        }
+        ripButton.setEnabled(false);
+        ripTextfield.setEnabled(false);
+        statusProgress.setValue(100);
+        openButton.setVisible(false);
+        statusLabel.setVisible(true);
+        mainFrame.pack();
+        try {
+            AbstractRipper ripper = AbstractRipper.getRipper(url);
+            ripTextfield.setText(ripper.getURL().toExternalForm());
+            ripper.setObserver(new RipStatusHandler());
+            Thread t = new Thread(ripper);
+            t.start();
+            return t;
+        } catch (Exception e) {
+            logger.error("[!] Error while ripping: " + e.getMessage(), e);
+            status("Error: " + e.getMessage());
+            return null;
+        }
+    }
+
     class RipButtonHandler implements ActionListener {
         public void actionPerformed(ActionEvent event) {
-            ripButton.setEnabled(false);
-            ripTextfield.setEnabled(false);
-            statusProgress.setValue(100);
-            openButton.setVisible(false);
-            statusLabel.setVisible(true);
-            mainFrame.pack();
-            try {
-                URL url = new URL(ripTextfield.getText());
-                AbstractRipper ripper = AbstractRipper.getRipper(url);
-                ripper.setObserver(new RipStatusHandler());
-                Thread t = new Thread(ripper);
-                t.start();
-            } catch (Exception e) {
-                logger.error("[!] Error while ripping: " + e.getMessage(), e);
-                status("Error: " + e.getMessage());
-                return;
-            }
+            ripAlbum(ripTextfield.getText());
         }
     }
 
@@ -326,7 +393,9 @@ public class MainWindow implements Runnable {
                 break;
 
             case RIP_COMPLETE:
-                historyListModel.addElement(ripTextfield.getText());
+                if (!historyListModel.contains(ripTextfield.getText())) {
+                    historyListModel.addElement(ripTextfield.getText());
+                }
                 saveHistory();
                 ripButton.setEnabled(true);
                 ripTextfield.setEnabled(true);

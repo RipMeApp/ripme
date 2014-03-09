@@ -95,7 +95,9 @@ public class ImgurRipper extends AbstractRipper {
         int index = 0;
         logger.info("    Retrieving " + url.toExternalForm());
         this.sendUpdate(STATUS.LOADING_RESOURCE, url.toExternalForm());
-        Document doc = Jsoup.connect(url.toExternalForm()).get();
+        Document doc = Jsoup.connect(url.toExternalForm())
+                            .userAgent(USER_AGENT)
+                            .get();
 
         // Try to use embedded JSON to retrieve images
         Pattern p = Pattern.compile("^.*Imgur\\.Album\\.getInstance\\((.*)\\);.*$", Pattern.DOTALL);

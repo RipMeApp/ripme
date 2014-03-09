@@ -19,8 +19,6 @@ public class MotherlessRipper extends AbstractRipper {
     private static final String DOMAIN = "motherless.com",
                                 HOST   = "motherless";
     private static final Logger logger = Logger.getLogger(MotherlessRipper.class);
-    private static final String USER_AGENT = 
-            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:27.0) Gecko/20100101 Firefox/27.0";
 
     private DownloadThreadPool motherlessThreadPool;
 

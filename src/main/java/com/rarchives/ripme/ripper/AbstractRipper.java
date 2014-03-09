@@ -24,6 +24,9 @@ public abstract class AbstractRipper
 
     private static final Logger logger = Logger.getLogger(AbstractRipper.class);
 
+    protected static final String USER_AGENT = 
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:27.0) Gecko/20100101 Firefox/27.0";
+
     protected URL url;
     protected File workingDir;
     protected DownloadThreadPool threadPool;
@@ -193,7 +196,7 @@ public abstract class AbstractRipper
     private void checkIfComplete() {
         if (!completed && itemsPending.size() == 0) {
             completed = true;
-            logger.info("Rip completed!");
+            logger.info("    Rip completed!");
             observer.update(this,
                     new RipStatusMessage(
                             STATUS.RIP_COMPLETE,
