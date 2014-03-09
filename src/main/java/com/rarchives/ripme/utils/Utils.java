@@ -14,9 +14,12 @@ import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.log4j.Logger;
 
+/**
+ * Common utility functions used in various places throughout the project.
+ */
 public class Utils {
 
-    public static final String RIP_DIRECTORY = "rips";
+    public  static final String RIP_DIRECTORY = "rips";
     private static final File configFile = new File("src/main/resources/rip.properties");
     private static final Logger logger = Logger.getLogger(Utils.class);
 
@@ -29,6 +32,12 @@ public class Utils {
         }
     }
 
+    /**
+     * Get the root rips directory.
+     * @return
+     *      Root directory to save rips to.
+     * @throws IOException
+     */
     public static File getWorkingDirectory() throws IOException {
         String path = new File(".").getCanonicalPath() + File.separator;
         path += RIP_DIRECTORY + File.separator;
@@ -75,10 +84,25 @@ public class Utils {
         return prettySaveAs;
     }
 
+    /**
+     * Removes the current working directory from a given filename
+     * @param file
+     * @return
+     *      'file' without the leading current working directory
+     */
     public static String removeCWD(String file) {
         return removeCWD(new File(file));
     }
 
+    /**
+     * Get a list of all Classes within a package.
+     * Works with file system projects and jar files!
+     * Borrowed from StackOverflow, but I don't have a link :[
+     * @param pkgname
+     *      The name of the package
+     * @return
+     *      List of classes within the package
+     */
     public static ArrayList<Class<?>> getClassesForPackage(String pkgname) {
         ArrayList<Class<?>> classes = new ArrayList<Class<?>>();
         String relPath = pkgname.replace('.', '/');

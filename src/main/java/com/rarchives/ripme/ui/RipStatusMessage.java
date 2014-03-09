@@ -1,5 +1,8 @@
 package com.rarchives.ripme.ui;
 
+/**
+ * Contains information about downloaded files and rips, and their states.
+ */
 public class RipStatusMessage {
 
     public enum STATUS {

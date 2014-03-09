@@ -8,6 +8,9 @@ import org.apache.log4j.Logger;
 
 import com.rarchives.ripme.utils.Utils;
 
+/**
+ * Simple wrapper around a FixedThreadPool.
+ */
 public class DownloadThreadPool {
 
     private static final Logger logger = Logger.getLogger(DownloadThreadPool.class);
@@ -34,9 +37,10 @@ public class DownloadThreadPool {
     public void waitForThreads() {
         threadPool.shutdown();
         try {
-            threadPool.awaitTermination(60, TimeUnit.SECONDS);
+            // XXX What if some rips take longer than 120 seconds to complete?
+            threadPool.awaitTermination(120, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
-            logger.error("Interrupted while waiting for threads to finish: ", e);
+            logger.error("[!] Interrupted while waiting for threads to finish: ", e);
         }
     }
 }

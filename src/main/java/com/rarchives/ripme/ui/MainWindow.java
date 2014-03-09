@@ -43,6 +43,9 @@ import org.apache.log4j.Logger;
 import com.rarchives.ripme.ripper.AbstractRipper;
 import com.rarchives.ripme.utils.Utils;
 
+/**
+ * Everything UI-related starts and ends here.
+ */
 public class MainWindow implements Runnable {
 
     private static final Logger logger = Logger.getLogger(MainWindow.class);

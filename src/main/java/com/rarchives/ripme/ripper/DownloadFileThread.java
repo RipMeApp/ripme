@@ -12,6 +12,10 @@ import org.jsoup.Jsoup;
 import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
 import com.rarchives.ripme.utils.Utils;
 
+/**
+ * Thread for downloading files.
+ * Includes retry logic, observer notifications, and other goodies.
+ */
 public class DownloadFileThread extends Thread {
 
     private static final Logger logger = Logger.getLogger(DownloadFileThread.class);
@@ -31,8 +35,11 @@ public class DownloadFileThread extends Thread {
         this.retries = Utils.getConfigInteger("download.retries", 1);
     }
 
+    /**
+     * Attempts to download the file. Retries as needed.
+     * Notifies observers upon completion/error/warn.
+     */
     public void run() {
-        // Check if file already exists
         if (saveAs.exists()) {
             if (Utils.getConfigBoolean("file.overwrite", false)) {
                 logger.info("[!] Deleting existing file" + prettySaveAs);
