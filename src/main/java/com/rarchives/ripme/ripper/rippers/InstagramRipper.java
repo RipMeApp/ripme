@@ -19,7 +19,7 @@ public class InstagramRipper extends AbstractRipper {
 
     private static final String DOMAIN = "instagram.com",
                                 HOST   = "instagram";
-    private static final Logger logger = Logger.getLogger(ImagearnRipper.class);
+    private static final Logger logger = Logger.getLogger(InstagramRipper.class);
 
     public InstagramRipper(URL url) throws IOException {
         super(url);
