@@ -41,7 +41,7 @@ public class VineboxRipper extends AbstractRipper {
         while (true) {
             page++;
             String urlPaged = this.url.toExternalForm() + "?page=" + page;
-            logger.info("[ ] Retrieving " + urlPaged);
+            logger.info("    Retrieving " + urlPaged);
             try {
                 doc = Jsoup.connect(urlPaged).get();
             } catch (HttpStatusException e) {

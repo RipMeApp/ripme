@@ -41,7 +41,7 @@ public class SeeniveRipper extends AbstractRipper {
     @Override
     public void rip() throws IOException {
         String baseURL = this.url.toExternalForm();
-        logger.info("[ ] Retrieving " + baseURL);
+        logger.info("    Retrieving " + baseURL);
         Document doc = Jsoup.connect(baseURL)
                             .header("Referer", baseURL)
                             .userAgent(USER_AGENT)

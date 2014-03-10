@@ -63,7 +63,7 @@ public class InstagramRipper extends AbstractRipper {
     }
     
     private String getUserID(URL url) throws IOException {
-        logger.info("   Retrieving " + url);
+        logger.info("    Retrieving " + url);
         Document doc = Jsoup.connect(this.url.toExternalForm()).get();
         for (Element element : doc.select("input[id=user_public]")) {
             return element.attr("value");

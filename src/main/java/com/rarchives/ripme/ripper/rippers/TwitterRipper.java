@@ -144,7 +144,7 @@ public class TwitterRipper extends AbstractRipper {
     
     private List<JSONObject> getTweets(String url) throws IOException {
         List<JSONObject> tweets = new ArrayList<JSONObject>();
-        logger.info("   Retrieving " + url);
+        logger.info("    Retrieving " + url);
         Document doc = Jsoup.connect(url)
                             .ignoreContentType(true)
                             .header("Authorization", "Bearer " + accessToken)

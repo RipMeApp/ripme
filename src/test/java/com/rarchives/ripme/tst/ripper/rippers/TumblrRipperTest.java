@@ -15,8 +15,8 @@ public class TumblrRipperTest extends RippersTest {
         }
         List<URL> contentURLs = new ArrayList<URL>();
         contentURLs.add(new URL("http://wrouinr.tumblr.com/archive"));
-        contentURLs.add(new URL("http://topinstagirls.tumblr.com/tagged/berlinskaya"));
-        contentURLs.add(new URL("http://fittingroomgirls.tumblr.com/post/78268776776"));
+        //contentURLs.add(new URL("http://topinstagirls.tumblr.com/tagged/berlinskaya"));
+        //contentURLs.add(new URL("http://fittingroomgirls.tumblr.com/post/78268776776"));
         for (URL url : contentURLs) {
             try {
                 TumblrRipper ripper = new TumblrRipper(url);

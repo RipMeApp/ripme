@@ -58,7 +58,7 @@ public class MotherlessRipper extends AbstractRipper {
     @Override
     public void rip() throws IOException {
         int index = 0;
-        logger.info("[ ] Retrieving " + this.url.toExternalForm());
+        logger.info("    Retrieving " + this.url.toExternalForm());
         Document doc = Jsoup.connect(this.url.toExternalForm())
                             .userAgent(USER_AGENT)
                             .get();

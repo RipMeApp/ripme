@@ -60,7 +60,7 @@ public class ImagefapRipper extends AbstractRipper {
     @Override
     public void rip() throws IOException {
         int index = 0;
-        logger.info("[ ] Retrieving " + this.url.toExternalForm());
+        logger.info("    Retrieving " + this.url.toExternalForm());
         Document doc = Jsoup.connect(this.url.toExternalForm()).get();
         for (Element thumb : doc.select("#gallery img")) {
             if (!thumb.hasAttr("src") || !thumb.hasAttr("width")) {

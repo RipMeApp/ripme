@@ -62,20 +62,20 @@ public class TumblrRipper extends AbstractRipper {
             offset = 0;
             while (true) {
                 String apiURL = getTumblrApiURL(mediaType, offset);
-                logger.info("   Retrieving " + apiURL);
+                logger.info("    Retrieving " + apiURL);
                 Document doc = Jsoup.connect(apiURL)
                                     .ignoreContentType(true)
                                     .header("User-agent", USER_AGENT)
                                     .get();
-                String jsonString = doc.body().html().replaceAll("&quot;", "\"");
-                if (!handleJSON(jsonString)) {
-                    // Returns false if an error occurs and we should stop.
-                    break;
-                }
                 try {
                     Thread.sleep(1000);
                 } catch (InterruptedException e) {
-                    logger.error("[!] Exception while waiting to load next album:", e);
+                    logger.error("[!] Interrupted while waiting to load next album:", e);
+                    break;
+                }
+                String jsonString = doc.body().html().replaceAll("&quot;", "\"");
+                if (!handleJSON(jsonString)) {
+                    // Returns false if an error occurs and we should stop.
                     break;
                 }
                 offset += 20;
@@ -96,7 +96,7 @@ public class TumblrRipper extends AbstractRipper {
 
         posts = json.getJSONObject("response").getJSONArray("posts");
         if (posts.length() == 0) {
-            logger.info("   Zero posts returned. Dropping out.");
+            logger.info("   Zero posts returned.");
             return false;
         }
 

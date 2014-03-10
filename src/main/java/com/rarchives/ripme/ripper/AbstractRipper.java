@@ -151,6 +151,7 @@ public abstract class AbstractRipper
     protected void waitForThreads() {
         completed = false;
         threadPool.waitForThreads();
+        checkIfComplete();
     }
 
     /**
@@ -223,22 +224,24 @@ public abstract class AbstractRipper
             itemsErrored.put(url, message);
             observer.update(this, new RipStatusMessage(STATUS.DOWNLOAD_WARN, url + " : " + message));
             observer.notifyAll();
-            checkIfComplete();
         }
+        checkIfComplete();
     }
 
     /**
      * Notifies observers and updates state if all files have been ripped.
      */
     private void checkIfComplete() {
-        if (!completed && itemsPending.size() == 0) {
-            completed = true;
-            logger.info("    Rip completed!");
-            observer.update(this,
-                    new RipStatusMessage(
-                            STATUS.RIP_COMPLETE,
-                            workingDir));
-            observer.notifyAll();
+        synchronized (observer) {
+            if (!completed && itemsPending.size() == 0) {
+                completed = true;
+                logger.info("   Rip completed!");
+                observer.update(this,
+                        new RipStatusMessage(
+                                STATUS.RIP_COMPLETE,
+                                workingDir));
+                observer.notifyAll();
+            }
         }
     }
 
