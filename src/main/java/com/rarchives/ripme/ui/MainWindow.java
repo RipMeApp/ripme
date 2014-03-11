@@ -152,13 +152,13 @@ public class MainWindow implements Runnable {
         logText = new JTextPaneNoWrap();
         logTextScroll = new JScrollPane(logText);
         logPanel.setVisible(false);
-        logPanel.setPreferredSize(new Dimension(300, 300));
+        logPanel.setPreferredSize(new Dimension(300, 250));
         logPanel.add(logTextScroll, gbc);
 
         historyPanel = new JPanel(new GridBagLayout());
         historyPanel.setBorder(emptyBorder);
         historyPanel.setVisible(false);
-        historyPanel.setPreferredSize(new Dimension(300, 300));
+        historyPanel.setPreferredSize(new Dimension(300, 250));
         historyListModel  = new DefaultListModel();
         historyList       = new JList(historyListModel);
         historyList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
@@ -167,8 +167,11 @@ public class MainWindow implements Runnable {
         historyButtonClear  = new JButton("Clear");
         historyButtonRerip  = new JButton("Re-rip All");
         gbc.gridx = 0;
-        historyPanel.add(historyListScroll, gbc);
+        JPanel historyListPanel = new JPanel(new GridBagLayout());
+        historyListPanel.add(historyListScroll, gbc);
+        historyPanel.add(historyListPanel, gbc);
         historyButtonPanel = new JPanel(new GridBagLayout());
+        historyButtonPanel.setPreferredSize(new Dimension(300, 10));
         historyButtonPanel.setBorder(emptyBorder);
         gbc.gridx = 0; historyButtonPanel.add(historyButtonRemove, gbc);
         gbc.gridx = 1; historyButtonPanel.add(historyButtonClear, gbc);
@@ -179,7 +182,7 @@ public class MainWindow implements Runnable {
         configurationPanel = new JPanel(new GridBagLayout());
         configurationPanel.setBorder(emptyBorder);
         configurationPanel.setVisible(false);
-        configurationPanel.setPreferredSize(new Dimension(300, 300));
+        configurationPanel.setPreferredSize(new Dimension(300, 250));
         // TODO Configuration components
 
         gbc.gridy = 0; pane.add(ripPanel, gbc);
@@ -259,7 +262,6 @@ public class MainWindow implements Runnable {
                             } catch (InterruptedException e) {
                                 logger.error("[!] Exception while waiting for ripper to finish:", e);
                             }
-                            System.err.println("Ripper thread finished");
                         }
                         historyList.setEnabled(true);
                         historyButtonPanel.setEnabled(true);
@@ -343,6 +345,7 @@ public class MainWindow implements Runnable {
             url = new URL(urlString);
         } catch (MalformedURLException e) {
             logger.error("[!] Could not generate URL for '" + urlString + "'", e);
+            status("Error: " + e.getMessage());
             return null;
         }
         ripButton.setEnabled(false);
