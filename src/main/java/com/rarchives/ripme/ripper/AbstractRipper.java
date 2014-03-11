@@ -99,7 +99,7 @@ public abstract class AbstractRipper
                 || itemsCompleted.containsKey(url)
                 || itemsErrored.containsKey(url)) {
             // Item is already downloaded/downloading, skip it.
-            logger.info("Skipping " + url + " -- already attempted: " + Utils.removeCWD(saveAs));
+            logger.info("   Skipping " + url + " -- already attempted: " + Utils.removeCWD(saveAs));
             return;
         }
         itemsPending.put(url, saveAs);
@@ -232,6 +232,9 @@ public abstract class AbstractRipper
      * Notifies observers and updates state if all files have been ripped.
      */
     private void checkIfComplete() {
+        if (observer == null) {
+            return;
+        }
         synchronized (observer) {
             if (!completed && itemsPending.size() == 0) {
                 completed = true;
@@ -359,6 +362,7 @@ public abstract class AbstractRipper
             rip();
         } catch (IOException e) {
             logger.error("Got exception while running ripper:", e);
+            waitForThreads();
         }
     }
 

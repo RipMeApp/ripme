@@ -3,6 +3,8 @@ package com.rarchives.ripme.ripper.rippers;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -93,8 +95,18 @@ public class ImgurRipper extends AbstractRipper {
 
     private void ripAlbum(URL url, String subdirectory) throws IOException {
         int index = 0;
-        logger.info("    Retrieving " + url.toExternalForm());
         this.sendUpdate(STATUS.LOADING_RESOURCE, url.toExternalForm());
+        index = 0;
+        for (URL singleURL : getURLsFromAlbum(url)) {
+            index += 1;
+            processURL(singleURL, String.format("%03d_", index), subdirectory);
+        }
+    }
+    
+    public static List<URL> getURLsFromAlbum(URL url) throws IOException {
+        List<URL> result = new ArrayList<URL>();
+
+        logger.info("    Retrieving " + url.toExternalForm());
         Document doc = Jsoup.connect(url.toExternalForm())
                             .userAgent(USER_AGENT)
                             .get();
@@ -114,10 +126,9 @@ public class ImgurRipper extends AbstractRipper {
                             "http://i.imgur.com/"
                                     + image.get("hash")
                                     + image.get("ext"));
-                    index += 1;
-                    processURL(imageURL, String.format("%03d_", index), subdirectory);
+                    result.add(imageURL);
                 }
-                return;
+                return result;
             } catch (JSONException e) {
                 logger.debug("Error while parsing JSON at " + url + ", continuing", e);
             }
@@ -136,10 +147,9 @@ public class ImgurRipper extends AbstractRipper {
                                     + "/"
                                     + image.get("hash")
                                     + image.get("ext"));
-                    index += 1;
-                    processURL(imageURL, String.format("%03d_", index), subdirectory);
+                    result.add(imageURL);
                 }
-                return;
+                return result;
             } catch (JSONException e) {
                 logger.debug("Error while parsing JSON at " + url + ", continuing", e);
             }
@@ -164,9 +174,9 @@ public class ImgurRipper extends AbstractRipper {
                 logger.error("[!] Unable to find image in div: " + thumb.toString());
                 continue;
             }
-            index += 1;
-            processURL(new URL(image), String.format("%03d_", index), subdirectory);
+            result.add(new URL(image));
         }
+        return result;
     }
     
     /**
