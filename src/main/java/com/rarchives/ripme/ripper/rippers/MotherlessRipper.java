@@ -47,27 +47,36 @@ public class MotherlessRipper extends AbstractRipper {
 
     @Override
     public String getGID(URL url) throws MalformedURLException {
-        Pattern p = Pattern.compile("^https?://(www\\.)?motherless\\.com/G([A-Z0-9]{6,8}).*$");
+        Pattern p = Pattern.compile("^https?://(www\\.)?motherless\\.com/G([VI][A-F0-9]{6,8}).*$");
         Matcher m = p.matcher(url.toExternalForm());
         if (!m.matches()) {
-            throw new MalformedURLException("Expected URL format: http://motherless.com/GXXXXXXXX");
+            throw new MalformedURLException("Expected URL format: http://motherless.com/GIXXXXXXX, got: " + url);
         }
         return m.group(m.groupCount());
     }
 
     @Override
     public void rip() throws IOException {
-        int index = 0;
-        logger.info("    Retrieving " + this.url.toExternalForm());
-        Document doc = Jsoup.connect(this.url.toExternalForm())
-                            .userAgent(USER_AGENT)
-                            .get();
-        for (Element thumb : doc.select("div.thumb a.img-container")) {
-            URL url = new URL("http://" + DOMAIN + thumb.attr("href"));
-            index += 1;
-            // Create thread for finding image at "url" page
-            MotherlessImageThread mit = new MotherlessImageThread(url, index);
-            motherlessThreadPool.addThread(mit);
+        int index = 0, page = 1;
+        String nextURL = this.url.toExternalForm();
+        while (nextURL != null) {
+            logger.info("    Retrieving " + nextURL);
+            Document doc = Jsoup.connect(nextURL)
+                    .userAgent(USER_AGENT)
+                    .get();
+            for (Element thumb : doc.select("div.thumb a.img-container")) {
+                URL url = new URL("http://" + DOMAIN + thumb.attr("href"));
+                index += 1;
+                // Create thread for finding image at "url" page
+                MotherlessImageThread mit = new MotherlessImageThread(url, index);
+                motherlessThreadPool.addThread(mit);
+            }
+            // Next page
+            nextURL = null;
+            page++;
+            if (doc.html().contains("?page=" + page)) {
+                nextURL = this.url.toExternalForm() + "?page=" + page;
+            }
         }
         motherlessThreadPool.waitForThreads();
         waitForThreads();
