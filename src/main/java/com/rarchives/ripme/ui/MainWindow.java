@@ -162,7 +162,9 @@ public class MainWindow implements Runnable {
         historyListModel  = new DefaultListModel();
         historyList       = new JList(historyListModel);
         historyList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-        historyListScroll = new JScrollPane(historyList);
+        historyListScroll = new JScrollPane(historyList,
+                JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+                JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         historyButtonRemove = new JButton("Remove");
         historyButtonClear  = new JButton("Clear");
         historyButtonRerip  = new JButton("Re-rip All");
