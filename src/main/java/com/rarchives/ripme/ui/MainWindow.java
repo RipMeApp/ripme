@@ -46,7 +46,7 @@ import com.rarchives.ripme.utils.Utils;
 /**
  * Everything UI-related starts and ends here.
  */
-public class MainWindow implements Runnable {
+public class MainWindow implements Runnable, RipStatusHandler {
 
     private static final Logger logger = Logger.getLogger(MainWindow.class);
     
@@ -101,7 +101,7 @@ public class MainWindow implements Runnable {
         mainFrame.setVisible(true);
     }
 
-    public static void status(String text) {
+    public synchronized static void status(String text) {
         statusLabel.setText(text);
         mainFrame.pack();
     }
@@ -276,24 +276,14 @@ public class MainWindow implements Runnable {
     }
     
     private void appendLog(final String text, final Color color) {
-            try {
-                SwingUtilities.invokeAndWait(new Runnable() {
-                    @Override
-                    public void run() {
-                        SimpleAttributeSet sas = new SimpleAttributeSet();
-                        StyleConstants.setForeground(sas, color);
-                        StyledDocument sd = logText.getStyledDocument();
-                        try {
-                            sd.insertString(sd.getLength(), text + "\n", sas);
-                        } catch (BadLocationException e) { }
-                        logText.setCaretPosition(logText.getText().length());
-                    }
-                });
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            } catch (InvocationTargetException e) {
-                e.printStackTrace();
-            }
+        SimpleAttributeSet sas = new SimpleAttributeSet();
+        StyleConstants.setForeground(sas, color);
+        StyledDocument sd = logText.getStyledDocument();
+        try {
+            sd.insertString(sd.getLength(), text + "\n", sas);
+        } catch (BadLocationException e) { }
+
+        logText.setCaretPosition(sd.getLength());
     }
     
     private void loadHistory() {
@@ -359,7 +349,7 @@ public class MainWindow implements Runnable {
         try {
             AbstractRipper ripper = AbstractRipper.getRipper(url);
             ripTextfield.setText(ripper.getURL().toExternalForm());
-            ripper.setObserver(new RipStatusHandler());
+            ripper.setObserver((RipStatusHandler) this);
             Thread t = new Thread(ripper);
             t.start();
             return t;
@@ -375,64 +365,83 @@ public class MainWindow implements Runnable {
             ripAlbum(ripTextfield.getText());
         }
     }
+    
+    private class StatusEvent implements Runnable {
+        private final AbstractRipper ripper;
+        private final RipStatusMessage msg;
 
-    class RipStatusHandler implements Observer {
-        public void update(Observable observable, Object object) {
-            RipStatusMessage msg = (RipStatusMessage) object;
-
-            int completedPercent = ((AbstractRipper) observable).getCompletionPercentage();
-            statusProgress.setValue(completedPercent);
-            status( ((AbstractRipper)observable).getStatusText() );
-
-            switch(msg.getStatus()) {
-            case LOADING_RESOURCE:
-            case DOWNLOAD_STARTED:
-                appendLog( "Downloading: " + (String) msg.getObject(), Color.BLACK);
-                break;
-            case DOWNLOAD_COMPLETE:
-                appendLog( "Completed: " + (String) msg.getObject(), Color.GREEN);
-                break;
-            case DOWNLOAD_ERRORED:
-                appendLog( "Error: " + (String) msg.getObject(), Color.RED);
-                break;
-             
-            case DOWNLOAD_WARN:
-                appendLog( "Warn: " + (String) msg.getObject(), Color.ORANGE);
-                break;
-
-            case RIP_COMPLETE:
-                if (!historyListModel.contains(ripTextfield.getText())) {
-                    historyListModel.addElement(ripTextfield.getText());
-                }
-                saveHistory();
-                ripButton.setEnabled(true);
-                ripTextfield.setEnabled(true);
-                statusProgress.setValue(100);
-                statusLabel.setVisible(false);
-                openButton.setVisible(true);
-                File f = (File) msg.getObject();
-                String prettyFile = Utils.removeCWD(f);
-                openButton.setText("Open " + prettyFile);
-                appendLog( "Rip complete, saved to " + prettyFile, Color.GREEN);
-                openButton.setActionCommand(f.toString());
-                openButton.addActionListener(new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent event) {
-                        try {
-                            Desktop.getDesktop().open(new File(event.getActionCommand()));
-                        } catch (Exception e) {
-                            logger.error(e);
-                        }
-                    }
-                });
-                mainFrame.pack();
-            }
+        public StatusEvent(AbstractRipper ripper, RipStatusMessage msg) {
+            this.ripper = ripper;
+            this.msg = msg;
         }
+
+        public void run() {
+            handleEvent(this);
+        }
+    }
+    
+    private void handleEvent(StatusEvent evt) {
+        RipStatusMessage msg = evt.msg;
+
+        int completedPercent = evt.ripper.getCompletionPercentage();
+        statusProgress.setValue(completedPercent);
+        status( evt.ripper.getStatusText() );
+
+        switch(msg.getStatus()) {
+        case LOADING_RESOURCE:
+        case DOWNLOAD_STARTED:
+            appendLog( "Downloading: " + (String) msg.getObject(), Color.BLACK);
+            break;
+        case DOWNLOAD_COMPLETE:
+            appendLog( "Completed: " + (String) msg.getObject(), Color.GREEN);
+            break;
+        case DOWNLOAD_ERRORED:
+            appendLog( "Error: " + (String) msg.getObject(), Color.RED);
+            break;
+
+        case DOWNLOAD_WARN:
+            appendLog( "Warn: " + (String) msg.getObject(), Color.ORANGE);
+            break;
+
+        case RIP_COMPLETE:
+            if (!historyListModel.contains(ripTextfield.getText())) {
+                historyListModel.addElement(ripTextfield.getText());
+            }
+            saveHistory();
+            ripButton.setEnabled(true);
+            ripTextfield.setEnabled(true);
+            statusProgress.setValue(100);
+            statusLabel.setVisible(false);
+            openButton.setVisible(true);
+            File f = (File) msg.getObject();
+            String prettyFile = Utils.removeCWD(f);
+            openButton.setText("Open " + prettyFile);
+            appendLog( "Rip complete, saved to " + prettyFile, Color.GREEN);
+            openButton.setActionCommand(f.toString());
+            openButton.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent event) {
+                    try {
+                        Desktop.getDesktop().open(new File(event.getActionCommand()));
+                    } catch (Exception e) {
+                        logger.error(e);
+                    }
+                }
+            });
+            mainFrame.pack();
+        }
+    }
+
+    public void update(AbstractRipper ripper, RipStatusMessage message) {
+        StatusEvent event = new StatusEvent(ripper, message);
+        SwingUtilities.invokeLater(event);
     }
     
     /** Simple TextPane that allows horizontal scrolling. */
     class JTextPaneNoWrap extends JTextPane {
         private static final long serialVersionUID = 1L;
+        
+        @Override
         public boolean getScrollableTracksViewportWidth() {
             return false;
         }

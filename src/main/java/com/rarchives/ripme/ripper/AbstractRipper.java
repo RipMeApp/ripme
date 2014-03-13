@@ -1,5 +1,7 @@
 package com.rarchives.ripme.ripper;
 
+import com.rarchives.ripme.ui.MainWindow;
+import com.rarchives.ripme.ui.RipStatusHandler;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
@@ -17,6 +19,7 @@ import org.apache.log4j.Logger;
 import com.rarchives.ripme.ui.RipStatusMessage;
 import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
 import com.rarchives.ripme.utils.Utils;
+import java.util.Collections;
 
 public abstract class AbstractRipper 
                 extends Observable
@@ -30,11 +33,11 @@ public abstract class AbstractRipper
     protected URL url;
     protected File workingDir;
     protected DownloadThreadPool threadPool;
-    protected Observer observer = null;
+    protected RipStatusHandler observer = null;
 
-    protected Map<URL, File> itemsPending = new HashMap<URL, File>();
-    protected Map<URL, File> itemsCompleted = new HashMap<URL, File>();
-    protected Map<URL, String> itemsErrored = new HashMap<URL, String>();
+    protected Map<URL, File> itemsPending = Collections.synchronizedMap(new HashMap<URL, File>());
+    protected Map<URL, File> itemsCompleted = Collections.synchronizedMap(new HashMap<URL, File>());
+    protected Map<URL, String> itemsErrored = Collections.synchronizedMap(new HashMap<URL, String>());
     protected boolean completed = true;
 
     public abstract void rip() throws IOException;
@@ -59,7 +62,7 @@ public abstract class AbstractRipper
         this.threadPool = new DownloadThreadPool();
     }
 
-    public void setObserver(Observer obs) {
+    public void setObserver(RipStatusHandler obs) {
         this.observer = obs;
     }
 
@@ -162,7 +165,6 @@ public abstract class AbstractRipper
     public void retrievingSource(URL url) {
         RipStatusMessage msg = new RipStatusMessage(STATUS.LOADING_RESOURCE, url);
         observer.update(this,  msg);
-        observer.notifyAll();
     }
 
     /**
@@ -179,13 +181,11 @@ public abstract class AbstractRipper
         try {
             String path = Utils.removeCWD(saveAs);
             RipStatusMessage msg = new RipStatusMessage(STATUS.DOWNLOAD_COMPLETE, path);
-            synchronized(observer) {
-                itemsPending.remove(url);
-                itemsCompleted.put(url, saveAs);
-                observer.update(this, msg);
-                observer.notifyAll();
-                checkIfComplete();
-            }
+            itemsPending.remove(url);
+            itemsCompleted.put(url, saveAs);
+            observer.update(this, msg);
+
+            checkIfComplete();
         } catch (Exception e) {
             logger.error("Exception while updating observer: ", e);
         }
@@ -200,13 +200,11 @@ public abstract class AbstractRipper
         if (observer == null) {
             return;
         }
-        synchronized(observer) {
-            itemsPending.remove(url);
-            itemsErrored.put(url, reason);
-            observer.update(this, new RipStatusMessage(STATUS.DOWNLOAD_ERRORED, url + " : " + reason));
-            observer.notifyAll();
-            checkIfComplete();
-        }
+        itemsPending.remove(url);
+        itemsErrored.put(url, reason);
+        observer.update(this, new RipStatusMessage(STATUS.DOWNLOAD_ERRORED, url + " : " + reason));
+
+        checkIfComplete();
     }
 
     /**
@@ -219,12 +217,12 @@ public abstract class AbstractRipper
         if (observer == null) {
             return;
         }
-        synchronized(observer) {
-            itemsPending.remove(url);
-            itemsErrored.put(url, message);
-            observer.update(this, new RipStatusMessage(STATUS.DOWNLOAD_WARN, url + " : " + message));
-            observer.notifyAll();
-        }
+        
+        itemsPending.remove(url);
+        itemsErrored.put(url, message);
+        observer.update(this, new RipStatusMessage(STATUS.DOWNLOAD_WARN, url + " : " + message));
+            
+        
         checkIfComplete();
     }
 
@@ -235,16 +233,13 @@ public abstract class AbstractRipper
         if (observer == null) {
             return;
         }
-        synchronized (observer) {
-            if (!completed && itemsPending.size() == 0) {
-                completed = true;
-                logger.info("   Rip completed!");
-                observer.update(this,
-                        new RipStatusMessage(
-                                STATUS.RIP_COMPLETE,
-                                workingDir));
-                observer.notifyAll();
-            }
+        
+        if (!completed && itemsPending.isEmpty()) {
+            completed = true;
+            logger.info("   Rip completed!");
+            
+            RipStatusMessage msg = new RipStatusMessage(STATUS.RIP_COMPLETE, workingDir);
+            observer.update(this, msg);
         }
     }
 
@@ -325,10 +320,7 @@ public abstract class AbstractRipper
         if (observer == null) {
             return;
         }
-        synchronized (observer) {
-            observer.update(this, new RipStatusMessage(status, message));
-            observer.notifyAll();
-        }
+        observer.update(this, new RipStatusMessage(status, message));
     }
     
     /**
