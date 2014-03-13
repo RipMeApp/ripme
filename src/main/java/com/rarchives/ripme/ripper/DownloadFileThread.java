@@ -26,6 +26,9 @@ public class DownloadFileThread extends Thread {
     private AbstractRipper observer;
     private int retries;
 
+    private final int TIMEOUT;
+    private final int MAX_BODY_SIZE;
+
     public DownloadFileThread(URL url, File saveAs, AbstractRipper observer) {
         super();
         this.url = url;
@@ -33,6 +36,8 @@ public class DownloadFileThread extends Thread {
         this.prettySaveAs = Utils.removeCWD(saveAs);
         this.observer = observer;
         this.retries = Utils.getConfigInteger("download.retries", 1);
+        this.TIMEOUT = Utils.getConfigInteger("download.timeout", 60000);
+        this.MAX_BODY_SIZE = Utils.getConfigInteger("download.max_bytes", 1024 * 1024 * 100);
     }
 
     /**
@@ -60,13 +65,16 @@ public class DownloadFileThread extends Thread {
                 Response response;
                 response = Jsoup.connect(url.toExternalForm())
                         .ignoreContentType(true)
+                        .userAgent(AbstractRipper.USER_AGENT)
+                        .timeout(TIMEOUT)
+                        .maxBodySize(MAX_BODY_SIZE)
                         .execute();
                 FileOutputStream out = (new FileOutputStream(saveAs));
                 out.write(response.bodyAsBytes());
                 out.close();
                 break; // Download successful: break out of infinite loop
             } catch (IOException e) {
-                logger.error("[!] Exception while downloading file: " + url + " - " + e.getMessage());
+                logger.error("[!] Exception while downloading file: " + url + " - " + e.getMessage(), e);
             }
             if (tries > this.retries) {
                 logger.error("[!] Exceeded maximum retries (" + this.retries + ") for URL " + url);
