@@ -8,6 +8,18 @@ Written in Java for cross-platform support.
 releases
 ========
 
-No stable releases at this time.
+**Early alpha release of [ripme.jar](http://rarchives.com/ripme.jar)**
 
-A very crude and unstable [pre-alpha version](http://rip.rarchives.com/ripme.jar) is out for people that need to rip imgur albums only.
+Supported sites:
+* imgur
+* twitter
+* tumblr
+* instagram
+* motherless
+* imagefap
+* imagearn
+* seenive
+* vinebox
+* reddit
+* gonewild
+* 8muses
