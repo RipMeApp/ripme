@@ -19,12 +19,14 @@ public class RipUtils {
         List<URL> result = new ArrayList<URL>();
 
         // Imgur album
-        if (url.getHost().equals("imgur.com") && url.toExternalForm().contains("imgur.com/a/")) {
+        if ((url.getHost().equals("m.imgur.com") || url.getHost().equals("imgur.com")) 
+                && url.toExternalForm().contains("imgur.com/a/")) {
             try {
                 return ImgurRipper.getURLsFromAlbum(url);
             } catch (IOException e) {
                 logger.error("[!] Exception while loading album " + url, e);
             }
+           
         }
 
         // Direct link to image
@@ -38,6 +40,17 @@ public class RipUtils {
             } catch (MalformedURLException e) {
                 logger.error("[!] Not a valid URL: '" + url + "'", e);
             }
+        }
+        
+        if(url.getHost().equals("imgur.com") || 
+                url.getHost().equals("m.imgur.com")){
+            try {
+                result.add(new URL(url.toExternalForm() + ".png"));
+                return result;
+            } catch (MalformedURLException ex) {
+                logger.error("[!] Exception while loading album " + url, ex);
+            }
+            
         }
         
         logger.error("[!] Unable to rip URL: " + url);
