@@ -101,7 +101,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
         mainFrame.setVisible(true);
     }
 
-    public synchronized static void status(String text) {
+    private void status(String text) {
         statusLabel.setText(text);
         mainFrame.pack();
     }
