@@ -83,6 +83,28 @@ public class Utils {
         }
         return prettySaveAs;
     }
+    
+    public static String stripURLParameter(String url, String parameter) {
+        int paramIndex = url.indexOf("?" + parameter);
+        boolean wasFirstParam = true;
+        if(paramIndex < 0) {
+            wasFirstParam = false;
+            paramIndex = url.indexOf("&" + parameter);
+        }
+        
+        if(paramIndex > 0) {
+            int nextParam = url.indexOf("&", paramIndex+1);
+            if(nextParam != -1) {
+                String c = "&";
+                if(wasFirstParam) c = "?";
+                url = url.substring(0, paramIndex) + c + url.substring(nextParam+1, url.length());
+            } else {
+                url = url.substring(0, paramIndex);
+            }
+        }
+        
+        return url;
+    }
 
     /**
      * Removes the current working directory from a given filename
