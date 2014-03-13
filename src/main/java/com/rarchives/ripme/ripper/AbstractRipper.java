@@ -99,7 +99,7 @@ public abstract class AbstractRipper
                 || itemsCompleted.containsKey(url)
                 || itemsErrored.containsKey(url)) {
             // Item is already downloaded/downloading, skip it.
-            logger.info("   Skipping " + url + " -- already attempted: " + Utils.removeCWD(saveAs));
+            logger.info("[!] Skipping " + url + " -- already attempted: " + Utils.removeCWD(saveAs));
             return;
         }
         itemsPending.put(url, saveAs);
