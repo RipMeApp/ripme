@@ -23,3 +23,12 @@ Supported sites:
 * reddit
 * gonewild
 * 8muses
+
+building
+========
+
+To build the .jar file, run:
+
+```bash
+mvn clean compile assembly:single
+```
