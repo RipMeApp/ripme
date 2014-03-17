@@ -16,6 +16,8 @@ import org.jsoup.nodes.Document;
 
 import com.rarchives.ripme.ripper.AbstractRipper;
 import com.rarchives.ripme.utils.RipUtils;
+import com.rarchives.ripme.utils.Utils;
+import java.net.SocketTimeoutException;
 
 public class RedditRipper extends AbstractRipper {
 
@@ -26,7 +28,7 @@ public class RedditRipper extends AbstractRipper {
     private static final String HOST   = "reddit";
     private static final String DOMAIN = "reddit.com";
 
-    private static final Logger logger = Logger.getLogger(GonewildRipper.class);
+    private static final Logger logger = Logger.getLogger(RedditRipper.class);
     private static final int SLEEP_TIME = 2000;
 
     //private static final String USER_AGENT = "ripme by /u/4_pr0n github.com/4pr0n/ripme";
@@ -67,6 +69,8 @@ public class RedditRipper extends AbstractRipper {
         waitForThreads();
     }
     
+    
+    
     private URL getAndParseAndReturnNext(URL url) throws IOException {
         JSONArray jsonArray = getJsonArrayFromURL(url), children;
         JSONObject json, data;
@@ -85,7 +89,7 @@ public class RedditRipper extends AbstractRipper {
                 parseJsonChild(children.getJSONObject(j));
             }
             if (data.has("after") && !data.isNull("after")) {
-                String nextURLString = url.toExternalForm();
+                String nextURLString = Utils.stripURLParameter(url.toExternalForm(), "after");
                 if (nextURLString.contains("?")) {
                     nextURLString = nextURLString.concat("&after=" + data.getString("after"));
                 }
@@ -111,11 +115,21 @@ public class RedditRipper extends AbstractRipper {
         }
         lastRequestTime = System.currentTimeMillis();
 
+        int attempts = 0;
+        Document doc = null;
         logger.info("    Retrieving " + url);
-        Document doc= Jsoup.connect(url.toExternalForm())
-                                 .ignoreContentType(true)
-                                 .userAgent(USER_AGENT)
-                                 .get();
+        while(doc == null && attempts++ < 3) {
+            try {
+                doc= Jsoup.connect(url.toExternalForm())
+                                        .ignoreContentType(true)
+                                        .userAgent(USER_AGENT)
+                                        .get();
+            } catch(SocketTimeoutException ex) {
+                if(attempts >= 3) throw ex;
+                logger.warn(String.format("[!] Connection timed out (attempt %d)", attempts));
+            }
+        }
+        
         String jsonString = doc.body().html().replaceAll("&quot;", "\"");
 
         Object jsonObj = new JSONTokener(jsonString).nextValue();

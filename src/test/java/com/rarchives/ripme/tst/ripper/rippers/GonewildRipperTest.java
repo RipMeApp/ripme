@@ -14,7 +14,7 @@ public class GonewildRipperTest extends RippersTest {
             return;
         }
         List<URL> contentURLs = new ArrayList<URL>();
-        contentURLs.add(new URL("http://reddit.com/u/amle69"));
+        contentURLs.add(new URL("http://gonewild.com/u/amle69"));
         for (URL url : contentURLs) {
             try {
                 GonewildRipper ripper = new GonewildRipper(url);
