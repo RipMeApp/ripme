@@ -20,7 +20,7 @@ import org.apache.log4j.Logger;
 public class Utils {
 
     public  static final String RIP_DIRECTORY = "rips";
-    private static final File configFile = new File("src/main/resources/rip.properties");
+    private static final String configFile = "rip.properties";
     private static final Logger logger = Logger.getLogger(Utils.class);
 
     private static Configuration config;

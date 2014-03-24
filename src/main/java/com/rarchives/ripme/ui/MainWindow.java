@@ -356,6 +356,10 @@ public class MainWindow implements Runnable, RipStatusHandler {
         } catch (Exception e) {
             logger.error("[!] Error while ripping: " + e.getMessage(), e);
             status("Error: " + e.getMessage());
+            ripButton.setEnabled(true);
+            ripTextfield.setEnabled(true);
+            statusProgress.setValue(0);
+            mainFrame.pack();
             return null;
         }
     }

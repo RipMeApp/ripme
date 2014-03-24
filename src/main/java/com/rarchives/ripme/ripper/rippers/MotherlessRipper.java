@@ -47,8 +47,9 @@ public class MotherlessRipper extends AbstractRipper {
 
     @Override
     public String getGID(URL url) throws MalformedURLException {
-        Pattern p = Pattern.compile("^https?://(www\\.)?motherless\\.com/G([VI][A-F0-9]{6,8}).*$");
+        Pattern p = Pattern.compile("^https?://(www\\.)?motherless\\.com/G([MVI][A-F0-9]{6,8}).*$");
         Matcher m = p.matcher(url.toExternalForm());
+        System.err.println(url.toExternalForm());
         if (!m.matches()) {
             throw new MalformedURLException("Expected URL format: http://motherless.com/GIXXXXXXX, got: " + url);
         }
