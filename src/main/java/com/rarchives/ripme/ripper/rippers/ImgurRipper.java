@@ -158,7 +158,14 @@ public class ImgurRipper extends AbstractRipper {
         // TODO If album is empty, use this to check for cached images:
         // http://i.rarchives.com/search.cgi?cache=http://imgur.com/a/albumID
         // At the least, get the thumbnails.
-        logger.info("[!] Falling back to elemental retrieval method");
+
+        logger.info("[!] Falling back to /noscript method");
+
+        String newUrl = url.toExternalForm() + "/noscript";
+        logger.info("    Retrieving " + newUrl);
+        doc = Jsoup.connect(newUrl)
+                            .userAgent(USER_AGENT)
+                            .get();
 
         // Fall back to parsing HTML elements
         // NOTE: This does not always get the highest-resolution images!
