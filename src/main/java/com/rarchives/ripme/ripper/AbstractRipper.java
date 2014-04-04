@@ -1,25 +1,23 @@
 package com.rarchives.ripme.ripper;
 
-import com.rarchives.ripme.ui.MainWindow;
-import com.rarchives.ripme.ui.RipStatusHandler;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Observable;
-import java.util.Observer;
 
 import org.apache.log4j.Logger;
 
+import com.rarchives.ripme.ui.RipStatusHandler;
 import com.rarchives.ripme.ui.RipStatusMessage;
 import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
 import com.rarchives.ripme.utils.Utils;
-import java.util.Collections;
 
 public abstract class AbstractRipper 
                 extends Observable

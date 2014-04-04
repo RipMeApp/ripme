@@ -17,6 +17,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
 import com.rarchives.ripme.ripper.AbstractRipper;
+import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
 import com.rarchives.ripme.utils.Utils;
 
 public class TwitterRipper extends AbstractRipper {
@@ -25,7 +26,7 @@ public class TwitterRipper extends AbstractRipper {
                                 HOST   = "twitter";
     private static final Logger logger = Logger.getLogger(TwitterRipper.class);
 
-    private static final int MAX_REQUESTS = 2;
+    private static final int MAX_REQUESTS = Utils.getConfigInteger("twitter.max_requests", 10);
     private static final int WAIT_TIME = 2000;
 
     // Base 64 of consumer key : consumer secret
@@ -116,30 +117,30 @@ public class TwitterRipper extends AbstractRipper {
         }
     }
     
-    private String getApiURL(String maxID) {
-        String req = "";
+    private String getApiURL(Long maxID) {
+        StringBuilder req = new StringBuilder();
         switch (albumType) {
         case ACCOUNT:
-            req = "https://api.twitter.com/1.1/statuses/user_timeline.json"
-                + "?screen_name=" + this.accountName
-                + "&include_entities=true"
-                + "&exclude_replies=true"
-                + "&trim_user=true"
-                + "&include_rts=false"
-                + "&count=" + 200;
+            req.append("https://api.twitter.com/1.1/statuses/user_timeline.json")
+               .append("?screen_name=" + this.accountName)
+               .append("&include_entities=true")
+               .append("&exclude_replies=true")
+               .append("&trim_user=true")
+               .append("&include_rts=false")
+               .append("&count=" + 200);
             break;
         case SEARCH:
-            req = "https://api.twitter.com/1.1/search/tweets.json"
-                + "?q=" + this.searchText
-                + "&include_entities=true"
-                + "&result_type=recent"
-                + "&count=100";
+            req.append("https://api.twitter.com/1.1/search/tweets.json")
+               .append("?q=" + this.searchText)
+               .append("&include_entities=true")
+               .append("&result_type=recent")
+               .append("&count=100");
             break;
         }
-        if (maxID != null) {
-            req += "&max_id=" + maxID;
+        if (maxID > 0) {
+            req.append("&max_id=" + Long.toString(maxID));
         }
-        return req;
+        return req.toString();
     }
     
     private List<JSONObject> getTweets(String url) throws IOException {
@@ -223,21 +224,29 @@ public class TwitterRipper extends AbstractRipper {
             break;
         }
 
-        String maxID = null;
+        Long lastMaxID = 0L;
         for (int i = 0; i < MAX_REQUESTS; i++) {
-            List<JSONObject> tweets = getTweets(getApiURL(maxID));
+            List<JSONObject> tweets = getTweets(getApiURL(lastMaxID - 1));
             if (tweets.size() == 0) {
                 logger.info("   No more tweets found.");
                 break;
             }
+            logger.debug("Twitter response #" + (i + 1) + " Tweets:\n" + tweets);
+            if (tweets.size() == 1 && 
+                    lastMaxID.equals(tweets.get(0).getString("id_str"))
+                ) {
+                break;
+            }
+            
             for (JSONObject tweet : tweets) {
-                maxID = tweet.getString("id_str");
+                lastMaxID = tweet.getLong("id");
                 parseTweet(tweet);
             }
 
             try {
                 Thread.sleep(WAIT_TIME);
-            } catch (InterruptedException e) {
+            }
+            catch (InterruptedException e) {
                 logger.error("[!] Interrupted while waiting to load more results", e);
                 break;
             }
