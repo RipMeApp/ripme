@@ -332,6 +332,12 @@ public class MainWindow implements Runnable, RipStatusHandler {
     }
 
     private Thread ripAlbum(String urlString) {
+        if (urlString.toLowerCase().startsWith("gonewild:")) {
+            urlString = "http://gonewild.com/user/" + urlString.substring(urlString.indexOf(':') + 1);
+        }
+        if (!urlString.startsWith("http")) {
+            urlString = "http://" + urlString;
+        }
         URL url = null;
         try {
             url = new URL(urlString);

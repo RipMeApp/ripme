@@ -34,7 +34,7 @@ public class GonewildRipper extends AbstractRipper {
     }
 
     private Matcher getUsernameMatcher(URL url) {
-        Pattern p = Pattern.compile("^https?://[a-z]{0,3}\\.?gonewild\\.com/(u|user)/([a-zA-Z0-9\\-]{3,})/?.*$");
+        Pattern p = Pattern.compile("^.*gonewild(\\.com?/|:)(user/)?([a-zA-Z0-9\\-_]{3,})[/?]?.*$");
         return p.matcher(url.toExternalForm());
     }
 
