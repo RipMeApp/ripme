@@ -14,11 +14,8 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Observable;
-import java.util.Observer;
 
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
@@ -102,6 +99,15 @@ public class MainWindow implements Runnable, RipStatusHandler {
     }
 
     private void status(String text) {
+        statusWithColor(text, Color.BLACK);
+    }
+    
+    private void error(String text) {
+        statusWithColor(text, Color.RED);
+    }
+    
+    private void statusWithColor(String text, Color color) {
+        statusLabel.setForeground(color);
         statusLabel.setText(text);
         mainFrame.pack();
     }
@@ -171,7 +177,9 @@ public class MainWindow implements Runnable, RipStatusHandler {
         gbc.gridx = 0;
         JPanel historyListPanel = new JPanel(new GridBagLayout());
         historyListPanel.add(historyListScroll, gbc);
+        gbc.ipady = 150;
         historyPanel.add(historyListPanel, gbc);
+        gbc.ipady = 0;
         historyButtonPanel = new JPanel(new GridBagLayout());
         historyButtonPanel.setPreferredSize(new Dimension(300, 10));
         historyButtonPanel.setBorder(emptyBorder);
@@ -198,6 +206,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
     
     private void setupHandlers() {
         ripButton.addActionListener(new RipButtonHandler());
+        ripTextfield.addActionListener(new RipButtonHandler());
         optionLog.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent event) {
@@ -343,7 +352,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
             url = new URL(urlString);
         } catch (MalformedURLException e) {
             logger.error("[!] Could not generate URL for '" + urlString + "'", e);
-            status("Error: " + e.getMessage());
+            error("Given URL is not valid, expecting http://website.com/page/...");
             return null;
         }
         ripButton.setEnabled(false);
@@ -355,13 +364,14 @@ public class MainWindow implements Runnable, RipStatusHandler {
         try {
             AbstractRipper ripper = AbstractRipper.getRipper(url);
             ripTextfield.setText(ripper.getURL().toExternalForm());
+            status("Starting rip...");
             ripper.setObserver((RipStatusHandler) this);
             Thread t = new Thread(ripper);
             t.start();
             return t;
         } catch (Exception e) {
             logger.error("[!] Error while ripping: " + e.getMessage(), e);
-            status("Error: " + e.getMessage());
+            error("Unable to rip this URL: " + e.getMessage());
             ripButton.setEnabled(true);
             ripTextfield.setEnabled(true);
             statusProgress.setValue(0);
