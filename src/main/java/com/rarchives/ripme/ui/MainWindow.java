@@ -83,7 +83,6 @@ public class MainWindow implements Runnable, RipStatusHandler {
     // TODO Configuration components
     
     public MainWindow() {
-        UpdateUtils.moveUpdatedJar();
         mainFrame = new JFrame(WINDOW_TITLE);
         mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         //mainFrame.setPreferredSize(new Dimension(400, 180));
@@ -198,14 +197,13 @@ public class MainWindow implements Runnable, RipStatusHandler {
         configurationPanel.setPreferredSize(new Dimension(300, 250));
         // TODO Configuration components
         JLabel configLabel = new JLabel("Version: " + UpdateUtils.getThisJarVersion());
-        configurationPanel.add(configLabel);
         configUpdateButton = new JButton("Check for updates");
         configUpdateLabel = new JLabel("");
-        gbc.gridy = 1;
-        configurationPanel.add(configUpdateButton, gbc);
-        gbc.gridy = 2;
+        gbc.gridy = 0; configurationPanel.add(configLabel, gbc);
+        gbc.gridy = 1; configurationPanel.add(configUpdateButton, gbc);
+        gbc.ipady = 50;
+        gbc.gridy = 2; configurationPanel.add(configUpdateLabel, gbc);
         gbc.ipady = 10;
-        configurationPanel.add(configUpdateLabel, gbc);
         
         gbc.gridy = 0; pane.add(ripPanel, gbc);
         gbc.gridy = 1; pane.add(statusPanel, gbc);

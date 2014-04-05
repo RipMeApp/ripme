@@ -26,7 +26,7 @@ public class App {
 
     public static void main(String[] args) throws MalformedURLException {
         logger.info("Initialized ripme v" + UpdateUtils.getThisJarVersion());
-
+        UpdateUtils.moveUpdatedJar();
         if (args.length > 0) {
             CommandLine cl = handleArguments(args);
 
