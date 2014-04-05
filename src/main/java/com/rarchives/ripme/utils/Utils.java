@@ -160,7 +160,10 @@ public class Utils {
         else {
             try {
                 logger.debug("fullPath = " + fullPath);
-                String jarPath = fullPath.replaceFirst("[.]jar[!].*", ".jar").replaceFirst("file:", "");
+                String jarPath = fullPath
+                        .replaceFirst("[.]jar[!].*", ".jar")
+                        .replaceFirst("file:", "")
+                        .replaceAll("%20", " ");
                 logger.debug("jarPath = " + jarPath);
                 JarFile jarFile = new JarFile(jarPath);
                 Enumeration<JarEntry> entries = jarFile.entries();
