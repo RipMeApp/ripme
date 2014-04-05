@@ -19,6 +19,7 @@ import java.net.URL;
 
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -80,10 +81,13 @@ public class MainWindow implements Runnable, RipStatusHandler {
     private static JPanel configurationPanel;
     private static JButton configUpdateButton;
     private static JLabel configUpdateLabel;
+    private static JTextField configTimeoutText;
+    private static JTextField configThreadsText;
+    private static JCheckBox configOverwriteCheckbox;
     // TODO Configuration components
     
     public MainWindow() {
-        mainFrame = new JFrame(WINDOW_TITLE);
+        mainFrame = new JFrame(WINDOW_TITLE + " v" + UpdateUtils.getThisJarVersion());
         mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         //mainFrame.setPreferredSize(new Dimension(400, 180));
         //mainFrame.setResizable(false);
@@ -196,15 +200,23 @@ public class MainWindow implements Runnable, RipStatusHandler {
         configurationPanel.setVisible(false);
         configurationPanel.setPreferredSize(new Dimension(300, 250));
         // TODO Configuration components
-        JLabel configLabel = new JLabel("Version: " + UpdateUtils.getThisJarVersion());
         configUpdateButton = new JButton("Check for updates");
-        configUpdateLabel = new JLabel("");
-        gbc.gridy = 0; configurationPanel.add(configLabel, gbc);
-        gbc.gridy = 1; configurationPanel.add(configUpdateButton, gbc);
-        gbc.ipady = 50;
-        gbc.gridy = 2; configurationPanel.add(configUpdateLabel, gbc);
-        gbc.ipady = 10;
-        
+        configUpdateLabel = new JLabel("Current version: " + UpdateUtils.getThisJarVersion(), JLabel.RIGHT);
+        JLabel configTimeoutLabel = new JLabel("Timeout (in milliseconds):", JLabel.RIGHT);
+        JLabel configThreadsLabel = new JLabel("Maximum download threads:", JLabel.RIGHT);
+        configTimeoutText = new JTextField(Integer.toString(Utils.getConfigInteger("download.timeout", 60000)));
+        configThreadsText = new JTextField(Integer.toString(Utils.getConfigInteger("threads.size", 3)));
+        configOverwriteCheckbox = new JCheckBox("Overwrite existing files?", Utils.getConfigBoolean("file.overwrite", false));
+        configOverwriteCheckbox.setHorizontalAlignment(JCheckBox.RIGHT);
+        configOverwriteCheckbox.setHorizontalTextPosition(JCheckBox.LEFT);
+        gbc.gridy = 0; gbc.gridx = 0; configurationPanel.add(configUpdateLabel, gbc);
+                       gbc.gridx = 1; configurationPanel.add(configUpdateButton, gbc);
+        gbc.gridy = 1; gbc.gridx = 0; configurationPanel.add(configTimeoutLabel, gbc);
+                       gbc.gridx = 1; configurationPanel.add(configTimeoutText, gbc);
+        gbc.gridy = 2; gbc.gridx = 0; configurationPanel.add(configThreadsLabel, gbc);
+                       gbc.gridx = 1; configurationPanel.add(configThreadsText, gbc);
+        gbc.gridy = 3; gbc.gridx = 0; configurationPanel.add(configOverwriteCheckbox, gbc);
+
         gbc.gridy = 0; pane.add(ripPanel, gbc);
         gbc.gridy = 1; pane.add(statusPanel, gbc);
         gbc.gridy = 2; pane.add(progressPanel, gbc);
@@ -295,11 +307,16 @@ public class MainWindow implements Runnable, RipStatusHandler {
         configUpdateButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent arg0) {
-                UpdateUtils.updateProgram(configUpdateLabel);
+                Thread t = new Thread() {
+                    @Override
+                    public void run() {
+                        UpdateUtils.updateProgram(configUpdateLabel);
+                    }
+                };
+                t.start();
             }
         });
     }
-    
     
     private void appendLog(final String text, final Color color) {
         SimpleAttributeSet sas = new SimpleAttributeSet();

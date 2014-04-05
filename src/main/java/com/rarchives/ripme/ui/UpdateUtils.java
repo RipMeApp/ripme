@@ -5,6 +5,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
@@ -16,7 +17,7 @@ import org.jsoup.nodes.Document;
 public class UpdateUtils {
 
     private static final Logger logger = Logger.getLogger(UpdateUtils.class);
-    private static final String DEFAULT_VERSION = "100.0.0";
+    private static final String DEFAULT_VERSION = "1.0.4";
     private static final String updateJsonURL = "http://rarchives.com/ripme.json";
     private static final String updateJarURL = "http://rarchives.com/ripme.jar";
     private static final String mainFileName = "ripme.jar";
@@ -32,7 +33,7 @@ public class UpdateUtils {
     }
     
     public static void updateProgram(JLabel configUpdateLabel) {
-        configUpdateLabel.setText("Checking for update...:");
+        configUpdateLabel.setText("Checking for update...");
         
         Document doc = null;
         try {
@@ -40,32 +41,53 @@ public class UpdateUtils {
                 .ignoreContentType(true)
                 .get();
         } catch (IOException e) {
-            configUpdateLabel.setText("Error while fetching update: " + e.getMessage());
             logger.error("Error while fetching update: ", e);
+            JOptionPane.showMessageDialog(null,
+                    "<html><font color=\"red\">Error while fetching update: " + e.getMessage() + "</font></html>",
+                    "RipMe Updater",
+                    JOptionPane.ERROR_MESSAGE);
             return;
+        } finally {
+            configUpdateLabel.setText("Current version: " + getThisJarVersion());
         }
         String jsonString = doc.body().html().replaceAll("&quot;", "\"");
         JSONObject json = new JSONObject(jsonString);
         JSONArray jsonChangeList = json.getJSONArray("changeList");
-        configUpdateLabel.setText("Most recent changes:");
+        StringBuilder changeList = new StringBuilder();
         for (int i = 0; i < jsonChangeList.length(); i++) {
             String change = jsonChangeList.getString(i);
-            configUpdateLabel.setText(configUpdateLabel.getText() + "<br>  + " + change);
+            changeList.append("<br>  + " + change);
         }
 
         String latestVersion = json.getString("latestVersion");
         if (UpdateUtils.isNewerVersion(latestVersion)) {
-            configUpdateLabel.setText("<html>Newer version found! <br><br>" + configUpdateLabel.getText() + "</html>");
+            int result = JOptionPane.showConfirmDialog(
+                    null,
+                    "<html><font color=\"green\">New version (" + latestVersion + ") is available!</font>"
+                    + "<br><br>Recent changes:" + changeList.toString()
+                    + "<br><br>Do you want to download and run the newest version?</html>",
+                    "RipMe Updater",
+                    JOptionPane.YES_NO_OPTION);
+            if (result != JOptionPane.YES_OPTION) {
+                configUpdateLabel.setText("<html>Current Version: " + getThisJarVersion()
+                        + "<br><font color=\"green\">Latest version: " + latestVersion + "</font></html>");
+                return;
+            }
+            configUpdateLabel.setText("<html><font color=\"green\">Downloading new version...</font></html>");
             logger.info("New version found, downloading...");
             try {
                 UpdateUtils.downloadJarAndReplace(updateJarURL);
             } catch (IOException e) {
-                configUpdateLabel.setText("Error while updating: " + e.getMessage());
+            JOptionPane.showMessageDialog(null,
+                    "Error while updating: " + e.getMessage(),
+                    "RipMe Updater",
+                    JOptionPane.ERROR_MESSAGE);
+            configUpdateLabel.setText("");
                 logger.error("Error while updating: ", e);
                 return;
             }
         } else {
-            configUpdateLabel.setText("Running latest version: " + UpdateUtils.getThisJarVersion());
+            configUpdateLabel.setText("<html><font color=\"green\">v" + UpdateUtils.getThisJarVersion() + " is the latest version</font></html>");
             logger.info("Running latest version: " + UpdateUtils.getThisJarVersion());
         }
     }
