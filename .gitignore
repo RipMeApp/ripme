@@ -4,3 +4,5 @@ ripme.log
 rips/
 .history
 ripme.jar.update
+*.swp
+ripme.jar
