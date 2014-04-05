@@ -78,6 +78,8 @@ public class MainWindow implements Runnable, RipStatusHandler {
     // Configuration
     private static JButton optionConfiguration;
     private static JPanel configurationPanel;
+    private static JButton configUpdateButton;
+    private static JLabel configUpdateLabel;
     // TODO Configuration components
     
     public MainWindow() {
@@ -188,13 +190,22 @@ public class MainWindow implements Runnable, RipStatusHandler {
         gbc.gridx = 2; historyButtonPanel.add(historyButtonRerip, gbc);
         gbc.gridy = 1; gbc.gridx = 0;
         historyPanel.add(historyButtonPanel, gbc);
-        
+
         configurationPanel = new JPanel(new GridBagLayout());
         configurationPanel.setBorder(emptyBorder);
         configurationPanel.setVisible(false);
         configurationPanel.setPreferredSize(new Dimension(300, 250));
         // TODO Configuration components
-
+        JLabel configLabel = new JLabel("Version: " + Utils.getConfigInteger("version.major", 0) + "." + Utils.getConfigInteger("version.minor", 0) + "." + Utils.getConfigInteger("version.build", 0));
+        configurationPanel.add(configLabel);
+        configUpdateButton = new JButton("Check for updates");
+        configUpdateLabel = new JLabel("");
+        gbc.ipady = 0;
+        gbc.gridy = 1;
+        configurationPanel.add(configUpdateButton, gbc);
+        gbc.gridy = 2;
+        configurationPanel.add(configUpdateLabel, gbc);
+        
         gbc.gridy = 0; pane.add(ripPanel, gbc);
         gbc.gridy = 1; pane.add(statusPanel, gbc);
         gbc.gridy = 2; pane.add(progressPanel, gbc);
@@ -282,7 +293,14 @@ public class MainWindow implements Runnable, RipStatusHandler {
                 new Thread(ripAllThread).start();
             }
         });
+        configUpdateButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent arg0) {
+                UpdateUtils.updateProgram(configUpdateLabel);
+            }
+        });
     }
+    
     
     private void appendLog(final String text, final Color color) {
         SimpleAttributeSet sas = new SimpleAttributeSet();

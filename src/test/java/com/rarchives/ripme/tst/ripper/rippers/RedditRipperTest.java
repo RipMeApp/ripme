@@ -10,7 +10,7 @@ import com.rarchives.ripme.ripper.rippers.RedditRipper;
 public class RedditRipperTest extends RippersTest {
 
     public void testRedditAlbums() throws IOException {
-        if (false && !DOWNLOAD_CONTENT) {
+        if (!DOWNLOAD_CONTENT) {
             return;
         }
         List<URL> contentURLs = new ArrayList<URL>();

@@ -4,7 +4,7 @@
   <groupId>com.rarchives.ripme</groupId>
   <artifactId>ripme</artifactId>
   <packaging>jar</packaging>
-  <version>1.0</version>
+  <version>1.0.2-beta1</version>
   <name>ripme</name>
   <url>http://rip.rarchives.com</url>
   <properties>
@@ -52,6 +52,8 @@
           <archive>
             <manifest>
               <mainClass>com.rarchives.ripme.App</mainClass>
+              <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+              <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
             </manifest>
             <manifestEntries>
               <Class-Path>./config</Class-Path>

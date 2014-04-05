@@ -180,4 +180,10 @@ public class Utils {
         }
         return classes;
     }
+    
+    public static String getBuildVersion() {
+        return getConfigInteger("version.major", 0)
+                + "." + getConfigInteger("version.minor", 0)
+                + "." + getConfigInteger("version.build", 0);
+    }
 }
