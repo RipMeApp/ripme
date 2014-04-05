@@ -14,6 +14,7 @@ import org.apache.log4j.Logger;
 
 import com.rarchives.ripme.ripper.AbstractRipper;
 import com.rarchives.ripme.ui.MainWindow;
+import com.rarchives.ripme.ui.UpdateUtils;
 import com.rarchives.ripme.utils.Utils;
 
 /**
@@ -24,7 +25,7 @@ public class App {
     public static final Logger logger = Logger.getLogger(App.class);
 
     public static void main(String[] args) throws MalformedURLException {
-        logger.debug("Initialized");
+        logger.info("Initialized ripme v" + UpdateUtils.getThisJarVersion());
 
         if (args.length > 0) {
             CommandLine cl = handleArguments(args);
