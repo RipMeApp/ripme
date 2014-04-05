@@ -1,14 +1,14 @@
-ripme
+Ripme
 =====
 
-Client-side album ripper for various websites.
+Client-side Java album ripper for various websites.
 
-Written in Java for cross-platform support.
 
-releases
+Features
 ========
 
-**Early alpha release of [ripme.jar](http://rarchives.com/ripme.jar)**
+* Quickly downloads all images in an online album (see supported sites below)
+* Easily re-rip albums to fetch new content
 
 Supported sites:
 * imgur
@@ -23,12 +23,23 @@ Supported sites:
 * reddit
 * gonewild
 * 8muses
+* deviantart
+* xhamster
 
-building
+Releases
 ========
 
-To build the .jar file, run:
+**Beta: [ripme.jar v 1.0.2](http://rarchives.com/ripme.jar)**
+
+
+
+Compiling & Building
+====================
+
+To build the .jar file using Maven, run:
 
 ```bash
 mvn clean compile assembly:single
 ```
+
+This will include all dependencies in the JAR.
