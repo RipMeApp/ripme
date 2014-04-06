@@ -42,11 +42,16 @@ public class ImgurRipperTest extends RippersTest {
         passURLs.add(new URL("http://imgur.com/YOdjht3,x5VxH9G,5juXjJ2"));
         passURLs.add(new URL("http://markedone911.imgur.com"));
         passURLs.add(new URL("http://markedone911.imgur.com/"));
+        passURLs.add(new URL("http://imgur.com/r/nsfw_oc/top/all"));
+        passURLs.add(new URL("http://imgur.com/r/nsfw_oc/top"));
+        passURLs.add(new URL("http://imgur.com/r/nsfw_oc/new"));
+        passURLs.add(new URL("http://imgur.com/r/nsfw_oc"));
 
         for (URL url : passURLs) {
             try {
                 ImgurRipper ripper = new ImgurRipper(url);
                 assert(ripper.canRip(url));
+                System.err.println(ripper.getWorkingDir());
                 deleteDir(ripper.getWorkingDir());
             } catch (Exception e) {
                 fail("Failed to instantiate ripper for " + url);
@@ -66,6 +71,7 @@ public class ImgurRipperTest extends RippersTest {
         contentURLs.add(new URL("http://imgur.com/a/WxG6f/layout/vertical#0"));
         contentURLs.add(new URL("http://imgur.com/a/WxG6f/layout/horizontal#0"));
         contentURLs.add(new URL("http://imgur.com/a/WxG6f/layout/grid#0"));
+        contentURLs.add(new URL("http://imgur.com/r/nsfw_oc/top/all"));
         for (URL url : contentURLs) {
             try {
                 ImgurRipper ripper = new ImgurRipper(url);

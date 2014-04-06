@@ -15,6 +15,7 @@ import org.json.JSONObject;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
 import com.rarchives.ripme.ripper.AbstractRipper;
 import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
@@ -31,7 +32,8 @@ public class ImgurRipper extends AbstractRipper {
         ALBUM,
         USER,
         USER_ALBUM,
-        SERIES_OF_IMAGES
+        SERIES_OF_IMAGES,
+        SUBREDDIT
     };
     private ALBUM_TYPE albumType;
 
@@ -84,6 +86,9 @@ public class ImgurRipper extends AbstractRipper {
         case USER:
             // TODO Get all albums by user
             ripUserAccount(url);
+            break;
+        case SUBREDDIT:
+            ripSubreddit(url);
             break;
         }
         waitForThreads();
@@ -211,6 +216,43 @@ public class ImgurRipper extends AbstractRipper {
             }
         }
     }
+    
+    private void ripSubreddit(URL url) throws IOException {
+        int page = 0;
+        while (true) {
+            String pageURL = url.toExternalForm();
+            if (!pageURL.endsWith("/")) {
+                pageURL += "/";
+            }
+            pageURL += "page/" + page + "/miss?scrolled";
+            logger.info("    Retrieving " + pageURL);
+            Document doc = Jsoup.connect(pageURL)
+                    .userAgent(USER_AGENT)
+                    .get();
+            Elements imgs = doc.select(".post img");
+            for (Element img : imgs) {
+                String image = img.attr("src");
+                if (image.startsWith("//")) {
+                    image = "http:" + image;
+                }
+                if (image.contains("b.")) {
+                    image = image.replace("b.", ".");
+                }
+                URL imageURL = new URL(image);
+                addURLToDownload(imageURL);
+            }
+            if (imgs.size() == 0) {
+                break;
+            }
+            page++;
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                logger.error("Interrupted while waiting to load next album: ", e);
+                break;
+            }
+        }
+    }
 
     @Override
     public String getHost() {
@@ -233,8 +275,8 @@ public class ImgurRipper extends AbstractRipper {
         if (m.matches()) {
             // Root imgur account
             String gid = m.group(1);
-            if (gid.equals("i")) {
-                throw new MalformedURLException("Ripping i.imgur.com links not supported");
+            if (gid.equals("www")) {
+                throw new MalformedURLException("Cannot rip the www.imgur.com homepage");
             }
             albumType = ALBUM_TYPE.USER;
             return gid;
@@ -245,6 +287,19 @@ public class ImgurRipper extends AbstractRipper {
             // Imgur account album
             albumType = ALBUM_TYPE.USER_ALBUM;
             return m.group();
+        }
+        p = Pattern.compile("^https?://(www\\.)?imgur\\.com/r/([a-zA-Z0-9\\-_]{3,})(/top|/new)?(/all|/year|/month|/week)?/?$");
+        m = p.matcher(url.toExternalForm());
+        if (m.matches()) {
+            // Imgur subreddit aggregator
+            albumType = ALBUM_TYPE.SUBREDDIT;
+            String album = m.group(2);
+            for (int i = 3; i <= m.groupCount(); i++) {
+                if (m.group(i) != null) {
+                    album += "_" + m.group(i).replace("/", "");
+                }
+            }
+            return album;
         }
         p = Pattern.compile("^https?://(i\\.)?imgur\\.com/([a-zA-Z0-9,]{5,}).*$");
         m = p.matcher(url.toExternalForm());
