@@ -111,6 +111,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
     }
     
     public void saveConfig() {
+        saveHistory();
         Utils.setConfigBoolean("file.overwrite", configOverwriteCheckbox.isSelected());
         Utils.setConfigInteger("threads.size", Integer.parseInt(configThreadsText.getText()));
         Utils.setConfigInteger("download.retries", Integer.parseInt(configRetriesText.getText()));

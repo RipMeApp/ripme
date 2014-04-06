@@ -34,7 +34,6 @@ public class Utils {
                 configPath = configFile;
             }
             config = new PropertiesConfiguration(configPath);
-            config.setAutoSave(true);
             config.setReloadingStrategy(new FileChangedReloadingStrategy());
             logger.info("Loaded " + config.getPath());
         } catch (Exception e) {
@@ -93,14 +92,18 @@ public class Utils {
 
     public static void saveConfig() {
         try {
-            config.save(config.getPath());
-            logger.info("Saved configuration to " + config.getPath());
+            config.save(getConfigPath());
+            logger.info("Saved configuration to " + getConfigPath());
         } catch (ConfigurationException e) {
             logger.error("Error while saving configuration: ", e);
         }
     }
     private static String getConfigPath() {
-        return configFile;
+        try {
+            return new File(".").getCanonicalPath() + File.separator + configFile;
+        } catch (Exception e) {
+            return "." + File.separator + configFile;
+        }
     }
 
     /**
