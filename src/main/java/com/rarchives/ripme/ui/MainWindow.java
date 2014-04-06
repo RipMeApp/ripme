@@ -18,6 +18,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 import javax.swing.DefaultListModel;
+import javax.swing.UIManager;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -120,6 +121,12 @@ public class MainWindow implements Runnable, RipStatusHandler {
         gbc.fill = GridBagConstraints.BOTH;
         gbc.weightx = 2; gbc.ipadx = 2; gbc.gridx = 0;
         gbc.weighty = 2; gbc.ipady = 2; gbc.gridy = 0;
+        
+        try {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        } catch (Exception e) {
+            logger.error("[!] Exception setting system theme:", e);
+        }
 
         ripTextfield = new JTextField("", 20);
         ripButton    = new JButton("Rip");
