@@ -8,14 +8,10 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Arrays;
 
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
@@ -49,9 +45,6 @@ public class MainWindow implements Runnable, RipStatusHandler {
 
     private static final Logger logger = Logger.getLogger(MainWindow.class);
     
-    private static final String WINDOW_TITLE = "RipMe";
-    private static final String HISTORY_FILE = ".history";
-
     private static JFrame mainFrame;
     private static JTextField ripTextfield;
     private static JButton ripButton;
@@ -92,7 +85,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
     // TODO Configuration components
     
     public MainWindow() {
-        mainFrame = new JFrame(WINDOW_TITLE + " v" + UpdateUtils.getThisJarVersion());
+        mainFrame = new JFrame("RipMe v" + UpdateUtils.getThisJarVersion());
         mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         //mainFrame.setPreferredSize(new Dimension(400, 180));
         //mainFrame.setResizable(false);
@@ -386,48 +379,13 @@ public class MainWindow implements Runnable, RipStatusHandler {
     }
     
     private void loadHistory() {
-        File f; FileReader fr = null; BufferedReader br;
-        try {
-            f = new File(HISTORY_FILE);
-            fr = new FileReader(f);
-            br = new BufferedReader(fr);
-            String line;
-            while ( (line = br.readLine()) != null ) {
-                if (!line.trim().equals("")) {
-                    historyListModel.addElement(line.trim());
-                }
-            }
-        } catch (FileNotFoundException e) {
-            // Do nothing
-        } catch (IOException e) {
-            logger.error("[!] Error while loading history file " + HISTORY_FILE, e);
-        } finally {
-            try {
-                if (fr != null) {
-                    fr.close();
-                }
-            } catch (IOException e) { }
+        for (String url : Utils.getConfigList("download.history")) {
+            historyListModel.addElement(url.trim());
         }
     }
 
     private void saveHistory() {
-        FileWriter fw = null;
-        try {
-            fw = new FileWriter(HISTORY_FILE, false);
-            for (int i = 0; i < historyListModel.size(); i++) {
-                fw.write( (String) historyListModel.get(i) );
-                fw.write("\n");
-                fw.flush();
-            }
-        } catch (IOException e) {
-            logger.error("[!] Error while saving history file " + HISTORY_FILE, e);
-        } finally {
-            try {
-                if (fw != null) {
-                    fw.close();
-                }
-            } catch (IOException e) { }
-        }
+        Utils.setConfigList("download.history", Arrays.asList(historyListModel.toArray()));
     }
 
     private Thread ripAlbum(String urlString) {

@@ -288,8 +288,6 @@ public abstract class AbstractRipper
                 AbstractRipper ripper = (AbstractRipper) constructor.newInstance(url);
                 return ripper;
             } catch (Exception e) {
-                System.err.println(constructor.getName());
-                e.printStackTrace();
                 // Incompatible rippers *will* throw exceptions during instantiation.
             }
         }

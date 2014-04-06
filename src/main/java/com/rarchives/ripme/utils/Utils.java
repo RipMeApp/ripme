@@ -6,11 +6,13 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
+import org.apache.commons.configuration.reloading.FileChangedReloadingStrategy;
 import org.apache.log4j.Logger;
 
 /**
@@ -32,6 +34,8 @@ public class Utils {
                 configPath = configFile;
             }
             config = new PropertiesConfiguration(configPath);
+            config.setAutoSave(true);
+            config.setReloadingStrategy(new FileChangedReloadingStrategy());
             logger.info("Loaded " + config.getPath());
         } catch (Exception e) {
             logger.error("[!] Failed to load properties file from " + configFile, e);
@@ -70,9 +74,23 @@ public class Utils {
     public static boolean getConfigBoolean(String key, boolean defaultValue) {
         return config.getBoolean(key, defaultValue);
     }
-    public static void setConfigBoolean(String key, boolean value) { config.setProperty(key, value); }
-    public static void setConfigString(String key, String value)   { config.setProperty(key, value); }
-    public static void setConfigInteger(String key, int value)     { config.setProperty(key, value); }
+    public static List<String> getConfigList(String key) {
+        List<String> result = new ArrayList<String>();
+        for (Object obj : config.getList(key, new ArrayList<String>())) {
+            if (obj instanceof String) {
+                result.add( (String) obj);
+            }
+        }
+        return result;
+    }
+    public static void setConfigBoolean(String key, boolean value)  { config.setProperty(key, value); }
+    public static void setConfigString(String key, String value)    { config.setProperty(key, value); }
+    public static void setConfigInteger(String key, int value)      { config.setProperty(key, value); }
+    public static void setConfigList(String key, List<Object> list) {
+        config.clearProperty(key);
+        config.addProperty(key, list);
+    }
+
     public static void saveConfig() {
         try {
             config.save(config.getPath());
