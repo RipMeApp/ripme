@@ -9,7 +9,6 @@ import java.util.Enumeration;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
-import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.log4j.Logger;
@@ -23,11 +22,18 @@ public class Utils {
     private static final String configFile = "rip.properties";
     private static final Logger logger = Logger.getLogger(Utils.class);
 
-    private static Configuration config;
+    private static PropertiesConfiguration config;
     static {
         try {
-            config = new PropertiesConfiguration(configFile);
-        } catch (ConfigurationException e) {
+            String configPath = getConfigPath();
+            File f = new File(configPath);
+            if (!f.exists()) {
+                // Use default bundled with .jar
+                configPath = configFile;
+            }
+            config = new PropertiesConfiguration(configPath);
+            logger.info("Loaded " + config.getPath());
+        } catch (Exception e) {
             logger.error("[!] Failed to load properties file from " + configFile, e);
         }
     }
@@ -38,10 +44,17 @@ public class Utils {
      *      Root directory to save rips to.
      * @throws IOException
      */
-    public static File getWorkingDirectory() throws IOException {
-        String path = new File(".").getCanonicalPath() + File.separator;
-        path += RIP_DIRECTORY + File.separator;
-        File workingDir = new File(path);
+    public static File getWorkingDirectory() {
+        String currentDir = ".";
+        try {
+            currentDir = new File(".").getCanonicalPath() + File.separator + RIP_DIRECTORY + File.separator;
+        } catch (IOException e) {
+            logger.error("Error while finding working dir: ", e);
+        }
+        if (config != null) {
+            currentDir = getConfigString("rips.directory", currentDir);
+        }
+        File workingDir = new File(currentDir);
         if (!workingDir.exists()) {
             workingDir.mkdirs();
         }
@@ -51,17 +64,25 @@ public class Utils {
     public static String getConfigString(String key, String defaultValue) {
         return config.getString(key, defaultValue);
     }
-
     public static int getConfigInteger(String key, int defaultValue) {
         return config.getInt(key, defaultValue);
     }
-
     public static boolean getConfigBoolean(String key, boolean defaultValue) {
         return config.getBoolean(key, defaultValue);
     }
-
-    public static void setConfigBoolean(String key, boolean value) {
-        config.setProperty(key, value);
+    public static void setConfigBoolean(String key, boolean value) { config.setProperty(key, value); }
+    public static void setConfigString(String key, String value)   { config.setProperty(key, value); }
+    public static void setConfigInteger(String key, int value)     { config.setProperty(key, value); }
+    public static void saveConfig() {
+        try {
+            config.save(config.getPath());
+            logger.info("Saved configuration to " + config.getPath());
+        } catch (ConfigurationException e) {
+            logger.error("Error while saving configuration: ", e);
+        }
+    }
+    private static String getConfigPath() {
+        return configFile;
     }
 
     /**
@@ -72,14 +93,15 @@ public class Utils {
      *      saveAs in relation to the CWD
      */
     public static String removeCWD(File saveAs) {
-        String prettySaveAs;
+        String prettySaveAs = saveAs.toString(); 
         try {
+            prettySaveAs = saveAs.getCanonicalPath();
             String cwd = new File(".").getCanonicalPath() + File.separator;
-            prettySaveAs = saveAs.getCanonicalPath().replace(
+            prettySaveAs = prettySaveAs.replace(
                     cwd,
-                    "");
+                    "." + File.separator);
         } catch (Exception e) {
-            prettySaveAs = saveAs.toString();
+            logger.error("Exception: ", e);
         }
         return prettySaveAs;
     }
@@ -187,9 +209,17 @@ public class Utils {
         return classes;
     }
     
-    public static String getBuildVersion() {
-        return getConfigInteger("version.major", 0)
-                + "." + getConfigInteger("version.minor", 0)
-                + "." + getConfigInteger("version.build", 0);
+    public static final int SHORTENED_PATH_LENGTH = 12;
+    public static String shortenPath(String path) {
+        return shortenPath(new File(path));
+    }
+    public static String shortenPath(File file) {
+        String path = removeCWD(file);
+        if (path.length() < SHORTENED_PATH_LENGTH * 2) {
+            return path;
+        }
+        return path.substring(0, SHORTENED_PATH_LENGTH)
+                + "..."
+                + path.substring(path.length() - SHORTENED_PATH_LENGTH);
     }
 }

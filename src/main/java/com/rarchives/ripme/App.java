@@ -63,6 +63,9 @@ public class App {
         if (cl.hasOption('w')) {
             Utils.setConfigBoolean("file.overwrite", true);
         }
+        if (cl.hasOption('t')) {
+            Utils.setConfigInteger("threads.size", Integer.parseInt(cl.getOptionValue('t')));
+        }
         if (!cl.hasOption('u')) {
             System.err.println("\nRequired URL ('-u' or '--url') not provided");
             System.err.println("\n\tExample: java -jar ripme.jar -u http://imgur.com/a/abcde");

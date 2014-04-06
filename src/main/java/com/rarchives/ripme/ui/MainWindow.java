@@ -20,6 +20,7 @@ import java.net.URL;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -84,6 +85,10 @@ public class MainWindow implements Runnable, RipStatusHandler {
     private static JTextField configTimeoutText;
     private static JTextField configThreadsText;
     private static JCheckBox configOverwriteCheckbox;
+    private static JLabel configSaveDirLabel;
+    private static JButton configSaveDirButton;
+    private static JTextField configRetriesText;
+
     // TODO Configuration components
     
     public MainWindow() {
@@ -96,12 +101,28 @@ public class MainWindow implements Runnable, RipStatusHandler {
         createUI(mainFrame.getContentPane());
         loadHistory();
         setupHandlers();
+        
+        Thread shutdownThread = new Thread() {
+            @Override
+            public void run() {
+                saveConfig();
+            }
+        };
+        Runtime.getRuntime().addShutdownHook(shutdownThread);
     }
     
     public void run() {
         mainFrame.pack();
         mainFrame.setLocationRelativeTo(null);
         mainFrame.setVisible(true);
+    }
+    
+    public void saveConfig() {
+        Utils.setConfigBoolean("file.overwrite", configOverwriteCheckbox.isSelected());
+        Utils.setConfigInteger("threads.size", Integer.parseInt(configThreadsText.getText()));
+        Utils.setConfigInteger("download.retries", Integer.parseInt(configRetriesText.getText()));
+        Utils.setConfigInteger("download.timeout", Integer.parseInt(configTimeoutText.getText()));
+        Utils.saveConfig();
     }
 
     private void status(String text) {
@@ -202,20 +223,34 @@ public class MainWindow implements Runnable, RipStatusHandler {
         // TODO Configuration components
         configUpdateButton = new JButton("Check for updates");
         configUpdateLabel = new JLabel("Current version: " + UpdateUtils.getThisJarVersion(), JLabel.RIGHT);
-        JLabel configTimeoutLabel = new JLabel("Timeout (in milliseconds):", JLabel.RIGHT);
         JLabel configThreadsLabel = new JLabel("Maximum download threads:", JLabel.RIGHT);
-        configTimeoutText = new JTextField(Integer.toString(Utils.getConfigInteger("download.timeout", 60000)));
+        JLabel configTimeoutLabel = new JLabel("Timeout (in milliseconds):", JLabel.RIGHT);
+        JLabel configRetriesLabel = new JLabel("Retry download count:", JLabel.RIGHT);
         configThreadsText = new JTextField(Integer.toString(Utils.getConfigInteger("threads.size", 3)));
+        configTimeoutText = new JTextField(Integer.toString(Utils.getConfigInteger("download.timeout", 60000)));
+        configRetriesText = new JTextField(Integer.toString(Utils.getConfigInteger("download.retries", 3)));
         configOverwriteCheckbox = new JCheckBox("Overwrite existing files?", Utils.getConfigBoolean("file.overwrite", false));
         configOverwriteCheckbox.setHorizontalAlignment(JCheckBox.RIGHT);
         configOverwriteCheckbox.setHorizontalTextPosition(JCheckBox.LEFT);
+        configSaveDirLabel = new JLabel();
+        try {
+            String workingDir = (Utils.shortenPath(Utils.getWorkingDirectory()));
+            configSaveDirLabel.setText(workingDir);
+        } catch (Exception e) { }
+        configSaveDirLabel.setToolTipText(configSaveDirLabel.getText());
+        configSaveDirLabel.setHorizontalAlignment(JLabel.RIGHT);
+        configSaveDirButton = new JButton("Browse...");
         gbc.gridy = 0; gbc.gridx = 0; configurationPanel.add(configUpdateLabel, gbc);
                        gbc.gridx = 1; configurationPanel.add(configUpdateButton, gbc);
-        gbc.gridy = 1; gbc.gridx = 0; configurationPanel.add(configTimeoutLabel, gbc);
-                       gbc.gridx = 1; configurationPanel.add(configTimeoutText, gbc);
-        gbc.gridy = 2; gbc.gridx = 0; configurationPanel.add(configThreadsLabel, gbc);
+        gbc.gridy = 1; gbc.gridx = 0; configurationPanel.add(configThreadsLabel, gbc);
                        gbc.gridx = 1; configurationPanel.add(configThreadsText, gbc);
-        gbc.gridy = 3; gbc.gridx = 0; configurationPanel.add(configOverwriteCheckbox, gbc);
+        gbc.gridy = 2; gbc.gridx = 0; configurationPanel.add(configTimeoutLabel, gbc);
+                       gbc.gridx = 1; configurationPanel.add(configTimeoutText, gbc);
+        gbc.gridy = 3; gbc.gridx = 0; configurationPanel.add(configRetriesLabel, gbc);
+                       gbc.gridx = 1; configurationPanel.add(configRetriesText, gbc);
+        gbc.gridy = 4; gbc.gridx = 0; configurationPanel.add(configOverwriteCheckbox, gbc);
+        gbc.gridy = 5; gbc.gridx = 0; configurationPanel.add(configSaveDirLabel, gbc);
+                       gbc.gridx = 1; configurationPanel.add(configSaveDirButton, gbc);
 
         gbc.gridy = 0; pane.add(ripPanel, gbc);
         gbc.gridy = 1; pane.add(statusPanel, gbc);
@@ -316,6 +351,27 @@ public class MainWindow implements Runnable, RipStatusHandler {
                 t.start();
             }
         });
+        configSaveDirButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent arg0) {
+                JFileChooser jfc = new JFileChooser(Utils.getWorkingDirectory());
+                jfc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+                int returnVal = jfc.showDialog(null, "select directory");
+                if (returnVal != JFileChooser.APPROVE_OPTION) {
+                    return;
+                }
+                File chosenFile = jfc.getSelectedFile();
+                String chosenPath = null;
+                try {
+                    chosenPath = chosenFile.getCanonicalPath();
+                } catch (Exception e) {
+                    logger.error("Error while getting selected path: ", e);
+                    return;
+                }
+                configSaveDirLabel.setText(Utils.shortenPath(chosenPath));
+                Utils.setConfigString("rips.directory", chosenPath);
+            }
+        });
     }
     
     private void appendLog(final String text, final Color color) {
@@ -375,6 +431,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
     }
 
     private Thread ripAlbum(String urlString) {
+        saveConfig();
         if (urlString.toLowerCase().startsWith("gonewild:")) {
             urlString = "http://gonewild.com/user/" + urlString.substring(urlString.indexOf(':') + 1);
         }
@@ -468,7 +525,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
             statusLabel.setVisible(false);
             openButton.setVisible(true);
             File f = (File) msg.getObject();
-            String prettyFile = Utils.removeCWD(f);
+            String prettyFile = Utils.shortenPath(f);
             openButton.setText("Open " + prettyFile);
             appendLog( "Rip complete, saved to " + prettyFile, Color.GREEN);
             openButton.setActionCommand(f.toString());
