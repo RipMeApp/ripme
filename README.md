@@ -3,6 +3,10 @@ Ripme
 
 Client-side Java album ripper for various websites.
 
+Releases
+========
+
+**Beta: [ripme.jar v 1.x](http://rarchives.com/ripme.jar)**
 
 Features
 ========
@@ -25,12 +29,6 @@ Supported sites:
 * 8muses
 * deviantart
 * xhamster
-
-Releases
-========
-
-**Beta: [ripme.jar v 1.0.2](http://rarchives.com/ripme.jar)**
-
 
 
 Compiling & Building
