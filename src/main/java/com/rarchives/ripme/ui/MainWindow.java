@@ -5,6 +5,7 @@ import java.awt.Color;
 import java.awt.Container;
 import java.awt.Desktop;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Image;
@@ -93,7 +94,9 @@ public class MainWindow implements Runnable, RipStatusHandler {
     private static JLabel configSaveDirLabel;
     private static JButton configSaveDirButton;
     private static JTextField configRetriesText;
+    private static JCheckBox configAutoupdateCheckbox;
 
+    private static MenuItem trayMenuMain;
     private static MenuItem trayMenuAbout;
     private static MenuItem trayMenuExit;
     private static CheckboxMenuItem trayMenuAutorip;
@@ -117,8 +120,25 @@ public class MainWindow implements Runnable, RipStatusHandler {
             }
         };
         Runtime.getRuntime().addShutdownHook(shutdownThread);
-        
+
+        if (Utils.getConfigBoolean("auto.update", true)) {
+            upgradeProgram();
+        }
+
         ClipboardUtils.setClipboardAutoRip(Utils.getConfigBoolean("clipboard.autorip", false));
+    }
+    
+    public void upgradeProgram() {
+        if (!configurationPanel.isVisible()) {
+            optionConfiguration.doClick();
+        }
+        Runnable r = new Runnable() {
+            @Override
+            public void run() {
+                UpdateUtils.updateProgram(configUpdateLabel);
+            }
+        };
+        SwingUtilities.invokeLater(r);
     }
     
     public void run() {
@@ -133,6 +153,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
         Utils.setConfigInteger("download.retries", Integer.parseInt(configRetriesText.getText()));
         Utils.setConfigInteger("download.timeout", Integer.parseInt(configTimeoutText.getText()));
         Utils.setConfigBoolean("clipboard.autorip", ClipboardUtils.getClipboardAutoRip());
+        Utils.setConfigBoolean("auto.update", configAutoupdateCheckbox.isSelected());
         saveHistory();
         Utils.saveConfig();
         ClipboardUtils.setClipboardAutoRip(false);
@@ -155,6 +176,19 @@ public class MainWindow implements Runnable, RipStatusHandler {
     private void createUI(Container pane) {
         // System tray
         PopupMenu trayMenu = new PopupMenu();
+        trayMenuMain = new MenuItem(mainFrame.getTitle());
+        trayMenuMain.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent arg0) {
+                if (mainFrame.isVisible()) {
+                    mainFrame.setVisible(false);
+                    trayMenuMain.setLabel("Show");
+                } else {
+                    mainFrame.setVisible(true);
+                    trayMenuMain.setLabel("Hide");
+                }
+            }
+        });
         trayMenuAbout = new MenuItem("About " + mainFrame.getTitle());
         trayMenuAbout.addActionListener(new ActionListener() {
             @Override
@@ -182,6 +216,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
                 ClipboardUtils.setClipboardAutoRip(trayMenuAutorip.getState());
             }
         });
+        trayMenu.add(trayMenuMain);
         trayMenu.add(trayMenuAbout);
         trayMenu.addSeparator();
         trayMenu.add(trayMenuAutorip);
@@ -211,7 +246,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
 
         ripTextfield = new JTextField("", 20);
         ImageIcon ripIcon = new ImageIcon(mainIcon.getScaledInstance(20, 20, Image.SCALE_SMOOTH));
-        ripButton    = new JButton("<html><b>Rip</b></html>", ripIcon);
+        ripButton = new JButton("<html><font size=\"5\"><b>Rip</b></font></html>", ripIcon);
         JPanel ripPanel = new JPanel(new GridBagLayout());
         ripPanel.setBorder(emptyBorder);
 
@@ -296,6 +331,9 @@ public class MainWindow implements Runnable, RipStatusHandler {
         configOverwriteCheckbox = new JCheckBox("Overwrite existing files?", Utils.getConfigBoolean("file.overwrite", false));
         configOverwriteCheckbox.setHorizontalAlignment(JCheckBox.RIGHT);
         configOverwriteCheckbox.setHorizontalTextPosition(JCheckBox.LEFT);
+        configAutoupdateCheckbox = new JCheckBox("Auto-update?", Utils.getConfigBoolean("auto.update", true));
+        configAutoupdateCheckbox.setHorizontalAlignment(JCheckBox.RIGHT);
+        configAutoupdateCheckbox.setHorizontalTextPosition(JCheckBox.LEFT);
         configSaveDirLabel = new JLabel();
         try {
             String workingDir = (Utils.shortenPath(Utils.getWorkingDirectory()));
@@ -306,14 +344,15 @@ public class MainWindow implements Runnable, RipStatusHandler {
         configSaveDirButton = new JButton("Browse...");
         gbc.gridy = 0; gbc.gridx = 0; configurationPanel.add(configUpdateLabel, gbc);
                        gbc.gridx = 1; configurationPanel.add(configUpdateButton, gbc);
-        gbc.gridy = 1; gbc.gridx = 0; configurationPanel.add(configThreadsLabel, gbc);
+        gbc.gridy = 1; gbc.gridx = 0; configurationPanel.add(configAutoupdateCheckbox, gbc);
+        gbc.gridy = 2; gbc.gridx = 0; configurationPanel.add(configThreadsLabel, gbc);
                        gbc.gridx = 1; configurationPanel.add(configThreadsText, gbc);
-        gbc.gridy = 2; gbc.gridx = 0; configurationPanel.add(configTimeoutLabel, gbc);
+        gbc.gridy = 3; gbc.gridx = 0; configurationPanel.add(configTimeoutLabel, gbc);
                        gbc.gridx = 1; configurationPanel.add(configTimeoutText, gbc);
-        gbc.gridy = 3; gbc.gridx = 0; configurationPanel.add(configRetriesLabel, gbc);
+        gbc.gridy = 4; gbc.gridx = 0; configurationPanel.add(configRetriesLabel, gbc);
                        gbc.gridx = 1; configurationPanel.add(configRetriesText, gbc);
-        gbc.gridy = 4; gbc.gridx = 0; configurationPanel.add(configOverwriteCheckbox, gbc);
-        gbc.gridy = 5; gbc.gridx = 0; configurationPanel.add(configSaveDirLabel, gbc);
+        gbc.gridy = 5; gbc.gridx = 0; configurationPanel.add(configOverwriteCheckbox, gbc);
+        gbc.gridy = 6; gbc.gridx = 0; configurationPanel.add(configSaveDirLabel, gbc);
                        gbc.gridx = 1; configurationPanel.add(configSaveDirButton, gbc);
 
         gbc.gridy = 0; pane.add(ripPanel, gbc);
@@ -334,6 +373,13 @@ public class MainWindow implements Runnable, RipStatusHandler {
                 logPanel.setVisible(!logPanel.isVisible());
                 historyPanel.setVisible(false);
                 configurationPanel.setVisible(false);
+                if (logPanel.isVisible()) {
+                    optionLog.setFont(optionLog.getFont().deriveFont(Font.BOLD));
+                } else {
+                    optionLog.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
+                }
+                optionHistory.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
+                optionConfiguration.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
                 mainFrame.pack();
             }
         });
@@ -343,6 +389,13 @@ public class MainWindow implements Runnable, RipStatusHandler {
                 logPanel.setVisible(false);
                 historyPanel.setVisible(!historyPanel.isVisible());
                 configurationPanel.setVisible(false);
+                optionLog.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
+                if (historyPanel.isVisible()) {
+                    optionHistory.setFont(optionLog.getFont().deriveFont(Font.BOLD));
+                } else {
+                    optionHistory.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
+                }
+                optionConfiguration.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
                 mainFrame.pack();
             }
         });
@@ -352,6 +405,13 @@ public class MainWindow implements Runnable, RipStatusHandler {
                 logPanel.setVisible(false);
                 historyPanel.setVisible(false);
                 configurationPanel.setVisible(!configurationPanel.isVisible());
+                optionLog.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
+                optionHistory.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
+                if (configurationPanel.isVisible()) {
+                    optionConfiguration.setFont(optionLog.getFont().deriveFont(Font.BOLD));
+                } else {
+                    optionConfiguration.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
+                }
                 mainFrame.pack();
             }
         });
