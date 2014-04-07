@@ -1,26 +1,36 @@
 package com.rarchives.ripme.ui;
 
+import java.awt.CheckboxMenuItem;
 import java.awt.Color;
 import java.awt.Container;
 import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Image;
+import java.awt.MenuItem;
+import java.awt.PopupMenu;
+import java.awt.SystemTray;
+import java.awt.TrayIcon;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
 
+import javax.imageio.ImageIO;
 import javax.swing.DefaultListModel;
-import javax.swing.UIManager;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
@@ -28,6 +38,7 @@ import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.SimpleAttributeSet;
@@ -83,13 +94,16 @@ public class MainWindow implements Runnable, RipStatusHandler {
     private static JButton configSaveDirButton;
     private static JTextField configRetriesText;
 
-    // TODO Configuration components
-    
+    private static MenuItem trayMenuAbout;
+    private static MenuItem trayMenuExit;
+    private static CheckboxMenuItem trayMenuAutorip;
+
+    private static Image mainIcon;
+
     public MainWindow() {
         mainFrame = new JFrame("RipMe v" + UpdateUtils.getThisJarVersion());
         mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        //mainFrame.setPreferredSize(new Dimension(400, 180));
-        //mainFrame.setResizable(false);
+        mainFrame.setResizable(false);
         mainFrame.setLayout(new GridBagLayout());
 
         createUI(mainFrame.getContentPane());
@@ -99,10 +113,12 @@ public class MainWindow implements Runnable, RipStatusHandler {
         Thread shutdownThread = new Thread() {
             @Override
             public void run() {
-                saveConfig();
+                shutdownCleanup();
             }
         };
         Runtime.getRuntime().addShutdownHook(shutdownThread);
+        
+        ClipboardUtils.setClipboardAutoRip(Utils.getConfigBoolean("clipboard.autorip", false));
     }
     
     public void run() {
@@ -111,13 +127,15 @@ public class MainWindow implements Runnable, RipStatusHandler {
         mainFrame.setVisible(true);
     }
     
-    public void saveConfig() {
-        saveHistory();
+    public void shutdownCleanup() {
         Utils.setConfigBoolean("file.overwrite", configOverwriteCheckbox.isSelected());
         Utils.setConfigInteger("threads.size", Integer.parseInt(configThreadsText.getText()));
         Utils.setConfigInteger("download.retries", Integer.parseInt(configRetriesText.getText()));
         Utils.setConfigInteger("download.timeout", Integer.parseInt(configTimeoutText.getText()));
+        Utils.setConfigBoolean("clipboard.autorip", ClipboardUtils.getClipboardAutoRip());
+        saveHistory();
         Utils.saveConfig();
+        ClipboardUtils.setClipboardAutoRip(false);
     }
 
     private void status(String text) {
@@ -135,6 +153,50 @@ public class MainWindow implements Runnable, RipStatusHandler {
     }
 
     private void createUI(Container pane) {
+        // System tray
+        PopupMenu trayMenu = new PopupMenu();
+        trayMenuAbout = new MenuItem("About " + mainFrame.getTitle());
+        trayMenuAbout.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent arg0) {
+                String aboutBlurb = "<html><center> Download albums from various websites. <a href=\"http://rarchives.com\">rarchives.com</a>";
+                JOptionPane.showMessageDialog(null,
+                        aboutBlurb,
+                        mainFrame.getTitle(),
+                        JOptionPane.PLAIN_MESSAGE,
+                        new ImageIcon(mainIcon));
+            }
+        });
+        trayMenuExit = new MenuItem("Exit");
+        trayMenuExit.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent arg0) {
+                System.exit(0);
+            }
+        });
+        trayMenuAutorip = new CheckboxMenuItem("Clipboard Autorip");
+        trayMenuAutorip.setState(ClipboardUtils.getClipboardAutoRip());
+        trayMenuAutorip.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent arg0) {
+                ClipboardUtils.setClipboardAutoRip(trayMenuAutorip.getState());
+            }
+        });
+        trayMenu.add(trayMenuAbout);
+        trayMenu.addSeparator();
+        trayMenu.add(trayMenuAutorip);
+        trayMenu.addSeparator();
+        trayMenu.add(trayMenuExit);
+        try {
+            mainIcon = ImageIO.read(getClass().getClassLoader().getResource("icon.png"));
+            TrayIcon trayIcon = new TrayIcon(mainIcon);
+            trayIcon.setToolTip(mainFrame.getTitle());
+            trayIcon.setPopupMenu(trayMenu);
+            SystemTray.getSystemTray().add(trayIcon);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         EmptyBorder emptyBorder = new EmptyBorder(5, 5, 5, 5);
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.fill = GridBagConstraints.BOTH;
@@ -148,7 +210,8 @@ public class MainWindow implements Runnable, RipStatusHandler {
         }
 
         ripTextfield = new JTextField("", 20);
-        ripButton    = new JButton("Rip");
+        ImageIcon ripIcon = new ImageIcon(mainIcon.getScaledInstance(20, 20, Image.SCALE_SMOOTH));
+        ripButton    = new JButton("<html><b>Rip</b></html>", ripIcon);
         JPanel ripPanel = new JPanel(new GridBagLayout());
         ripPanel.setBorder(emptyBorder);
 
@@ -397,7 +460,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
     }
 
     private Thread ripAlbum(String urlString) {
-        saveConfig();
+        shutdownCleanup();
         if (urlString.toLowerCase().startsWith("gonewild:")) {
             urlString = "http://gonewild.com/user/" + urlString.substring(urlString.indexOf(':') + 1);
         }
@@ -418,23 +481,33 @@ public class MainWindow implements Runnable, RipStatusHandler {
         openButton.setVisible(false);
         statusLabel.setVisible(true);
         mainFrame.pack();
+        AbstractRipper ripper = null;
+        boolean failed = false;
         try {
-            AbstractRipper ripper = AbstractRipper.getRipper(url);
-            ripTextfield.setText(ripper.getURL().toExternalForm());
-            status("Starting rip...");
-            ripper.setObserver((RipStatusHandler) this);
-            Thread t = new Thread(ripper);
-            t.start();
-            return t;
+            ripper = AbstractRipper.getRipper(url);
         } catch (Exception e) {
-            logger.error("[!] Error while ripping: " + e.getMessage(), e);
-            error("Unable to rip this URL: " + e.getMessage());
-            ripButton.setEnabled(true);
-            ripTextfield.setEnabled(true);
-            statusProgress.setValue(0);
-            mainFrame.pack();
-            return null;
+            failed = true;
+            logger.error("Could not find ripper for URL " + url);
+            error("Could not find ripper for given URL");
         }
+        if (!failed) {
+            try {
+                ripTextfield.setText(ripper.getURL().toExternalForm());
+                status("Starting rip...");
+                ripper.setObserver((RipStatusHandler) this);
+                Thread t = new Thread(ripper);
+                t.start();
+                return t;
+            } catch (Exception e) {
+                logger.error("[!] Error while ripping: " + e.getMessage(), e);
+                error("Unable to rip this URL: " + e.getMessage());
+            }
+        }
+        ripButton.setEnabled(true);
+        ripTextfield.setEnabled(true);
+        statusProgress.setValue(0);
+        mainFrame.pack();
+        return null;
     }
 
     class RipButtonHandler implements ActionListener {
@@ -522,5 +595,10 @@ public class MainWindow implements Runnable, RipStatusHandler {
         public boolean getScrollableTracksViewportWidth() {
             return false;
         }
+    }
+    
+    public static void ripAlbumStatic(String url) {
+        ripTextfield.setText(url);
+        ripButton.doClick();
     }
 }
