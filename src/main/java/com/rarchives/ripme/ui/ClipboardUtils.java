@@ -71,7 +71,7 @@ class AutoripThread extends Thread {
                         String url = m.group();
                         if (!rippedURLs.contains(url)) {
                             rippedURLs.add(url);
-                            // TODO Start rip
+                            // TODO Queue rip instead of just starting it
                             MainWindow.ripAlbumStatic(url);
                         }
                     }

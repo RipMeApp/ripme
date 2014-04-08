@@ -13,10 +13,15 @@ import java.awt.MenuItem;
 import java.awt.PopupMenu;
 import java.awt.SystemTray;
 import java.awt.TrayIcon;
+import java.awt.TrayIcon.MessageType;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -96,6 +101,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
     private static JTextField configRetriesText;
     private static JCheckBox configAutoupdateCheckbox;
 
+    private static TrayIcon trayIcon;
     private static MenuItem trayMenuMain;
     private static MenuItem trayMenuAbout;
     private static MenuItem trayMenuExit;
@@ -174,63 +180,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
     }
 
     private void createUI(Container pane) {
-        // System tray
-        PopupMenu trayMenu = new PopupMenu();
-        trayMenuMain = new MenuItem(mainFrame.getTitle());
-        trayMenuMain.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent arg0) {
-                if (mainFrame.isVisible()) {
-                    mainFrame.setVisible(false);
-                    trayMenuMain.setLabel("Show");
-                } else {
-                    mainFrame.setVisible(true);
-                    trayMenuMain.setLabel("Hide");
-                }
-            }
-        });
-        trayMenuAbout = new MenuItem("About " + mainFrame.getTitle());
-        trayMenuAbout.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent arg0) {
-                String aboutBlurb = "<html><center> Download albums from various websites. <a href=\"http://rarchives.com\">rarchives.com</a>";
-                JOptionPane.showMessageDialog(null,
-                        aboutBlurb,
-                        mainFrame.getTitle(),
-                        JOptionPane.PLAIN_MESSAGE,
-                        new ImageIcon(mainIcon));
-            }
-        });
-        trayMenuExit = new MenuItem("Exit");
-        trayMenuExit.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent arg0) {
-                System.exit(0);
-            }
-        });
-        trayMenuAutorip = new CheckboxMenuItem("Clipboard Autorip");
-        trayMenuAutorip.setState(ClipboardUtils.getClipboardAutoRip());
-        trayMenuAutorip.addItemListener(new ItemListener() {
-            @Override
-            public void itemStateChanged(ItemEvent arg0) {
-                ClipboardUtils.setClipboardAutoRip(trayMenuAutorip.getState());
-            }
-        });
-        trayMenu.add(trayMenuMain);
-        trayMenu.add(trayMenuAbout);
-        trayMenu.addSeparator();
-        trayMenu.add(trayMenuAutorip);
-        trayMenu.addSeparator();
-        trayMenu.add(trayMenuExit);
-        try {
-            mainIcon = ImageIO.read(getClass().getClassLoader().getResource("icon.png"));
-            TrayIcon trayIcon = new TrayIcon(mainIcon);
-            trayIcon.setToolTip(mainFrame.getTitle());
-            trayIcon.setPopupMenu(trayMenu);
-            SystemTray.getSystemTray().add(trayIcon);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        setupTrayIcon();
 
         EmptyBorder emptyBorder = new EmptyBorder(5, 5, 5, 5);
         GridBagConstraints gbc = new GridBagConstraints();
@@ -263,6 +213,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
 
         gbc.gridx = 0; statusPanel.add(statusLabel, gbc);
         gbc.gridy = 1; statusPanel.add(openButton, gbc);
+        gbc.gridy = 0;
 
         JPanel progressPanel = new JPanel(new GridBagLayout());
         progressPanel.setBorder(emptyBorder);
@@ -484,6 +435,92 @@ public class MainWindow implements Runnable, RipStatusHandler {
             }
         });
     }
+
+    private void setupTrayIcon() {
+        mainFrame.addWindowListener(new WindowAdapter() {
+            public void windowActivated(WindowEvent e)   { trayMenuMain.setLabel("Hide"); }
+            public void windowDeactivated(WindowEvent e) { trayMenuMain.setLabel("Show"); }
+            public void windowDeiconified(WindowEvent e) { trayMenuMain.setLabel("Hide"); }
+            public void windowIconified(WindowEvent e)   { trayMenuMain.setLabel("Show"); }
+        });
+        PopupMenu trayMenu = new PopupMenu();
+        trayMenuMain = new MenuItem("Hide");
+        trayMenuMain.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent arg0) {
+                toggleTrayClick();
+            }
+        });
+        trayMenuAbout = new MenuItem("About " + mainFrame.getTitle());
+        trayMenuAbout.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent arg0) {
+                String aboutBlurb = "<html><center> Download albums from various websites. <a href=\"http://rarchives.com\">rarchives.com</a>";
+                JOptionPane.showMessageDialog(null,
+                        aboutBlurb,
+                        mainFrame.getTitle(),
+                        JOptionPane.PLAIN_MESSAGE,
+                        new ImageIcon(mainIcon));
+            }
+        });
+        trayMenuExit = new MenuItem("Exit");
+        trayMenuExit.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent arg0) {
+                System.exit(0);
+            }
+        });
+        trayMenuAutorip = new CheckboxMenuItem("Clipboard Autorip");
+        trayMenuAutorip.setState(ClipboardUtils.getClipboardAutoRip());
+        trayMenuAutorip.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent arg0) {
+                ClipboardUtils.setClipboardAutoRip(trayMenuAutorip.getState());
+            }
+        });
+        trayMenu.add(trayMenuMain);
+        trayMenu.add(trayMenuAbout);
+        trayMenu.addSeparator();
+        trayMenu.add(trayMenuAutorip);
+        trayMenu.addSeparator();
+        trayMenu.add(trayMenuExit);
+        try {
+            mainIcon = ImageIO.read(getClass().getClassLoader().getResource("icon.png"));
+            trayIcon = new TrayIcon(mainIcon);
+            trayIcon.setToolTip(mainFrame.getTitle());
+            trayIcon.setImageAutoSize(true);
+            trayIcon.setPopupMenu(trayMenu);
+            SystemTray.getSystemTray().add(trayIcon);
+            trayIcon.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    toggleTrayClick();
+                    if (mainFrame.getExtendedState() != JFrame.NORMAL) {
+                        mainFrame.setExtendedState(JFrame.NORMAL);
+                    }
+                    mainFrame.setAlwaysOnTop(true);
+                    mainFrame.setAlwaysOnTop(false);
+                }
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    
+    private void toggleTrayClick() {
+        if (mainFrame.getExtendedState() == JFrame.ICONIFIED
+                || !mainFrame.isActive()
+                || !mainFrame.isVisible()) { 
+            mainFrame.setVisible(true);
+            mainFrame.setAlwaysOnTop(true);
+            mainFrame.setAlwaysOnTop(false);
+            trayMenuMain.setLabel("Hide");
+        }
+        else {
+            mainFrame.setVisible(false);
+            trayMenuMain.setLabel("Show");
+        }
+    }
     
     private void appendLog(final String text, final Color color) {
         SimpleAttributeSet sas = new SimpleAttributeSet();
@@ -547,6 +584,17 @@ public class MainWindow implements Runnable, RipStatusHandler {
                 ripper.setObserver((RipStatusHandler) this);
                 Thread t = new Thread(ripper);
                 t.start();
+                if (!mainFrame.isVisible()) {
+                    mainFrame.toFront();
+                    mainFrame.setAlwaysOnTop(true);
+                    trayIcon.displayMessage(mainFrame.getTitle(), "Started ripping " + ripper.getURL().toExternalForm(), MessageType.INFO);
+                    mainFrame.setAlwaysOnTop(false);
+                } else if (!mainFrame.isActive()) {
+                    mainFrame.toFront();
+                    mainFrame.setAlwaysOnTop(true);
+                    trayIcon.displayMessage(mainFrame.getTitle(), "Started ripping " + ripper.getURL().toExternalForm(), MessageType.INFO);
+                    mainFrame.setAlwaysOnTop(false);
+                }
                 return t;
             } catch (Exception e) {
                 logger.error("[!] Error while ripping: " + e.getMessage(), e);

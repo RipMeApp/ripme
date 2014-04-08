@@ -25,6 +25,8 @@ public class App {
     public static final Logger logger = Logger.getLogger(App.class);
 
     public static void main(String[] args) throws MalformedURLException {
+        System.setProperty("apple.laf.useScreenMenuBar", "true");
+        System.setProperty("com.apple.mrj.application.apple.menu.about.name", "RipMe");
         logger.info("Initialized ripme v" + UpdateUtils.getThisJarVersion());
         UpdateUtils.moveUpdatedJar();
         if (args.length > 0) {
