@@ -261,9 +261,8 @@ public class MainWindow implements Runnable, RipStatusHandler {
         JPanel statusPanel = new JPanel(new GridBagLayout());
         statusPanel.setBorder(emptyBorder);
 
-        gbc.gridx = 0;
-        statusPanel.add(statusLabel, gbc);
-        statusPanel.add(openButton, gbc);
+        gbc.gridx = 0; statusPanel.add(statusLabel, gbc);
+        gbc.gridy = 1; statusPanel.add(openButton, gbc);
 
         JPanel progressPanel = new JPanel(new GridBagLayout());
         progressPanel.setBorder(emptyBorder);
@@ -373,11 +372,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
                 logPanel.setVisible(!logPanel.isVisible());
                 historyPanel.setVisible(false);
                 configurationPanel.setVisible(false);
-                if (logPanel.isVisible()) {
-                    optionLog.setFont(optionLog.getFont().deriveFont(Font.BOLD));
-                } else {
-                    optionLog.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
-                }
+                optionLog.setFont(optionLog.getFont().deriveFont(Font.BOLD));
                 optionHistory.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
                 optionConfiguration.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
                 mainFrame.pack();
@@ -390,11 +385,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
                 historyPanel.setVisible(!historyPanel.isVisible());
                 configurationPanel.setVisible(false);
                 optionLog.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
-                if (historyPanel.isVisible()) {
-                    optionHistory.setFont(optionLog.getFont().deriveFont(Font.BOLD));
-                } else {
-                    optionHistory.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
-                }
+                optionHistory.setFont(optionLog.getFont().deriveFont(Font.BOLD));
                 optionConfiguration.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
                 mainFrame.pack();
             }
@@ -407,11 +398,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
                 configurationPanel.setVisible(!configurationPanel.isVisible());
                 optionLog.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
                 optionHistory.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
-                if (configurationPanel.isVisible()) {
-                    optionConfiguration.setFont(optionLog.getFont().deriveFont(Font.BOLD));
-                } else {
-                    optionConfiguration.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
-                }
+                optionConfiguration.setFont(optionLog.getFont().deriveFont(Font.BOLD));
                 mainFrame.pack();
             }
         });
@@ -521,6 +508,9 @@ public class MainWindow implements Runnable, RipStatusHandler {
 
     private Thread ripAlbum(String urlString) {
         shutdownCleanup();
+        if (!logPanel.isVisible()) {
+            optionLog.doClick();
+        }
         if (urlString.toLowerCase().startsWith("gonewild:")) {
             urlString = "http://gonewild.com/user/" + urlString.substring(urlString.indexOf(':') + 1);
         }
@@ -620,8 +610,8 @@ public class MainWindow implements Runnable, RipStatusHandler {
             saveHistory();
             ripButton.setEnabled(true);
             ripTextfield.setEnabled(true);
-            statusProgress.setValue(100);
-            statusLabel.setVisible(false);
+            statusProgress.setValue(0);
+            statusProgress.setVisible(false);
             openButton.setVisible(true);
             File f = (File) msg.getObject();
             String prettyFile = Utils.shortenPath(f);
