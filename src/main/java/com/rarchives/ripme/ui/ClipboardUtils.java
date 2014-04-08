@@ -45,7 +45,7 @@ public class ClipboardUtils {
 }
 
 class AutoripThread extends Thread {
-    public volatile boolean isRunning = false;
+    protected volatile boolean isRunning = false;
     Set<String> rippedURLs = new HashSet<String>();
 
     public void run() {
