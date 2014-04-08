@@ -69,7 +69,19 @@ public class DownloadFileThread extends Thread {
                         .timeout(TIMEOUT)
                         .maxBodySize(MAX_BODY_SIZE)
                         .execute();
-                FileOutputStream out = (new FileOutputStream(saveAs));
+                if (response.statusCode() != 200) {
+                    logger.error("[!] Non-OK status code " + response.statusCode() + " while downloading from " + url);
+                    observer.downloadErrored(url, "Non-OK status code " + response.statusCode() + " while downloading " + url.toExternalForm());
+                    return;
+                }
+                byte[] bytes = response.bodyAsBytes();
+                if (bytes.length == 503 && url.getHost().endsWith("imgur.com")) {
+                    // Imgur image with 503 bytes is "404"
+                    logger.error("[!] Imgur image is 404 (503 bytes long): " + url);
+                    observer.downloadErrored(url, "Imgur image is 404: " + url.toExternalForm());
+                    return;
+                }
+                FileOutputStream out = new FileOutputStream(saveAs);
                 out.write(response.bodyAsBytes());
                 out.close();
                 break; // Download successful: break out of infinite loop

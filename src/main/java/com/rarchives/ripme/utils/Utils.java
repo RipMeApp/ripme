@@ -12,7 +12,6 @@ import java.util.jar.JarFile;
 
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
-import org.apache.commons.configuration.reloading.FileChangedReloadingStrategy;
 import org.apache.log4j.Logger;
 
 /**
@@ -34,7 +33,6 @@ public class Utils {
                 configPath = configFile;
             }
             config = new PropertiesConfiguration(configPath);
-            config.setReloadingStrategy(new FileChangedReloadingStrategy());
             logger.info("Loaded " + config.getPath());
         } catch (Exception e) {
             logger.error("[!] Failed to load properties file from " + configFile, e);
