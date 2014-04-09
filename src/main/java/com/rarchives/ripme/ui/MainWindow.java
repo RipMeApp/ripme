@@ -162,7 +162,6 @@ public class MainWindow implements Runnable, RipStatusHandler {
         Utils.setConfigBoolean("auto.update", configAutoupdateCheckbox.isSelected());
         saveHistory();
         Utils.saveConfig();
-        ClipboardUtils.setClipboardAutoRip(false);
     }
 
     private void status(String text) {
