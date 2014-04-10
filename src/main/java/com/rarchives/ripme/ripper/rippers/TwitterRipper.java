@@ -55,14 +55,14 @@ public class TwitterRipper extends AbstractRipper {
     @Override
     public URL sanitizeURL(URL url) throws MalformedURLException {
         // https://twitter.com/search?q=from%3Apurrbunny%20filter%3Aimages&src=typd
-        Pattern p = Pattern.compile("^https?://(m\\.)?twitter\\.com/search\\?q=([a-zA-Z0-9%]{1,}).*$");
+        Pattern p = Pattern.compile("^https?://(m\\.)?twitter\\.com/search\\?q=([a-zA-Z0-9%\\-_]{1,}).*$");
         Matcher m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             albumType = ALBUM_TYPE.SEARCH;
             searchText = m.group(2);
             return url;
         }
-        p = Pattern.compile("^https?://(m\\.)?twitter\\.com/([a-zA-Z0-9]{1,}).*$");
+        p = Pattern.compile("^https?://(m\\.)?twitter\\.com/([a-zA-Z0-9\\-_]{1,}).*$");
         m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             albumType = ALBUM_TYPE.ACCOUNT;
