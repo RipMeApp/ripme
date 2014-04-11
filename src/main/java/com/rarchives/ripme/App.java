@@ -28,7 +28,7 @@ public class App {
         System.setProperty("apple.laf.useScreenMenuBar", "true");
         System.setProperty("com.apple.mrj.application.apple.menu.about.name", "RipMe");
         logger.info("Initialized ripme v" + UpdateUtils.getThisJarVersion());
-        UpdateUtils.moveUpdatedJar();
+
         if (args.length > 0) {
             CommandLine cl = handleArguments(args);
 

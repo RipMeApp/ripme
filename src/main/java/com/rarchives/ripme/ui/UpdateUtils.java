@@ -1,14 +1,14 @@
 package com.rarchives.ripme.ui;
 
-import java.awt.Desktop;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -143,97 +143,58 @@ public class UpdateUtils {
         out.write(response.bodyAsBytes());
         out.close();
         logger.info("Download of new version complete; saved to " + updateFileName);
+
+        // Setup updater script
+        final String batchFile, script;
+        final String[] batchExec;
+        String os = System.getProperty("os.name").toLowerCase();
+        if (os.contains("win")) {
+            // Windows
+            batchFile = "update_ripme.bat";
+            String batchPath = new File(batchFile).getAbsolutePath();
+            script = "@echo off\r\n"
+                    + "timeout 1" + "\r\n"
+                    + "copy " + updateFileName + " " + mainFileName + "\r\n"
+                    + "del " + updateFileName + "\r\n"
+                    + "ripme.jar" + "\r\n"
+                    + "del " + batchPath + "\r\n";
+            batchExec = new String[] { batchPath };
+
+        }
+        else {
+            // Mac / Linux
+            batchFile = "update_ripme.sh";
+            String batchPath = new File(batchFile).getAbsolutePath();
+            script = "#!/bin/sh\n"
+                    + "sleep 1" + "\n"
+                    + "cd " + new File(mainFileName).getAbsoluteFile().getParent() + "\n"
+                    + "cp -f " + updateFileName + " " + mainFileName + "\n"
+                    + "rm -f " + updateFileName + "\n"
+                    + "java -jar \"" + new File(mainFileName).getAbsolutePath() + "\" &\n"
+                    + "sleep 1" + "\n"
+                    + "rm -f " + batchPath + "\n";
+            batchExec = new String[] { "sh", batchPath };
+        }
+        // Create updater script
+        BufferedWriter bw = new BufferedWriter(new FileWriter(batchFile));
+        bw.write(script);
+        bw.flush();
+        bw.close();
+        logger.info("Saved update script to " + batchFile);
+        // Run updater script on exit
         Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override
             public void run() {
                 try {
-                    logger.info("Executing: java -jar " + updateFileName);
-                    Runtime.getRuntime().exec(new String[] {"java", "-jar", updateFileName});
+                    logger.info("Executing: " + batchFile);
+                    Runtime.getRuntime().exec(batchExec);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
             }
         });
-        logger.info("Exiting older version, should execute updated jar (" + updateFileName + ") during exit");
+        logger.info("Exiting older version, should execute update script (" + batchFile + ") during exit");
         System.exit(0);
     }
     
-    public static void moveUpdatedJar() {
-        // Copy the new file (ripme.jar.update) to original location (ripme.jar)
-        // Delete new file (update) on exit
-        // Exit
-        File newFile = new File(updateFileName); // ripme.jar.update
-        File oldFile = new File(mainFileName);   // ripme.jar
-        if (!newFile.exists()) {
-            // Can't update without .update file
-            return;
-        }
-
-        // Attempt to copy new .jar file over old jar file.
-        int retries = 3;
-        while (true) {
-            retries--;
-            try {
-                logger.info("Updated .jar file '" + newFile + "' exists, overwriting older version at " + oldFile + " ...");
-                FileUtils.copyFile(newFile, oldFile);
-                break; // Copy was successful; break.
-            }
-            catch (IOException e) {
-                logger.error("Failed to copy the updated jar over the original jar.\nUpdated Jar:\t" + newFile + "\nOriginal Jar: " + oldFile);
-                if (retries < 0) {
-                    // We failed!
-                    // Show error messages, pop up message dialog, and open the directory containing jars
-                    logger.error("Cannot ovewrite existing jar file " + oldFile + " with updated file " + newFile + " ... Please update by moving files manually");
-                    try {
-                        Desktop.getDesktop().open(newFile.getParentFile());
-                    } catch (IOException ioe) {
-                        logger.error("Error while opening directory " + newFile.getParentFile(), ioe);
-                    }
-                    JOptionPane.showMessageDialog(null,
-                            "Failed to copy the updated .jar file over the original .jar file\nUpdated Jar:\t" + newFile + "\nOriginal Jar: " + oldFile + "\n\nPlease update by moving files manually",
-                            "RipMe Updater Error",
-                            JOptionPane.ERROR_MESSAGE);
-                    System.exit(1);
-                    return;
-                }
-                e.printStackTrace();
-                try {
-                    logger.warn("Waiting 1 second, copy retries remaining: " + retries);
-                    Thread.sleep(1000);
-                } catch (InterruptedException ie) {
-                    logger.error("Interrupted while waiting for original jar " + oldFile + " to be overwritten", ie);
-                    return;
-                }
-            }
-        }
-
-        // Delete the updated .jar on exit
-        if (newFile.exists()) {
-            logger.info("Will delete '" + newFile + "' on exit");
-            try {
-                FileUtils.forceDeleteOnExit(newFile);
-            }
-            catch (Exception e) {
-                logger.error("Failed to schedule delete on file: " + newFile);
-                return;
-            }
-        }
-
-        // Execute the copied, updated .jar at ripme.jar
-        try {
-            String[] command = new String[] {
-                    "java",
-                    "-jar",
-                    oldFile.getName() };
-            logger.info("Executing: " + command[0] + " " + command[1] + " " + command[2]);
-            Runtime.getRuntime().exec(command);
-            logger.info("Started new version at " + oldFile.getName() + ", quitting current program...");
-            System.exit(0);
-        }
-        catch (IOException e) {
-            logger.error("Error while executing new jar '" + oldFile.getName() + "'", e);
-            return;
-        }
-    }
-
 }
