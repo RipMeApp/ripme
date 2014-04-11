@@ -32,7 +32,7 @@ public class InstagramRipper extends AbstractRipper {
 
     @Override
     public URL sanitizeURL(URL url) throws MalformedURLException {
-        Pattern p = Pattern.compile("^https?://instagram\\.com/p/([a-zA-Z0-9]{1,}).*$");
+        Pattern p = Pattern.compile("^https?://instagram\\.com/p/([a-zA-Z0-9\\-_]{1,}).*$");
         Matcher m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             // Link to photo, not the user account
@@ -43,7 +43,7 @@ public class InstagramRipper extends AbstractRipper {
                 throw new MalformedURLException("Failed to retrieve user page from " + url);
             }
         }
-        p = Pattern.compile("^.*instagram.com/([a-zA-Z0-9]{3,}).*$");
+        p = Pattern.compile("^.*instagram.com/([a-zA-Z0-9\\-_]{3,}).*$");
         m = p.matcher(url.toExternalForm());
         if (!m.matches()) {
             throw new MalformedURLException("Expected username in URL (instagram.com/username and not " + url);
@@ -132,7 +132,7 @@ public class InstagramRipper extends AbstractRipper {
 
     @Override
     public String getGID(URL url) throws MalformedURLException {
-        Pattern p = Pattern.compile("^https?://statigr.am/([a-zA-Z0-9]{3,}).*$");
+        Pattern p = Pattern.compile("^https?://statigr.am/([a-zA-Z0-9\\-_]{3,}).*$");
         Matcher m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             return m.group(1);
