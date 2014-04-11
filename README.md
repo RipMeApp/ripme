@@ -30,6 +30,7 @@ Supported sites:
 * deviantart
 * xhamster
 
+Request support for more sites [here](https://github.com/4pr0n/ripme/issues/8)
 
 Compiling & Building
 ====================
