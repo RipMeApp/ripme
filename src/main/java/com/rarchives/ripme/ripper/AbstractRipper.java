@@ -264,13 +264,17 @@ public abstract class AbstractRipper
         if (!path.endsWith(File.separator)) {
             path += File.separator;
         }
-        path += getHost() + "_" + getGID(this.url) + File.separator;
+        path += getAlbumTitle(this.url) + File.separator;
         this.workingDir = new File(path);
         if (!this.workingDir.exists()) {
             logger.info("[+] Creating directory: " + Utils.removeCWD(this.workingDir));
             this.workingDir.mkdirs();
         }
         logger.debug("Set working directory to: " + this.workingDir);
+    }
+    
+    public String getAlbumTitle(URL url) throws MalformedURLException {
+        return getHost() + "_" + getGID(url);
     }
 
     /**

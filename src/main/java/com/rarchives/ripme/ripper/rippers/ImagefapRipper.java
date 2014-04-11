@@ -19,6 +19,8 @@ public class ImagefapRipper extends AbstractRipper {
                                 HOST   = "imagefap";
     private static final Logger logger = Logger.getLogger(ImagefapRipper.class);
 
+    private Document albumDoc = null;
+
     public ImagefapRipper(URL url) throws IOException {
         super(url);
     }
@@ -38,18 +40,41 @@ public class ImagefapRipper extends AbstractRipper {
         logger.debug("Sanitized URL from " + url + " to " + newURL);
         return newURL;
     }
+    
+    public String getAlbumTitle(URL url) throws MalformedURLException {
+        try {
+            // Attempt to use album title as GID
+            if (albumDoc == null) {
+                albumDoc = Jsoup.connect(url.toExternalForm()).get();
+            }
+            String title = albumDoc.title();
+            Pattern p = Pattern.compile("^Porn pics of (.*) \\(Page 1\\)$");
+            Matcher m = p.matcher(title);
+            if (m.matches()) {
+                return m.group(1);
+            }
+        } catch (IOException e) {
+            // Fall back to default album naming convention
+        }
+        return super.getAlbumTitle(url);
+    }
 
+    @Override
     public String getGID(URL url) throws MalformedURLException {
-        Pattern p = Pattern.compile("^.*imagefap.com/gallery.php\\?gid=([0-9]{1,}).*$");
-        Matcher m = p.matcher(url.toExternalForm());
+        Pattern p; Matcher m;
+
+        p = Pattern.compile("^.*imagefap.com/gallery.php\\?gid=([0-9]{1,}).*$");
+        m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             return m.group(1);
         }
+
         p = Pattern.compile("^.*imagefap.com/pictures/([0-9]{1,}).*$");
         m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             return m.group(1);
         }
+
         throw new MalformedURLException(
                 "Expected imagefap.com gallery formats: "
                         + "imagefap.com/gallery.php?gid=####... or "
@@ -61,8 +86,10 @@ public class ImagefapRipper extends AbstractRipper {
     public void rip() throws IOException {
         int index = 0;
         logger.info("    Retrieving " + this.url.toExternalForm());
-        Document doc = Jsoup.connect(this.url.toExternalForm()).get();
-        for (Element thumb : doc.select("#gallery img")) {
+        if (albumDoc == null) {
+            albumDoc = Jsoup.connect(this.url.toExternalForm()).get();
+        }
+        for (Element thumb : albumDoc.select("#gallery img")) {
             if (!thumb.hasAttr("src") || !thumb.hasAttr("width")) {
                 continue;
             }
