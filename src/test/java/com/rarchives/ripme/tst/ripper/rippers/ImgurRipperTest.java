@@ -51,7 +51,6 @@ public class ImgurRipperTest extends RippersTest {
             try {
                 ImgurRipper ripper = new ImgurRipper(url);
                 assert(ripper.canRip(url));
-                System.err.println(ripper.getWorkingDir());
                 deleteDir(ripper.getWorkingDir());
             } catch (Exception e) {
                 fail("Failed to instantiate ripper for " + url);
@@ -60,11 +59,12 @@ public class ImgurRipperTest extends RippersTest {
     }
 
     public void testImgurAlbums() throws IOException {
-        if (!DOWNLOAD_CONTENT) {
+        if (false && !DOWNLOAD_CONTENT) {
             return;
         }
         List<URL> contentURLs = new ArrayList<URL>();
         // URLs that should return more than 1 image
+        /*
         contentURLs.add(new URL("http://imgur.com/a/hqJIu")); // Vertical layout
         contentURLs.add(new URL("http://imgur.com/a/dS9OQ#0")); // Horizontal layout
         contentURLs.add(new URL("http://imgur.com/a/YpsW9#0")); // Grid layout
@@ -72,6 +72,8 @@ public class ImgurRipperTest extends RippersTest {
         contentURLs.add(new URL("http://imgur.com/a/WxG6f/layout/horizontal#0"));
         contentURLs.add(new URL("http://imgur.com/a/WxG6f/layout/grid#0"));
         contentURLs.add(new URL("http://imgur.com/r/nsfw_oc/top/all"));
+        */
+        contentURLs.add(new URL("http://imgur.com/a/bXQpH"));
         for (URL url : contentURLs) {
             try {
                 ImgurRipper ripper = new ImgurRipper(url);

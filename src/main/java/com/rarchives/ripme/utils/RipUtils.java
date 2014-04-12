@@ -11,6 +11,8 @@ import java.util.regex.Pattern;
 import org.apache.log4j.Logger;
 
 import com.rarchives.ripme.ripper.rippers.ImgurRipper;
+import com.rarchives.ripme.ripper.rippers.ImgurRipper.ImgurAlbum;
+import com.rarchives.ripme.ripper.rippers.ImgurRipper.ImgurImage;
 
 public class RipUtils {
     private static final Logger logger = Logger.getLogger(RipUtils.class);
@@ -22,7 +24,11 @@ public class RipUtils {
         if ((url.getHost().equals("m.imgur.com") || url.getHost().equals("imgur.com")) 
                 && url.toExternalForm().contains("imgur.com/a/")) {
             try {
-                return ImgurRipper.getURLsFromAlbum(url);
+                ImgurAlbum imgurAlbum = ImgurRipper.getImgurAlbum(url);
+                for (ImgurImage imgurImage : imgurAlbum.images) {
+                    result.add(imgurImage.url);
+                }
+                return result;
             } catch (IOException e) {
                 logger.error("[!] Exception while loading album " + url, e);
             }

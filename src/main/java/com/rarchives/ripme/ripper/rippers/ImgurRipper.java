@@ -1,5 +1,6 @@
 package com.rarchives.ripme.ripper.rippers;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -19,6 +20,7 @@ import org.jsoup.select.Elements;
 
 import com.rarchives.ripme.ripper.AbstractRipper;
 import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
+import com.rarchives.ripme.utils.Utils;
 
 public class ImgurRipper extends AbstractRipper {
 
@@ -40,11 +42,6 @@ public class ImgurRipper extends AbstractRipper {
     public ImgurRipper(URL url) throws IOException {
         super(url);
         SLEEP_BETWEEN_ALBUMS = 1;
-    }
-
-    public void processURL(URL url, String prefix, String subdirectory) {
-       logger.debug("Found URL: " + url);
-       addURLToDownload(url, prefix, subdirectory);
     }
 
     public boolean canRip(URL url) {
@@ -84,7 +81,6 @@ public class ImgurRipper extends AbstractRipper {
             break;
 
         case USER:
-            // TODO Get all albums by user
             ripUserAccount(url);
             break;
         case SUBREDDIT:
@@ -102,15 +98,25 @@ public class ImgurRipper extends AbstractRipper {
         int index = 0;
         this.sendUpdate(STATUS.LOADING_RESOURCE, url.toExternalForm());
         index = 0;
-        for (URL singleURL : getURLsFromAlbum(url)) {
+        ImgurAlbum album = getImgurAlbum(url);
+        for (ImgurImage imgurImage : album.images) {
+            String saveAs = workingDir.getCanonicalPath();
+            if (!saveAs.endsWith(File.separator)) {
+                saveAs += File.separator;
+            }
+            if (subdirectory != null && !subdirectory.equals("")) {
+                saveAs += subdirectory;
+            }
+            if (!saveAs.endsWith(File.separator)) {
+                saveAs += File.separator;
+            }
             index += 1;
-            processURL(singleURL, String.format("%03d_", index), subdirectory);
+            saveAs += String.format("%03d_%s", index, imgurImage.getSaveAs());
+            addURLToDownload(imgurImage.url, new File(saveAs));
         }
     }
-    
-    public static List<URL> getURLsFromAlbum(URL url) throws IOException {
-        List<URL> result = new ArrayList<URL>();
 
+    public static ImgurAlbum getImgurAlbum(URL url) throws IOException {
         logger.info("    Retrieving " + url.toExternalForm());
         Document doc = Jsoup.connect(url.toExternalForm())
                             .userAgent(USER_AGENT)
@@ -122,6 +128,8 @@ public class ImgurRipper extends AbstractRipper {
         if (m.matches()) {
             try {
                 JSONObject json = new JSONObject(m.group(1));
+                JSONObject jsonAlbum = json.getJSONObject("album");
+                ImgurAlbum imgurAlbum = new ImgurAlbum(url, jsonAlbum.getString("title_clean"));
                 JSONArray images = json.getJSONObject("images").getJSONArray("items");
                 int imagesLength = images.length();
                 for (int i = 0; i < imagesLength; i++) {
@@ -131,9 +139,12 @@ public class ImgurRipper extends AbstractRipper {
                             "http://i.imgur.com/"
                                     + image.get("hash")
                                     + image.get("ext"));
-                    result.add(imageURL);
+                    ImgurImage imgurImage =  new ImgurImage(imageURL,
+                            image.getString("title"),
+                            image.getString("description"));
+                    imgurAlbum.addImage(imgurImage);
                 }
-                return result;
+                return imgurAlbum;
             } catch (JSONException e) {
                 logger.debug("Error while parsing JSON at " + url + ", continuing", e);
             }
@@ -142,19 +153,22 @@ public class ImgurRipper extends AbstractRipper {
         m = p.matcher(doc.body().html());
         if (m.matches()) {
             try {
+                ImgurAlbum imgurAlbum = new ImgurAlbum(url);
                 JSONObject json = new JSONObject(m.group(1));
                 JSONArray images = json.getJSONArray("hashes");
                 int imagesLength = images.length();
                 for (int i = 0; i < imagesLength; i++) {
                     JSONObject image = images.getJSONObject(i);
                     URL imageURL = new URL(
-                            "http:" + json.get("cdnUrl")
+                            "http:" + json.getString("cdnUrl")
                                     + "/"
-                                    + image.get("hash")
-                                    + image.get("ext"));
-                    result.add(imageURL);
+                                    + image.getString("hash")
+                                    + image.getString("ext"));
+                    ImgurImage imgurImage = new ImgurImage(imageURL);
+                    imgurImage.extension = image.getString("ext");
+                    imgurAlbum.addImage(imgurImage);
                 }
-                return result;
+                return imgurAlbum;
             } catch (JSONException e) {
                 logger.debug("Error while parsing JSON at " + url + ", continuing", e);
             }
@@ -174,6 +188,7 @@ public class ImgurRipper extends AbstractRipper {
 
         // Fall back to parsing HTML elements
         // NOTE: This does not always get the highest-resolution images!
+        ImgurAlbum imgurAlbum = new ImgurAlbum(url);
         for (Element thumb : doc.select("div.image")) {
             String image;
             if (thumb.select("a.zoom").size() > 0) {
@@ -186,9 +201,10 @@ public class ImgurRipper extends AbstractRipper {
                 logger.error("[!] Unable to find image in div: " + thumb.toString());
                 continue;
             }
-            result.add(new URL(image));
+            ImgurImage imgurImage = new ImgurImage(new URL(image));
+            imgurAlbum.addImage(imgurImage);
         }
-        return result;
+        return imgurAlbum;
     }
     
     /**
@@ -318,4 +334,54 @@ public class ImgurRipper extends AbstractRipper {
     public ALBUM_TYPE getAlbumType() {
         return albumType;
     }
+
+    public static class ImgurImage {
+        public String title = "",
+                description = "",
+                extension   = "";
+        public URL url = null;
+
+        public ImgurImage(URL url) {
+            this.url = url;
+            String tempUrl = url.toExternalForm();
+            this.extension = tempUrl.substring(tempUrl.lastIndexOf('.'));
+        }
+        public ImgurImage(URL url, String title) {
+            this(url);
+            this.title = title;
+        }
+        public ImgurImage(URL url, String title, String description) {
+            this(url, title);
+            this.description = description;
+        }
+        public String getSaveAs() {
+            String saveAs = this.title;
+            String u = url.toExternalForm();
+            String imgId = u.substring(u.lastIndexOf('/') + 1, u.lastIndexOf('.'));
+            if (saveAs == null || saveAs.equals("")) {
+                saveAs = imgId;
+            } else {
+                saveAs = saveAs + "_" + imgId;
+            }
+            saveAs = Utils.filesystemSafe(saveAs);
+            return saveAs + this.extension;
+        }
+    }
+
+    public static class ImgurAlbum {
+        public String title = null;
+        public URL    url = null;
+        public List<ImgurImage> images = new ArrayList<ImgurImage>();
+        public ImgurAlbum(URL url) {
+            this.url = url;
+        }
+        public ImgurAlbum(URL url, String title) {
+            this(url);
+            this.title = title;
+        }
+        public void addImage(ImgurImage image) {
+            images.add(image);
+        }
+    }
+
 }
