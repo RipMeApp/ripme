@@ -264,7 +264,9 @@ public abstract class AbstractRipper
         if (!path.endsWith(File.separator)) {
             path += File.separator;
         }
-        path += getAlbumTitle(this.url) + File.separator;
+        String title = getAlbumTitle(this.url);
+        title = Utils.filesystemSafe(title);
+        path += title + File.separator;
         this.workingDir = new File(path);
         if (!this.workingDir.exists()) {
             logger.info("[+] Creating directory: " + Utils.removeCWD(this.workingDir));

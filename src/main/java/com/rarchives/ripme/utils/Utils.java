@@ -241,4 +241,10 @@ public class Utils {
                 + "..."
                 + path.substring(path.length() - SHORTENED_PATH_LENGTH);
     }
+    
+    public static String filesystemSafe(String text) {
+        return text.replaceAll("[^a-zA-Z0-9.-]", "_")
+                   .replaceAll("__", "_")
+                   .replaceAll("_+$", "");
+    }
 }
