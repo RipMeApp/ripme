@@ -22,6 +22,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -29,6 +30,7 @@ import java.util.Arrays;
 
 import javax.imageio.ImageIO;
 import javax.swing.DefaultListModel;
+import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -108,6 +110,8 @@ public class MainWindow implements Runnable, RipStatusHandler {
     private static CheckboxMenuItem trayMenuAutorip;
 
     private static Image mainIcon;
+    
+    private static AbstractRipper ripper;
 
     public MainWindow() {
         mainFrame = new JFrame("RipMe v" + UpdateUtils.getThisJarVersion());
@@ -224,6 +228,15 @@ public class MainWindow implements Runnable, RipStatusHandler {
         optionLog = new JButton("Log");
         optionHistory = new JButton("History");
         optionConfiguration = new JButton("Configuration");
+        try {
+            Image icon;
+            icon = ImageIO.read(getClass().getClassLoader().getResource("comment.png"));
+            optionLog.setIcon(new ImageIcon(icon));
+            icon = ImageIO.read(getClass().getClassLoader().getResource("time.png"));
+            optionHistory.setIcon(new ImageIcon(icon));
+            icon = ImageIO.read(getClass().getClassLoader().getResource("gear.png"));
+            optionConfiguration.setIcon(new ImageIcon(icon));
+        } catch (Exception e) { }
         gbc.gridx = 0; optionsPanel.add(optionLog, gbc);
         gbc.gridx = 1; optionsPanel.add(optionHistory, gbc);
         gbc.gridx = 2; optionsPanel.add(optionConfiguration, gbc);
@@ -567,7 +580,6 @@ public class MainWindow implements Runnable, RipStatusHandler {
         openButton.setVisible(false);
         statusLabel.setVisible(true);
         mainFrame.pack();
-        AbstractRipper ripper = null;
         boolean failed = false;
         try {
             ripper = AbstractRipper.getRipper(url);
@@ -663,6 +675,12 @@ public class MainWindow implements Runnable, RipStatusHandler {
             File f = (File) msg.getObject();
             String prettyFile = Utils.shortenPath(f);
             openButton.setText("Open " + prettyFile);
+            try {
+                Image folderIcon = ImageIO.read(getClass().getClassLoader().getResource("folder.png"));
+                openButton.setIcon(new ImageIcon(folderIcon));
+            } catch (Exception e) {
+                logger.error("Error while setting folder icon", e);
+            }
             appendLog( "Rip complete, saved to " + prettyFile, Color.GREEN);
             openButton.setActionCommand(f.toString());
             openButton.addActionListener(new ActionListener() {
