@@ -42,6 +42,21 @@ public abstract class AbstractRipper
     public abstract String getHost();
     public abstract String getGID(URL url) throws MalformedURLException;
 
+    private boolean shouldStop = false;
+
+    public void stop() {
+        shouldStop = true;
+    }
+    public boolean isStopped() {
+        return shouldStop;
+    }
+    protected void stopCheck() throws IOException {
+        if (shouldStop) {
+            threadPool.waitForThreads();
+            throw new IOException("Ripping interrupted");
+        }
+    }
+
     /**
      * Ensures inheriting ripper can rip this URL, raises exception if not.
      * Otherwise initializes working directory and thread pool.
@@ -117,6 +132,11 @@ public abstract class AbstractRipper
      *      Sub-directory of the working directory to save the images to.
      */
     public void addURLToDownload(URL url, String prefix, String subdirectory) {
+        try {
+            stopCheck();
+        } catch (IOException e) {
+            return;
+        }
         String saveAs = url.toExternalForm();
         saveAs = saveAs.substring(saveAs.lastIndexOf('/')+1);
         if (saveAs.indexOf('?') >= 0) { saveAs = saveAs.substring(0, saveAs.indexOf('?')); }

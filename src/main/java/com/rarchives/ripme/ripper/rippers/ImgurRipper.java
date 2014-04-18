@@ -100,6 +100,7 @@ public class ImgurRipper extends AbstractRipper {
         index = 0;
         ImgurAlbum album = getImgurAlbum(url);
         for (ImgurImage imgurImage : album.images) {
+            stopCheck();
             String saveAs = workingDir.getCanonicalPath();
             if (!saveAs.endsWith(File.separator)) {
                 saveAs += File.separator;
@@ -217,6 +218,7 @@ public class ImgurRipper extends AbstractRipper {
         logger.info("[ ] Retrieving " + url.toExternalForm());
         Document doc = Jsoup.connect(url.toExternalForm()).get();
         for (Element album : doc.select("div.cover a")) {
+            stopCheck();
             if (!album.hasAttr("href")
                     || !album.attr("href").contains("imgur.com/a/")) {
                 continue;
@@ -236,6 +238,7 @@ public class ImgurRipper extends AbstractRipper {
     private void ripSubreddit(URL url) throws IOException {
         int page = 0;
         while (true) {
+            stopCheck();
             String pageURL = url.toExternalForm();
             if (!pageURL.endsWith("/")) {
                 pageURL += "/";

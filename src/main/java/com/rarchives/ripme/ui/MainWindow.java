@@ -22,7 +22,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -30,7 +29,6 @@ import java.util.Arrays;
 
 import javax.imageio.ImageIO;
 import javax.swing.DefaultListModel;
-import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -67,7 +65,8 @@ public class MainWindow implements Runnable, RipStatusHandler {
     
     private static JFrame mainFrame;
     private static JTextField ripTextfield;
-    private static JButton ripButton;
+    private static JButton ripButton,
+                           stopButton;
 
     private static JLabel statusLabel;
     private static JButton openButton;
@@ -198,14 +197,21 @@ public class MainWindow implements Runnable, RipStatusHandler {
         }
 
         ripTextfield = new JTextField("", 20);
-        ImageIcon ripIcon = new ImageIcon(mainIcon.getScaledInstance(20, 20, Image.SCALE_SMOOTH));
+        ImageIcon ripIcon = new ImageIcon(mainIcon);
         ripButton = new JButton("<html><font size=\"5\"><b>Rip</b></font></html>", ripIcon);
+        stopButton = new JButton("<html><font size=\"5\"><b>Stop</b></font></html>");
+        stopButton.setVisible(false);
+        try {
+            Image stopIcon = ImageIO.read(getClass().getClassLoader().getResource("stop.png"));
+            stopButton.setIcon(new ImageIcon(stopIcon));
+        } catch (Exception e) { }
         JPanel ripPanel = new JPanel(new GridBagLayout());
         ripPanel.setBorder(emptyBorder);
 
         gbc.gridx = 0; ripPanel.add(new JLabel("URL:", JLabel.RIGHT), gbc);
         gbc.gridx = 1; ripPanel.add(ripTextfield, gbc);
         gbc.gridx = 2; ripPanel.add(ripButton, gbc);
+                       ripPanel.add(stopButton, gbc);
 
         statusLabel  = new JLabel("Inactive");
         statusLabel.setHorizontalAlignment(JLabel.CENTER);
@@ -329,6 +335,23 @@ public class MainWindow implements Runnable, RipStatusHandler {
     private void setupHandlers() {
         ripButton.addActionListener(new RipButtonHandler());
         ripTextfield.addActionListener(new RipButtonHandler());
+        stopButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent event) {
+                if (ripper != null) {
+                    ripper.stop();
+                    ripButton.setVisible(true);
+                    stopButton.setVisible(false);
+                    ripTextfield.setEnabled(true);
+                    statusProgress.setValue(0);
+                    statusProgress.setVisible(false);
+                    mainFrame.pack();
+                    statusProgress.setValue(0);
+                    status("Ripping interrupted");
+                    appendLog("Ripper interrupted", Color.RED);
+                }
+            }
+        });
         optionLog.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent event) {
@@ -574,7 +597,8 @@ public class MainWindow implements Runnable, RipStatusHandler {
             error("Given URL is not valid, expecting http://website.com/page/...");
             return null;
         }
-        ripButton.setEnabled(false);
+        ripButton.setVisible(false);
+        stopButton.setVisible(true);
         ripTextfield.setEnabled(false);
         statusProgress.setValue(100);
         openButton.setVisible(false);
@@ -612,7 +636,8 @@ public class MainWindow implements Runnable, RipStatusHandler {
                 error("Unable to rip this URL: " + e.getMessage());
             }
         }
-        ripButton.setEnabled(true);
+        ripButton.setVisible(true);
+        stopButton.setVisible(false);
         ripTextfield.setEnabled(true);
         statusProgress.setValue(0);
         mainFrame.pack();
@@ -640,6 +665,9 @@ public class MainWindow implements Runnable, RipStatusHandler {
     }
     
     private void handleEvent(StatusEvent evt) {
+        if (ripper.isStopped()) {
+            return;
+        }
         RipStatusMessage msg = evt.msg;
 
         int completedPercent = evt.ripper.getCompletionPercentage();
@@ -667,7 +695,8 @@ public class MainWindow implements Runnable, RipStatusHandler {
                 historyListModel.addElement(ripTextfield.getText());
             }
             saveHistory();
-            ripButton.setEnabled(true);
+            ripButton.setVisible(true);
+            stopButton.setVisible(false);
             ripTextfield.setEnabled(true);
             statusProgress.setValue(0);
             statusProgress.setVisible(false);
@@ -678,9 +707,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
             try {
                 Image folderIcon = ImageIO.read(getClass().getClassLoader().getResource("folder.png"));
                 openButton.setIcon(new ImageIcon(folderIcon));
-            } catch (Exception e) {
-                logger.error("Error while setting folder icon", e);
-            }
+            } catch (Exception e) { }
             appendLog( "Rip complete, saved to " + prettyFile, Color.GREEN);
             openButton.setActionCommand(f.toString());
             openButton.addActionListener(new ActionListener() {

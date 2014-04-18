@@ -45,6 +45,12 @@ public class DownloadFileThread extends Thread {
      * Notifies observers upon completion/error/warn.
      */
     public void run() {
+        try {
+            observer.stopCheck();
+        } catch (IOException e) {
+            observer.downloadErrored(url, "Download interrupted");
+            return;
+        }
         if (saveAs.exists()) {
             if (Utils.getConfigBoolean("file.overwrite", false)) {
                 logger.info("[!] Deleting existing file" + prettySaveAs);
