@@ -111,6 +111,10 @@ public class ImgurRipper extends AbstractRipper {
             if (!saveAs.endsWith(File.separator)) {
                 saveAs += File.separator;
             }
+            File subdirFile = new File(saveAs);
+            if (!subdirFile.exists()) {
+                subdirFile.mkdirs();
+            }
             index += 1;
             saveAs += String.format("%03d_%s", index, imgurImage.getSaveAs());
             addURLToDownload(imgurImage.url, new File(saveAs));
