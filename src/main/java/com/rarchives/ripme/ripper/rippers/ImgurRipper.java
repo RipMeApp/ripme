@@ -34,6 +34,7 @@ public class ImgurRipper extends AlbumRipper {
         ALBUM,
         USER,
         USER_ALBUM,
+        USER_IMAGES,
         SERIES_OF_IMAGES,
         SUBREDDIT
     };
@@ -85,6 +86,9 @@ public class ImgurRipper extends AlbumRipper {
             break;
         case SUBREDDIT:
             ripSubreddit(url);
+            break;
+        case USER_IMAGES:
+            ripUserImages(url);
             break;
         }
         waitForThreads();
@@ -239,6 +243,44 @@ public class ImgurRipper extends AlbumRipper {
         }
     }
     
+    private void ripUserImages(URL url) throws IOException {
+        int page = 0; int imagesFound = 0; int imagesTotal = 0;
+        String jsonUrl = url.toExternalForm().replace("/all", "/ajax/images");
+        if (jsonUrl.contains("#")) {
+            jsonUrl = jsonUrl.substring(0, jsonUrl.indexOf("#"));
+        }
+
+        while (true) {
+            try {
+                page++;
+                String jsonUrlWithParams = jsonUrl + "?sort=0&order=1&album=0&page=" + page + "&perPage=60";
+                String jsonString = Jsoup.connect(jsonUrlWithParams)
+                        .ignoreContentType(true)
+                        .execute()
+                        .body();
+                JSONObject json = new JSONObject(jsonString);
+                JSONObject jsonData = json.getJSONObject("data");
+                if (jsonData.has("count")) {
+                    imagesTotal = jsonData.getInt("count");
+                }
+                JSONArray images = jsonData.getJSONArray("images");
+                for (int i = 0; i < images.length(); i++) {
+                    imagesFound++;
+                    JSONObject image = images.getJSONObject(i);
+                    String imageUrl = "http://i.imgur.com/" + image.getString("hash") + image.getString("ext");
+                    addURLToDownload(new URL(imageUrl), String.format("%03d_", imagesFound));
+                }
+                if (imagesFound >= imagesTotal) {
+                    break;
+                }
+                Thread.sleep(1000);
+            } catch (Exception e) {
+                logger.error("Error while ripping user images: " + e.getMessage(), e);
+                break;
+            }
+        }
+    }
+    
     private void ripSubreddit(URL url) throws IOException {
         int page = 0;
         while (true) {
@@ -304,12 +346,19 @@ public class ImgurRipper extends AlbumRipper {
             albumType = ALBUM_TYPE.USER;
             return gid;
         }
-        p = Pattern.compile("^https?://([a-zA-Z0-9\\-]{3,})\\.imgur\\.com/([a-zA-Z0-9])?$");
+        p = Pattern.compile("^https?://([a-zA-Z0-9\\-]{3,})\\.imgur\\.com/?$");
         m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             // Imgur account album
             albumType = ALBUM_TYPE.USER_ALBUM;
             return m.group();
+        }
+        p = Pattern.compile("^https?://([a-zA-Z0-9\\-]{3,})\\.imgur\\.com/all.*$");
+        m = p.matcher(url.toExternalForm());
+        if (m.matches()) {
+            // Imgur account images
+            albumType = ALBUM_TYPE.USER_IMAGES;
+            return m.group(1) + "_images";
         }
         p = Pattern.compile("^https?://(www\\.)?imgur\\.com/r/([a-zA-Z0-9\\-_]{3,})(/top|/new)?(/all|/year|/month|/week)?/?$");
         m = p.matcher(url.toExternalForm());
@@ -352,6 +401,9 @@ public class ImgurRipper extends AlbumRipper {
             this.url = url;
             String tempUrl = url.toExternalForm();
             this.extension = tempUrl.substring(tempUrl.lastIndexOf('.'));
+            if (this.extension.contains("?")) {
+                this.extension = this.extension.substring(0, this.extension.indexOf("?"));
+            }
         }
         public ImgurImage(URL url, String title) {
             this(url);
@@ -364,6 +416,9 @@ public class ImgurRipper extends AlbumRipper {
         public String getSaveAs() {
             String saveAs = this.title;
             String u = url.toExternalForm();
+            if (u.contains("?")) {
+                u = u.substring(0, u.indexOf("?"));
+            }
             String imgId = u.substring(u.lastIndexOf('/') + 1, u.lastIndexOf('.'));
             if (saveAs == null || saveAs.equals("")) {
                 saveAs = imgId;
