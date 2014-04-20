@@ -33,6 +33,11 @@ public abstract class VideoRipper extends AbstractRipper {
     }
 
     @Override
+    public String getAlbumTitle(URL url) {
+        return "videos";
+    }
+
+    @Override
     public void addURLToDownload(URL url, File saveAs) {
         threadPool.addThread(new DownloadVideoThread(url, saveAs, this));
     }

@@ -672,6 +672,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
 
         int completedPercent = evt.ripper.getCompletionPercentage();
         statusProgress.setValue(completedPercent);
+        statusProgress.setVisible(true);
         status( evt.ripper.getStatusText() );
 
         switch(msg.getStatus()) {

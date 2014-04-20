@@ -5,12 +5,13 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.rarchives.ripme.ripper.rippers.video.PornhubRipper;
 import com.rarchives.ripme.ripper.rippers.video.XvideosRipper;
 
 public class VideoRippersTest extends RippersTest {
     
     public void testXvideosRipper() throws IOException {
-        if (false && !DOWNLOAD_CONTENT) {
+        if (!DOWNLOAD_CONTENT) {
             return;
         }
         List<URL> contentURLs = new ArrayList<URL>();
@@ -19,6 +20,25 @@ public class VideoRippersTest extends RippersTest {
         for (URL url : contentURLs) {
             try {
                 XvideosRipper ripper = new XvideosRipper(url);
+                ripper.rip();
+                assert(ripper.getWorkingDir().listFiles().length > 1);
+                deleteDir(ripper.getWorkingDir());
+            } catch (Exception e) {
+                e.printStackTrace();
+                fail("Error while ripping URL " + url + ": " + e.getMessage());
+            }
+        }
+    }
+    
+    public void testPornhubRipper() throws IOException {
+        if (!DOWNLOAD_CONTENT) {
+            return;
+        }
+        List<URL> contentURLs = new ArrayList<URL>();
+        contentURLs.add(new URL("http://www.pornhub.com/view_video.php?viewkey=993166542"));
+        for (URL url : contentURLs) {
+            try {
+                PornhubRipper ripper = new PornhubRipper(url);
                 ripper.rip();
                 assert(ripper.getWorkingDir().listFiles().length > 1);
                 deleteDir(ripper.getWorkingDir());

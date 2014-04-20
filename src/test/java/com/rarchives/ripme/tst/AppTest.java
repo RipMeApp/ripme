@@ -4,8 +4,6 @@ import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
-import com.rarchives.ripme.utils.Utils;
-
 public class AppTest extends TestCase {
     /**
      * Create the test case
@@ -27,7 +25,6 @@ public class AppTest extends TestCase {
      * Rigourous Test :-)
      */
     public void testApp() {
-        System.err.println(Utils.bytesToHumanReadable(1023 * 5000));
         assertTrue( true );
     }
 }

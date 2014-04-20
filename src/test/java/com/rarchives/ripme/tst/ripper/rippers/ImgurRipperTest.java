@@ -59,7 +59,7 @@ public class ImgurRipperTest extends RippersTest {
     }
 
     public void testImgurAlbums() throws IOException {
-        if (false && !DOWNLOAD_CONTENT) {
+        if (!DOWNLOAD_CONTENT) {
             return;
         }
         List<URL> contentURLs = new ArrayList<URL>();

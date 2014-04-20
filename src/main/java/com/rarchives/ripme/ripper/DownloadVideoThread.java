@@ -74,7 +74,7 @@ public class DownloadVideoThread extends Thread {
         int tries = 0; // Number of attempts to download
         do {
             InputStream bis = null; OutputStream fos = null;
-            byte[] data = new byte[1024]; int bytesRead;
+            byte[] data = new byte[1024 * 256]; int bytesRead;
             try {
                 logger.info("    Downloading file: " + url + (tries > 0 ? " Retry #" + tries : ""));
                 observer.sendUpdate(STATUS.DOWNLOAD_STARTED, url.toExternalForm());

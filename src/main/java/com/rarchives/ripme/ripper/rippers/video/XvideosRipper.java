@@ -37,11 +37,6 @@ public class XvideosRipper extends VideoRipper {
     }
     
     @Override
-    public String getAlbumTitle(URL url) {
-        return "videos";
-    }
-
-    @Override
     public URL sanitizeURL(URL url) throws MalformedURLException {
         return url;
     }
