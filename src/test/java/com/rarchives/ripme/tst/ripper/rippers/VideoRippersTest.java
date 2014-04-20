@@ -5,9 +5,11 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.rarchives.ripme.ripper.rippers.video.BeegRipper;
 import com.rarchives.ripme.ripper.rippers.video.PornhubRipper;
 import com.rarchives.ripme.ripper.rippers.video.VineRipper;
 import com.rarchives.ripme.ripper.rippers.video.XvideosRipper;
+import com.rarchives.ripme.ripper.rippers.video.YoupornRipper;
 
 public class VideoRippersTest extends RippersTest {
     
@@ -68,5 +70,44 @@ public class VideoRippersTest extends RippersTest {
             }
         }
     }
+
+    public void testYoupornRipper() throws IOException {
+        if (!DOWNLOAD_CONTENT) {
+            return;
+        }
+        List<URL> contentURLs = new ArrayList<URL>();
+        contentURLs.add(new URL("http://www.youporn.com/watch/7669155/mrs-li-amateur-69-orgasm/?from=categ"));
+        for (URL url : contentURLs) {
+            try {
+                YoupornRipper ripper = new YoupornRipper(url);
+                ripper.rip();
+                assert(ripper.getWorkingDir().listFiles().length > 1);
+                deleteDir(ripper.getWorkingDir());
+            } catch (Exception e) {
+                e.printStackTrace();
+                fail("Error while ripping URL " + url + ": " + e.getMessage());
+            }
+        }
+    }
+
+    public void testBeegRipper() throws IOException {
+        if (!DOWNLOAD_CONTENT) {
+            return;
+        }
+        List<URL> contentURLs = new ArrayList<URL>();
+        contentURLs.add(new URL("http://beeg.com/4554321"));
+        for (URL url : contentURLs) {
+            try {
+                BeegRipper ripper = new BeegRipper(url);
+                ripper.rip();
+                assert(ripper.getWorkingDir().listFiles().length > 1);
+                deleteDir(ripper.getWorkingDir());
+            } catch (Exception e) {
+                e.printStackTrace();
+                fail("Error while ripping URL " + url + ": " + e.getMessage());
+            }
+        }
+    }
+
 
 }
