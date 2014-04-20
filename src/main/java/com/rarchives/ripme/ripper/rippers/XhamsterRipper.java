@@ -11,9 +11,9 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
-import com.rarchives.ripme.ripper.AbstractRipper;
+import com.rarchives.ripme.ripper.AlbumRipper;
 
-public class XhamsterRipper extends AbstractRipper {
+public class XhamsterRipper extends AlbumRipper {
 
     private static final String DOMAIN = "xhamster.com",
                                 HOST   = "xhamster";

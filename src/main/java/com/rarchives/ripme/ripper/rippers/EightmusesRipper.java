@@ -12,9 +12,9 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
-import com.rarchives.ripme.ripper.AbstractRipper;
+import com.rarchives.ripme.ripper.AlbumRipper;
 
-public class EightmusesRipper extends AbstractRipper {
+public class EightmusesRipper extends AlbumRipper {
 
     private static final String DOMAIN = "8muses.com",
                                 HOST   = "8muses";

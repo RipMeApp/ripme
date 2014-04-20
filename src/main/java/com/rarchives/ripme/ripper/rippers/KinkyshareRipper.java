@@ -11,9 +11,9 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
-import com.rarchives.ripme.ripper.AbstractRipper;
+import com.rarchives.ripme.ripper.AlbumRipper;
 
-public class KinkyshareRipper extends AbstractRipper {
+public class KinkyshareRipper extends AlbumRipper {
 
     private static final String HOST   = "kinkyshare";
     private static final Logger logger = Logger.getLogger(KinkyshareRipper.class);

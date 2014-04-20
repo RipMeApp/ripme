@@ -16,10 +16,10 @@ import org.json.JSONTokener;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
-import com.rarchives.ripme.ripper.AbstractRipper;
+import com.rarchives.ripme.ripper.AlbumRipper;
 import com.rarchives.ripme.utils.Utils;
 
-public class TwitterRipper extends AbstractRipper {
+public class TwitterRipper extends AlbumRipper {
 
     private static final String DOMAIN = "twitter.com",
                                 HOST   = "twitter";

@@ -721,6 +721,13 @@ public class MainWindow implements Runnable, RipStatusHandler {
                 }
             });
             mainFrame.pack();
+            break;
+        case COMPLETED_BYTES:
+            // Update completed bytes
+            break;
+        case TOTAL_BYTES:
+            // Update total bytes
+            break;
         }
     }
 

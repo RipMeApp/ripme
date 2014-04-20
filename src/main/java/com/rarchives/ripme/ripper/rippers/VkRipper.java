@@ -18,9 +18,9 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
-import com.rarchives.ripme.ripper.AbstractRipper;
+import com.rarchives.ripme.ripper.AlbumRipper;
 
-public class VkRipper extends AbstractRipper {
+public class VkRipper extends AlbumRipper {
 
     private static final String DOMAIN = "vk.com",
                                 HOST   = "vk";

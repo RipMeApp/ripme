@@ -11,7 +11,9 @@ public class RipStatusMessage {
         DOWNLOAD_COMPLETE("Download Complete"),
         DOWNLOAD_ERRORED("Download Errored"),
         RIP_COMPLETE("Rip Complete"), 
-        DOWNLOAD_WARN("Download problem");
+        DOWNLOAD_WARN("Download problem"),
+        TOTAL_BYTES("Total bytes"),
+        COMPLETED_BYTES("Completed bytes");
 
         String value;
         STATUS(String value) {

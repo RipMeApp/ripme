@@ -11,10 +11,10 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.jsoup.Jsoup;
 
-import com.rarchives.ripme.ripper.AbstractRipper;
+import com.rarchives.ripme.ripper.AlbumRipper;
 import com.rarchives.ripme.utils.Utils;
 
-public class GonewildRipper extends AbstractRipper {
+public class GonewildRipper extends AlbumRipper {
 
     private static final String HOST   = "gonewild";
     private static final Logger logger = Logger.getLogger(GonewildRipper.class);

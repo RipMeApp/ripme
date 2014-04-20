@@ -6,10 +6,7 @@ import java.lang.reflect.Constructor;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Observable;
 
 import org.apache.log4j.Logger;
@@ -23,7 +20,7 @@ public abstract class AbstractRipper
                 extends Observable
                 implements RipperInterface, Runnable {
 
-    private static final Logger logger = Logger.getLogger(AbstractRipper.class);
+    protected static final Logger logger = Logger.getLogger(AbstractRipper.class);
 
     protected static final String USER_AGENT = 
             "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:27.0) Gecko/20100101 Firefox/27.0";
@@ -33,9 +30,6 @@ public abstract class AbstractRipper
     protected DownloadThreadPool threadPool;
     protected RipStatusHandler observer = null;
 
-    protected Map<URL, File> itemsPending = Collections.synchronizedMap(new HashMap<URL, File>());
-    protected Map<URL, File> itemsCompleted = Collections.synchronizedMap(new HashMap<URL, File>());
-    protected Map<URL, String> itemsErrored = Collections.synchronizedMap(new HashMap<URL, String>());
     protected boolean completed = true;
 
     public abstract void rip() throws IOException;
@@ -102,7 +96,7 @@ public abstract class AbstractRipper
         // Use empty subdirectory
         addURLToDownload(url, prefix, "");
     }
-
+    
     /**
      * Queues image to be downloaded and saved.
      * @param url
@@ -110,17 +104,7 @@ public abstract class AbstractRipper
      * @param saveAs
      *      Path of the local file to save the content to.
      */
-    public void addURLToDownload(URL url, File saveAs) {
-        if (itemsPending.containsKey(url)
-                || itemsCompleted.containsKey(url)
-                || itemsErrored.containsKey(url)) {
-            // Item is already downloaded/downloading, skip it.
-            logger.info("[!] Skipping " + url + " -- already attempted: " + Utils.removeCWD(saveAs));
-            return;
-        }
-        itemsPending.put(url, saveAs);
-        threadPool.addThread(new DownloadFileThread(url, saveAs, this));
-    }
+    public abstract void addURLToDownload(URL url, File saveAs);
 
     /**
      * Queues file to be downloaded and saved. With options.
@@ -192,67 +176,30 @@ public abstract class AbstractRipper
      * @param saveAs
      *      Where the downloaded file is stored.
      */
-    public void downloadCompleted(URL url, File saveAs) {
-        if (observer == null) {
-            return;
-        }
-        try {
-            String path = Utils.removeCWD(saveAs);
-            RipStatusMessage msg = new RipStatusMessage(STATUS.DOWNLOAD_COMPLETE, path);
-            itemsPending.remove(url);
-            itemsCompleted.put(url, saveAs);
-            observer.update(this, msg);
-
-            checkIfComplete();
-        } catch (Exception e) {
-            logger.error("Exception while updating observer: ", e);
-        }
-    }
-
+    public abstract void downloadCompleted(URL url, File saveAs);
     /**
      * Notifies observers that a file could not be downloaded (includes a reason).
      * @param url
      * @param reason
      */
-    public void downloadErrored(URL url, String reason) {
-        if (observer == null) {
-            return;
-        }
-        itemsPending.remove(url);
-        itemsErrored.put(url, reason);
-        observer.update(this, new RipStatusMessage(STATUS.DOWNLOAD_ERRORED, url + " : " + reason));
-
-        checkIfComplete();
-    }
-
+    public abstract void downloadErrored(URL url, String reason);
     /**
      * Notify observers that a download could not be completed,
      * but was not technically an "error".
      * @param url
      * @param message
      */
-    public void downloadProblem(URL url, String message) {
-        if (observer == null) {
-            return;
-        }
-        
-        itemsPending.remove(url);
-        itemsErrored.put(url, message);
-        observer.update(this, new RipStatusMessage(STATUS.DOWNLOAD_WARN, url + " : " + message));
-            
-        
-        checkIfComplete();
-    }
+    public abstract void downloadProblem(URL url, String message);
 
     /**
      * Notifies observers and updates state if all files have been ripped.
      */
-    private void checkIfComplete() {
+    protected void checkIfComplete() {
         if (observer == null) {
             return;
         }
         
-        if (!completed && itemsPending.isEmpty()) {
+        if (!completed) {
             completed = true;
             logger.info("   Rip completed!");
             
@@ -274,26 +221,7 @@ public abstract class AbstractRipper
         return workingDir;
     }
 
-    /**
-     * Sets directory to save all ripped files to.
-     * @param url
-     *      URL to define how the workin directory should be saved.
-     */
-    public void setWorkingDir(URL url) throws IOException {
-        String path = Utils.getWorkingDirectory().getCanonicalPath();
-        if (!path.endsWith(File.separator)) {
-            path += File.separator;
-        }
-        String title = getAlbumTitle(this.url);
-        title = Utils.filesystemSafe(title);
-        path += title + File.separator;
-        this.workingDir = new File(path);
-        if (!this.workingDir.exists()) {
-            logger.info("[+] Creating directory: " + Utils.removeCWD(this.workingDir));
-            this.workingDir.mkdirs();
-        }
-        logger.debug("Set working directory to: " + this.workingDir);
-    }
+    public abstract void setWorkingDir(URL url) throws IOException;
     
     public String getAlbumTitle(URL url) throws MalformedURLException {
         return getHost() + "_" + getGID(url);
@@ -309,9 +237,17 @@ public abstract class AbstractRipper
      *      If no compatible rippers can be found.
      */
     public static AbstractRipper getRipper(URL url) throws Exception {
-        for (Constructor<?> constructor : getRipperConstructors()) {
+        for (Constructor<?> constructor : getRipperConstructors("com.rarchives.ripme.ripper.rippers")) {
             try {
-                AbstractRipper ripper = (AbstractRipper) constructor.newInstance(url);
+                AlbumRipper ripper = (AlbumRipper) constructor.newInstance(url);
+                return ripper;
+            } catch (Exception e) {
+                // Incompatible rippers *will* throw exceptions during instantiation.
+            }
+        }
+        for (Constructor<?> constructor : getRipperConstructors("com.rarchives.ripme.ripper.rippers.video")) {
+            try {
+                VideoRipper ripper = (VideoRipper) constructor.newInstance(url);
                 return ripper;
             } catch (Exception e) {
                 // Incompatible rippers *will* throw exceptions during instantiation.
@@ -325,9 +261,9 @@ public abstract class AbstractRipper
      *      List of constructors for all eligible Rippers.
      * @throws Exception
      */
-    private static List<Constructor<?>> getRipperConstructors() throws Exception {
+    private static List<Constructor<?>> getRipperConstructors(String pkg) throws Exception {
         List<Constructor<?>> constructors = new ArrayList<Constructor<?>>();
-        for (Class<?> clazz : Utils.getClassesForPackage("com.rarchives.ripme.ripper.rippers")) {
+        for (Class<?> clazz : Utils.getClassesForPackage(pkg)) {
             if (AbstractRipper.class.isAssignableFrom(clazz)) {
                 constructors.add( (Constructor<?>) clazz.getConstructor(URL.class) );
             }
@@ -347,28 +283,9 @@ public abstract class AbstractRipper
         observer.update(this, new RipStatusMessage(status, message));
     }
     
-    /**
-     * @return
-     *      Integer between 0 and 100 defining the progress of the album rip.
-     */
-    public int getCompletionPercentage() {
-        double total = itemsPending.size()  + itemsErrored.size() + itemsCompleted.size();
-        return (int) (100 * ( (total - itemsPending.size()) / total));
-    }
+    public abstract int getCompletionPercentage();
     
-    /**
-     * @return
-     *      Human-readable information on the status of the current rip.
-     */
-    public String getStatusText() {
-        StringBuilder sb = new StringBuilder();
-        sb.append(getCompletionPercentage())
-          .append("% ")
-          .append("- Pending: "  ).append(itemsPending.size())
-          .append(", Completed: ").append(itemsCompleted.size())
-          .append(", Errored: "  ).append(itemsErrored.size());
-        return sb.toString();
-    }
+    public abstract String getStatusText();
 
     /**
      * Rips the album when the thread is invoked.
@@ -382,4 +299,10 @@ public abstract class AbstractRipper
         }
     }
 
+    public void setBytesTotal(int bytes) {
+        // Do nothing
+    }
+    public void setBytesCompleted(int bytes) {
+        // Do nothing
+    }
 }

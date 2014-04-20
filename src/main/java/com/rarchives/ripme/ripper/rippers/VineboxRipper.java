@@ -12,9 +12,9 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
-import com.rarchives.ripme.ripper.AbstractRipper;
+import com.rarchives.ripme.ripper.AlbumRipper;
 
-public class VineboxRipper extends AbstractRipper {
+public class VineboxRipper extends AlbumRipper {
 
     private static final String DOMAIN = "vinebox.co",
                                 HOST   = "vinebox";

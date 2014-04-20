@@ -247,4 +247,15 @@ public class Utils {
                    .replaceAll("__", "_")
                    .replaceAll("_+$", "");
     }
+    
+    public static String bytesToHumanReadable(int bytes) {
+        float fbytes = (float) bytes;
+        String[] mags = new String[] {"", "k", "m", "g", "t"};
+        int magIndex = 0;
+        while (fbytes >= 1024) {
+            fbytes /= 1024;
+            magIndex++;
+        }
+        return String.format("%.2f%sb", fbytes, mags[magIndex]);
+    }
 }

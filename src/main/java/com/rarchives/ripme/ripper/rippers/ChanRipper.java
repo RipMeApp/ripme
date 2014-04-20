@@ -13,9 +13,9 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
-import com.rarchives.ripme.ripper.AbstractRipper;
+import com.rarchives.ripme.ripper.AlbumRipper;
 
-public class ChanRipper extends AbstractRipper {
+public class ChanRipper extends AlbumRipper {
 
     private static final Logger logger = Logger.getLogger(ChanRipper.class);
 

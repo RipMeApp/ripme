@@ -18,10 +18,10 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
-import com.rarchives.ripme.ripper.AbstractRipper;
+import com.rarchives.ripme.ripper.AlbumRipper;
 import com.rarchives.ripme.utils.Utils;
 
-public class DeviantartRipper extends AbstractRipper {
+public class DeviantartRipper extends AlbumRipper {
 
     private static final String DOMAIN = "deviantart.com",
                                 HOST   = "deviantart";

@@ -13,9 +13,9 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
-import com.rarchives.ripme.ripper.AbstractRipper;
+import com.rarchives.ripme.ripper.AlbumRipper;
 
-public class InstagramRipper extends AbstractRipper {
+public class InstagramRipper extends AlbumRipper {
 
     private static final String DOMAIN = "instagram.com",
                                 HOST   = "instagram";

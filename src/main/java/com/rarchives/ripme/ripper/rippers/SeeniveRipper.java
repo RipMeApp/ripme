@@ -12,10 +12,10 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
-import com.rarchives.ripme.ripper.AbstractRipper;
+import com.rarchives.ripme.ripper.AlbumRipper;
 import com.rarchives.ripme.ripper.DownloadThreadPool;
 
-public class SeeniveRipper extends AbstractRipper {
+public class SeeniveRipper extends AlbumRipper {
 
     private static final String DOMAIN = "seenive.com",
                                 HOST   = "seenive";

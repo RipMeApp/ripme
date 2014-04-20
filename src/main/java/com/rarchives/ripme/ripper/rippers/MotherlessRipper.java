@@ -11,10 +11,10 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
-import com.rarchives.ripme.ripper.AbstractRipper;
+import com.rarchives.ripme.ripper.AlbumRipper;
 import com.rarchives.ripme.ripper.DownloadThreadPool;
 
-public class MotherlessRipper extends AbstractRipper {
+public class MotherlessRipper extends AlbumRipper {
 
     private static final String DOMAIN = "motherless.com",
                                 HOST   = "motherless";
