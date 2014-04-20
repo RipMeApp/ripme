@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.rarchives.ripme.ripper.rippers.video.PornhubRipper;
+import com.rarchives.ripme.ripper.rippers.video.VineRipper;
 import com.rarchives.ripme.ripper.rippers.video.XvideosRipper;
 
 public class VideoRippersTest extends RippersTest {
@@ -39,6 +40,25 @@ public class VideoRippersTest extends RippersTest {
         for (URL url : contentURLs) {
             try {
                 PornhubRipper ripper = new PornhubRipper(url);
+                ripper.rip();
+                assert(ripper.getWorkingDir().listFiles().length > 1);
+                deleteDir(ripper.getWorkingDir());
+            } catch (Exception e) {
+                e.printStackTrace();
+                fail("Error while ripping URL " + url + ": " + e.getMessage());
+            }
+        }
+    }
+    
+    public void testVineRipper() throws IOException {
+        if (!DOWNLOAD_CONTENT) {
+            return;
+        }
+        List<URL> contentURLs = new ArrayList<URL>();
+        contentURLs.add(new URL("https://vine.co/v/hiqQrP0eUZx"));
+        for (URL url : contentURLs) {
+            try {
+                VineRipper ripper = new VineRipper(url);
                 ripper.rip();
                 assert(ripper.getWorkingDir().listFiles().length > 1);
                 deleteDir(ripper.getWorkingDir());
