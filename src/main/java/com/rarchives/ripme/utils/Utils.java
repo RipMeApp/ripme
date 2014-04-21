@@ -199,23 +199,25 @@ public class Utils {
             }
         }
         else {
+            // Load from JAR
             try {
-                logger.debug("fullPath = " + fullPath);
                 String jarPath = fullPath
                         .replaceFirst("[.]jar[!].*", ".jar")
                         .replaceFirst("file:", "")
                         .replaceAll("%20", " ");
-                logger.debug("jarPath = " + jarPath);
                 JarFile jarFile = new JarFile(jarPath);
                 Enumeration<JarEntry> entries = jarFile.entries();
                 while(entries.hasMoreElements()) {
-                    String entryName = entries.nextElement().getName();
+                    JarEntry nextElement = entries.nextElement();
+                    String entryName = nextElement.getName();
                     if(entryName.startsWith(relPath)
-                            && entryName.length() > (relPath.length() + "/".length())) {
+                            && entryName.length() > (relPath.length() + "/".length())
+                            && !nextElement.isDirectory()) {
                         String className = entryName.replace('/', '.').replace('\\', '.').replace(".class", "");
                         try {
                             classes.add(Class.forName(className));
                         } catch (ClassNotFoundException e) {
+                            logger.error("ClassNotFoundException loading " + className);
                             throw new RuntimeException("ClassNotFoundException loading " + className);
                         }
                     }
