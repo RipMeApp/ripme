@@ -42,7 +42,7 @@ public class TeenplanetRipper extends AlbumRipper {
                 albumDoc = Jsoup.connect(url.toExternalForm()).get();
             }
             Elements elems = albumDoc.select("div.header > h2");
-            return elems.get(0).text();
+            return HOST + "_" + elems.get(0).text();
         } catch (Exception e) {
             // Fall back to default album naming convention
             e.printStackTrace();
