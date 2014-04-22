@@ -419,6 +419,9 @@ public class MainWindow implements Runnable, RipStatusHandler {
                             historyList.clearSelection();
                             historyList.setSelectedIndex(i);
                             Thread t = ripAlbum( (String) historyListModel.get(i) );
+                            if (t == null) {
+                                continue;
+                            }
                             try {
                                 synchronized (t) {
                                     t.wait();
@@ -562,7 +565,9 @@ public class MainWindow implements Runnable, RipStatusHandler {
         StyleConstants.setForeground(sas, color);
         StyledDocument sd = logText.getStyledDocument();
         try {
-            sd.insertString(sd.getLength(), text + "\n", sas);
+            synchronized (this) {
+                sd.insertString(sd.getLength(), text + "\n", sas);
+            }
         } catch (BadLocationException e) { }
 
         logText.setCaretPosition(sd.getLength());
@@ -579,7 +584,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
     }
 
     private Thread ripAlbum(String urlString) {
-        shutdownCleanup();
+        //shutdownCleanup();
         if (!logPanel.isVisible()) {
             optionLog.doClick();
         }
@@ -603,7 +608,9 @@ public class MainWindow implements Runnable, RipStatusHandler {
         statusProgress.setValue(100);
         openButton.setVisible(false);
         statusLabel.setVisible(true);
-        mainFrame.pack();
+        synchronized (this) {
+            mainFrame.pack();
+        }
         boolean failed = false;
         try {
             ripper = AbstractRipper.getRipper(url);
@@ -664,7 +671,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
         }
     }
     
-    private void handleEvent(StatusEvent evt) {
+    private synchronized void handleEvent(StatusEvent evt) {
         if (ripper.isStopped()) {
             return;
         }

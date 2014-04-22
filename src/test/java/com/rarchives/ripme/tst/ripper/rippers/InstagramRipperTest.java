@@ -16,6 +16,7 @@ public class InstagramRipperTest extends RippersTest {
         testURLs.put(new URL("http://instagram.com/Test_User"), "Test_User");
         testURLs.put(new URL("http://instagram.com/_test_user_"), "_test_user_");
         testURLs.put(new URL("http://instagram.com/-test-user-"), "-test-user-");
+        testURLs.put(new URL("http://statigr.am/username"), "username");
         for (URL url : testURLs.keySet()) {
             InstagramRipper ripper = new InstagramRipper(url);
             assertEquals(testURLs.get(url), ripper.getGID(ripper.getURL()));
