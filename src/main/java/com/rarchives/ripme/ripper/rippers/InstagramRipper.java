@@ -27,7 +27,8 @@ public class InstagramRipper extends AlbumRipper {
 
     @Override
     public boolean canRip(URL url) {
-        return url.getHost().endsWith(DOMAIN);
+        return (url.getHost().endsWith(DOMAIN)
+                || url.getHost().endsWith("statigr.am"));
     }
 
     @Override
@@ -45,10 +46,15 @@ public class InstagramRipper extends AlbumRipper {
         }
         p = Pattern.compile("^.*instagram.com/([a-zA-Z0-9\\-_]{3,}).*$");
         m = p.matcher(url.toExternalForm());
-        if (!m.matches()) {
-            throw new MalformedURLException("Expected username in URL (instagram.com/username and not " + url);
+        if (m.matches()) {
+            return new URL("http://statigr.am/" + m.group(1));
         }
-        return new URL("http://statigr.am/" + m.group(1));
+        p = Pattern.compile("^.*statigr.am/([a-zA-Z0-9\\-_]{3,}).*$");
+        m = p.matcher(url.toExternalForm());
+        if (m.matches()) {
+            return new URL("http://statigr.am/" + m.group(1));
+        }
+        throw new MalformedURLException("Expected username in URL (instagram.com/username and not " + url);
     }
     
     private URL getUserPageFromImage(URL url) throws IOException {
