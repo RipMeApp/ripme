@@ -2,6 +2,8 @@ package com.rarchives.ripme;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Arrays;
+import java.util.List;
 
 import javax.swing.SwingUtilities;
 
@@ -30,36 +32,23 @@ public class App {
         logger.info("Initialized ripme v" + UpdateUtils.getThisJarVersion());
 
         if (args.length > 0) {
-            CommandLine cl = handleArguments(args);
-
-            try {
-                URL url = new URL(cl.getOptionValue('u'));
-                rip(url);
-            } catch (MalformedURLException e) {
-                logger.error("[!] Given URL is not valid. Expected URL format is http://domain.com/...");
-                System.exit(-1);
-            }
+            handleArguments(args);
         } else {
             MainWindow mw = new MainWindow();
             SwingUtilities.invokeLater(mw);
         }
     }
 
-    public static void rip(URL url) {
-        try {
-            AbstractRipper ripper = AbstractRipper.getRipper(url);
-            ripper.rip();
-        } catch (Exception e) {
-            logger.error("[!] Error while ripping: " + e.getMessage(), e);
-            System.exit(-1);
-        }
+    public static void rip(URL url) throws Exception {
+        AbstractRipper ripper = AbstractRipper.getRipper(url);
+        ripper.rip();
     }
 
-    public static CommandLine handleArguments(String[] args) {
+    public static void handleArguments(String[] args) {
         CommandLine cl = getArgs(args);
         if (cl.hasOption('h')) {
             HelpFormatter hf = new HelpFormatter();
-            hf.printHelp("asdf", getOptions());
+            hf.printHelp("java -jar ripme.jar [OPTIONS]", getOptions());
             System.exit(0);
         }
         if (cl.hasOption('w')) {
@@ -68,12 +57,51 @@ public class App {
         if (cl.hasOption('t')) {
             Utils.setConfigInteger("threads.size", Integer.parseInt(cl.getOptionValue('t')));
         }
+        if (cl.hasOption('r')) {
+            // Re-rip all via command-line
+            List<String> history = Utils.getConfigList("download.history");
+            for (String urlString : history) {
+                try {
+                    URL url = new URL(urlString.trim());
+                    rip(url);
+                } catch (Exception e) {
+                    logger.error("[!] Failed to rip URL " + urlString, e);
+                    continue;
+                }
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException e) {
+                    logger.warn("[!] Interrupted while re-ripping history");
+                    System.exit(-1);
+                }
+            }
+            // Exit
+            System.exit(0);
+        }
+        if (cl.hasOption('u')) {
+            // User provided URL, rip it.
+            try {
+                URL url = new URL(cl.getOptionValue('u').trim());
+                rip(url);
+                List<String> history = Utils.getConfigList("download.history");
+                if (!history.contains(url.toExternalForm())) {
+                    history.add(url.toExternalForm());
+                    Utils.setConfigList("download.history", Arrays.asList(history.toArray()));
+                    Utils.saveConfig();
+                }
+            } catch (MalformedURLException e) {
+                logger.error("[!] Given URL is not valid. Expected URL format is http://domain.com/...");
+                System.exit(-1);
+            } catch (Exception e) {
+                logger.error("[!] Error while ripping URL " + cl.getOptionValue('u'), e);
+                System.exit(-1);
+            }
+        }
         if (!cl.hasOption('u')) {
             System.err.println("\nRequired URL ('-u' or '--url') not provided");
             System.err.println("\n\tExample: java -jar ripme.jar -u http://imgur.com/a/abcde");
             System.exit(-1);
         }
-        return cl;
     }
 
     public static Options getOptions() {
@@ -82,6 +110,7 @@ public class App {
         opts.addOption("u", "url",       true,  "URL of album to rip");
         opts.addOption("t", "threads",   true,  "Number of download threads per rip");
         opts.addOption("w", "overwrite", false, "Overwrite existing files");
+        opts.addOption("r", "rerip",     false, "Re-rip all ripped albums");
         return opts;
     }
 
