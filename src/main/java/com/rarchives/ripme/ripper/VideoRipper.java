@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Map;
 
 import com.rarchives.ripme.ui.RipStatusMessage;
 import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
@@ -40,6 +41,11 @@ public abstract class VideoRipper extends AbstractRipper {
     @Override
     public void addURLToDownload(URL url, File saveAs) {
         threadPool.addThread(new DownloadVideoThread(url, saveAs, this));
+    }
+
+    @Override
+    public void addURLToDownload(URL url, File saveAs, String referrer, Map<String,String> cookies) {
+        addURLToDownload(url, saveAs);
     }
 
     @Override

@@ -28,8 +28,7 @@ public abstract class AlbumRipper extends AbstractRipper {
     public abstract String getHost();
     public abstract String getGID(URL url) throws MalformedURLException;
 
-    @Override
-    public void addURLToDownload(URL url, File saveAs) {
+    public void addURLToDownload(URL url, File saveAs, String referrer, Map<String,String> cookies) {
         if (itemsPending.containsKey(url)
                 || itemsCompleted.containsKey(url)
                 || itemsErrored.containsKey(url)) {
@@ -38,7 +37,30 @@ public abstract class AlbumRipper extends AbstractRipper {
             return;
         }
         itemsPending.put(url, saveAs);
-        threadPool.addThread(new DownloadFileThread(url, saveAs, this));
+        DownloadFileThread dft = new DownloadFileThread(url,  saveAs,  this);
+        if (referrer != null) {
+            dft.setReferrer(referrer);
+        }
+        if (cookies != null) {
+            dft.setCookies(cookies);
+        }
+        threadPool.addThread(dft);
+    }
+
+    @Override
+    public void addURLToDownload(URL url, File saveAs) {
+        addURLToDownload(url, saveAs, null, null);
+    }
+
+    /**
+     * Queues image to be downloaded and saved.
+     * Uses filename from URL to decide filename.
+     * @param url
+     *      URL to download
+     */
+    public void addURLToDownload(URL url) {
+        // Use empty prefix and empty subdirectory
+        addURLToDownload(url, "", "");
     }
 
     @Override

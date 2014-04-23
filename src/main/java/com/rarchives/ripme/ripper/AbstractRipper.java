@@ -7,6 +7,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Observable;
 
 import org.apache.log4j.Logger;
@@ -72,30 +73,6 @@ public abstract class AbstractRipper
     public void setObserver(RipStatusHandler obs) {
         this.observer = obs;
     }
-
-    /**
-     * Queues image to be downloaded and saved.
-     * Uses filename from URL to decide filename.
-     * @param url
-     *      URL to download
-     */
-    public void addURLToDownload(URL url) {
-        // Use empty prefix and empty subdirectory
-        addURLToDownload(url, "", "");
-    }
-
-    /**
-     * Queues image to be downloaded and saved.
-     * Uses filename from URL (and 'prefix') to decide filename.
-     * @param url
-     *      URL to download
-     * @param prefix
-     *      Text to append to saved filename.
-     */
-    public void addURLToDownload(URL url, String prefix) {
-        // Use empty subdirectory
-        addURLToDownload(url, prefix, "");
-    }
     
     /**
      * Queues image to be downloaded and saved.
@@ -105,17 +82,9 @@ public abstract class AbstractRipper
      *      Path of the local file to save the content to.
      */
     public abstract void addURLToDownload(URL url, File saveAs);
+    public abstract void addURLToDownload(URL url, File saveAs, String referrer, Map<String,String> cookies);
 
-    /**
-     * Queues file to be downloaded and saved. With options.
-     * @param url
-     *      URL to download.
-     * @param prefix
-     *      Prefix to prepend to the saved filename.
-     * @param subdirectory
-     *      Sub-directory of the working directory to save the images to.
-     */
-    public void addURLToDownload(URL url, String prefix, String subdirectory) {
+    public void addURLToDownload(URL url, String prefix, String subdirectory, String referrer, Map<String,String> cookies) {
         try {
             stopCheck();
         } catch (IOException e) {
@@ -147,9 +116,34 @@ public abstract class AbstractRipper
             logger.info("[+] Creating directory: " + Utils.removeCWD(saveFileAs.getParent()));
             saveFileAs.getParentFile().mkdirs();
         }
-        addURLToDownload(url, saveFileAs);
+        addURLToDownload(url, saveFileAs, referrer, cookies);
     }
     
+    /**
+     * Queues file to be downloaded and saved. With options.
+     * @param url
+     *      URL to download.
+     * @param prefix
+     *      Prefix to prepend to the saved filename.
+     * @param subdirectory
+     *      Sub-directory of the working directory to save the images to.
+     */
+    public void addURLToDownload(URL url, String prefix, String subdirectory) {
+        addURLToDownload(url, prefix, subdirectory, null, null);
+    }
+
+    /**
+     * Queues image to be downloaded and saved.
+     * Uses filename from URL (and 'prefix') to decide filename.
+     * @param url
+     *      URL to download
+     * @param prefix
+     *      Text to append to saved filename.
+     */
+    public void addURLToDownload(URL url, String prefix) {
+        // Use empty subdirectory
+        addURLToDownload(url, prefix, "");
+    }
     /**
      * Waits for downloading threads to complete.
      */

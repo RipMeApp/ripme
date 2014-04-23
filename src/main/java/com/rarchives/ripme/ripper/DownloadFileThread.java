@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.jsoup.Connection.Response;
@@ -19,6 +21,9 @@ import com.rarchives.ripme.utils.Utils;
 public class DownloadFileThread extends Thread {
 
     private static final Logger logger = Logger.getLogger(DownloadFileThread.class);
+
+    private String referrer = "";
+    private Map<String,String> cookies = new HashMap<String,String>();
 
     private URL url;
     private File saveAs;
@@ -38,6 +43,13 @@ public class DownloadFileThread extends Thread {
         this.retries = Utils.getConfigInteger("download.retries", 1);
         this.TIMEOUT = Utils.getConfigInteger("download.timeout", 60000);
         this.MAX_BODY_SIZE = Utils.getConfigInteger("download.max_bytes", 1024 * 1024 * 100);
+    }
+
+    public void setReferrer(String referrer) {
+        this.referrer = referrer;
+    }
+    public void setCookies(Map<String,String> cookies) {
+        this.cookies = cookies;
     }
 
     /**
@@ -74,6 +86,8 @@ public class DownloadFileThread extends Thread {
                         .userAgent(AbstractRipper.USER_AGENT)
                         .timeout(TIMEOUT)
                         .maxBodySize(MAX_BODY_SIZE)
+                        .cookies(cookies)
+                        .referrer(referrer)
                         .execute();
                 if (response.statusCode() != 200) {
                     logger.error("[!] Non-OK status code " + response.statusCode() + " while downloading from " + url);
