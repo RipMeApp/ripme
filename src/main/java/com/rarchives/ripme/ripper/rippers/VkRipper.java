@@ -32,7 +32,16 @@ public class VkRipper extends AlbumRipper {
 
     @Override
     public boolean canRip(URL url) {
-        return url.getHost().endsWith(DOMAIN);
+        if (!url.getHost().endsWith(DOMAIN)) {
+            return false;
+        }
+        // Ignore /video pages (but not /videos pages)
+        String u = url.toExternalForm();
+        if (u.contains("/video") && !u.contains("videos")) {
+            // Single video page
+            return false;
+        }
+        return true;
     }
 
     @Override
@@ -42,6 +51,50 @@ public class VkRipper extends AlbumRipper {
 
     @Override
     public void rip() throws IOException {
+        if (this.url.toExternalForm().contains("/videos")) {
+            ripVideos();
+        }
+        else {
+            ripImages();
+        }
+    }
+
+    private void ripVideos() throws IOException {
+        String oid = getGID(this.url).replace("videos", "");
+        String u = "http://vk.com/al_video.php";
+        Map<String,String> postData = new HashMap<String,String>();
+        postData.put("al", "1");
+        postData.put("act", "load_videos_silent");
+        postData.put("offset", "0");
+        postData.put("oid", oid);
+        Document doc = Jsoup.connect(u)
+                            .header("Referer", this.url.toExternalForm())
+                            .ignoreContentType(true)
+                            .userAgent(USER_AGENT)
+                            .timeout(5000)
+                            .data(postData)
+                            .post();
+        String[] jsonStrings = doc.toString().split("<!>");
+        JSONObject json = new JSONObject(jsonStrings[jsonStrings.length - 1]);
+        JSONArray videos = json.getJSONArray("all");
+        logger.info("Found " + videos.length() + " videos");
+        for (int i = 0; i < videos.length(); i++) {
+            JSONArray jsonVideo = videos.getJSONArray(i);
+            int vidid = jsonVideo.getInt(1);
+            String videoURL = com.rarchives.ripme.ripper.rippers.video.VkRipper.getVideoURLAtPage(
+                    "http://vk.com/video" + oid + "_" + vidid);
+            addURLToDownload(new URL(videoURL), String.format("%03d_", i + 1));
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                logger.error("Interrupted while waiting to fetch next video URL", e);
+                break;
+            }
+        }
+        waitForThreads();
+    }
+
+    private void ripImages() throws IOException {
         Map<String,String> photoIDsToURLs = new HashMap<String,String>();
         int offset = 0;
         while (true) {
@@ -146,7 +199,7 @@ public class VkRipper extends AlbumRipper {
 
     @Override
     public String getGID(URL url) throws MalformedURLException {
-        Pattern p = Pattern.compile("^https?://(www\\.)?vk\\.com/(photos|album)([a-zA-Z0-9_]{1,}).*$");
+        Pattern p = Pattern.compile("^https?://(www\\.)?vk\\.com/(photos|album|videos)([a-zA-Z0-9_]{1,}).*$");
         Matcher m = p.matcher(url.toExternalForm());
         if (!m.matches()) {
             throw new MalformedURLException("Expected format: http://vk.com/album#### or vk.com/photos####");
