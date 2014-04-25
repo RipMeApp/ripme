@@ -166,14 +166,14 @@ public class TumblrRipper extends AlbumRipper {
         Pattern p;
         Matcher m;
         // Tagged URL
-        p = Pattern.compile("^https?://([a-zA-Z0-9\\-]{1,})\\.tumblr\\.com/tagged/([a-zA-Z0-9\\-]{1,}).*$");
+        p = Pattern.compile("^https?://([a-zA-Z0-9\\-]{1,})\\.tumblr\\.com/tagged/([a-zA-Z0-9\\-%]{1,}).*$");
         m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             this.albumType = ALBUM_TYPE.TAG;
             this.subdomain = m.group(1);
             this.tagName = m.group(2);
             this.tagName = this.tagName.replace('-', '+').replace("_", "%20");
-            return this.subdomain + "_tag_" + this.tagName;
+            return this.subdomain + "_tag_" + this.tagName.replace("%20", " ");
         }
         // Post URL
         p = Pattern.compile("^https?://([a-zA-Z0-9\\-]{1,})\\.tumblr\\.com/post/([0-9]{1,}).*$");
