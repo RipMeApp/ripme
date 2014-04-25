@@ -38,12 +38,11 @@ public class ChanRipper extends AlbumRipper {
     @Override
     public boolean canRip(URL url) {
         // TODO Whitelist?
-        return url.getHost().contains("chan") && url.toExternalForm().contains("/res/");
+        return url.getHost().contains("chan") &&
+                ( url.toExternalForm().contains("/res/")      // Most chans
+               || url.toExternalForm().contains("/thread/")); // 4chan
     }
 
-    /**
-     * Reformat given URL into the desired format (all images on single page)
-     */
     public URL sanitizeURL(URL url) throws MalformedURLException {
         return url;
     }
@@ -52,16 +51,26 @@ public class ChanRipper extends AlbumRipper {
     public String getGID(URL url) throws MalformedURLException {
         Pattern p; Matcher m;
 
-        p = Pattern.compile("^.*chan.*\\.[a-z]{2,3}/[a-z]+/res/([0-9]+)(\\.html|\\.php)?.*$");
-        m = p.matcher(url.toExternalForm());
-        if (m.matches()) {
-            return m.group(1);
+        String u = url.toExternalForm();
+        if (u.contains("/res/")) {
+            p = Pattern.compile("^.*chan.*\\.[a-z]{2,3}/[a-zA-Z0-9]+/res/([0-9]+)(\\.html|\\.php)?.*$");
+            m = p.matcher(u);
+            if (m.matches()) {
+                return m.group(1);
+            }
+        }
+        else if (u.contains("/thread/")) {
+            p = Pattern.compile("^.*chan.*\\.[a-z]{2,3}/[a-zA-Z0-9]+/thread/([0-9]+)(\\.html|\\.php)?.*$");
+            m = p.matcher(u);
+            if (m.matches()) {
+                return m.group(1);
+            }
         }
 
         throw new MalformedURLException(
                 "Expected *chan URL formats: "
                         + "*chan.com/@/res/####.html"
-                        + " Got: " + url);
+                        + " Got: " + u);
     }
 
     @Override
@@ -77,7 +86,8 @@ public class ChanRipper extends AlbumRipper {
             if (!link.hasAttr("href")) { 
                 continue;
             }
-            if (!link.attr("href").contains("/src/")) {
+            if (!link.attr("href").contains("/src/")
+             && !link.attr("href").contains("4cdn.org")) {
                 logger.debug("Skipping link that does not contain /src/: " + link.attr("href"));
                 continue;
             }
