@@ -3,12 +3,16 @@ package com.rarchives.ripme.ripper.rippers;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
+import org.jsoup.Connection.Method;
+import org.jsoup.Connection.Response;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -16,6 +20,7 @@ import org.jsoup.select.Elements;
 
 import com.rarchives.ripme.ripper.AlbumRipper;
 import com.rarchives.ripme.ripper.DownloadThreadPool;
+import com.rarchives.ripme.utils.Base64;
 import com.rarchives.ripme.utils.Utils;
 
 public class FlickrRipper extends AlbumRipper {
@@ -94,39 +99,72 @@ public class FlickrRipper extends AlbumRipper {
 
     @Override
     public void rip() throws IOException {
+        //Map<String,String> cookies = signinToFlickr();
         Set<String> attempted = new HashSet<String>();
-        int index = 0;
-        logger.info("    Retrieving " + this.url.toExternalForm());
-        if (albumDoc == null) {
-            albumDoc = Jsoup.connect(this.url.toExternalForm()).get();
-        }
-        for (Element thumb : albumDoc.select("a[data-track=photo-click]")) {
-            String imageTitle = null;
-            if (thumb.hasAttr("title")) {
-                imageTitle = thumb.attr("title");
+        int index = 0, page = 1;
+        String nextURL = this.url.toExternalForm();
+        while (true) {
+            if (isStopped()) {
+                break;
             }
-            String imagePage = thumb.attr("href");
-            if (imagePage.startsWith("/")) {
-                imagePage = "http://www.flickr.com" + imagePage;
+            logger.info("    Retrieving " + nextURL);
+            if (albumDoc == null) {
+                albumDoc = Jsoup.connect(nextURL)
+                                .get();
             }
-            if (imagePage.contains("/in/")) {
-                imagePage = imagePage.substring(0, imagePage.indexOf("/in/") + 1);
-            }
-            if (!imagePage.endsWith("/")) {
-                imagePage += "/";
-            }
-            imagePage += "sizes/o/";
+            for (Element thumb : albumDoc.select("a[data-track=photo-click]")) {
+                String imageTitle = null;
+                if (thumb.hasAttr("title")) {
+                    imageTitle = thumb.attr("title");
+                }
+                String imagePage = thumb.attr("href");
+                if (imagePage.startsWith("/")) {
+                    imagePage = "http://www.flickr.com" + imagePage;
+                }
+                if (imagePage.contains("/in/")) {
+                    imagePage = imagePage.substring(0, imagePage.indexOf("/in/") + 1);
+                }
+                if (!imagePage.endsWith("/")) {
+                    imagePage += "/";
+                }
+                imagePage += "sizes/o/";
 
-            // Check for duplicates
-            if (attempted.contains(imagePage)) {
-                continue;
-            }
-            attempted.add(imagePage);
+                // Check for duplicates
+                if (attempted.contains(imagePage)) {
+                    continue;
+                }
+                attempted.add(imagePage);
 
-            index += 1;
-            // Add image page to threadpool to grab the image & download it
-            FlickrImageThread mit = new FlickrImageThread(new URL(imagePage), imageTitle, index);
-            flickrThreadPool.addThread(mit);
+                index += 1;
+                // Add image page to threadpool to grab the image & download it
+                FlickrImageThread mit = new FlickrImageThread(new URL(imagePage), imageTitle, index);
+                flickrThreadPool.addThread(mit);
+            }
+            // Find how many pages there are
+            int lastPage = 0;
+            for (Element apage : albumDoc.select("a[data-track^=page-]")) {
+                String lastPageStr = apage.attr("data-track").replace("page-", "");
+                lastPage = Integer.parseInt(lastPageStr);
+            }
+            // If we're at the last page, stop.
+            if (page >= lastPage) {
+                break;
+            }
+            // Load the next page
+            page++;
+            albumDoc = null;
+            nextURL = this.url.toExternalForm();
+            if (!nextURL.endsWith("/")) {
+                nextURL += "/";
+            }
+            nextURL += "page" + page + "/";
+            // Wait a bit
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                logger.error("Interrupted while waiting to load next page " + nextURL, e);
+                break;
+            }
         }
         flickrThreadPool.waitForThreads();
         waitForThreads();
@@ -134,6 +172,36 @@ public class FlickrRipper extends AlbumRipper {
 
     public boolean canRip(URL url) {
         return url.getHost().endsWith(DOMAIN);
+    }
+
+    /**
+     * Login to Flickr.
+     * @return Cookies for logged-in session
+     * @throws IOException
+     */
+    @SuppressWarnings("unused")
+    private Map<String,String> signinToFlickr() throws IOException {
+        Response resp = Jsoup.connect("http://www.flickr.com/signin/")
+                            .userAgent(USER_AGENT)
+                            .followRedirects(true)
+                            .method(Method.GET)
+                            .execute();
+        Document doc = resp.parse();
+        Map<String,String> postData = new HashMap<String,String>();
+        for (Element input : doc.select("input[type=hidden]")) {
+            postData.put(input.attr("name"),  input.attr("value"));
+        }
+        postData.put("passwd_raw",  "");
+        postData.put(".save",   "");
+        postData.put("login",   new String(Base64.decode("bGVmYWtlZGVmYWtl")));
+        postData.put("passwd",  new String(Base64.decode("MUZha2V5ZmFrZQ==")));
+        String action = doc.select("form[method=post]").get(0).attr("action");
+        resp = Jsoup.connect(action)
+                             .cookies(resp.cookies())
+                             .data(postData)
+                             .method(Method.POST)
+                             .execute();
+        return resp.cookies();
     }
 
     /**
