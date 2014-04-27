@@ -23,9 +23,12 @@ import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.util.Arrays;
+import java.util.List;
 
 import javax.imageio.ImageIO;
 import javax.swing.DefaultListModel;
@@ -493,12 +496,56 @@ public class MainWindow implements Runnable, RipStatusHandler {
         trayMenuAbout.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent arg0) {
-                String aboutBlurb = "<html><center> Download albums from various websites. <a href=\"http://rarchives.com\">rarchives.com</a>";
-                JOptionPane.showMessageDialog(null,
-                        aboutBlurb,
+                StringBuilder about = new StringBuilder();
+                about.append("<html><h1>")
+                     .append(mainFrame.getTitle())
+                     .append("</h1>");
+                about.append("Download albums from various websites:");
+                try {
+                    List<String> rippers = Utils.getListOfAlbumRippers();
+                    about.append("<ul>");
+                    for (String ripper : rippers) {
+                        about.append("<li>");
+                        ripper = ripper.substring(ripper.lastIndexOf('.') + 1);
+                        if (ripper.contains("Ripper")) {
+                            ripper = ripper.substring(0, ripper.indexOf("Ripper"));
+                        }
+                        about.append(ripper);
+                        about.append("</li>");
+                    }
+                    about.append("</ul>");
+                } catch (Exception e) { }
+               about.append("<br>And download videos from video sites:");
+                try {
+                    List<String> rippers = Utils.getListOfVideoRippers();
+                    about.append("<ul>");
+                    for (String ripper : rippers) {
+                        about.append("<li>");
+                        ripper = ripper.substring(ripper.lastIndexOf('.') + 1);
+                        if (ripper.contains("Ripper")) {
+                            ripper = ripper.substring(0, ripper.indexOf("Ripper"));
+                        }
+                        about.append(ripper);
+                        about.append("</li>");
+                    }
+                    about.append("</ul>");
+                } catch (Exception e) { }
+
+                about.append("Do you want to visit the project homepage on Github?");
+                about.append("</html>");
+                int response = JOptionPane.showConfirmDialog(null,
+                        about.toString(),
                         mainFrame.getTitle(),
+                        JOptionPane.YES_NO_OPTION,
                         JOptionPane.PLAIN_MESSAGE,
                         new ImageIcon(mainIcon));
+                if (response == JOptionPane.YES_OPTION) {
+                    try {
+                        Desktop.getDesktop().browse(URI.create("http://github.com/4pr0n/ripme"));
+                    } catch (IOException e) {
+                        logger.error("Exception while opening project home page", e);
+                    }
+                }
             }
         });
         trayMenuExit = new MenuItem("Exit");
@@ -626,12 +673,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
                 ripper.setObserver((RipStatusHandler) this);
                 Thread t = new Thread(ripper);
                 t.start();
-                if (!mainFrame.isVisible()) {
-                    mainFrame.toFront();
-                    mainFrame.setAlwaysOnTop(true);
-                    trayIcon.displayMessage(mainFrame.getTitle(), "Started ripping " + ripper.getURL().toExternalForm(), MessageType.INFO);
-                    mainFrame.setAlwaysOnTop(false);
-                } else if (!mainFrame.isActive()) {
+                if (!mainFrame.isVisible() || !mainFrame.isActive()) {
                     mainFrame.toFront();
                     mainFrame.setAlwaysOnTop(true);
                     trayIcon.displayMessage(mainFrame.getTitle(), "Started ripping " + ripper.getURL().toExternalForm(), MessageType.INFO);
@@ -653,7 +695,8 @@ public class MainWindow implements Runnable, RipStatusHandler {
 
     class RipButtonHandler implements ActionListener {
         public void actionPerformed(ActionEvent event) {
-            ripAlbum(ripTextfield.getText());
+            Thread t = ripAlbum(ripTextfield.getText());
+            SwingUtilities.invokeLater(t);
         }
     }
     

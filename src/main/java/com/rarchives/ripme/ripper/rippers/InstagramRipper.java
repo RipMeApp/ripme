@@ -14,6 +14,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
 import com.rarchives.ripme.ripper.AlbumRipper;
+import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
 
 public class InstagramRipper extends AlbumRipper {
 
@@ -70,6 +71,7 @@ public class InstagramRipper extends AlbumRipper {
     
     private String getUserID(URL url) throws IOException {
         logger.info("    Retrieving " + url);
+        this.sendUpdate(STATUS.LOADING_RESOURCE, url.toExternalForm());
         Document doc = Jsoup.connect(this.url.toExternalForm()).get();
         for (Element element : doc.select("input[id=user_public]")) {
             return element.attr("value");
@@ -85,6 +87,7 @@ public class InstagramRipper extends AlbumRipper {
         String params = "";
         while (true) {
             String url = baseURL + params;
+            this.sendUpdate(STATUS.LOADING_RESOURCE, url);
             logger.info("    Retrieving " + url);
             String jsonString = Jsoup.connect(url)
                                      .ignoreContentType(true)

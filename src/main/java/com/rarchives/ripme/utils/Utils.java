@@ -2,6 +2,7 @@ package com.rarchives.ripme.utils;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Constructor;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -13,6 +14,8 @@ import java.util.jar.JarFile;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.log4j.Logger;
+
+import com.rarchives.ripme.ripper.AbstractRipper;
 
 /**
  * Common utility functions used in various places throughout the project.
@@ -263,5 +266,20 @@ public class Utils {
             magIndex++;
         }
         return String.format("%.2f%sb", fbytes, mags[magIndex]);
+    }
+
+    public static List<String> getListOfAlbumRippers() throws Exception {
+        List<String> list = new ArrayList<String>();
+        for (Constructor<?> ripper : AbstractRipper.getRipperConstructors("com.rarchives.ripme.ripper.rippers")) {
+            list.add(ripper.getName());
+        }
+        return list;
+    }
+    public static List<String> getListOfVideoRippers() throws Exception {
+        List<String> list = new ArrayList<String>();
+        for (Constructor<?> ripper : AbstractRipper.getRipperConstructors("com.rarchives.ripme.ripper.rippers.video")) {
+            list.add(ripper.getName());
+        }
+        return list;
     }
 }

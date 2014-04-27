@@ -255,7 +255,7 @@ public abstract class AbstractRipper
      *      List of constructors for all eligible Rippers.
      * @throws Exception
      */
-    private static List<Constructor<?>> getRipperConstructors(String pkg) throws Exception {
+    public static List<Constructor<?>> getRipperConstructors(String pkg) throws Exception {
         List<Constructor<?>> constructors = new ArrayList<Constructor<?>>();
         for (Class<?> clazz : Utils.getClassesForPackage(pkg)) {
             if (AbstractRipper.class.isAssignableFrom(clazz)) {
