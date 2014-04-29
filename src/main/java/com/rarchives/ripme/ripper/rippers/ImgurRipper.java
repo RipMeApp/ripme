@@ -129,6 +129,7 @@ public class ImgurRipper extends AlbumRipper {
         logger.info("    Retrieving " + url.toExternalForm());
         Document doc = Jsoup.connect(url.toExternalForm())
                             .userAgent(USER_AGENT)
+                            .maxBodySize(0)
                             .get();
 
         // Try to use embedded JSON to retrieve images

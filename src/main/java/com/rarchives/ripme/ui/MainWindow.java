@@ -150,7 +150,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
                 UpdateUtils.updateProgram(configUpdateLabel);
             }
         };
-        SwingUtilities.invokeLater(r);
+        new Thread(r).start();
     }
     
     public void run() {
@@ -695,8 +695,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
 
     class RipButtonHandler implements ActionListener {
         public void actionPerformed(ActionEvent event) {
-            Thread t = ripAlbum(ripTextfield.getText());
-            SwingUtilities.invokeLater(t);
+            ripAlbum(ripTextfield.getText());
         }
     }
     
