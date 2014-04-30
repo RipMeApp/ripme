@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
@@ -206,8 +207,8 @@ public class Utils {
             try {
                 String jarPath = fullPath
                         .replaceFirst("[.]jar[!].*", ".jar")
-                        .replaceFirst("file:", "")
-                        .replaceAll("%20", " ");
+                        .replaceFirst("file:", "");
+                jarPath = URLDecoder.decode(jarPath, "UTF-8");
                 JarFile jarFile = new JarFile(jarPath);
                 Enumeration<JarEntry> entries = jarFile.entries();
                 while(entries.hasMoreElements()) {
