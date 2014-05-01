@@ -28,10 +28,15 @@ public abstract class AlbumRipper extends AbstractRipper {
     public abstract String getHost();
     public abstract String getGID(URL url) throws MalformedURLException;
 
+    public boolean allowDuplicates() {
+        return false;
+    }
+
     public void addURLToDownload(URL url, File saveAs, String referrer, Map<String,String> cookies) {
-        if (itemsPending.containsKey(url)
-                || itemsCompleted.containsKey(url)
-                || itemsErrored.containsKey(url)) {
+        if (!allowDuplicates()
+                && ( itemsPending.containsKey(url)
+                  || itemsCompleted.containsKey(url)
+                  || itemsErrored.containsKey(url) )) {
             // Item is already downloaded/downloading, skip it.
             logger.info("[!] Skipping " + url + " -- already attempted: " + Utils.removeCWD(saveAs));
             return;

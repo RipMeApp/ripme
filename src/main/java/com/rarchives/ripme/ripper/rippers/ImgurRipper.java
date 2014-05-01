@@ -45,6 +45,15 @@ public class ImgurRipper extends AlbumRipper {
         SLEEP_BETWEEN_ALBUMS = 1;
     }
 
+    /**
+     * Imgur ripper does not return the same URL except when ripping
+     * many albums at once (USER). In this case, we want duplicates.
+     */
+    @Override
+    public boolean allowDuplicates() {
+        return true;
+    }
+
     public boolean canRip(URL url) {
         if (!url.getHost().endsWith(DOMAIN)) {
            return false;
@@ -129,6 +138,7 @@ public class ImgurRipper extends AlbumRipper {
         logger.info("    Retrieving " + url.toExternalForm());
         Document doc = Jsoup.connect(url.toExternalForm())
                             .userAgent(USER_AGENT)
+                            .timeout(10 * 1000)
                             .maxBodySize(0)
                             .get();
 
