@@ -357,19 +357,19 @@ public class ImgurRipper extends AlbumRipper {
             albumType = ALBUM_TYPE.USER;
             return gid;
         }
-        p = Pattern.compile("^https?://([a-zA-Z0-9\\-]{3,})\\.imgur\\.com/?$");
-        m = p.matcher(url.toExternalForm());
-        if (m.matches()) {
-            // Imgur account album
-            albumType = ALBUM_TYPE.USER_ALBUM;
-            return m.group();
-        }
         p = Pattern.compile("^https?://([a-zA-Z0-9\\-]{3,})\\.imgur\\.com/all.*$");
         m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             // Imgur account images
             albumType = ALBUM_TYPE.USER_IMAGES;
             return m.group(1) + "_images";
+        }
+        p = Pattern.compile("^https?://([a-zA-Z0-9\\-]{3,})\\.imgur\\.com/([a-zA-Z0-9\\-_]+).*$");
+        m = p.matcher(url.toExternalForm());
+        if (m.matches()) {
+            // Imgur account album
+            albumType = ALBUM_TYPE.USER_ALBUM;
+            return m.group(1) + "-" + m.group(2);
         }
         p = Pattern.compile("^https?://(www\\.)?imgur\\.com/r/([a-zA-Z0-9\\-_]{3,})(/top|/new)?(/all|/year|/month|/week)?/?$");
         m = p.matcher(url.toExternalForm());
@@ -395,7 +395,7 @@ public class ImgurRipper extends AlbumRipper {
             }
             return gid.replaceAll(",", "-");
         }
-        throw new MalformedURLException("Unexpected URL format: " + url.toExternalForm());
+        throw new MalformedURLException("Unsupported imgur URL format: " + url.toExternalForm());
     }
 
     public ALBUM_TYPE getAlbumType() {
