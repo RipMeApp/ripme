@@ -16,10 +16,12 @@ import org.jsoup.Connection.Response;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
+import com.rarchives.ripme.utils.Utils;
+
 public class UpdateUtils {
 
     private static final Logger logger = Logger.getLogger(UpdateUtils.class);
-    private static final String DEFAULT_VERSION = "1.0.33";
+    private static final String DEFAULT_VERSION = "1.0.34";
     private static final String updateJsonURL = "http://rarchives.com/ripme.json";
     private static final String updateJarURL = "http://rarchives.com/ripme.jar";
     private static final String mainFileName = "ripme.jar";
@@ -58,6 +60,9 @@ public class UpdateUtils {
         StringBuilder changeList = new StringBuilder();
         for (int i = 0; i < jsonChangeList.length(); i++) {
             String change = jsonChangeList.getString(i);
+            if (change.startsWith(UpdateUtils.getThisJarVersion() + ":")) {
+                break;
+            }
             changeList.append("<br>  + " + change);
         }
 
@@ -136,7 +141,7 @@ public class UpdateUtils {
         Response response;
         response = Jsoup.connect(updateJarURL)
                 .ignoreContentType(true)
-                .timeout(60000)
+                .timeout(Utils.getConfigInteger("download.timeout", 60 * 1000))
                 .maxBodySize(1024 * 1024 * 100)
                 .execute();
         FileOutputStream out = new FileOutputStream(updateFileName);

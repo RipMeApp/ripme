@@ -38,6 +38,9 @@ public class ChanRipper extends AlbumRipper {
     @Override
     public boolean canRip(URL url) {
         // TODO Whitelist?
+        if (url.getHost().equals("anon-ib.com")) {
+            return true;
+        }
         return url.getHost().contains("chan") &&
                 ( url.toExternalForm().contains("/res/")      // Most chans
                || url.toExternalForm().contains("/thread/")); // 4chan
@@ -53,10 +56,10 @@ public class ChanRipper extends AlbumRipper {
 
         String u = url.toExternalForm();
         if (u.contains("/res/")) {
-            p = Pattern.compile("^.*chan.*\\.[a-z]{2,3}/[a-zA-Z0-9]+/res/([0-9]+)(\\.html|\\.php)?.*$");
+            p = Pattern.compile("^.*(chan|anon-ib).*\\.[a-z]{2,3}/[a-zA-Z0-9]+/res/([0-9]+)(\\.html|\\.php)?.*$");
             m = p.matcher(u);
             if (m.matches()) {
-                return m.group(1);
+                return m.group(2);
             }
         }
         else if (u.contains("/thread/")) {
@@ -89,6 +92,11 @@ public class ChanRipper extends AlbumRipper {
             if (!link.attr("href").contains("/src/")
              && !link.attr("href").contains("4cdn.org")) {
                 logger.debug("Skipping link that does not contain /src/: " + link.attr("href"));
+                continue;
+            }
+            if (link.attr("href").contains("=http")
+             || link.attr("href").contains("http://imgops.com/")) {
+                logger.debug("Skipping link that contains '=http' or 'imgops.com': " + link.attr("href"));
                 continue;
             }
             System.err.println("URL=" + link.attr("href"));
