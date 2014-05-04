@@ -81,7 +81,6 @@ public class InstagramRipper extends AlbumRipper {
 
     @Override
     public void rip() throws IOException {
-        int index = 0;
         String userID = getUserID(this.url);
         String baseURL = "http://statigr.am/controller_nl.php?action=getPhotoUserPublic&user_id=" + userID;
         String params = "";
@@ -104,16 +103,15 @@ public class InstagramRipper extends AlbumRipper {
                 if (data.has("id")) {
                     nextMaxID = data.getString("id");
                 }
+                String imageUrl;
                 if (data.has("videos")) {
-                    index += 1;
-                    String video = data.getJSONObject("videos").getJSONObject("standard_resolution").getString("url");
-                    addURLToDownload(new URL(video), String.format("%03d_", index));
+                    imageUrl = data.getJSONObject("videos").getJSONObject("standard_resolution").getString("url");
                 } else if (data.has("images")) {
-                    index += 1;
-                    String image = data.getJSONObject("images").getJSONObject("standard_resolution").getString("url");
-                    // addURLToDownload(new URL(image), String.format("%03d_", index));
-                    addURLToDownload(new URL(image));
+                    imageUrl = data.getJSONObject("images").getJSONObject("standard_resolution").getString("url");
+                } else {
+                    continue;
                 }
+                addURLToDownload(new URL(imageUrl));
             }
             JSONObject pagination = json.getJSONObject("pagination");
             if (nextMaxID.equals("")) {
