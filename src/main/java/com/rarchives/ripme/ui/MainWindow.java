@@ -735,9 +735,20 @@ public class MainWindow implements Runnable, RipStatusHandler {
         case DOWNLOAD_ERRORED:
             appendLog( "Error: " + (String) msg.getObject(), Color.RED);
             break;
-
         case DOWNLOAD_WARN:
             appendLog( "Warn: " + (String) msg.getObject(), Color.ORANGE);
+            break;
+        
+        case RIP_ERRORED:
+            appendLog( "Error: " + (String) msg.getObject(), Color.RED);
+            ripButton.setVisible(true);
+            stopButton.setVisible(false);
+            ripTextfield.setEnabled(true);
+            statusProgress.setValue(0);
+            statusProgress.setVisible(false);
+            openButton.setVisible(false);
+            mainFrame.pack();
+            statusWithColor("Error: " + (String) msg.getObject(), Color.RED);
             break;
 
         case RIP_COMPLETE:

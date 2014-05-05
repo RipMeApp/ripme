@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Observable;
 
 import org.apache.log4j.Logger;
+import org.jsoup.HttpStatusException;
 
 import com.rarchives.ripme.ui.RipStatusHandler;
 import com.rarchives.ripme.ui.RipStatusMessage;
@@ -287,9 +288,21 @@ public abstract class AbstractRipper
     public void run() {
         try {
             rip();
+        } catch (HttpStatusException e) {
+            logger.error("Got exception while running ripper:", e);
+            sendUpdate(STATUS.RIP_ERRORED, "Status=" + e.getStatusCode() + ", URL=" + e.getUrl());
         } catch (IOException e) {
             logger.error("Got exception while running ripper:", e);
-            waitForThreads();
+            sendUpdate(STATUS.RIP_ERRORED, e.getMessage());
+        } finally {
+            if (this.workingDir.list().length == 0) {
+                // No files, delete the dir
+                logger.info("Deleting empty directory " + this.workingDir);
+                boolean deleteResult = this.workingDir.delete();
+                if (!deleteResult) {
+                    logger.error("Unable to delete empty directory " +  this.workingDir);
+                }
+            }
         }
     }
 

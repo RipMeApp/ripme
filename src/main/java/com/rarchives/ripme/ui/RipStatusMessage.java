@@ -13,7 +13,8 @@ public class RipStatusMessage {
         RIP_COMPLETE("Rip Complete"), 
         DOWNLOAD_WARN("Download problem"),
         TOTAL_BYTES("Total bytes"),
-        COMPLETED_BYTES("Completed bytes");
+        COMPLETED_BYTES("Completed bytes"),
+        RIP_ERRORED("Rip Errored");
 
         String value;
         STATUS(String value) {

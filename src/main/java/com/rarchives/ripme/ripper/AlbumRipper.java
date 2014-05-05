@@ -8,6 +8,11 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.jsoup.Connection;
+import org.jsoup.Connection.Method;
+import org.jsoup.Connection.Response;
+import org.jsoup.Jsoup;
+
 import com.rarchives.ripme.ui.RipStatusMessage;
 import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
 import com.rarchives.ripme.utils.Utils;
@@ -169,5 +174,47 @@ public abstract class AlbumRipper extends AbstractRipper {
           .append(", Completed: ").append(itemsCompleted.size())
           .append(", Errored: "  ).append(itemsErrored.size());
         return sb.toString();
+    }
+    
+    public Response getResponse(String url, 
+                                Method method,
+                                String userAgent, 
+                                String referrer, 
+                                Map<String,String> cookies, 
+                                boolean ignoreContentType)
+                    throws IOException {
+        Connection connection = Jsoup.connect(url);
+
+        if (method == null) {
+            method = Method.GET;
+        }
+        connection.method(method);
+
+        if (userAgent == null) {
+            userAgent = USER_AGENT;
+        }
+        connection.userAgent(userAgent);
+
+        if (cookies != null) {
+            connection.cookies(cookies);
+        }
+
+        if (referrer != null) {
+            connection.referrer(referrer);
+        }
+        connection.ignoreContentType(ignoreContentType);
+
+        Response response = null;
+        int retries = Utils.getConfigInteger("download.retries", 1);;
+        while (retries >= 0) {
+            retries--;
+            try {
+                response = connection.execute();
+            } catch (IOException e) {
+                logger.warn("Error while loading " + url, e);
+                continue;
+            }
+        }
+        return response;
     }
 }
