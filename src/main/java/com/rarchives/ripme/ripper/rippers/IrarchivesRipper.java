@@ -36,6 +36,12 @@ public class IrarchivesRipper extends AlbumRipper {
     public URL sanitizeURL(URL url) throws MalformedURLException {
         String u = url.toExternalForm();
         String searchTerm = u.substring(u.indexOf("?") + 1);
+        if (searchTerm.startsWith("url=")) {
+            if (!searchTerm.contains("http")
+                    && !searchTerm.contains(":")) {
+                searchTerm = searchTerm.replace("url=", "user=");
+            }
+        }
         return new URL("http://i.rarchives.com/search.cgi?" + searchTerm);
     }
 
@@ -58,7 +64,14 @@ public class IrarchivesRipper extends AlbumRipper {
             JSONObject post = (JSONObject) posts.get(i);
             String theUrl = post.getString("url");
             if (theUrl.contains("imgur.com/a/")) {
-                ImgurAlbum album = ImgurRipper.getImgurAlbum(new URL(theUrl));
+                ImgurAlbum album = null;
+                try {
+                    album = ImgurRipper.getImgurAlbum(new URL(theUrl));
+                } catch (IOException e) {
+                    logger.error("Error loading imgur album " + theUrl, e);
+                    sendUpdate(STATUS.DOWNLOAD_ERRORED, "Can't download " + theUrl + " : " + e.getMessage());
+                    continue;
+                }
                 int albumIndex = 0;
                 for (ImgurImage image : album.images) {
                     albumIndex++;

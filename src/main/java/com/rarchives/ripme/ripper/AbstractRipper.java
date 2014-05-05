@@ -290,9 +290,11 @@ public abstract class AbstractRipper
             rip();
         } catch (HttpStatusException e) {
             logger.error("Got exception while running ripper:", e);
+            waitForThreads();
             sendUpdate(STATUS.RIP_ERRORED, "Status=" + e.getStatusCode() + ", URL=" + e.getUrl());
         } catch (IOException e) {
             logger.error("Got exception while running ripper:", e);
+            waitForThreads();
             sendUpdate(STATUS.RIP_ERRORED, e.getMessage());
         } finally {
             if (this.workingDir.list().length == 0) {
