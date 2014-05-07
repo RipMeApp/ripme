@@ -65,6 +65,7 @@ public class TumblrRipper extends AlbumRipper {
                 logger.info("    Retrieving " + apiURL);
                 Document doc = Jsoup.connect(apiURL)
                                     .ignoreContentType(true)
+                                    .timeout(10 * 1000)
                                     .header("User-agent", USER_AGENT)
                                     .get();
                 try {
