@@ -12,6 +12,12 @@ import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
+import javax.sound.sampled.Line;
+import javax.sound.sampled.LineEvent;
+import javax.sound.sampled.LineListener;
+
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.log4j.Logger;
@@ -282,5 +288,24 @@ public class Utils {
             list.add(ripper.getName());
         }
         return list;
+    }
+
+    public static void playSound(String filename) {
+        URL resource = ClassLoader.getSystemClassLoader().getResource(filename);
+        try {
+            final Clip clip = (Clip) AudioSystem.getLine(new Line.Info(Clip.class));
+            clip.addLineListener(new LineListener() {
+                @Override
+                public void update(LineEvent event) {
+                    if (event.getType() == LineEvent.Type.STOP) {
+                        clip.close();
+                    }
+                }
+            });
+            clip.open(AudioSystem.getAudioInputStream(resource));
+            clip.start();
+        } catch (Exception e) {
+            logger.error("Failed to play sound " + filename, e);
+        }
     }
 }

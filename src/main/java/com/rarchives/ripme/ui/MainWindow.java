@@ -104,6 +104,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
     private static JButton configSaveDirButton;
     private static JTextField configRetriesText;
     private static JCheckBox configAutoupdateCheckbox;
+    private static JCheckBox configPlaySound;
 
     private static TrayIcon trayIcon;
     private static MenuItem trayMenuMain;
@@ -166,6 +167,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
         Utils.setConfigInteger("download.timeout", Integer.parseInt(configTimeoutText.getText()));
         Utils.setConfigBoolean("clipboard.autorip", ClipboardUtils.getClipboardAutoRip());
         Utils.setConfigBoolean("auto.update", configAutoupdateCheckbox.isSelected());
+        Utils.setConfigBoolean("play.sound", configPlaySound.isSelected());
         saveHistory();
         Utils.saveConfig();
     }
@@ -305,6 +307,9 @@ public class MainWindow implements Runnable, RipStatusHandler {
         configAutoupdateCheckbox = new JCheckBox("Auto-update?", Utils.getConfigBoolean("auto.update", true));
         configAutoupdateCheckbox.setHorizontalAlignment(JCheckBox.RIGHT);
         configAutoupdateCheckbox.setHorizontalTextPosition(JCheckBox.LEFT);
+        configPlaySound = new JCheckBox("Sound when rip completes", Utils.getConfigBoolean("play.sound", false));
+        configPlaySound.setHorizontalAlignment(JCheckBox.RIGHT);
+        configPlaySound.setHorizontalTextPosition(JCheckBox.LEFT);
         configSaveDirLabel = new JLabel();
         try {
             String workingDir = (Utils.shortenPath(Utils.getWorkingDirectory()));
@@ -323,7 +328,8 @@ public class MainWindow implements Runnable, RipStatusHandler {
         gbc.gridy = 4; gbc.gridx = 0; configurationPanel.add(configRetriesLabel, gbc);
                        gbc.gridx = 1; configurationPanel.add(configRetriesText, gbc);
         gbc.gridy = 5; gbc.gridx = 0; configurationPanel.add(configOverwriteCheckbox, gbc);
-        gbc.gridy = 6; gbc.gridx = 0; configurationPanel.add(configSaveDirLabel, gbc);
+        gbc.gridy = 6; gbc.gridx = 0; configurationPanel.add(configPlaySound, gbc);
+        gbc.gridy = 7; gbc.gridx = 0; configurationPanel.add(configSaveDirLabel, gbc);
                        gbc.gridx = 1; configurationPanel.add(configSaveDirButton, gbc);
 
         gbc.gridy = 0; pane.add(ripPanel, gbc);
@@ -754,6 +760,9 @@ public class MainWindow implements Runnable, RipStatusHandler {
         case RIP_COMPLETE:
             if (!historyListModel.contains(ripTextfield.getText())) {
                 historyListModel.addElement(ripTextfield.getText());
+            }
+            if (configPlaySound.isSelected()) {
+                Utils.playSound("camera.wav");
             }
             saveHistory();
             ripButton.setVisible(true);
