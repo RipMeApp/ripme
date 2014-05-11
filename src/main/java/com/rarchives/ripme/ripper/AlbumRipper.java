@@ -204,6 +204,7 @@ public abstract class AlbumRipper extends AbstractRipper {
         }
         connection.ignoreContentType(ignoreContentType);
 
+        connection.maxBodySize(0);
         Response response = null;
         int retries = Utils.getConfigInteger("download.retries", 1);;
         while (retries >= 0) {

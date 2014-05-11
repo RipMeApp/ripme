@@ -12,6 +12,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
 import com.rarchives.ripme.ripper.AlbumRipper;
+import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
 
 public class ImagefapRipper extends AlbumRipper {
 
@@ -85,20 +86,47 @@ public class ImagefapRipper extends AlbumRipper {
     @Override
     public void rip() throws IOException {
         int index = 0;
+        sendUpdate(STATUS.LOADING_RESOURCE, this.url.toExternalForm());
         logger.info("    Retrieving " + this.url.toExternalForm());
         if (albumDoc == null) {
             albumDoc = Jsoup.connect(this.url.toExternalForm()).get();
         }
-        for (Element thumb : albumDoc.select("#gallery img")) {
-            if (!thumb.hasAttr("src") || !thumb.hasAttr("width")) {
-                continue;
+        while (true) {
+            if (isStopped()) {
+                break;
             }
-            String image = thumb.attr("src");
-            image = image.replaceAll(
-                    "http://x.*.fap.to/images/thumb/",
-                    "http://fap.to/images/full/");
-            index += 1;
-            addURLToDownload(new URL(image), String.format("%03d_", index));
+            for (Element thumb : albumDoc.select("#gallery img")) {
+                if (!thumb.hasAttr("src") || !thumb.hasAttr("width")) {
+                    continue;
+                }
+                String image = thumb.attr("src");
+                image = image.replaceAll(
+                        "http://x.*.fap.to/images/thumb/",
+                        "http://fap.to/images/full/");
+                index += 1;
+                addURLToDownload(new URL(image), String.format("%03d_", index));
+            }
+            String nextURL = null;
+            for (Element a : albumDoc.select("a.link3")) {
+                if (a.text().contains("next")) {
+                    nextURL = a.attr("href");
+                    nextURL = "http://imagefap.com/gallery.php" + nextURL;
+                    break;
+                }
+            }
+            if (nextURL == null) {
+                break;
+            }
+            else {
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    logger.error("Interrupted while waiting to load next page", e);
+                    throw new IOException(e);
+                }
+                sendUpdate(STATUS.LOADING_RESOURCE, this.url.toExternalForm());
+                albumDoc = Jsoup.connect(nextURL).get();
+            }
         }
         waitForThreads();
     }
