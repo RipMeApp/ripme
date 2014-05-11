@@ -99,8 +99,7 @@ public class ChanRipper extends AlbumRipper {
                 logger.debug("Skipping link that contains '=http' or 'imgops.com': " + link.attr("href"));
                 continue;
             }
-            System.err.println("URL=" + link.attr("href"));
-            p = Pattern.compile("^.*\\.(jpg|jpeg|png|gif)$", Pattern.CASE_INSENSITIVE);
+            p = Pattern.compile("^.*\\.(jpg|jpeg|png|gif|webm)$", Pattern.CASE_INSENSITIVE);
             m = p.matcher(link.attr("href"));
             if (m.matches()) {
                 String image = link.attr("href");
