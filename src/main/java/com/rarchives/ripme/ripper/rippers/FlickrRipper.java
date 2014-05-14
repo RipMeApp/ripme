@@ -43,7 +43,15 @@ public class FlickrRipper extends AlbumRipper {
     }
 
     public URL sanitizeURL(URL url) throws MalformedURLException {
-        return url;
+        String sUrl = url.toExternalForm();
+        sUrl = sUrl.replace("secure.flickr.com", "flickr.com");
+        if (sUrl.contains("flickr.com/groups/") && !sUrl.contains("/pool")) {
+            if (!sUrl.endsWith("/")) {
+                sUrl += "/";
+            }
+            sUrl += "pool";
+        }
+        return new URL(sUrl);
     }
     
     public String getAlbumTitle(URL url) throws MalformedURLException {
@@ -75,21 +83,28 @@ public class FlickrRipper extends AlbumRipper {
         // Root:  https://www.flickr.com/photos/115858035@N04/
         // Album: https://www.flickr.com/photos/115858035@N04/sets/72157644042355643/
         
+        final String domainRegex = "https?://[wm.]*flickr.com";
         final String userRegex = "[a-zA-Z0-9@]+";
         // Album
-        p = Pattern.compile("^https?://[wm.]*flickr.com/photos/(" + userRegex + ")/sets/([0-9]+)/?.*$");
+        p = Pattern.compile("^" + domainRegex + "/photos/(" + userRegex + ")/sets/([0-9]+)/?.*$");
         m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             return m.group(1) + "_" + m.group(2);
         }
 
         // User page
-        p = Pattern.compile("^https?://[wm.]*flickr.com/photos/(" + userRegex + ").*$");
+        p = Pattern.compile("^" + domainRegex + "/photos/(" + userRegex + ").*$");
         m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             return m.group(1);
         }
 
+        // Groups page
+        p = Pattern.compile("^" + domainRegex + "/groups/(" + userRegex + ").*$");
+        m = p.matcher(url.toExternalForm());
+        if (m.matches()) {
+            return "groups-" + m.group(1);
+        }
         throw new MalformedURLException(
                 "Expected flickr.com URL formats: "
                         + "flickr.com/photos/username or "
@@ -230,7 +245,9 @@ public class FlickrRipper extends AlbumRipper {
                 }
                 else {
                     String prefix = String.format("%03d_%s_", index, Utils.filesystemSafe(title));
-                    addURLToDownload(new URL(fullsizeImages.get(0).attr("src")), prefix);
+                    synchronized (flickrThreadPool) {
+                        addURLToDownload(new URL(fullsizeImages.get(0).attr("src")), prefix);
+                    }
                 }
             } catch (IOException e) {
                 logger.error("[!] Exception while loading/parsing " + this.url, e);
