@@ -1,5 +1,6 @@
 package com.rarchives.ripme.ripper.rippers;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -83,7 +84,6 @@ public class EHentaiRipper extends AlbumRipper {
             Element first = select.first();
             String href = first.select("a").attr("href");
             cursorUrl = new URL(href);
-            System.out.println(cursorUrl);
         }
 
         while (!cursorUrl.equals(prevUrl)) {
@@ -93,7 +93,18 @@ public class EHentaiRipper extends AlbumRipper {
             Elements img = a.select("img");
 
             String imgsrc = img.attr("src");
-            addURLToDownload(new URL(imgsrc), String.format("%03d_", index));
+            Pattern p = Pattern.compile("^http://.*/ehg/image.php.*&n=([^&]+).*$");
+            Matcher m = p.matcher(imgsrc);
+            if (m.matches()) {
+                // Manually discover filename from URL
+                String savePath = this.workingDir + File.separator;
+                savePath += String.format("%03d_%s", index + 1, m.group(1));
+                addURLToDownload(new URL(imgsrc), new File(savePath));
+            }
+            else {
+                // Provide prefix and let the AbstractRipper "guess" the filename
+                addURLToDownload(new URL(imgsrc), String.format("%03d_", index + 1));
+            }
 
             String href = a.attr("href");
 
