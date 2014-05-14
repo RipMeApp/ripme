@@ -60,10 +60,10 @@ public class EHentaiRipper extends AlbumRipper {
 
         System.out.println(url);
 
-        p = Pattern.compile("^.*g\\.e-hentai\\.org/g/[0-9]+/[a-fA-F0-9]+)/$");
+        p = Pattern.compile("^.*g\\.e-hentai\\.org/g/([0-9]+)/([a-fA-F0-9]+)/$");
         m = p.matcher(url.toExternalForm());
         if (m.matches()) {
-            return m.group(1);
+            return m.group(1) + "-" + m.group(2);
         }
 
         throw new MalformedURLException(
