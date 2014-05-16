@@ -44,7 +44,9 @@ public class FlickrRipper extends AlbumRipper {
 
     public URL sanitizeURL(URL url) throws MalformedURLException {
         String sUrl = url.toExternalForm();
-        sUrl = sUrl.replace("secure.flickr.com", "flickr.com");
+        // Strip out https
+        sUrl = sUrl.replace("https://secure.flickr.com", "http://www.flickr.com");
+        // For /groups/ links, add a /pool to the end of the URL
         if (sUrl.contains("flickr.com/groups/") && !sUrl.contains("/pool")) {
             if (!sUrl.endsWith("/")) {
                 sUrl += "/";
