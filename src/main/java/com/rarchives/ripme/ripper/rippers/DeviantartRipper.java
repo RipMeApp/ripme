@@ -19,6 +19,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
 import com.rarchives.ripme.ripper.AlbumRipper;
+import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
 import com.rarchives.ripme.utils.Utils;
 
 public class DeviantartRipper extends AlbumRipper {
@@ -49,34 +50,45 @@ public class DeviantartRipper extends AlbumRipper {
     public void rip() throws IOException {
         int index = 0;
         String nextURL = this.url.toExternalForm();
+
         while (nextURL != null) {
+
             logger.info("    Retrieving " + nextURL);
+            sendUpdate(STATUS.LOADING_RESOURCE, "Retrieving " + nextURL);
             Document doc = Jsoup.connect(nextURL)
                     .userAgent(USER_AGENT)
                     .get();
+
+            for (Element thumb : doc.select("div.zones-container a.thumb img")) {
+                if (thumb.attr("transparent").equals("false")) {
+                    continue; // a.thumbs to other albums are invisible
+                }
+
+                String fullSizePage = thumbToFull(thumb.attr("src"));
+                try {
+                    URL fullsizePageURL = new URL(fullSizePage);
+                    index++;
+                    addURLToDownload(fullsizePageURL, String.format("%03d_", index));
+                } catch (MalformedURLException e) {
+                    logger.error("[!] Invalid thumbnail image: " + thumbToFull(fullSizePage));
+                    continue;
+                }
+            }
+
             try {
                 Thread.sleep(SLEEP_TIME);
             } catch (InterruptedException e) {
                 logger.error("[!] Interrupted while waiting for page to load", e);
                 break;
             }
-            for (Element thumb : doc.select("a.thumb img")) {
-                String fullSize = thumbToFull(thumb.attr("src"));
-                URL pageURL;
-                try {
-                    pageURL = new URL(fullSize);
-                } catch (MalformedURLException e) {
-                    logger.error("[!] Invalid thumbnail image: " + thumbToFull(fullSize));
-                    continue;
-                }
-                index++;
-                addURLToDownload(pageURL, String.format("%03d_", index));
-            }
             nextURL = null;
             for (Element nextButton : doc.select("a.away")) {
                 if (nextButton.attr("href").contains("offset=" + index)) {
                     nextURL = this.url.toExternalForm() + "?offset=" + index;
                 }
+            }
+            if (nextURL == null) {
+                logger.info("No next button found");
             }
         }
         waitForThreads();
