@@ -17,6 +17,7 @@ import org.jsoup.Connection.Response;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
 import com.rarchives.ripme.ripper.AlbumRipper;
 import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
@@ -59,21 +60,34 @@ public class DeviantartRipper extends AlbumRipper {
                     .userAgent(USER_AGENT)
                     .get();
 
-            for (Element thumb : doc.select("div.zones-container a.thumb img")) {
-                if (thumb.attr("transparent").equals("false")) {
+            for (Element thumb : doc.select("div.zones-container a.thumb")) {
+                if (isStopped()) {
+                    break;
+                }
+                Element img = thumb.select("img").get(0);
+                if (img.attr("transparent").equals("false")) {
                     continue; // a.thumbs to other albums are invisible
                 }
+                index++;
 
-                String fullSize = thumbToFull(thumb.attr("src"));
+                String fullSize = null;
+                try {
+                    fullSize = thumbToFull(img.attr("src"), true);
+                } catch (Exception e) {
+                    logger.info("Attempting to get full size image from " + thumb.attr("href"));
+                    fullSize = smallToFull(img.attr("src"), thumb.attr("href"));
+                    if (fullSize == null) {
+                        continue;
+                    }
+                }
                 try {
                     URL fullsizeURL = new URL(fullSize);
                     String imageId = fullSize.substring(fullSize.lastIndexOf('-') + 1);
                     imageId = imageId.substring(0, imageId.indexOf('.'));
                     long imageIdLong = alphaToLong(imageId);
-                    index++;
                     addURLToDownload(fullsizeURL, String.format("%010d_", imageIdLong));
                 } catch (MalformedURLException e) {
-                    logger.error("[!] Invalid thumbnail image: " + thumbToFull(fullSize));
+                    logger.error("[!] Invalid thumbnail image: " + fullSize);
                     continue;
                 }
             }
@@ -101,7 +115,6 @@ public class DeviantartRipper extends AlbumRipper {
         long result = 0;
         for (int i = 0; i < alpha.length(); i++) {
             result += charToInt(alpha, i);
-            System.err.println("\t result: " + result);
         }
         return result;
     }
@@ -109,17 +122,20 @@ public class DeviantartRipper extends AlbumRipper {
     private static int charToInt(String text, int index) {
         char c = text.charAt(text.length() - index - 1);
         c = Character.toLowerCase(c);
-        System.err.print("  " + c + ": ");
         int number = "0123456789abcdefghijklmnopqrstuvwxyz".indexOf(c);
         number *= Math.pow(36, index);
-        System.err.print(number);
         return number;
     }
 
-    public static String thumbToFull(String thumb) {
+    public static String thumbToFull(String thumb, boolean throwException) throws Exception {
         thumb = thumb.replace("http://th", "http://fc");
         List<String> fields = new ArrayList<String>(Arrays.asList(thumb.split("/")));
         fields.remove(4);
+        if (!fields.get(4).equals("f") && throwException) {
+            // Not a full-size image
+            logger.warn("Can't get full size image from " + thumb);
+            throw new Exception("Can't get full size image from " + thumb);
+        }
         StringBuilder result = new StringBuilder();
         for (int i = 0; i < fields.size(); i++) {
             if (i > 0) {
@@ -128,6 +144,36 @@ public class DeviantartRipper extends AlbumRipper {
             result.append(fields.get(i));
         }
         return result.toString();
+    }
+
+    public String smallToFull(String thumb, String page) {
+        try {
+            Response resp = Jsoup.connect(page)
+                                 .userAgent(USER_AGENT)
+                                 .referrer(this.url.toExternalForm())
+                                 .method(Method.GET)
+                                 .execute();
+            Map<String,String> cookies = resp.cookies();
+            Elements els = resp.parse().select("a.dev-page-download");
+            if (els.size() == 0) {
+                throw new IOException("no download page found");
+            }
+            String fsimage = els.get(0).attr("href");
+            String imageId = fsimage.substring(fsimage.lastIndexOf('-') + 1);
+            imageId = imageId.substring(0, imageId.indexOf('.'));
+            long imageIdLong = alphaToLong(imageId);
+            addURLToDownload(new URL(fsimage), String.format("%010d_", imageIdLong), "", page, cookies);
+            return null;
+        } catch (IOException ioe) {
+            try {
+                logger.info("Failed to get full size download image at " + page + " : '" + ioe.getMessage() + "'");
+                String lessThanFull = thumbToFull(thumb, false);
+                logger.info("Falling back to less-than-full-size image " + lessThanFull);
+                return lessThanFull;
+            } catch (Exception e) {
+                return null;
+            }
+        }
     }
 
     @Override
