@@ -64,13 +64,16 @@ public class DeviantartRipper extends AlbumRipper {
                     continue; // a.thumbs to other albums are invisible
                 }
 
-                String fullSizePage = thumbToFull(thumb.attr("src"));
+                String fullSize = thumbToFull(thumb.attr("src"));
                 try {
-                    URL fullsizePageURL = new URL(fullSizePage);
+                    URL fullsizeURL = new URL(fullSize);
+                    String imageId = fullSize.substring(fullSize.lastIndexOf('-') + 1);
+                    imageId = imageId.substring(0, imageId.indexOf('.'));
+                    long imageIdLong = alphaToLong(imageId);
                     index++;
-                    addURLToDownload(fullsizePageURL, String.format("%03d_", index));
+                    addURLToDownload(fullsizeURL, String.format("%010d_", imageIdLong));
                 } catch (MalformedURLException e) {
-                    logger.error("[!] Invalid thumbnail image: " + thumbToFull(fullSizePage));
+                    logger.error("[!] Invalid thumbnail image: " + thumbToFull(fullSize));
                     continue;
                 }
             }
@@ -93,7 +96,26 @@ public class DeviantartRipper extends AlbumRipper {
         }
         waitForThreads();
     }
-    
+
+    public static long alphaToLong(String alpha) {
+        long result = 0;
+        for (int i = 0; i < alpha.length(); i++) {
+            result += charToInt(alpha, i);
+            System.err.println("\t result: " + result);
+        }
+        return result;
+    }
+
+    private static int charToInt(String text, int index) {
+        char c = text.charAt(text.length() - index - 1);
+        c = Character.toLowerCase(c);
+        System.err.print("  " + c + ": ");
+        int number = "0123456789abcdefghijklmnopqrstuvwxyz".indexOf(c);
+        number *= Math.pow(36, index);
+        System.err.print(number);
+        return number;
+    }
+
     public static String thumbToFull(String thumb) {
         thumb = thumb.replace("http://th", "http://fc");
         List<String> fields = new ArrayList<String>(Arrays.asList(thumb.split("/")));
