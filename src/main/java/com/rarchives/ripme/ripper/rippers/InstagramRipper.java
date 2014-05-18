@@ -29,7 +29,8 @@ public class InstagramRipper extends AlbumRipper {
     @Override
     public boolean canRip(URL url) {
         return (url.getHost().endsWith(DOMAIN)
-                || url.getHost().endsWith("statigr.am"));
+             || url.getHost().endsWith("statigr.am")
+             || url.getHost().endsWith("iconosquare.com"));
     }
 
     @Override
@@ -45,15 +46,20 @@ public class InstagramRipper extends AlbumRipper {
                 throw new MalformedURLException("Failed to retrieve user page from " + url);
             }
         }
-        p = Pattern.compile("^.*instagram.com/([a-zA-Z0-9\\-_]{3,}).*$");
+        p = Pattern.compile("^.*instagram\\.com/([a-zA-Z0-9\\-_]{3,}).*$");
         m = p.matcher(url.toExternalForm());
         if (m.matches()) {
-            return new URL("http://statigr.am/" + m.group(1));
+            return new URL("http://iconosquare.com/" + m.group(1));
         }
-        p = Pattern.compile("^.*statigr.am/([a-zA-Z0-9\\-_]{3,}).*$");
+        p = Pattern.compile("^.*iconosquare\\.com/([a-zA-Z0-9\\-_]{3,}).*$");
         m = p.matcher(url.toExternalForm());
         if (m.matches()) {
-            return new URL("http://statigr.am/" + m.group(1));
+            return new URL("http://iconosquare.com/" + m.group(1));
+        }
+        p = Pattern.compile("^.*statigr\\.am/([a-zA-Z0-9\\-_]{3,}).*$");
+        m = p.matcher(url.toExternalForm());
+        if (m.matches()) {
+            return new URL("http://iconosquare.com/" + m.group(1));
         }
         throw new MalformedURLException("Expected username in URL (instagram.com/username and not " + url);
     }
@@ -63,7 +69,7 @@ public class InstagramRipper extends AlbumRipper {
         for (Element element : doc.select("meta[property='og:description']")) {
             String content = element.attr("content");
             if (content.endsWith("'s photo on Instagram")) {
-                return new URL("http://statigr.am/" + content.substring(0, content.indexOf("'")));
+                return new URL("http://iconosquare/" + content.substring(0, content.indexOf("'")));
             }
         }
         throw new MalformedURLException("Expected username in URL (instagram.com/username and not " + url);
@@ -82,7 +88,7 @@ public class InstagramRipper extends AlbumRipper {
     @Override
     public void rip() throws IOException {
         String userID = getUserID(this.url);
-        String baseURL = "http://statigr.am/controller_nl.php?action=getPhotoUserPublic&user_id=" + userID;
+        String baseURL = "http://iconosquare.com/controller_nl.php?action=getPhotoUserPublic&user_id=" + userID;
         String params = "";
         while (true) {
             String url = baseURL + params;
@@ -139,7 +145,7 @@ public class InstagramRipper extends AlbumRipper {
 
     @Override
     public String getGID(URL url) throws MalformedURLException {
-        Pattern p = Pattern.compile("^https?://statigr.am/([a-zA-Z0-9\\-_]{3,}).*$");
+        Pattern p = Pattern.compile("^https?://iconosquare.com/([a-zA-Z0-9\\-_]{3,}).*$");
         Matcher m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             return m.group(1);
