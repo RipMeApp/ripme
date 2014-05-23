@@ -9,7 +9,12 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
+import com.rarchives.ripme.ripper.AbstractRipper;
 import com.rarchives.ripme.ripper.rippers.ImgurRipper;
 import com.rarchives.ripme.ripper.rippers.ImgurRipper.ImgurAlbum;
 import com.rarchives.ripme.ripper.rippers.ImgurRipper.ImgurImage;
@@ -31,6 +36,7 @@ public class RipUtils {
                 return result;
             } catch (IOException e) {
                 logger.error("[!] Exception while loading album " + url, e);
+                return result;
             }
            
         }
@@ -51,10 +57,18 @@ public class RipUtils {
         if(url.getHost().equals("imgur.com") || 
                 url.getHost().equals("m.imgur.com")){
             try {
-                result.add(new URL(url.toExternalForm() + ".png"));
-                return result;
-            } catch (MalformedURLException ex) {
-                logger.error("[!] Exception while loading album " + url, ex);
+                // Fetch the page
+                Document doc = Jsoup.connect(url.toExternalForm())
+                                    .userAgent(AbstractRipper.USER_AGENT)
+                                    .get();
+                for (Element el : doc.select("meta")) {
+                    if (el.attr("property").equals("og:image")) {
+                        result.add(new URL(el.attr("content")));
+                        return result;
+                    }
+                }
+            } catch (IOException ex) {
+                logger.error("[!] Error", ex);
             }
             
         }
