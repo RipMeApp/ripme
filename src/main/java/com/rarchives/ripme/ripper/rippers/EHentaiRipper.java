@@ -22,10 +22,6 @@ public class EHentaiRipper extends AlbumRipper {
 
     private Document albumDoc = null;
 
-    private URL prevUrl = null;
-    private URL cursorUrl = null;
-    private Document cursorDoc = null;
-
     public EHentaiRipper(URL url) throws IOException {
         super(url);
     }
@@ -80,20 +76,32 @@ public class EHentaiRipper extends AlbumRipper {
         if (albumDoc == null) {
             albumDoc = Jsoup.connect(this.url.toExternalForm()).get();
         }
-        if (cursorDoc == null) {
-            Elements select = albumDoc.select("#gdt > .gdtm");
-            Element first = select.first();
-            String href = first.select("a").attr("href");
-            cursorUrl = new URL(href);
+        Elements select = albumDoc.select("#gdt > .gdtm");
+        Element first = select.first();
+        String href = first.select("a").attr("href");
+        if (href.equals("")) {
+            throw new IOException("Could not find 'href' inside elements under #gdt > .gdtm > a");
         }
+        URL cursorUrl = new URL(href), prevUrl = null;
 
         while (!cursorUrl.equals(prevUrl)) {
-            cursorDoc = Jsoup.connect(this.cursorUrl.toExternalForm()).get();
+            Document cursorDoc = Jsoup.connect(cursorUrl.toExternalForm())
+                                      .userAgent(USER_AGENT)
+                                      .get();
 
             Elements a = cursorDoc.select(".sni > a");
-            Elements img = a.select("img");
+            Elements images = a.select("img");
+            if (images.size() == 0) {
+                logger.error("No images found at " + cursorUrl);
+                break;
+            }
 
-            String imgsrc = img.attr("src");
+            String imgsrc = images.get(0).attr("src");
+            if (imgsrc.equals("")) {
+                logger.warn("Image URL is empty via " + images.get(0));
+                continue;
+            }
+            logger.info("Found URL " + imgsrc + " via " + images.get(0));
             Pattern p = Pattern.compile("^http://.*/ehg/image.php.*&n=([^&]+).*$");
             Matcher m = p.matcher(imgsrc);
             if (m.matches()) {
@@ -114,10 +122,13 @@ public class EHentaiRipper extends AlbumRipper {
                 addURLToDownload(new URL(imgsrc), prefix);
             }
 
-            String href = a.attr("href");
-
             prevUrl = cursorUrl;
-            cursorUrl = new URL(href);
+            String nextUrl = a.attr("href");
+            if (nextUrl.equals("")) {
+                logger.warn("Next page URL is empty, via " + a);
+                break;
+            }
+            cursorUrl = new URL(nextUrl);
 
             index++;
         }
