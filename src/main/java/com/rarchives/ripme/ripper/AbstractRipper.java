@@ -24,7 +24,7 @@ public abstract class AbstractRipper
 
     protected static final Logger logger = Logger.getLogger(AbstractRipper.class);
 
-    protected static final String USER_AGENT = 
+    public static final String USER_AGENT = 
             "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:27.0) Gecko/20100101 Firefox/27.0";
 
     protected URL url;

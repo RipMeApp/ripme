@@ -64,13 +64,19 @@ public class ImagefapRipper extends AlbumRipper {
     public String getGID(URL url) throws MalformedURLException {
         Pattern p; Matcher m;
 
-        p = Pattern.compile("^.*imagefap.com/gallery.php\\?gid=([0-9]{1,}).*$");
+        p = Pattern.compile("^.*imagefap.com/gallery.php\\?gid=([0-9]+).*$");
         m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             return m.group(1);
         }
 
-        p = Pattern.compile("^.*imagefap.com/pictures/([0-9]{1,}).*$");
+        p = Pattern.compile("^.*imagefap.com/pictures/([0-9]+).*$");
+        m = p.matcher(url.toExternalForm());
+        if (m.matches()) {
+            return m.group(1);
+        }
+
+        p = Pattern.compile("^.*imagefap.com/gallery/([0-9]+).*$");
         m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             return m.group(1);

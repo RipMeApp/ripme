@@ -21,7 +21,7 @@ import com.rarchives.ripme.utils.Utils;
 public class UpdateUtils {
 
     private static final Logger logger = Logger.getLogger(UpdateUtils.class);
-    private static final String DEFAULT_VERSION = "1.0.44";
+    private static final String DEFAULT_VERSION = "1.0.45";
     private static final String updateJsonURL = "http://rarchives.com/ripme.json";
     private static final String updateJarURL = "http://rarchives.com/ripme.jar";
     private static final String mainFileName = "ripme.jar";

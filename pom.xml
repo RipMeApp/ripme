@@ -4,7 +4,7 @@
   <groupId>com.rarchives.ripme</groupId>
   <artifactId>ripme</artifactId>
   <packaging>jar</packaging>
-  <version>1.0.44</version>
+  <version>1.0.45</version>
   <name>ripme</name>
   <url>http://rip.rarchives.com</url>
   <properties>
@@ -47,6 +47,16 @@
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-io</artifactId>
       <version>1.3.2</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.httpcomponents</groupId>
+      <artifactId>httpclient</artifactId>
+      <version>4.3.3</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.httpcomponents</groupId>
+      <artifactId>httpmime</artifactId>
+      <version>4.3.3</version>
     </dependency>
   </dependencies>
   <build>
