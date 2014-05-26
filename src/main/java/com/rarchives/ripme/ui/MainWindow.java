@@ -204,6 +204,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
         }
 
         ripTextfield = new JTextField("", 20);
+        ripTextfield.addMouseListener(new ContextMenuMouseListener());
         ImageIcon ripIcon = new ImageIcon(mainIcon);
         ripButton = new JButton("<html><font size=\"5\"><b>Rip</b></font></html>", ripIcon);
         stopButton = new JButton("<html><font size=\"5\"><b>Stop</b></font></html>");
