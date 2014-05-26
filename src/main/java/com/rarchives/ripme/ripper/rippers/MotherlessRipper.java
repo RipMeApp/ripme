@@ -39,21 +39,22 @@ public class MotherlessRipper extends AlbumRipper {
 
     @Override
     public URL sanitizeURL(URL url) throws MalformedURLException {
-        String gid = getGID(url);
-        URL newURL = new URL("http://motherless.com/G" + gid);
-        logger.debug("Sanitized URL from " + url + " to " + newURL);
-        return newURL;
+        return url;
     }
 
     @Override
     public String getGID(URL url) throws MalformedURLException {
         Pattern p = Pattern.compile("^https?://(www\\.)?motherless\\.com/G([MVI]?[A-F0-9]{6,8}).*$");
         Matcher m = p.matcher(url.toExternalForm());
-        System.err.println(url.toExternalForm());
-        if (!m.matches()) {
-            throw new MalformedURLException("Expected URL format: http://motherless.com/GIXXXXXXX, got: " + url);
+        if (m.matches()) {
+            return m.group(m.groupCount());
         }
-        return m.group(m.groupCount());
+        p = Pattern.compile("^https?://(www\\.)?motherless\\.com/term/(images/|videos/)([a-zA-Z0-9%]+)$");
+        m = p.matcher(url.toExternalForm());
+        if (m.matches()) {
+            return m.group(m.groupCount());
+        }
+        throw new MalformedURLException("Expected URL format: http://motherless.com/GIXXXXXXX, got: " + url);
     }
 
     @Override
@@ -64,9 +65,21 @@ public class MotherlessRipper extends AlbumRipper {
             logger.info("    Retrieving " + nextURL);
             Document doc = Jsoup.connect(nextURL)
                     .userAgent(USER_AGENT)
+                    .timeout(5000)
+                    .referrer("http://motherless.com")
                     .get();
             for (Element thumb : doc.select("div.thumb a.img-container")) {
-                URL url = new URL("http://" + DOMAIN + thumb.attr("href"));
+                String thumbURL = thumb.attr("href");
+                if (thumbURL.contains("pornmd.com")) {
+                    continue;
+                }
+                URL url;
+                if (!thumbURL.startsWith("http")) {
+                    url = new URL("http://" + DOMAIN + thumbURL);
+                }
+                else {
+                    url = new URL(thumbURL);
+                }
                 index += 1;
                 // Create thread for finding image at "url" page
                 MotherlessImageThread mit = new MotherlessImageThread(url, index);
@@ -101,6 +114,8 @@ public class MotherlessRipper extends AlbumRipper {
             try {
                 Document doc = Jsoup.connect(this.url.toExternalForm())
                                     .userAgent(USER_AGENT)
+                                    .timeout(5000)
+                                    .referrer(this.url.toExternalForm())
                                     .get();
                 Pattern p = Pattern.compile("^.*__fileurl = '([^']{1,})';.*$", Pattern.DOTALL);
                 Matcher m = p.matcher(doc.outerHtml());
