@@ -246,7 +246,11 @@ public class FlickrRipper extends AlbumRipper {
                     return;
                 }
                 else {
-                    String prefix = String.format("%03d_%s_", index, Utils.filesystemSafe(title));
+                    String prefix = "";
+                    if (Utils.getConfigBoolean("download.save_order", true)) {
+                        prefix = String.format("%03d_", index);
+                    }
+                    prefix += Utils.filesystemSafe(title);
                     synchronized (flickrThreadPool) {
                         addURLToDownload(new URL(fullsizeImages.get(0).attr("src")), prefix);
                     }

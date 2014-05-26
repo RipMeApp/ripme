@@ -129,7 +129,10 @@ public class ImgurRipper extends AlbumRipper {
                 subdirFile.mkdirs();
             }
             index += 1;
-            saveAs += String.format("%03d_%s", index, imgurImage.getSaveAs());
+            if (Utils.getConfigBoolean("download.save_order", true)) {
+                saveAs += String.format("%03d_", index);
+            }
+            saveAs += imgurImage.getSaveAs();
             addURLToDownload(imgurImage.url, new File(saveAs));
         }
     }
@@ -279,7 +282,11 @@ public class ImgurRipper extends AlbumRipper {
                     imagesFound++;
                     JSONObject image = images.getJSONObject(i);
                     String imageUrl = "http://i.imgur.com/" + image.getString("hash") + image.getString("ext");
-                    addURLToDownload(new URL(imageUrl), String.format("%03d_", imagesFound));
+                    String prefix = "";
+                    if (Utils.getConfigBoolean("download.save_order", true)) {
+                        prefix = String.format("%03d_", imagesFound);
+                    }
+                    addURLToDownload(new URL(imageUrl), prefix);
                 }
                 if (imagesFound >= imagesTotal) {
                     break;

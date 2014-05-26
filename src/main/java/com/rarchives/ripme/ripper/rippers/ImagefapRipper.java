@@ -13,6 +13,7 @@ import org.jsoup.nodes.Element;
 
 import com.rarchives.ripme.ripper.AlbumRipper;
 import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
+import com.rarchives.ripme.utils.Utils;
 
 public class ImagefapRipper extends AlbumRipper {
 
@@ -110,7 +111,11 @@ public class ImagefapRipper extends AlbumRipper {
                         "http://x.*.fap.to/images/thumb/",
                         "http://fap.to/images/full/");
                 index += 1;
-                addURLToDownload(new URL(image), String.format("%03d_", index));
+                String prefix = "";
+                if (Utils.getConfigBoolean("download.save_order", true)) {
+                    prefix = String.format("%03d_", index);
+                }
+                addURLToDownload(new URL(image), prefix);
             }
             String nextURL = null;
             for (Element a : albumDoc.select("a.link3")) {

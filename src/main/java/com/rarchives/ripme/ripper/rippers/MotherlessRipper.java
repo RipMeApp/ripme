@@ -13,6 +13,7 @@ import org.jsoup.nodes.Element;
 
 import com.rarchives.ripme.ripper.AlbumRipper;
 import com.rarchives.ripme.ripper.DownloadThreadPool;
+import com.rarchives.ripme.utils.Utils;
 
 public class MotherlessRipper extends AlbumRipper {
 
@@ -121,7 +122,11 @@ public class MotherlessRipper extends AlbumRipper {
                 Matcher m = p.matcher(doc.outerHtml());
                 if (m.matches()) {
                     String file = m.group(1);
-                    addURLToDownload(new URL(file), String.format("%03d_", index));
+                    String prefix = "";
+                    if (Utils.getConfigBoolean("download.save_order", true)) {
+                        prefix = String.format("%03d_", index);
+                    }
+                    addURLToDownload(new URL(file), prefix);
                 } else {
                     logger.warn("[!] could not find '__fileurl' at " + url);
                 }

@@ -12,6 +12,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
 import com.rarchives.ripme.ripper.AlbumRipper;
+import com.rarchives.ripme.utils.Utils;
 
 public class KinkyshareRipper extends AlbumRipper {
 
@@ -67,8 +68,12 @@ public class KinkyshareRipper extends AlbumRipper {
             if (image.startsWith("/")) {
                 image = "http://kinkyshare.com" + image;
             }
-            index += 1;
-            addURLToDownload(new URL(image), String.format("%03d_", index));
+            index += 1; 
+            String prefix = "";
+            if (Utils.getConfigBoolean("download.save_order", true)) {
+                prefix = String.format("%03d_", index);
+            }
+            addURLToDownload(new URL(image), prefix);
         }
         waitForThreads();
     }

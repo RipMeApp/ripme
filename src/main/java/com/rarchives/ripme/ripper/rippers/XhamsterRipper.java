@@ -12,6 +12,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
 import com.rarchives.ripme.ripper.AlbumRipper;
+import com.rarchives.ripme.utils.Utils;
 
 public class XhamsterRipper extends AlbumRipper {
 
@@ -52,7 +53,11 @@ public class XhamsterRipper extends AlbumRipper {
                         "_160\\.",
                         "_1000.");
                 index += 1;
-                addURLToDownload(new URL(image), String.format("%03d_", index));
+                String prefix = "";
+                if (Utils.getConfigBoolean("download.save_order", true)) {
+                    prefix = String.format("%03d_", index);
+                }
+                addURLToDownload(new URL(image), prefix);
             }
             nextURL = null;
             for (Element element : doc.select("a.last")) {

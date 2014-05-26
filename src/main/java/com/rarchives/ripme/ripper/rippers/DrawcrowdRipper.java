@@ -14,6 +14,7 @@ import org.jsoup.select.Elements;
 
 import com.rarchives.ripme.ripper.AlbumRipper;
 import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
+import com.rarchives.ripme.utils.Utils;
 
 public class DrawcrowdRipper extends AlbumRipper {
 
@@ -76,7 +77,11 @@ public class DrawcrowdRipper extends AlbumRipper {
                         .replaceAll("/medium/", "/large/")
                         .replaceAll("/small/", "/large/");
                 index++;
-                addURLToDownload(new URL(image), String.format("%03d_", index));
+                String prefix = "";
+                if (Utils.getConfigBoolean("download.save_order", true)) {
+                    prefix = String.format("%03d_", index);
+                }
+                addURLToDownload(new URL(image), prefix);
             }
             Elements loadMore = albumDoc.select("a#load-more");
             if (loadMore.size() == 0) {

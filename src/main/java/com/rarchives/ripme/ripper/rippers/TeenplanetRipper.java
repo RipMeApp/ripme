@@ -13,6 +13,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import com.rarchives.ripme.ripper.AlbumRipper;
+import com.rarchives.ripme.utils.Utils;
 
 public class TeenplanetRipper extends AlbumRipper {
 
@@ -82,7 +83,11 @@ public class TeenplanetRipper extends AlbumRipper {
                     "/thumbs/",
                     "/");
             index += 1;
-            addURLToDownload(new URL(image), String.format("%03d_", index));
+            String prefix = "";
+            if (Utils.getConfigBoolean("download.save_order", true)) {
+                prefix = String.format("%03d_", index);
+            }
+            addURLToDownload(new URL(image), prefix);
         }
         waitForThreads();
     }

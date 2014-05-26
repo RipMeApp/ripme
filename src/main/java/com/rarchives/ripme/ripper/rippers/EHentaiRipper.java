@@ -14,6 +14,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import com.rarchives.ripme.ripper.AlbumRipper;
+import com.rarchives.ripme.utils.Utils;
 
 public class EHentaiRipper extends AlbumRipper {
     private static final String DOMAIN = "g.e-hentai.org", HOST = "e-hentai";
@@ -98,12 +99,19 @@ public class EHentaiRipper extends AlbumRipper {
             if (m.matches()) {
                 // Manually discover filename from URL
                 String savePath = this.workingDir + File.separator;
-                savePath += String.format("%03d_%s", index + 1, m.group(1));
+                if (Utils.getConfigBoolean("download.save_order", true)) {
+                    savePath += String.format("%03d_", index + 1);
+                }
+                savePath += m.group(1);
                 addURLToDownload(new URL(imgsrc), new File(savePath));
             }
             else {
                 // Provide prefix and let the AbstractRipper "guess" the filename
-                addURLToDownload(new URL(imgsrc), String.format("%03d_", index + 1));
+                String prefix = "";
+                if (Utils.getConfigBoolean("download.save_order", true)) {
+                    prefix = String.format("%03d_", index + 1);
+                }
+                addURLToDownload(new URL(imgsrc), prefix);
             }
 
             String href = a.attr("href");

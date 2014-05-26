@@ -52,6 +52,7 @@ public class DeviantartRipper extends AlbumRipper {
         int index = 0;
         String nextURL = this.url.toExternalForm();
 
+        // Iterate over every page
         while (nextURL != null) {
 
             logger.info("    Retrieving " + nextURL);
@@ -60,6 +61,7 @@ public class DeviantartRipper extends AlbumRipper {
                     .userAgent(USER_AGENT)
                     .get();
 
+            // Iterate over all thumbnails
             for (Element thumb : doc.select("div.zones-container a.thumb")) {
                 if (isStopped()) {
                     break;
@@ -68,6 +70,7 @@ public class DeviantartRipper extends AlbumRipper {
                 if (img.attr("transparent").equals("false")) {
                     continue; // a.thumbs to other albums are invisible
                 }
+
                 index++;
 
                 String fullSize = null;
@@ -80,6 +83,7 @@ public class DeviantartRipper extends AlbumRipper {
                         continue;
                     }
                 }
+
                 try {
                     URL fullsizeURL = new URL(fullSize);
                     String imageId = fullSize.substring(fullSize.lastIndexOf('-') + 1);
@@ -98,6 +102,8 @@ public class DeviantartRipper extends AlbumRipper {
                 logger.error("[!] Interrupted while waiting for page to load", e);
                 break;
             }
+            
+            // Find the next page
             nextURL = null;
             for (Element nextButton : doc.select("a.away")) {
                 if (nextButton.attr("href").contains("offset=" + index)) {
@@ -111,6 +117,11 @@ public class DeviantartRipper extends AlbumRipper {
         waitForThreads();
     }
 
+    /**
+     * Convert alpha-numeric string into a corresponding number
+     * @param alpha String to convert
+     * @return Numeric representation of 'alpha'
+     */
     public static long alphaToLong(String alpha) {
         long result = 0;
         for (int i = 0; i < alpha.length(); i++) {
@@ -119,6 +130,12 @@ public class DeviantartRipper extends AlbumRipper {
         return result;
     }
 
+    /**
+     * Convert character at index in a string 'text' to numeric form (base-36)
+     * @param text Text to retrieve the character from
+     * @param index Index of the desired character
+     * @return Number representing character at text[index] 
+     */
     private static int charToInt(String text, int index) {
         char c = text.charAt(text.length() - index - 1);
         c = Character.toLowerCase(c);
@@ -127,6 +144,13 @@ public class DeviantartRipper extends AlbumRipper {
         return number;
     }
 
+    /**
+     * Tries to get full size image from thumbnail URL
+     * @param thumb Thumbnail URL
+     * @param throwException Whether or not to throw exception when full size image isn't found
+     * @return Full-size image URL
+     * @throws Exception If it can't find the full-size URL
+     */
     public static String thumbToFull(String thumb, boolean throwException) throws Exception {
         thumb = thumb.replace("http://th", "http://fc");
         List<String> fields = new ArrayList<String>(Arrays.asList(thumb.split("/")));
@@ -146,6 +170,14 @@ public class DeviantartRipper extends AlbumRipper {
         return result.toString();
     }
 
+    /**
+     * If largest resolution for image at 'thumb' is found, starts downloading
+     * and returns null.
+     * If it finds a larger resolution on another page, returns the image URL.
+     * @param thumb Thumbnail URL
+     * @param page Page the thumbnail is retrieved from
+     * @return Highest-resolution version of the image based on thumbnail URL and the page.
+     */
     public String smallToFull(String thumb, String page) {
         try {
             Response resp = Jsoup.connect(page)
@@ -159,10 +191,14 @@ public class DeviantartRipper extends AlbumRipper {
                 throw new IOException("no download page found");
             }
             String fsimage = els.get(0).attr("href");
-            String imageId = fsimage.substring(fsimage.lastIndexOf('-') + 1);
-            imageId = imageId.substring(0, imageId.indexOf('.'));
-            long imageIdLong = alphaToLong(imageId);
-            addURLToDownload(new URL(fsimage), String.format("%010d_", imageIdLong), "", page, cookies);
+
+            String prefix = "";
+            if (Utils.getConfigBoolean("download.save_order", true)) {
+                String imageId = fsimage.substring(fsimage.lastIndexOf('-') + 1);
+                imageId = imageId.substring(0, imageId.indexOf('.'));
+                prefix = String.format("%010d_", alphaToLong(imageId));
+            }
+            addURLToDownload(new URL(fsimage), prefix, "", page, cookies);
             return null;
         } catch (IOException ioe) {
             try {

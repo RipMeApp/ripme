@@ -12,6 +12,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
 import com.rarchives.ripme.ripper.AlbumRipper;
+import com.rarchives.ripme.utils.Utils;
 
 public class ImagearnRipper extends AlbumRipper {
 
@@ -67,7 +68,11 @@ public class ImagearnRipper extends AlbumRipper {
             String image = thumb.attr("src");
             image = image.replaceAll("thumbs[0-9]*\\.imagearn\\.com/", "img.imagearn.com/imags/");
             index += 1;
-            addURLToDownload(new URL(image), String.format("%03d_", index));
+            String prefix = "";
+            if (Utils.getConfigBoolean("download.save_order", true)) {
+                prefix = String.format("%03d_", index);
+            }
+            addURLToDownload(new URL(image), prefix);
         }
         waitForThreads();
     }

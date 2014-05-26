@@ -18,6 +18,7 @@ import org.jsoup.nodes.Document;
 
 import com.rarchives.ripme.ripper.AlbumRipper;
 import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
+import com.rarchives.ripme.utils.Utils;
 
 public class ModelmayhemRipper extends AlbumRipper {
 
@@ -105,7 +106,11 @@ public class ModelmayhemRipper extends AlbumRipper {
                 logger.info("Got empty image for " + picture.toString(2));
                 continue;
             }
-            addURLToDownload(new URL(bigImage), String.format("%03d_", i + 1));
+            String prefix = "";
+            if (Utils.getConfigBoolean("download.save_order", true)) {
+                prefix = String.format("%03d_", i + 1);
+            }
+            addURLToDownload(new URL(bigImage), prefix);
         }
         waitForThreads();
     }

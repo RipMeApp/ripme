@@ -176,7 +176,11 @@ public class MinusRipper extends AlbumRipper {
                 String image = "http://i.minus.com/i"
                                + item.getString("id")
                                + extension;
-                addURLToDownload(new URL(image), String.format("%03d_", i + 1), subdir);
+                String prefix = "";
+                if (Utils.getConfigBoolean("download.save_order", true)) {
+                    prefix = String.format("%03d_", i + 1);
+                }
+                addURLToDownload(new URL(image), prefix, subdir);
             }
         }
     }

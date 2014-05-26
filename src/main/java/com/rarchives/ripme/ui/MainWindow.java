@@ -105,6 +105,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
     private static JTextField configRetriesText;
     private static JCheckBox configAutoupdateCheckbox;
     private static JCheckBox configPlaySound;
+    private static JCheckBox configSaveOrderCheckbox;
 
     private static TrayIcon trayIcon;
     private static MenuItem trayMenuMain;
@@ -168,6 +169,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
         Utils.setConfigBoolean("clipboard.autorip", ClipboardUtils.getClipboardAutoRip());
         Utils.setConfigBoolean("auto.update", configAutoupdateCheckbox.isSelected());
         Utils.setConfigBoolean("play.sound", configPlaySound.isSelected());
+        Utils.setConfigBoolean("download.save_order", configSaveOrderCheckbox.isSelected());
         saveHistory();
         Utils.saveConfig();
     }
@@ -310,6 +312,9 @@ public class MainWindow implements Runnable, RipStatusHandler {
         configPlaySound = new JCheckBox("Sound when rip completes", Utils.getConfigBoolean("play.sound", false));
         configPlaySound.setHorizontalAlignment(JCheckBox.RIGHT);
         configPlaySound.setHorizontalTextPosition(JCheckBox.LEFT);
+        configSaveOrderCheckbox = new JCheckBox("Save images in order", Utils.getConfigBoolean("download.save_order", true));
+        configSaveOrderCheckbox.setHorizontalAlignment(JCheckBox.RIGHT);
+        configSaveOrderCheckbox.setHorizontalTextPosition(JCheckBox.LEFT);
         configSaveDirLabel = new JLabel();
         try {
             String workingDir = (Utils.shortenPath(Utils.getWorkingDirectory()));
@@ -329,7 +334,8 @@ public class MainWindow implements Runnable, RipStatusHandler {
                        gbc.gridx = 1; configurationPanel.add(configRetriesText, gbc);
         gbc.gridy = 5; gbc.gridx = 0; configurationPanel.add(configOverwriteCheckbox, gbc);
         gbc.gridy = 6; gbc.gridx = 0; configurationPanel.add(configPlaySound, gbc);
-        gbc.gridy = 7; gbc.gridx = 0; configurationPanel.add(configSaveDirLabel, gbc);
+        gbc.gridy = 7; gbc.gridx = 0; configurationPanel.add(configSaveOrderCheckbox, gbc);
+        gbc.gridy = 8; gbc.gridx = 0; configurationPanel.add(configSaveDirLabel, gbc);
                        gbc.gridx = 1; configurationPanel.add(configSaveDirButton, gbc);
 
         gbc.gridy = 0; pane.add(ripPanel, gbc);
@@ -485,6 +491,12 @@ public class MainWindow implements Runnable, RipStatusHandler {
             @Override
             public void actionPerformed(ActionEvent arg0) {
                 Utils.setConfigBoolean("file.overwrite", configOverwriteCheckbox.isSelected());
+            }
+        });
+        configSaveOrderCheckbox.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent arg0) {
+                Utils.setConfigBoolean("download.save_order", configSaveOrderCheckbox.isSelected());
             }
         });
     }
@@ -647,6 +659,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
         if (!logPanel.isVisible()) {
             optionLog.doClick();
         }
+        urlString = urlString.trim();
         if (urlString.toLowerCase().startsWith("gonewild:")) {
             urlString = "http://gonewild.com/user/" + urlString.substring(urlString.indexOf(':') + 1);
         }
@@ -823,7 +836,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
     }
     
     public static void ripAlbumStatic(String url) {
-        ripTextfield.setText(url);
+        ripTextfield.setText(url.trim());
         ripButton.doClick();
     }
 }

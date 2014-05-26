@@ -75,7 +75,10 @@ public class IrarchivesRipper extends AlbumRipper {
                 int albumIndex = 0;
                 for (ImgurImage image : album.images) {
                     albumIndex++;
-                    String saveAs = String.format("%s-%03d_", post.getString("hexid"), albumIndex);
+                    String saveAs = String.format("%s-", post.getString("hexid"));
+                    if (Utils.getConfigBoolean("download.save_order", true)) {
+                        saveAs += String.format("%03d_", albumIndex);
+                    }
                     addURLToDownload(image.url, saveAs);
                 }
             }

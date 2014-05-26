@@ -19,6 +19,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
 import com.rarchives.ripme.ripper.AlbumRipper;
+import com.rarchives.ripme.utils.Utils;
 
 public class VkRipper extends AlbumRipper {
 
@@ -83,7 +84,11 @@ public class VkRipper extends AlbumRipper {
             int vidid = jsonVideo.getInt(1);
             String videoURL = com.rarchives.ripme.ripper.rippers.video.VkRipper.getVideoURLAtPage(
                     "http://vk.com/video" + oid + "_" + vidid);
-            addURLToDownload(new URL(videoURL), String.format("%03d_", i + 1));
+            String prefix = "";
+            if (Utils.getConfigBoolean("download.save_order", true)) {
+                prefix = String.format("%03d_", i + 1);
+            }
+            addURLToDownload(new URL(videoURL), prefix);
             try {
                 Thread.sleep(500);
             } catch (InterruptedException e) {

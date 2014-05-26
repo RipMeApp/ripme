@@ -13,6 +13,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
 import com.rarchives.ripme.ripper.AlbumRipper;
+import com.rarchives.ripme.utils.Utils;
 
 public class EightmusesRipper extends AlbumRipper {
 
@@ -53,10 +54,13 @@ public class EightmusesRipper extends AlbumRipper {
             if (image.startsWith("//")) {
                 image = "http:" + image;
             }
-            //image = image.replace(" ", "%20");
-            URL imageURL = new URL(image);
             index += 1;
-            addURLToDownload(imageURL, String.format("%03d_", index));
+            URL imageURL = new URL(image);
+            String prefix = "";
+            if (Utils.getConfigBoolean("download.save_order", true)) {
+                prefix = String.format("%03d_", index);
+            }
+            addURLToDownload(imageURL, prefix);
         }
         waitForThreads();
     }
