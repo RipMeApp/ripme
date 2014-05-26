@@ -481,6 +481,12 @@ public class MainWindow implements Runnable, RipStatusHandler {
                 Utils.setConfigString("rips.directory", chosenPath);
             }
         });
+        configOverwriteCheckbox.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent arg0) {
+                Utils.setConfigBoolean("file.overwrite", configOverwriteCheckbox.isSelected());
+            }
+        });
     }
 
     private void setupTrayIcon() {
