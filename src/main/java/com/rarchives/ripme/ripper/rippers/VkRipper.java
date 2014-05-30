@@ -204,7 +204,7 @@ public class VkRipper extends AlbumRipper {
 
     @Override
     public String getGID(URL url) throws MalformedURLException {
-        Pattern p = Pattern.compile("^https?://(www\\.)?vk\\.com/(photos|album|videos)([a-zA-Z0-9_]{1,}).*$");
+        Pattern p = Pattern.compile("^https?://(www\\.)?vk\\.com/(photos|album|videos)-?([a-zA-Z0-9_]{1,}).*$");
         Matcher m = p.matcher(url.toExternalForm());
         if (!m.matches()) {
             throw new MalformedURLException("Expected format: http://vk.com/album#### or vk.com/photos####");
