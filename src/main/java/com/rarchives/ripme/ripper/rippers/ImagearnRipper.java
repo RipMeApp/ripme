@@ -25,10 +25,7 @@ public class ImagearnRipper extends AlbumRipper {
     }
 
     public boolean canRip(URL url) {
-        if (!url.getHost().endsWith(DOMAIN)) {
-            return false;
-        }
-        return true;
+        return url.getHost().endsWith(DOMAIN);
     }
 
     public URL sanitizeURL(URL url) throws MalformedURLException {
