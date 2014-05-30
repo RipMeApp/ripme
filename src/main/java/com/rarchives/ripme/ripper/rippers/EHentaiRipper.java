@@ -72,8 +72,8 @@ public class EHentaiRipper extends AlbumRipper {
     @Override
     public void rip() throws IOException {
         int index = 0;
-        logger.info("    Retrieving " + this.url.toExternalForm());
         if (albumDoc == null) {
+            logger.info("    Retrieving " + this.url.toExternalForm());
             albumDoc = Jsoup.connect(this.url.toExternalForm()).get();
         }
         Elements select = albumDoc.select("#gdt > .gdtm");
@@ -85,6 +85,7 @@ public class EHentaiRipper extends AlbumRipper {
         URL cursorUrl = new URL(href), prevUrl = null;
 
         while (!cursorUrl.equals(prevUrl)) {
+            prevUrl = cursorUrl;
             Document cursorDoc = Jsoup.connect(cursorUrl.toExternalForm())
                                       .userAgent(USER_AGENT)
                                       .get();
@@ -92,6 +93,7 @@ public class EHentaiRipper extends AlbumRipper {
             Elements a = cursorDoc.select(".sni > a");
             Elements images = a.select("img");
             if (images.size() == 0) {
+                logger.info("cursorDoc: " + cursorDoc.toString());
                 logger.error("No images found at " + cursorUrl);
                 break;
             }
@@ -122,7 +124,6 @@ public class EHentaiRipper extends AlbumRipper {
                 addURLToDownload(new URL(imgsrc), prefix);
             }
 
-            prevUrl = cursorUrl;
             String nextUrl = a.attr("href");
             if (nextUrl.equals("")) {
                 logger.warn("Next page URL is empty, via " + a);
