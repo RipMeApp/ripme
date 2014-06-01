@@ -27,7 +27,6 @@ public class ImagestashRipper extends AlbumRipper {
     }
 
     public boolean canRip(URL url) {
-        System.err.println(url.getHost() +"/"+DOMAIN);
         return url.getHost().equals(DOMAIN);
     }
 
