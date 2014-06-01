@@ -21,6 +21,7 @@ import org.jsoup.select.Elements;
 
 import com.rarchives.ripme.ripper.AlbumRipper;
 import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
+import com.rarchives.ripme.utils.Base64;
 import com.rarchives.ripme.utils.Utils;
 
 public class DeviantartRipper extends AlbumRipper {
@@ -30,6 +31,8 @@ public class DeviantartRipper extends AlbumRipper {
 
     private static final int SLEEP_TIME = 2000;
     private static final Logger logger = Logger.getLogger(DeviantartRipper.class);
+
+    private Map<String,String> cookies = new HashMap<String,String>();
 
     public DeviantartRipper(URL url) throws IOException {
         super(url);
@@ -52,12 +55,20 @@ public class DeviantartRipper extends AlbumRipper {
         int index = 0;
         String nextURL = this.url.toExternalForm();
 
+        // Login
+        try {
+            cookies = loginToDeviantart();
+        } catch (Exception e) {
+            logger.warn("Failed to login: ", e);
+        }
+
         // Iterate over every page
         while (nextURL != null) {
 
             logger.info("    Retrieving " + nextURL);
             sendUpdate(STATUS.LOADING_RESOURCE, "Retrieving " + nextURL);
             Document doc = Jsoup.connect(nextURL)
+                    .cookies(cookies)
                     .userAgent(USER_AGENT)
                     .get();
 
@@ -180,16 +191,22 @@ public class DeviantartRipper extends AlbumRipper {
      */
     public String smallToFull(String thumb, String page) {
         try {
+            // Fetch the image page
             Response resp = Jsoup.connect(page)
                                  .userAgent(USER_AGENT)
+                                 .cookies(cookies)
                                  .referrer(this.url.toExternalForm())
                                  .method(Method.GET)
                                  .execute();
             Map<String,String> cookies = resp.cookies();
+            cookies.putAll(this.cookies);
+
+            // Try to find the "Download" box
             Elements els = resp.parse().select("a.dev-page-download");
             if (els.size() == 0) {
                 throw new IOException("no download page found");
             }
+            // Full-size image
             String fsimage = els.get(0).attr("href");
 
             String prefix = "";
@@ -198,6 +215,7 @@ public class DeviantartRipper extends AlbumRipper {
                 imageId = imageId.substring(0, imageId.indexOf('.'));
                 prefix = String.format("%010d_", alphaToLong(imageId));
             }
+            // Download it
             addURLToDownload(new URL(fsimage), prefix, "", page, cookies);
             return null;
         } catch (IOException ioe) {
@@ -235,15 +253,14 @@ public class DeviantartRipper extends AlbumRipper {
     }
 
     /**
-     * Logs into deviant art. Not required to rip NSFW images.
+     * Logs into deviant art. Required to rip full-size NSFW content.
      * @return Map of cookies containing session data.
      */
-    @SuppressWarnings("unused")
     private Map<String, String> loginToDeviantart() throws IOException {
         // Populate postData fields
         Map<String,String> postData = new HashMap<String,String>();
-        String username = Utils.getConfigString("deviantart.username", null);
-        String password = Utils.getConfigString("deviantart.password", null);
+        String username = Utils.getConfigString("deviantart.username", new String(Base64.decode("Z3JhYnB5")));
+        String password = Utils.getConfigString("deviantart.password", new String(Base64.decode("ZmFrZXJz")));
         if (username == null || password == null) {
             throw new IOException("could not find username or password in config");
         }
