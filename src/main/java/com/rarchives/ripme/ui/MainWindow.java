@@ -106,6 +106,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
     private static JCheckBox configAutoupdateCheckbox;
     private static JCheckBox configPlaySound;
     private static JCheckBox configSaveOrderCheckbox;
+    private static JCheckBox configShowPopup;
 
     private static TrayIcon trayIcon;
     private static MenuItem trayMenuMain;
@@ -170,6 +171,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
         Utils.setConfigBoolean("auto.update", configAutoupdateCheckbox.isSelected());
         Utils.setConfigBoolean("play.sound", configPlaySound.isSelected());
         Utils.setConfigBoolean("download.save_order", configSaveOrderCheckbox.isSelected());
+        Utils.setConfigBoolean("download.show_popup", configShowPopup.isSelected());
         saveHistory();
         Utils.saveConfig();
     }
@@ -316,6 +318,9 @@ public class MainWindow implements Runnable, RipStatusHandler {
         configSaveOrderCheckbox = new JCheckBox("Save images in order", Utils.getConfigBoolean("download.save_order", true));
         configSaveOrderCheckbox.setHorizontalAlignment(JCheckBox.RIGHT);
         configSaveOrderCheckbox.setHorizontalTextPosition(JCheckBox.LEFT);
+        configShowPopup = new JCheckBox("Notification when rip starts", Utils.getConfigBoolean("download.show_popup", false));
+        configShowPopup.setHorizontalAlignment(JCheckBox.RIGHT);
+        configShowPopup.setHorizontalTextPosition(JCheckBox.LEFT);
         configSaveDirLabel = new JLabel();
         try {
             String workingDir = (Utils.shortenPath(Utils.getWorkingDirectory()));
@@ -336,7 +341,8 @@ public class MainWindow implements Runnable, RipStatusHandler {
         gbc.gridy = 5; gbc.gridx = 0; configurationPanel.add(configOverwriteCheckbox, gbc);
         gbc.gridy = 6; gbc.gridx = 0; configurationPanel.add(configPlaySound, gbc);
         gbc.gridy = 7; gbc.gridx = 0; configurationPanel.add(configSaveOrderCheckbox, gbc);
-        gbc.gridy = 8; gbc.gridx = 0; configurationPanel.add(configSaveDirLabel, gbc);
+        gbc.gridy = 8; gbc.gridx = 0; configurationPanel.add(configShowPopup, gbc);
+        gbc.gridy = 9; gbc.gridx = 0; configurationPanel.add(configSaveDirLabel, gbc);
                        gbc.gridx = 1; configurationPanel.add(configSaveDirButton, gbc);
 
         gbc.gridy = 0; pane.add(ripPanel, gbc);
@@ -699,7 +705,8 @@ public class MainWindow implements Runnable, RipStatusHandler {
                 ripper.setObserver((RipStatusHandler) this);
                 Thread t = new Thread(ripper);
                 t.start();
-                if (!mainFrame.isVisible() || !mainFrame.isActive()) {
+                if (configShowPopup.isSelected() &&
+                        (!mainFrame.isVisible() || !mainFrame.isActive())) {
                     mainFrame.toFront();
                     mainFrame.setAlwaysOnTop(true);
                     trayIcon.displayMessage(mainFrame.getTitle(), "Started ripping " + ripper.getURL().toExternalForm(), MessageType.INFO);
