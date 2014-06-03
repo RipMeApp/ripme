@@ -10,6 +10,7 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 import org.jsoup.Connection.Response;
 import org.jsoup.Jsoup;
+import org.jsoup.HttpStatusException;
 
 import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
 import com.rarchives.ripme.utils.Utils;
@@ -105,6 +106,12 @@ public class DownloadFileThread extends Thread {
                 out.write(response.bodyAsBytes());
                 out.close();
                 break; // Download successful: break out of infinite loop
+	    } catch (HttpStatusException hse) {
+		logger.error("[!] HTTP status " + hse.getStatusCode() + " while downloading from " + url);
+		observer.downloadErrored(url, "HTTP status code " + hse.getStatusCode() + " while downloading " + url.toExternalForm());
+		if (hse.getStatusCode() == 404 && Utils.getConfigBoolean("errors.skip404", false)) {
+		    return;
+		}
             } catch (IOException e) {
                 logger.error("[!] Exception while downloading file: " + url + " - " + e.getMessage(), e);
             }
