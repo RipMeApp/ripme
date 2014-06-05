@@ -106,12 +106,12 @@ public class DownloadFileThread extends Thread {
                 out.write(response.bodyAsBytes());
                 out.close();
                 break; // Download successful: break out of infinite loop
-	    } catch (HttpStatusException hse) {
-		logger.error("[!] HTTP status " + hse.getStatusCode() + " while downloading from " + url);
-		observer.downloadErrored(url, "HTTP status code " + hse.getStatusCode() + " while downloading " + url.toExternalForm());
-		if (hse.getStatusCode() == 404 && Utils.getConfigBoolean("errors.skip404", false)) {
-		    return;
-		}
+            } catch (HttpStatusException hse) {
+                logger.error("[!] HTTP status " + hse.getStatusCode() + " while downloading from " + url);
+                observer.downloadErrored(url, "HTTP status code " + hse.getStatusCode() + " while downloading " + url.toExternalForm());
+                if (hse.getStatusCode() == 404 && Utils.getConfigBoolean("errors.skip404", false)) {
+                    return;
+                }
             } catch (IOException e) {
                 logger.error("[!] Exception while downloading file: " + url + " - " + e.getMessage(), e);
             }
