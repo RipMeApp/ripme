@@ -83,13 +83,14 @@ public class DownloadFileThread extends Thread {
                 tries += 1;
                 Response response;
                 response = Jsoup.connect(url.toExternalForm())
-                        .ignoreContentType(true)
-                        .userAgent(AbstractRipper.USER_AGENT)
-                        .timeout(TIMEOUT)
-                        .maxBodySize(MAX_BODY_SIZE)
-                        .cookies(cookies)
-                        .referrer(referrer)
-                        .execute();
+                                .ignoreContentType(true)
+                                .userAgent(AbstractRipper.USER_AGENT)
+                                .header("accept", "*/*")
+                                .timeout(TIMEOUT)
+                                .maxBodySize(MAX_BODY_SIZE)
+                                .cookies(cookies)
+                                .referrer(referrer)
+                                .execute();
                 if (response.statusCode() != 200) {
                     logger.error("[!] Non-OK status code " + response.statusCode() + " while downloading from " + url);
                     observer.downloadErrored(url, "Non-OK status code " + response.statusCode() + " while downloading " + url.toExternalForm());
