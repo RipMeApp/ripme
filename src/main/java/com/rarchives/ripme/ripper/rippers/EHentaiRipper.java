@@ -43,7 +43,17 @@ public class EHentaiRipper extends AlbumRipper {
     }
 
     public URL sanitizeURL(URL url) throws MalformedURLException {
-        return url;
+        String u = url.toExternalForm();
+        if (u.contains("nw=session")) {
+            return url;
+        } 
+        else if (u.contains("?")) {
+            u += "&nw=session";
+        } 
+        else {
+            u += "?nw=session";
+        }
+        return new URL(u);
     }
 
     public String getAlbumTitle(URL url) throws MalformedURLException {
@@ -88,6 +98,9 @@ public class EHentaiRipper extends AlbumRipper {
         int index = 0, retries = 3;
         String nextUrl = this.url.toExternalForm();
         while (true) {
+            if (isStopped()) {
+                break;
+            }
             if (albumDoc == null) {
                 logger.info("    Retrieving album page " + nextUrl);
                 sendUpdate(STATUS.LOADING_RESOURCE, nextUrl);
@@ -123,6 +136,9 @@ public class EHentaiRipper extends AlbumRipper {
             }
             // Iterate over images on page
             for (Element thumb : thumbs) {
+                if (isStopped()) {
+                    break;
+                }
                 index++;
                 EHentaiImageThread t = new EHentaiImageThread(new URL(thumb.attr("href")), index, this.workingDir);
                 ehentaiThreadPool.addThread(t);
@@ -131,6 +147,10 @@ public class EHentaiRipper extends AlbumRipper {
                 } catch (InterruptedException e) {
                     logger.warn("Interrupted while waiting to load next image", e);
                 }
+            }
+
+            if (isStopped()) {
+                break;
             }
             // Find next page
             Elements hrefs = albumDoc.select(".ptt a");
