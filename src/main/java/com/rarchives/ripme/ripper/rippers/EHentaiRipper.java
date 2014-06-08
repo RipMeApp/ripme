@@ -43,17 +43,7 @@ public class EHentaiRipper extends AlbumRipper {
     }
 
     public URL sanitizeURL(URL url) throws MalformedURLException {
-        String u = url.toExternalForm();
-        if (u.contains("nw=session")) {
-            return url;
-        } 
-        else if (u.contains("?")) {
-            u += "&nw=session";
-        } 
-        else {
-            u += "?nw=session";
-        }
-        return new URL(u);
+        return url;
     }
 
     public String getAlbumTitle(URL url) throws MalformedURLException {
@@ -64,6 +54,8 @@ public class EHentaiRipper extends AlbumRipper {
                 sendUpdate(STATUS.LOADING_RESOURCE, url.toString());
                 albumDoc = Jsoup.connect(url.toExternalForm())
                                 .userAgent(USER_AGENT)
+                                .cookie("nw", "1")
+                                .cookie("tip", "1")
                                 .timeout(5000)
                                 .get();
             }
@@ -106,6 +98,7 @@ public class EHentaiRipper extends AlbumRipper {
                 sendUpdate(STATUS.LOADING_RESOURCE, nextUrl);
                 albumDoc = Jsoup.connect(nextUrl)
                                 .userAgent(USER_AGENT)
+                                .cookie("nw", "1")
                                 .timeout(5000)
                                 .referrer(this.url.toExternalForm())
                                 .get();
@@ -211,6 +204,7 @@ public class EHentaiRipper extends AlbumRipper {
             try {
                 Document doc = Jsoup.connect(this.url.toExternalForm())
                                     .userAgent(USER_AGENT)
+                                    .cookie("nw", "1")
                                     .timeout(5000)
                                     .referrer(this.url.toExternalForm())
                                     .get();
