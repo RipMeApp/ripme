@@ -6,7 +6,6 @@ import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.log4j.Logger;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -17,7 +16,6 @@ import com.rarchives.ripme.ripper.VideoRipper;
 public class YoupornRipper extends VideoRipper {
 
     private static final String HOST = "youporn";
-    private static final Logger logger = Logger.getLogger(YoupornRipper.class);
 
     public YoupornRipper(URL url) throws IOException {
         super(url);

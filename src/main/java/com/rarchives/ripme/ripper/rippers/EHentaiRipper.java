@@ -7,7 +7,6 @@ import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.log4j.Logger;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -25,7 +24,6 @@ public class EHentaiRipper extends AlbumRipper {
     private static final int IP_BLOCK_SLEEP_TIME = 60 * 1000;
 
     private static final String DOMAIN = "g.e-hentai.org", HOST = "e-hentai";
-    private static final Logger logger = Logger.getLogger(EHentaiRipper.class);
 
     // Thread pool for finding direct image links from "image" pages (html)
     private DownloadThreadPool ehentaiThreadPool = new DownloadThreadPool("ehentai");

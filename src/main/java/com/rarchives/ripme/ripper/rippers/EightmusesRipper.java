@@ -7,7 +7,6 @@ import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.log4j.Logger;
 import org.jsoup.Connection.Method;
 import org.jsoup.Connection.Response;
 import org.jsoup.Jsoup;
@@ -22,7 +21,6 @@ public class EightmusesRipper extends AlbumRipper {
 
     private static final String DOMAIN = "8muses.com",
                                 HOST   = "8muses";
-    private static final Logger logger = Logger.getLogger(EightmusesRipper.class);
 
     private Document albumDoc = null;
 

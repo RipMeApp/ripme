@@ -6,7 +6,6 @@ import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.log4j.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.jsoup.Jsoup;
@@ -17,7 +16,6 @@ import com.rarchives.ripme.ripper.VideoRipper;
 public class BeegRipper extends VideoRipper {
 
     private static final String HOST = "beeg";
-    private static final Logger logger = Logger.getLogger(BeegRipper.class);
 
     public BeegRipper(URL url) throws IOException {
         super(url);

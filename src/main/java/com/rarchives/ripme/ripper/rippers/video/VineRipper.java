@@ -6,7 +6,6 @@ import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.log4j.Logger;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
@@ -16,7 +15,6 @@ import com.rarchives.ripme.ripper.VideoRipper;
 public class VineRipper extends VideoRipper {
 
     private static final String HOST = "vine";
-    private static final Logger logger = Logger.getLogger(VineRipper.class);
 
     public VineRipper(URL url) throws IOException {
         super(url);

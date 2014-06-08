@@ -8,10 +8,9 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.log4j.Logger;
 import org.jsoup.Connection.Method;
-import org.jsoup.Jsoup;
 import org.jsoup.Connection.Response;
+import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -23,7 +22,6 @@ public class GifyoRipper extends AlbumRipper {
 
     private static final String DOMAIN = "gifyo.com",
                                 HOST   = "gifyo";
-    private static final Logger logger = Logger.getLogger(GifyoRipper.class);
 
     public GifyoRipper(URL url) throws IOException {
         super(url);

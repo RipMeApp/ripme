@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.jsoup.Jsoup;
@@ -21,8 +20,7 @@ public class IrarchivesRipper extends AlbumRipper {
 
     private static final String DOMAIN = "i.rarchives.com",
                                 HOST   = "irarchives";
-    private static final Logger logger = Logger.getLogger(IrarchivesRipper.class);
-    
+
     public IrarchivesRipper(URL url) throws IOException {
         super(url);
     }

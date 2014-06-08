@@ -11,7 +11,6 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.log4j.Logger;
 import org.jsoup.Connection.Method;
 import org.jsoup.Connection.Response;
 import org.jsoup.Jsoup;
@@ -30,7 +29,6 @@ public class DeviantartRipper extends AlbumRipper {
                                 HOST   = "deviantart";
 
     private static final int SLEEP_TIME = 2000;
-    private static final Logger logger = Logger.getLogger(DeviantartRipper.class);
 
     private Map<String,String> cookies = new HashMap<String,String>();
 

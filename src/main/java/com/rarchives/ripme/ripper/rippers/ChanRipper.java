@@ -8,7 +8,6 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.log4j.Logger;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -17,8 +16,6 @@ import com.rarchives.ripme.ripper.AlbumRipper;
 import com.rarchives.ripme.utils.Utils;
 
 public class ChanRipper extends AlbumRipper {
-
-    private static final Logger logger = Logger.getLogger(ChanRipper.class);
 
     public ChanRipper(URL url) throws IOException {
         super(url);

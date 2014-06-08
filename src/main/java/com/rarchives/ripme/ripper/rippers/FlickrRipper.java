@@ -10,7 +10,6 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.log4j.Logger;
 import org.jsoup.Connection.Method;
 import org.jsoup.Connection.Response;
 import org.jsoup.Jsoup;
@@ -27,7 +26,6 @@ public class FlickrRipper extends AlbumRipper {
 
     private static final String DOMAIN = "flickr.com",
                                 HOST   = "flickr";
-    private static final Logger logger = Logger.getLogger(FlickrRipper.class);
 
     private DownloadThreadPool flickrThreadPool;
     private Document albumDoc = null;

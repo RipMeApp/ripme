@@ -7,7 +7,6 @@ import java.net.URLDecoder;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.log4j.Logger;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -18,7 +17,6 @@ import com.rarchives.ripme.ripper.VideoRipper;
 public class XvideosRipper extends VideoRipper {
 
     private static final String HOST = "xvideos";
-    private static final Logger logger = Logger.getLogger(XvideosRipper.class);
 
     public XvideosRipper(URL url) throws IOException {
         super(url);

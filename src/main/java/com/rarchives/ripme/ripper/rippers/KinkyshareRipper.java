@@ -6,7 +6,6 @@ import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.log4j.Logger;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -17,7 +16,6 @@ import com.rarchives.ripme.utils.Utils;
 public class KinkyshareRipper extends AlbumRipper {
 
     private static final String HOST   = "kinkyshare";
-    private static final Logger logger = Logger.getLogger(KinkyshareRipper.class);
 
     public KinkyshareRipper(URL url) throws IOException {
         super(url);

@@ -6,7 +6,6 @@ import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.log4j.Logger;
 import org.json.JSONObject;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -19,7 +18,6 @@ public class SeeniveRipper extends AlbumRipper {
 
     private static final String DOMAIN = "seenive.com",
                                 HOST   = "seenive";
-    private static final Logger logger = Logger.getLogger(SeeniveRipper.class);
 
     private DownloadThreadPool seeniveThreadPool;
 

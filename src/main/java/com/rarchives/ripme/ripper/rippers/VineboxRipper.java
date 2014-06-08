@@ -6,7 +6,6 @@ import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.log4j.Logger;
 import org.jsoup.HttpStatusException;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -18,7 +17,6 @@ public class VineboxRipper extends AlbumRipper {
 
     private static final String DOMAIN = "vinebox.co",
                                 HOST   = "vinebox";
-    private static final Logger logger = Logger.getLogger(VineboxRipper.class);
 
     public VineboxRipper(URL url) throws IOException {
         super(url);

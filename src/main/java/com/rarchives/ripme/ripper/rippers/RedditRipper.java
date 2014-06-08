@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
@@ -28,7 +27,6 @@ public class RedditRipper extends AlbumRipper {
     private static final String HOST   = "reddit";
     private static final String DOMAIN = "reddit.com";
 
-    private static final Logger logger = Logger.getLogger(RedditRipper.class);
     private static final int SLEEP_TIME = 2000;
 
     //private static final String USER_AGENT = "ripme by /u/4_pr0n github.com/4pr0n/ripme";

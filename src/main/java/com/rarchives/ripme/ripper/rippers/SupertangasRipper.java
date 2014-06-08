@@ -6,7 +6,6 @@ import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.log4j.Logger;
 import org.jsoup.HttpStatusException;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -20,7 +19,6 @@ public class SupertangasRipper extends AlbumRipper {
 
     private static final String DOMAIN = "supertangas.com",
                                 HOST   = "supertangas";
-    private static final Logger logger = Logger.getLogger(SupertangasRipper.class);
 
     public SupertangasRipper(URL url) throws IOException {
         super(url);

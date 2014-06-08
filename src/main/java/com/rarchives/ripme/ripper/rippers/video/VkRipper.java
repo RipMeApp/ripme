@@ -6,7 +6,6 @@ import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.log4j.Logger;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
@@ -15,7 +14,6 @@ import com.rarchives.ripme.ripper.VideoRipper;
 public class VkRipper extends VideoRipper {
 
     private static final String HOST = "vk";
-    private static final Logger logger = Logger.getLogger(VkRipper.class);
 
     public VkRipper(URL url) throws IOException {
         super(url);

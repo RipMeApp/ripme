@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.jsoup.Connection.Response;
@@ -23,7 +22,6 @@ public class PhotobucketRipper extends AlbumRipper {
 
     private static final String DOMAIN = "photobucket.com",
                                 HOST   = "photobucket";
-    private static final Logger logger = Logger.getLogger(PhotobucketRipper.class);
 
     private Response pageResponse = null;
 

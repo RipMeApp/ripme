@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -26,7 +25,6 @@ public class ImgurRipper extends AlbumRipper {
 
     private static final String DOMAIN = "imgur.com",
                                 HOST   = "imgur";
-    private static final Logger logger = Logger.getLogger(ImgurRipper.class);
 
     private final int SLEEP_BETWEEN_ALBUMS;
 

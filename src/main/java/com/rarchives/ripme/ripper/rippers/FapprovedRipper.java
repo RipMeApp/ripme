@@ -6,7 +6,6 @@ import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.log4j.Logger;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -18,7 +17,6 @@ public class FapprovedRipper extends AlbumRipper {
 
     private static final String DOMAIN = "fapproved.com",
                                 HOST   = "fapproved";
-    private static final Logger logger = Logger.getLogger(FapprovedRipper.class);
 
     public FapprovedRipper(URL url) throws IOException {
         super(url);

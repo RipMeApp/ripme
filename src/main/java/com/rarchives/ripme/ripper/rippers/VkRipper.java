@@ -11,7 +11,6 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.jsoup.Jsoup;
@@ -25,7 +24,6 @@ public class VkRipper extends AlbumRipper {
 
     private static final String DOMAIN = "vk.com",
                                 HOST   = "vk";
-    private static final Logger logger = Logger.getLogger(SeeniveRipper.class);
 
     public VkRipper(URL url) throws IOException {
         super(url);

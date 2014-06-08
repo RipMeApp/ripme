@@ -6,7 +6,6 @@ import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.jsoup.Jsoup;
@@ -17,7 +16,6 @@ import com.rarchives.ripme.utils.Utils;
 public class GonewildRipper extends AlbumRipper {
 
     private static final String HOST   = "gonewild";
-    private static final Logger logger = Logger.getLogger(GonewildRipper.class);
     private static final int SLEEP_TIME = 1000;
     
     private static String API_DOMAIN;

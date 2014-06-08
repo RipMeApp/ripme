@@ -6,7 +6,6 @@ import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.log4j.Logger;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -19,7 +18,6 @@ public class TeenplanetRipper extends AlbumRipper {
 
     private static final String DOMAIN = "teenplanet.org",
                                 HOST   = "teenplanet";
-    private static final Logger logger = Logger.getLogger(TeenplanetRipper.class);
 
     private Document albumDoc = null;
 

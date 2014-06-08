@@ -6,7 +6,6 @@ import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.jsoup.Connection.Response;
@@ -21,7 +20,6 @@ public class MinusRipper extends AlbumRipper {
 
     private static final String DOMAIN = "minus.com",
                                 HOST   = "minus";
-    private static final Logger logger = Logger.getLogger(MinusRipper.class);
 
     private Document albumDoc = null;
     

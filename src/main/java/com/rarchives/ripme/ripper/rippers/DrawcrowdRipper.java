@@ -6,7 +6,6 @@ import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.log4j.Logger;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -20,7 +19,6 @@ public class DrawcrowdRipper extends AlbumRipper {
 
     private static final String DOMAIN = "drawcrowd.com",
                                 HOST   = "drawcrowd";
-    private static final Logger logger = Logger.getLogger(DrawcrowdRipper.class);
 
     public DrawcrowdRipper(URL url) throws IOException {
         super(url);
@@ -41,7 +39,6 @@ public class DrawcrowdRipper extends AlbumRipper {
     @Override
     public String getGID(URL url) throws MalformedURLException {
         Pattern p; Matcher m;
-
 
         p = Pattern.compile("^.*drawcrowd.com/projects/.*$");
         m = p.matcher(url.toExternalForm());

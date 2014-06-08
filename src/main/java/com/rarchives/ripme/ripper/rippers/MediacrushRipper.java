@@ -13,7 +13,6 @@ import java.util.regex.Pattern;
 
 import javax.swing.JOptionPane;
 
-import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.jsoup.Jsoup;
@@ -28,7 +27,6 @@ public class MediacrushRipper extends AlbumRipper {
 
     private static final String DOMAIN = "mediacru.sh",
                                 HOST   = "mediacrush";
-    private static final Logger logger = Logger.getLogger(MediacrushRipper.class);
     
     /** Ordered list of preferred formats, sorted by preference (low-to-high) */
     private static final Map<String, Integer> PREFERRED_FORMATS = new HashMap<String,Integer>();

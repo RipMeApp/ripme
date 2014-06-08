@@ -8,7 +8,6 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.jsoup.Connection.Method;
@@ -24,7 +23,6 @@ public class ModelmayhemRipper extends AlbumRipper {
 
     private static final String DOMAIN = "modelmayhem.com",
                                 HOST   = "modelmayhem";
-    private static final Logger logger = Logger.getLogger(ModelmayhemRipper.class);
 
     public ModelmayhemRipper(URL url) throws IOException {
         super(url);

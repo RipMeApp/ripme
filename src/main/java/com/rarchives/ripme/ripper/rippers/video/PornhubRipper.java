@@ -7,7 +7,6 @@ import java.net.URLDecoder;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.log4j.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.jsoup.Jsoup;
@@ -19,7 +18,6 @@ import com.rarchives.ripme.utils.AES;
 public class PornhubRipper extends VideoRipper {
 
     private static final String HOST = "pornhub";
-    private static final Logger logger = Logger.getLogger(PornhubRipper.class);
 
     public PornhubRipper(URL url) throws IOException {
         super(url);

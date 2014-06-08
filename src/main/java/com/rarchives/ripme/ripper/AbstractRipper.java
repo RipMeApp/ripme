@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Observable;
 
+import org.apache.log4j.FileAppender;
 import org.apache.log4j.Logger;
 import org.jsoup.HttpStatusException;
 
@@ -68,6 +69,11 @@ public abstract class AbstractRipper
         }
         this.url = sanitizeURL(url);
         setWorkingDir(url);
+        Logger rootLogger = Logger.getRootLogger();
+        FileAppender fa = (FileAppender) rootLogger.getAppender("FILE");
+        fa.setFile(this.workingDir + File.separator + "log.txt");
+        fa.activateOptions();
+
         this.threadPool = new DownloadThreadPool();
     }
 

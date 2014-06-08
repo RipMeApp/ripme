@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -23,7 +22,6 @@ public class TwitterRipper extends AlbumRipper {
 
     private static final String DOMAIN = "twitter.com",
                                 HOST   = "twitter";
-    private static final Logger logger = Logger.getLogger(TwitterRipper.class);
 
     private static final int MAX_REQUESTS = Utils.getConfigInteger("twitter.max_requests", 10);
     private static final int WAIT_TIME = 2000;
