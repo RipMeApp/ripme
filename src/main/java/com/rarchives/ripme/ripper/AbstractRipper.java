@@ -303,13 +303,17 @@ public abstract class AbstractRipper
             waitForThreads();
             sendUpdate(STATUS.RIP_ERRORED, e.getMessage());
         } finally {
-            if (this.workingDir.list().length == 0) {
-                // No files, delete the dir
-                logger.info("Deleting empty directory " + this.workingDir);
-                boolean deleteResult = this.workingDir.delete();
-                if (!deleteResult) {
-                    logger.error("Unable to delete empty directory " +  this.workingDir);
-                }
+            cleanup();
+        }
+    }
+    
+    public void cleanup() {
+        if (this.workingDir.list().length == 0) {
+            // No files, delete the dir
+            logger.info("Deleting empty directory " + this.workingDir);
+            boolean deleteResult = this.workingDir.delete();
+            if (!deleteResult) {
+                logger.error("Unable to delete empty directory " +  this.workingDir);
             }
         }
     }

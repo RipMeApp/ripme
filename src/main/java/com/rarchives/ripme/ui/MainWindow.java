@@ -49,6 +49,8 @@ import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
@@ -357,6 +359,41 @@ public class MainWindow implements Runnable, RipStatusHandler {
     private void setupHandlers() {
         ripButton.addActionListener(new RipButtonHandler());
         ripTextfield.addActionListener(new RipButtonHandler());
+        ripTextfield.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                update();
+            }
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                update();
+            }
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                update();
+            }
+            private void update() {
+                if (!ripTextfield.isEnabled()) {
+                    return;
+                }
+                try {
+                    String urlText = ripTextfield.getText();
+                    if (!urlText.startsWith("http:")) {
+                        urlText = "http://" + urlText;
+                    }
+                    URL url = new URL(urlText);
+                    AbstractRipper ripper = AbstractRipper.getRipper(url);
+                    statusWithColor(ripper.getHost() + " album detected", Color.GREEN);
+                    File dir = ripper.getWorkingDir();
+                    if (dir.list().length == 1) {
+                        new File(dir.getAbsolutePath() + File.separator + "log.txt").delete();
+                    }
+                    ripper.cleanup();
+                } catch (Exception e) {
+                    statusWithColor("Can't rip this URL", Color.RED);
+                }
+            }
+        });
         stopButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent event) {
