@@ -93,6 +93,8 @@ public class InstagramRipper extends AlbumRipper {
             this.sendUpdate(STATUS.LOADING_RESOURCE, url);
             logger.info("    Retrieving " + url);
             String jsonString = Jsoup.connect(url)
+                                     .userAgent(USER_AGENT)
+                                     .timeout(10000)
                                      .ignoreContentType(true)
                                      .execute()
                                      .body();
