@@ -41,6 +41,7 @@ public class App {
 
     public static void rip(URL url) throws Exception {
         AbstractRipper ripper = AbstractRipper.getRipper(url);
+        ripper.setup();
         ripper.rip();
     }
 

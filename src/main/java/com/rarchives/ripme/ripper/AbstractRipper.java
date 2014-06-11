@@ -68,7 +68,10 @@ public abstract class AbstractRipper
             throw new MalformedURLException("Unable to rip url: " + url);
         }
         this.url = sanitizeURL(url);
-        setWorkingDir(url);
+    }
+    
+    public void setup() throws IOException {
+        setWorkingDir(this.url);
         Logger rootLogger = Logger.getRootLogger();
         FileAppender fa = (FileAppender) rootLogger.getAppender("FILE");
         fa.setFile(this.workingDir + File.separator + "log.txt");

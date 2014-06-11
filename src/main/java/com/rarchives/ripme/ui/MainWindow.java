@@ -377,18 +377,13 @@ public class MainWindow implements Runnable, RipStatusHandler {
                     return;
                 }
                 try {
-                    String urlText = ripTextfield.getText();
+                    String urlText = ripTextfield.getText().trim();
                     if (!urlText.startsWith("http:")) {
                         urlText = "http://" + urlText;
                     }
                     URL url = new URL(urlText);
                     AbstractRipper ripper = AbstractRipper.getRipper(url);
                     statusWithColor(ripper.getHost() + " album detected", Color.GREEN);
-                    File dir = ripper.getWorkingDir();
-                    if (dir.list().length == 1) {
-                        new File(dir.getAbsolutePath() + File.separator + "log.txt").delete();
-                    }
-                    ripper.cleanup();
                 } catch (Exception e) {
                     statusWithColor("Can't rip this URL", Color.RED);
                 }
@@ -730,6 +725,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
         boolean failed = false;
         try {
             ripper = AbstractRipper.getRipper(url);
+            ripper.setup();
         } catch (Exception e) {
             failed = true;
             logger.error("Could not find ripper for URL " + url);
