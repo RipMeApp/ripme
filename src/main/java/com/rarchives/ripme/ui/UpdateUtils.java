@@ -42,8 +42,9 @@ public class UpdateUtils {
         Document doc = null;
         try {
             doc = Jsoup.connect(UpdateUtils.updateJsonURL)
-                .ignoreContentType(true)
-                .get();
+                       .timeout(10 * 1000)
+                       .ignoreContentType(true)
+                       .get();
         } catch (IOException e) {
             logger.error("Error while fetching update: ", e);
             JOptionPane.showMessageDialog(null,
