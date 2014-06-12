@@ -2,6 +2,7 @@ package com.rarchives.ripme.utils;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -20,7 +21,9 @@ import javax.sound.sampled.LineListener;
 
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
+import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
+import org.apache.log4j.PropertyConfigurator;
 
 import com.rarchives.ripme.ripper.AbstractRipper;
 
@@ -308,4 +311,26 @@ public class Utils {
             logger.error("Failed to play sound " + filename, e);
         }
     }
+
+    /**
+     * Configures root logger, either for FILE output or just console.
+     */
+    public static void configureLogger() {
+        LogManager.shutdown();
+        String logFile;
+        if (getConfigBoolean("log.save", false)) {
+            logFile = "log4j.file.properties";
+        }
+        else {
+            logFile = "log4j.properties";
+        }
+        InputStream stream = Utils.class.getClassLoader().getResourceAsStream(logFile);
+        if (stream == null) {
+            PropertyConfigurator.configure("src/main/resources/" + logFile);
+        } else {
+            PropertyConfigurator.configure(stream);
+        }
+        logger.info("Loaded " + logFile);
+    }
+
 }

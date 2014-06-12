@@ -69,13 +69,15 @@ public abstract class AbstractRipper
         }
         this.url = sanitizeURL(url);
     }
-    
+
     public void setup() throws IOException {
         setWorkingDir(this.url);
         Logger rootLogger = Logger.getRootLogger();
         FileAppender fa = (FileAppender) rootLogger.getAppender("FILE");
-        fa.setFile(this.workingDir + File.separator + "log.txt");
-        fa.activateOptions();
+        if (fa != null) {
+            fa.setFile(this.workingDir + File.separator + "log.txt");
+            fa.activateOptions();
+        }
 
         this.threadPool = new DownloadThreadPool();
     }
@@ -83,7 +85,7 @@ public abstract class AbstractRipper
     public void setObserver(RipStatusHandler obs) {
         this.observer = obs;
     }
-    
+
     /**
      * Queues image to be downloaded and saved.
      * @param url

@@ -109,6 +109,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
     private static JCheckBox configPlaySound;
     private static JCheckBox configSaveOrderCheckbox;
     private static JCheckBox configShowPopup;
+    private static JCheckBox configSaveLogs;
 
     private static TrayIcon trayIcon;
     private static MenuItem trayMenuMain;
@@ -174,6 +175,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
         Utils.setConfigBoolean("play.sound", configPlaySound.isSelected());
         Utils.setConfigBoolean("download.save_order", configSaveOrderCheckbox.isSelected());
         Utils.setConfigBoolean("download.show_popup", configShowPopup.isSelected());
+        Utils.setConfigBoolean("log.save", configSaveLogs.isSelected());
         saveHistory();
         Utils.saveConfig();
     }
@@ -317,12 +319,15 @@ public class MainWindow implements Runnable, RipStatusHandler {
         configPlaySound = new JCheckBox("Sound when rip completes", Utils.getConfigBoolean("play.sound", false));
         configPlaySound.setHorizontalAlignment(JCheckBox.RIGHT);
         configPlaySound.setHorizontalTextPosition(JCheckBox.LEFT);
-        configSaveOrderCheckbox = new JCheckBox("Save images in order", Utils.getConfigBoolean("download.save_order", true));
+        configSaveOrderCheckbox = new JCheckBox("Preserve order", Utils.getConfigBoolean("download.save_order", true));
         configSaveOrderCheckbox.setHorizontalAlignment(JCheckBox.RIGHT);
         configSaveOrderCheckbox.setHorizontalTextPosition(JCheckBox.LEFT);
         configShowPopup = new JCheckBox("Notification when rip starts", Utils.getConfigBoolean("download.show_popup", false));
         configShowPopup.setHorizontalAlignment(JCheckBox.RIGHT);
         configShowPopup.setHorizontalTextPosition(JCheckBox.LEFT);
+        configSaveLogs = new JCheckBox("Save logs", Utils.getConfigBoolean("log.save", false));
+        configSaveLogs.setHorizontalAlignment(JCheckBox.RIGHT);
+        configSaveLogs.setHorizontalTextPosition(JCheckBox.LEFT);
         configSaveDirLabel = new JLabel();
         try {
             String workingDir = (Utils.shortenPath(Utils.getWorkingDirectory()));
@@ -341,10 +346,11 @@ public class MainWindow implements Runnable, RipStatusHandler {
         gbc.gridy = 4; gbc.gridx = 0; configurationPanel.add(configRetriesLabel, gbc);
                        gbc.gridx = 1; configurationPanel.add(configRetriesText, gbc);
         gbc.gridy = 5; gbc.gridx = 0; configurationPanel.add(configOverwriteCheckbox, gbc);
+                       gbc.gridx = 1; configurationPanel.add(configSaveOrderCheckbox, gbc);
         gbc.gridy = 6; gbc.gridx = 0; configurationPanel.add(configPlaySound, gbc);
-        gbc.gridy = 7; gbc.gridx = 0; configurationPanel.add(configSaveOrderCheckbox, gbc);
-        gbc.gridy = 8; gbc.gridx = 0; configurationPanel.add(configShowPopup, gbc);
-        gbc.gridy = 9; gbc.gridx = 0; configurationPanel.add(configSaveDirLabel, gbc);
+                       gbc.gridx = 1; configurationPanel.add(configSaveLogs, gbc);
+        gbc.gridy = 7; gbc.gridx = 0; configurationPanel.add(configShowPopup, gbc);
+        gbc.gridy = 8; gbc.gridx = 0; configurationPanel.add(configSaveDirLabel, gbc);
                        gbc.gridx = 1; configurationPanel.add(configSaveDirButton, gbc);
 
         gbc.gridy = 0; pane.add(ripPanel, gbc);
@@ -538,6 +544,13 @@ public class MainWindow implements Runnable, RipStatusHandler {
                 Utils.setConfigBoolean("download.save_order", configSaveOrderCheckbox.isSelected());
             }
         });
+        configSaveLogs.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent arg0) {
+                Utils.setConfigBoolean("log.save", configSaveLogs.isSelected());
+                Utils.configureLogger();
+            }
+        });
     }
 
     private void setupTrayIcon() {
@@ -728,7 +741,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
             ripper.setup();
         } catch (Exception e) {
             failed = true;
-            logger.error("Could not find ripper for URL " + url);
+            logger.error("Could not find ripper for URL " + url, e);
             error("Could not find ripper for given URL");
         }
         if (!failed) {
