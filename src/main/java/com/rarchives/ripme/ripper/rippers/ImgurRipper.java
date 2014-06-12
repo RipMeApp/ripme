@@ -27,6 +27,8 @@ public class ImgurRipper extends AlbumRipper {
                                 HOST   = "imgur";
 
     private final int SLEEP_BETWEEN_ALBUMS;
+    
+    private Document albumDoc;
 
     static enum ALBUM_TYPE {
         ALBUM,
@@ -75,6 +77,32 @@ public class ImgurRipper extends AlbumRipper {
         return new URL(u);
     }
 
+    public String getAlbumTitle(URL url) throws MalformedURLException {
+        String gid = getGID(url);
+        if (this.albumType == ALBUM_TYPE.ALBUM) {
+            try {
+                // Attempt to use album title as GID
+                if (albumDoc == null) {
+                    albumDoc = Jsoup.connect(url.toExternalForm())
+                            .userAgent(USER_AGENT)
+                            .timeout(10 * 1000)
+                            .maxBodySize(0)
+                            .get();
+                }
+                String title = albumDoc.title();
+                if (!title.contains(" - Imgur")
+                        || title.contains("'s albums")) {
+                    throw new IOException("No title found");
+                }
+                title = title.replaceAll(" - Imgur.*", "");
+                return "imgur_" + gid + " (" + title + ")";
+            } catch (IOException e) {
+                // Fall back to default album naming convention
+            }
+        }
+        return getHost() + "_" + gid;
+    }
+
     @Override
     public void rip() throws IOException {
         switch (albumType) {
@@ -83,11 +111,9 @@ public class ImgurRipper extends AlbumRipper {
         case USER_ALBUM:
             ripAlbum(this.url);
             break;
-
         case SERIES_OF_IMAGES:
             ripAlbum(this.url);
             break;
-
         case USER:
             ripUserAccount(url);
             break;
@@ -309,6 +335,7 @@ public class ImgurRipper extends AlbumRipper {
             logger.info("    Retrieving " + pageURL);
             Document doc = Jsoup.connect(pageURL)
                     .userAgent(USER_AGENT)
+                    .timeout(10 * 1000)
                     .get();
             Elements imgs = doc.select(".post img");
             for (Element img : imgs) {
