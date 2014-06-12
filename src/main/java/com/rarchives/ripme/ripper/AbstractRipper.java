@@ -211,6 +211,12 @@ public abstract class AbstractRipper
             
             RipStatusMessage msg = new RipStatusMessage(STATUS.RIP_COMPLETE, workingDir);
             observer.update(this, msg);
+            Logger rootLogger = Logger.getRootLogger();
+            FileAppender fa = (FileAppender) rootLogger.getAppender("FILE");
+            if (fa != null) {
+                fa.setFile("ripme.log");
+                fa.activateOptions();
+            }
         }
     }
 
