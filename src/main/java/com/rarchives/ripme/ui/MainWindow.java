@@ -384,7 +384,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
                 }
                 try {
                     String urlText = ripTextfield.getText().trim();
-                    if (!urlText.startsWith("http:")) {
+                    if (!urlText.startsWith("http")) {
                         urlText = "http://" + urlText;
                     }
                     URL url = new URL(urlText);
