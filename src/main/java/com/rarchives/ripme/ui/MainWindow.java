@@ -160,7 +160,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
     }
     
     public void run() {
-        mainFrame.pack();
+        pack();
         mainFrame.setLocationRelativeTo(null);
         mainFrame.setVisible(true);
     }
@@ -191,7 +191,16 @@ public class MainWindow implements Runnable, RipStatusHandler {
     private void statusWithColor(String text, Color color) {
         statusLabel.setForeground(color);
         statusLabel.setText(text);
-        mainFrame.pack();
+        pack();
+    }
+    
+    private void pack() {
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                mainFrame.pack();
+            }
+        });
     }
 
     private void createUI(Container pane) {
@@ -405,7 +414,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
                     ripTextfield.setEnabled(true);
                     statusProgress.setValue(0);
                     statusProgress.setVisible(false);
-                    mainFrame.pack();
+                    pack();
                     statusProgress.setValue(0);
                     status("Ripping interrupted");
                     appendLog("Ripper interrupted", Color.RED);
@@ -421,7 +430,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
                 optionLog.setFont(optionLog.getFont().deriveFont(Font.BOLD));
                 optionHistory.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
                 optionConfiguration.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
-                mainFrame.pack();
+                pack();
             }
         });
         optionHistory.addActionListener(new ActionListener() {
@@ -433,7 +442,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
                 optionLog.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
                 optionHistory.setFont(optionLog.getFont().deriveFont(Font.BOLD));
                 optionConfiguration.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
-                mainFrame.pack();
+                pack();
             }
         });
         optionConfiguration.addActionListener(new ActionListener() {
@@ -445,7 +454,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
                 optionLog.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
                 optionHistory.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
                 optionConfiguration.setFont(optionLog.getFont().deriveFont(Font.BOLD));
-                mainFrame.pack();
+                pack();
             }
         });
         historyButtonRemove.addActionListener(new ActionListener() {
@@ -732,9 +741,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
         statusProgress.setValue(100);
         openButton.setVisible(false);
         statusLabel.setVisible(true);
-        synchronized (this) {
-            mainFrame.pack();
-        }
+        pack();
         boolean failed = false;
         try {
             ripper = AbstractRipper.getRipper(url);
@@ -746,7 +753,9 @@ public class MainWindow implements Runnable, RipStatusHandler {
         }
         if (!failed) {
             try {
-                ripTextfield.setText(ripper.getURL().toExternalForm());
+                synchronized (this) {
+                    ripTextfield.setText(ripper.getURL().toExternalForm());
+                }
                 status("Starting rip...");
                 ripper.setObserver((RipStatusHandler) this);
                 Thread t = new Thread(ripper);
@@ -768,7 +777,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
         stopButton.setVisible(false);
         ripTextfield.setEnabled(true);
         statusProgress.setValue(0);
-        mainFrame.pack();
+        pack();
         return null;
     }
 
@@ -826,7 +835,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
             statusProgress.setValue(0);
             statusProgress.setVisible(false);
             openButton.setVisible(false);
-            mainFrame.pack();
+            pack();
             statusWithColor("Error: " + (String) msg.getObject(), Color.RED);
             break;
 
@@ -863,7 +872,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
                     }
                 }
             });
-            mainFrame.pack();
+            pack();
             break;
         case COMPLETED_BYTES:
             // Update completed bytes
