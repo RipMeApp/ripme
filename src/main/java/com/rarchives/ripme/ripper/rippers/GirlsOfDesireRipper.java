@@ -17,22 +17,22 @@ import com.rarchives.ripme.ripper.DownloadThreadPool;
 import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
 import com.rarchives.ripme.utils.Utils;
 
-public class EHentaiRipper extends AlbumRipper {
+public class GirlsOfDesireRipper extends AlbumRipper {
     // All sleep times are in milliseconds
     private static final int PAGE_SLEEP_TIME     = 3  * 1000;
     private static final int IMAGE_SLEEP_TIME    = 1  * 1000;
     private static final int IP_BLOCK_SLEEP_TIME = 60 * 1000;
     private static final int TIMEOUT             = 5  * 1000;
 
-    private static final String DOMAIN = "g.e-hentai.org", HOST = "e-hentai";
+    private static final String DOMAIN = "girlsofdesire.org", HOST = "GirlsOfDesire";
 
     // Thread pool for finding direct image links from "image" pages (html)
-    private DownloadThreadPool ehentaiThreadPool = new DownloadThreadPool("ehentai");
+    private DownloadThreadPool girlsOfDesireThreadPool = new DownloadThreadPool(HOST);
 
     // Current HTML document
     private Document albumDoc = null;
 
-    public EHentaiRipper(URL url) throws IOException {
+    public GirlsOfDesireRipper(URL url) throws IOException {
         super(url);
     }
 
@@ -53,12 +53,10 @@ public class EHentaiRipper extends AlbumRipper {
                 sendUpdate(STATUS.LOADING_RESOURCE, url.toString());
                 albumDoc = Jsoup.connect(url.toExternalForm())
                                 .userAgent(USER_AGENT)
-                                .cookie("nw", "1")
-                                .cookie("tip", "1")
                                 .timeout(TIMEOUT)
                                 .get();
             }
-            Elements elems = albumDoc.select("#gn");
+            Elements elems = albumDoc.select(".albumName");
             return HOST + "_" + elems.get(0).text();
         } catch (Exception e) {
             // Fall back to default album naming convention
@@ -72,15 +70,15 @@ public class EHentaiRipper extends AlbumRipper {
         Pattern p;
         Matcher m;
 
-        p = Pattern.compile("^.*g\\.e-hentai\\.org/g/([0-9]+)/([a-fA-F0-9]+)/$");
+        p = Pattern.compile("^www\\.girlsofdesire\\.org\\/galleries\\/([\\w\\d-]+)\\/$");
         m = p.matcher(url.toExternalForm());
         if (m.matches()) {
-            return m.group(1) + "-" + m.group(2);
+            return m.group(1);
         }
 
         throw new MalformedURLException(
-                "Expected g.e-hentai.org gallery format: "
-                        + "http://g.e-hentai.org/g/####/####/"
+                "Expected girlsofdesire.org gallery format: "
+                        + "http://www.girlsofdesire.org/galleries/<name>/"
                         + " Got: " + url);
     }
 
@@ -88,6 +86,7 @@ public class EHentaiRipper extends AlbumRipper {
     public void rip() throws IOException {
         int index = 0, retries = 3;
         String nextUrl = this.url.toExternalForm();
+
         while (true) {
             if (isStopped()) {
                 break;
@@ -97,12 +96,13 @@ public class EHentaiRipper extends AlbumRipper {
                 sendUpdate(STATUS.LOADING_RESOURCE, nextUrl);
                 albumDoc = Jsoup.connect(nextUrl)
                                 .userAgent(USER_AGENT)
-                                .cookie("nw", "1")
                                 .timeout(TIMEOUT)
                                 .referrer(this.url.toExternalForm())
                                 .get();
             }
+
             // Check for rate limiting
+            // TODO copied from EHentaiRipper - how does this need to work on GirlsOfDesire?
             if (albumDoc.toString().contains("IP address will be automatically banned")) {
                 if (retries == 0) {
                     logger.error("Hit rate limit and maximum number of retries, giving up");
@@ -119,21 +119,25 @@ public class EHentaiRipper extends AlbumRipper {
                 albumDoc = null;
                 continue;
             }
+
             // Find thumbnails
-            Elements thumbs = albumDoc.select("#gdt > .gdtm a");
+            Elements thumbs = albumDoc.select("#box_10 > table a");
             if (thumbs.size() == 0) {
                 logger.info("albumDoc: " + albumDoc);
                 logger.info("No images found at " + nextUrl);
                 break;
             }
+
             // Iterate over images on page
             for (Element thumb : thumbs) {
                 if (isStopped()) {
                     break;
                 }
                 index++;
-                EHentaiImageThread t = new EHentaiImageThread(new URL(thumb.attr("href")), index, this.workingDir);
-                ehentaiThreadPool.addThread(t);
+                String imgSrc = thumb.attr("href");
+                URL imgUrl = new URL(url, imgSrc);
+                GirlsOfDesireImageThread t = new GirlsOfDesireImageThread(imgUrl, index, this.workingDir);
+                girlsOfDesireThreadPool.addThread(t);
                 try {
                     Thread.sleep(IMAGE_SLEEP_TIME);
                 } catch (InterruptedException e) {
@@ -142,29 +146,6 @@ public class EHentaiRipper extends AlbumRipper {
             }
 
             if (isStopped()) {
-                break;
-            }
-            // Find next page
-            Elements hrefs = albumDoc.select(".ptt a");
-            if (hrefs.size() == 0) {
-                logger.info("No navigation links found at " + nextUrl);
-                break;
-            }
-            // Ensure next page is different from the current page
-            String lastUrl = nextUrl;
-            nextUrl = hrefs.last().attr("href");
-            if (lastUrl.equals(nextUrl)) {
-                break; // We're on the last page
-            }
-
-            // Reset albumDoc so we fetch the page next time
-            albumDoc = null;
-
-            // Sleep before loading next page
-            try {
-                Thread.sleep(PAGE_SLEEP_TIME);
-            } catch (InterruptedException e) {
-                logger.error("Interrupted while waiting to load next page", e);
                 break;
             }
         }
@@ -178,16 +159,16 @@ public class EHentaiRipper extends AlbumRipper {
 
     /**
      * Helper class to find and download images found on "image" pages
-     * 
+     *
      * Handles case when site has IP-banned the user.
      */
-    private class EHentaiImageThread extends Thread {
+    private class GirlsOfDesireImageThread extends Thread {
         private URL url;
         private int index;
         private File workingDir;
         private int retries = 3;
 
-        public EHentaiImageThread(URL url, int index, File workingDir) {
+        public GirlsOfDesireImageThread(URL url, int index, File workingDir) {
             super();
             this.url = url;
             this.index = index;
@@ -198,16 +179,16 @@ public class EHentaiRipper extends AlbumRipper {
         public void run() {
             fetchImage();
         }
-        
+
         private void fetchImage() {
             try {
                 Document doc = Jsoup.connect(this.url.toExternalForm())
                                     .userAgent(USER_AGENT)
-                                    .cookie("nw", "1")
                                     .timeout(TIMEOUT)
                                     .referrer(this.url.toExternalForm())
                                     .get();
                 // Check for rate limit
+                // TODO copied from EHentaiRipper - how does this need to work on GirlsOfDesire?
                 if (doc.toString().contains("IP address will be automatically banned")) {
                     if (this.retries == 0) {
                         logger.error("Rate limited & ran out of retries, skipping image at " + this.url);
@@ -221,24 +202,20 @@ public class EHentaiRipper extends AlbumRipper {
                         return;
                     }
                     this.retries--;
+
                     fetchImage(); // Re-attempt to download the image
                     return;
                 }
 
                 // Find image
-                Elements images = doc.select(".sni > a > img");
-                if (images.size() == 0) {
-                    // Attempt to find image elsewise (Issue #41)
-                    images = doc.select("img#img");
-                    if (images.size() == 0) {
-                        logger.warn("Image not found at " + this.url);
-                        return;
-                    }
-                }
-                Element image = images.first();
+                Elements divs = doc.select("#box_12 > div");
+                Element div = divs.get(1);
+                Element image = div.select("a > img").first();
                 String imgsrc = image.attr("src");
-                logger.info("Found URL " + imgsrc + " via " + images.get(0));
-                Pattern p = Pattern.compile("^http://.*/ehg/image.php.*&n=([^&]+).*$");
+                URL imgUrl = new URL(url, imgsrc);
+
+                logger.info("Found URL " + imgUrl.toExternalForm() + " via " + image);
+                Pattern p = Pattern.compile("^http://.*/([\\d]+).jpg$"); // TODO only compile this regex once
                 Matcher m = p.matcher(imgsrc);
                 if (m.matches()) {
                     // Manually discover filename from URL
@@ -247,7 +224,7 @@ public class EHentaiRipper extends AlbumRipper {
                         savePath += String.format("%03d_", index);
                     }
                     savePath += m.group(1);
-                    addURLToDownload(new URL(imgsrc), new File(savePath));
+                    addURLToDownload(imgUrl, new File(savePath));
                 }
                 else {
                     // Provide prefix and let the AbstractRipper "guess" the filename
@@ -255,7 +232,7 @@ public class EHentaiRipper extends AlbumRipper {
                     if (Utils.getConfigBoolean("download.save_order", true)) {
                         prefix = String.format("%03d_", index);
                     }
-                    addURLToDownload(new URL(imgsrc), prefix);
+                    addURLToDownload(imgUrl, prefix);
                 }
             } catch (IOException e) {
                 logger.error("[!] Exception while loading/parsing " + this.url, e);
