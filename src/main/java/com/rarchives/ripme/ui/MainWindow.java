@@ -748,8 +748,8 @@ public class MainWindow implements Runnable, RipStatusHandler {
             ripper.setup();
         } catch (Exception e) {
             failed = true;
-            logger.error("Could not find ripper for URL " + url);
-            error("Could not find ripper for given URL");
+            logger.error("Could not find ripper for URL " + url, e);
+            error("Error: " + e.getMessage());
         }
         if (!failed) {
             try {

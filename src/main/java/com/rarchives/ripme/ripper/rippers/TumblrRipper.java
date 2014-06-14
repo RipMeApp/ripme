@@ -6,6 +6,7 @@ import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.jsoup.Jsoup;
@@ -27,11 +28,13 @@ public class TumblrRipper extends AlbumRipper {
     private ALBUM_TYPE albumType;
     private String subdomain, tagName, postNumber;
     
-    private final String API_KEY;
+    private static final String API_KEY;
+    static {
+        API_KEY = Utils.getConfigString("tumblr.auth", null);
+    }
 
     public TumblrRipper(URL url) throws IOException {
         super(url);
-        API_KEY = Utils.getConfigString("tumblr.auth", null);
         if (API_KEY == null) {
             throw new IOException("Could not find tumblr authentication key in configuration");
         }
@@ -44,7 +47,37 @@ public class TumblrRipper extends AlbumRipper {
 
     @Override
     public URL sanitizeURL(URL url) throws MalformedURLException {
+        String u = url.toExternalForm();
+        // Convert <FQDN>.tumblr.com/path to <FQDN>/path if needed
+        if (StringUtils.countMatches(u, ".") > 2) {
+            url = new URL(u.replace(".tumblr.com", ""));
+            if (isTumblrURL(url)) {
+                logger.info("Detected tumblr site: " + url);
+            }
+            else {
+                logger.info("Not a tumblr site: " + url);
+            }
+        }
         return url;
+    }
+
+    public boolean isTumblrURL(URL url) {
+        String checkURL = "http://api.tumblr.com/v2/blog/";
+        checkURL += url.getHost();
+        checkURL += "/info?api_key=" + API_KEY;
+        try {
+            Document doc = Jsoup.connect(checkURL)
+                 .ignoreContentType(true)
+                 .userAgent(USER_AGENT)
+                 .get();
+            String jsonString = doc.body().html().replaceAll("&quot;", "\"");
+            JSONObject json = new JSONObject(jsonString);
+            int status = json.getJSONObject("meta").getInt("status");
+            return status == 200;
+        } catch (IOException e) {
+            logger.error("Error while checking possible tumblr domain: " + url.getHost(), e);
+        }
+        return false;
     }
 
     @Override
@@ -59,6 +92,9 @@ public class TumblrRipper extends AlbumRipper {
         for (String mediaType : mediaTypes) {
             offset = 0;
             while (true) {
+                if (isStopped()) {
+                    break;
+                }
                 String apiURL = getTumblrApiURL(mediaType, offset);
                 logger.info("    Retrieving " + apiURL);
                 Document doc = Jsoup.connect(apiURL)
@@ -78,6 +114,9 @@ public class TumblrRipper extends AlbumRipper {
                     break;
                 }
                 offset += 20;
+            }
+            if (isStopped()) {
+                break;
             }
         }
         waitForThreads();
@@ -134,7 +173,7 @@ public class TumblrRipper extends AlbumRipper {
         if (albumType == ALBUM_TYPE.POST) { 
             sb.append("http://api.tumblr.com/v2/blog/")
               .append(subdomain)
-              .append(".tumblr.com/posts?id=")
+              .append("/posts?id=")
               .append(postNumber)
               .append("&api_key=")
               .append(API_KEY);
@@ -142,7 +181,7 @@ public class TumblrRipper extends AlbumRipper {
         }
         sb.append("http://api.tumblr.com/v2/blog/")
           .append(subdomain)
-          .append(".tumblr.com/posts/")
+          .append("/posts/")
           .append(mediaType)
           .append("?api_key=")
           .append(API_KEY)
@@ -162,10 +201,13 @@ public class TumblrRipper extends AlbumRipper {
 
     @Override
     public String getGID(URL url) throws MalformedURLException {
+        final String DOMAIN_REGEX = "^https?://([a-zA-Z0-9\\-\\.]+)";
+
         Pattern p;
         Matcher m;
+
         // Tagged URL
-        p = Pattern.compile("^https?://([a-zA-Z0-9\\-]{1,})\\.tumblr\\.com/tagged/([a-zA-Z0-9\\-%]{1,}).*$");
+        p = Pattern.compile(DOMAIN_REGEX + "/tagged/([a-zA-Z0-9\\-%]+).*$");
         m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             this.albumType = ALBUM_TYPE.TAG;
@@ -175,7 +217,7 @@ public class TumblrRipper extends AlbumRipper {
             return this.subdomain + "_tag_" + this.tagName.replace("%20", " ");
         }
         // Post URL
-        p = Pattern.compile("^https?://([a-zA-Z0-9\\-]{1,})\\.tumblr\\.com/post/([0-9]{1,}).*$");
+        p = Pattern.compile(DOMAIN_REGEX + "/post/([0-9]+).*$");
         m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             this.albumType = ALBUM_TYPE.POST;
@@ -184,15 +226,14 @@ public class TumblrRipper extends AlbumRipper {
             return this.subdomain + "_post_" + this.postNumber;
         }
         // Subdomain-level URL
-        p = Pattern.compile("^https?://([a-zA-Z0-9\\-]{1,})\\.tumblr\\.com/?.*$");
+        p = Pattern.compile(DOMAIN_REGEX + ".*$");
         m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             this.albumType = ALBUM_TYPE.SUBDOMAIN;
             this.subdomain = m.group(1);
             return this.subdomain;
         }
-        // TODO support non-tumblr.com domains
-        throw new MalformedURLException("Expected format: http://user.tumblr.com[/tagged/tag|/post/postno]");
+        throw new MalformedURLException("Expected format: http://subdomain[.tumblr.com][/tagged/tag|/post/postno]");
     }
 
 }
