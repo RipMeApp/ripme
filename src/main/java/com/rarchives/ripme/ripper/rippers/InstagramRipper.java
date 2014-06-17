@@ -33,7 +33,7 @@ public class InstagramRipper extends AlbumRipper {
 
     @Override
     public URL sanitizeURL(URL url) throws MalformedURLException {
-        Pattern p = Pattern.compile("^https?://instagram\\.com/p/([a-zA-Z0-9\\-_]{1,}).*$");
+        Pattern p = Pattern.compile("^https?://instagram\\.com/p/([a-zA-Z0-9\\-_.]{1,}).*$");
         Matcher m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             // Link to photo, not the user account
@@ -44,17 +44,17 @@ public class InstagramRipper extends AlbumRipper {
                 throw new MalformedURLException("Failed to retrieve user page from " + url);
             }
         }
-        p = Pattern.compile("^.*instagram\\.com/([a-zA-Z0-9\\-_]{3,}).*$");
+        p = Pattern.compile("^.*instagram\\.com/([a-zA-Z0-9\\-_.]{3,}).*$");
         m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             return new URL("http://iconosquare.com/" + m.group(1));
         }
-        p = Pattern.compile("^.*iconosquare\\.com/([a-zA-Z0-9\\-_]{3,}).*$");
+        p = Pattern.compile("^.*iconosquare\\.com/([a-zA-Z0-9\\-_.]{3,}).*$");
         m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             return new URL("http://iconosquare.com/" + m.group(1));
         }
-        p = Pattern.compile("^.*statigr\\.am/([a-zA-Z0-9\\-_]{3,}).*$");
+        p = Pattern.compile("^.*statigr\\.am/([a-zA-Z0-9\\-_.]{3,}).*$");
         m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             return new URL("http://iconosquare.com/" + m.group(1));
@@ -145,7 +145,7 @@ public class InstagramRipper extends AlbumRipper {
 
     @Override
     public String getGID(URL url) throws MalformedURLException {
-        Pattern p = Pattern.compile("^https?://iconosquare.com/([a-zA-Z0-9\\-_]{3,}).*$");
+        Pattern p = Pattern.compile("^https?://iconosquare.com/([a-zA-Z0-9\\-_.]{3,}).*$");
         Matcher m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             return m.group(1);
