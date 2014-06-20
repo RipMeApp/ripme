@@ -7,9 +7,6 @@ import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.jsoup.Connection.Method;
-import org.jsoup.Connection.Response;
-import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
@@ -43,12 +40,7 @@ public class EightmusesRipper extends AlbumRipper {
         try {
             // Attempt to use album title as GID
             if (albumDoc == null) {
-                albumDoc = Jsoup.connect(url.toExternalForm())
-                                .userAgent(USER_AGENT)
-                                .method(Method.GET)
-                                .timeout(Utils.getConfigInteger("download.timeout", 5000))
-                                .execute()
-                                .parse();
+                albumDoc = getDocument(url);
             }
             Element titleElement = albumDoc.select("meta[name=description]").first();
             String title = titleElement.attr("content");
@@ -71,11 +63,7 @@ public class EightmusesRipper extends AlbumRipper {
         logger.info("    Retrieving " + url);
         sendUpdate(STATUS.LOADING_RESOURCE, url);
         if (albumDoc == null) {
-            Response resp = Jsoup.connect(url)
-                    .userAgent(USER_AGENT)
-                    .timeout(Utils.getConfigInteger("download.timeout", 5000))
-                    .execute();
-            albumDoc = resp.parse();
+            albumDoc = getDocument(url);
         }
 
         int index = 0; // Both album index and image index

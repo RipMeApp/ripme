@@ -6,7 +6,6 @@ import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -36,11 +35,8 @@ public class ImgboxRipper extends AlbumRipper {
 
     @Override
     public void rip() throws IOException {
-        logger.info("    Retrieving " + this.url);
         sendUpdate(STATUS.LOADING_RESOURCE, url.toExternalForm());
-        Document doc = Jsoup.connect(this.url.toExternalForm())
-                .userAgent(USER_AGENT)
-                .get();
+        Document doc = getDocument(this.url);
         Elements images = doc.select("div.boxed-content > a > img");
         if (images.size() == 0) {
             logger.error("No images found at " + this.url);
@@ -48,6 +44,9 @@ public class ImgboxRipper extends AlbumRipper {
         }
         int index = 0;
         for (Element image : images) {
+            if (isStopped()) {
+                break;
+            }
             index++;
             String imageUrl = image.attr("src").replace("s.imgbox.com", "i.imgbox.com");
             String prefix = "";

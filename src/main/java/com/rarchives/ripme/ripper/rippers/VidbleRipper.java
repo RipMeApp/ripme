@@ -6,7 +6,6 @@ import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
 
@@ -47,10 +46,10 @@ public class VidbleRipper extends AlbumRipper {
 
     @Override
     public void rip() throws IOException {
-        logger.info("    Retrieving " + this.url.toExternalForm());
+        logger.info("Retrieving " + this.url);
         sendUpdate(STATUS.LOADING_RESOURCE, this.url.toExternalForm());
         if (albumDoc == null) {
-            albumDoc = Jsoup.connect(this.url.toExternalForm()).get();
+            albumDoc = getDocument(this.url);
         }
         Elements els = albumDoc.select("#ContentPlaceHolder1_thumbs");
         if (els.size() == 0) {

@@ -6,7 +6,6 @@ import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -61,11 +60,7 @@ public class ImagevenueRipper extends AlbumRipper {
         String nextUrl = this.url.toExternalForm();
         logger.info("    Retrieving album page " + nextUrl);
         sendUpdate(STATUS.LOADING_RESOURCE, nextUrl);
-        Document albumDoc = Jsoup.connect(nextUrl)
-                                 .userAgent(USER_AGENT)
-                                 .timeout(5000)
-                                 .referrer(this.url.toExternalForm())
-                                 .get();
+        Document albumDoc = getDocument(nextUrl);
         // Find thumbnails
         Elements thumbs = albumDoc.select("a[target=_blank]");
         if (thumbs.size() == 0) {
@@ -119,11 +114,8 @@ public class ImagevenueRipper extends AlbumRipper {
         
         private void fetchImage() {
             try {
-                Document doc = Jsoup.connect(this.url.toExternalForm())
-                                    .userAgent(USER_AGENT)
-                                    .timeout(5000)
-                                    .referrer(this.url.toExternalForm())
-                                    .get();
+                sendUpdate(STATUS.LOADING_RESOURCE, this.url.toExternalForm());
+                Document doc = getDocument(this.url);
                 // Find image
                 Elements images = doc.select("a > img");
                 if (images.size() == 0) {

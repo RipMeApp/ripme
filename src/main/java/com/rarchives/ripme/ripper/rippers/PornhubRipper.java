@@ -49,10 +49,7 @@ public class PornhubRipper extends AlbumRipper {
             if (albumDoc == null) {
                 logger.info("    Retrieving " + url.toExternalForm());
                 sendUpdate(STATUS.LOADING_RESOURCE, url.toString());
-                albumDoc = Jsoup.connect(url.toExternalForm())
-                                .userAgent(USER_AGENT)
-                                .timeout(TIMEOUT)
-                                .get();
+                albumDoc = getDocument(url);
             }
             Elements elems = albumDoc.select(".photoAlbumTitleV2");
             return HOST + "_" + elems.get(0).text();
@@ -82,7 +79,7 @@ public class PornhubRipper extends AlbumRipper {
 
     @Override
     public void rip() throws IOException {
-        int index = 0, retries = 3;
+        int index = 0;
         String nextUrl = this.url.toExternalForm();
         
         if (isStopped()) {
@@ -92,11 +89,7 @@ public class PornhubRipper extends AlbumRipper {
         if (albumDoc == null) {
             logger.info("    Retrieving album page " + nextUrl);
             sendUpdate(STATUS.LOADING_RESOURCE, nextUrl);
-            albumDoc = Jsoup.connect(nextUrl)
-                            .userAgent(USER_AGENT)
-                            .timeout(TIMEOUT)
-                            .referrer(this.url.toExternalForm())
-                            .get();
+            albumDoc = getDocument(nextUrl, this.url.toExternalForm(), null);
         }
         
         // Find thumbnails
@@ -139,14 +132,11 @@ public class PornhubRipper extends AlbumRipper {
     private class PornhubImageThread extends Thread {
         private URL url;
         private int index;
-        private File workingDir;
-        private int retries = 3;
 
         public PornhubImageThread(URL url, int index, File workingDir) {
             super();
             this.url = url;
             this.index = index;
-            this.workingDir = workingDir;
         }
 
         @Override
@@ -156,11 +146,8 @@ public class PornhubRipper extends AlbumRipper {
         
         private void fetchImage() {
             try {
-                Document doc = Jsoup.connect(this.url.toExternalForm())
-                                    .userAgent(USER_AGENT)
-                                    .timeout(TIMEOUT)
-                                    .referrer(this.url.toExternalForm())
-                                    .get();
+                String u = this.url.toExternalForm();
+                Document doc = getDocument(u, u, null);
                 
                 // Find image
                 Elements images = doc.select("#photoImageSection img");

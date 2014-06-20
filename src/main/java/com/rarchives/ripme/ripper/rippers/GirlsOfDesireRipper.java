@@ -6,7 +6,6 @@ import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -17,7 +16,6 @@ import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
 public class GirlsOfDesireRipper extends AlbumRipper {
     // All sleep times are in milliseconds
     private static final int IMAGE_SLEEP_TIME    = 100;
-    private static final int TIMEOUT             = 5 * 1000;
 
     private static final String DOMAIN = "girlsofdesire.org", HOST = "GirlsOfDesire";
 
@@ -43,10 +41,7 @@ public class GirlsOfDesireRipper extends AlbumRipper {
             if (albumDoc == null) {
                 logger.info("    Retrieving " + url.toExternalForm());
                 sendUpdate(STATUS.LOADING_RESOURCE, url.toString());
-                albumDoc = Jsoup.connect(url.toExternalForm())
-                                .userAgent(USER_AGENT)
-                                .timeout(TIMEOUT)
-                                .get();
+                albumDoc = getDocument(url);
             }
             Elements elems = albumDoc.select(".albumName");
             return HOST + "_" + elems.first().text();
@@ -81,11 +76,7 @@ public class GirlsOfDesireRipper extends AlbumRipper {
         if (albumDoc == null) {
             logger.info("    Retrieving album page " + nextUrl);
             sendUpdate(STATUS.LOADING_RESOURCE, nextUrl);
-            albumDoc = Jsoup.connect(nextUrl)
-                    .userAgent(USER_AGENT)
-                    .timeout(TIMEOUT)
-                    .referrer(this.url.toExternalForm())
-                    .get();
+            albumDoc = getDocument(nextUrl);
         }
 
         // Find thumbnails

@@ -7,12 +7,14 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.json.JSONObject;
+import org.jsoup.Connection.Method;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
 import com.rarchives.ripme.ripper.AlbumRipper;
 import com.rarchives.ripme.ripper.DownloadThreadPool;
+import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
 
 public class SeeniveRipper extends AlbumRipper {
 
@@ -40,14 +42,16 @@ public class SeeniveRipper extends AlbumRipper {
     public void rip() throws IOException {
         String baseURL = this.url.toExternalForm();
         logger.info("    Retrieving " + baseURL);
-        Document doc = Jsoup.connect(baseURL)
-                            .header("Referer", baseURL)
-                            .userAgent(USER_AGENT)
-                            .timeout(5000)
-                            .get();
+        Document doc = getDocument(baseURL, baseURL, null);
         while (true) {
+            if (isStopped()) {
+                break;
+            }
             String lastID = null;
             for (Element element : doc.select("a.facebox")) {
+                if (isStopped()) {
+                    break;
+                }
                 String card = element.attr("href"); // "/v/<video_id>"
                 URL videoURL = new URL("https://seenive.com" + card);
                 SeeniveImageThread vit = new SeeniveImageThread(videoURL);
@@ -66,11 +70,7 @@ public class SeeniveRipper extends AlbumRipper {
             }
 
             logger.info("[ ] Retrieving " + baseURL + "/next/" + lastID);
-            String jsonString = Jsoup.connect(baseURL + "/next/" + lastID)
-                                 .header("Referer", baseURL)
-                                 .userAgent(USER_AGENT)
-                                 .ignoreContentType(true)
-                                 .execute().body();
+            String jsonString = getResponse(baseURL + "/next/" + lastID, Method.GET, USER_AGENT, baseURL, null, true).body();
             JSONObject json = new JSONObject(jsonString);
             String html = json.getString("Html");
             if (html.equals("")) {
@@ -111,10 +111,9 @@ public class SeeniveRipper extends AlbumRipper {
         @Override
         public void run() {
             try {
-                Document doc = Jsoup.connect(this.url.toExternalForm())
-                                    .userAgent(USER_AGENT)
-                                    .get();
+                Document doc = getDocument(this.url);
                 logger.info("[ ] Retreiving video page " + this.url);
+                sendUpdate(STATUS.LOADING_RESOURCE, this.url.toExternalForm());
                 for (Element element : doc.select("source")) {
                     String video = element.attr("src");
                     synchronized (threadPool) {

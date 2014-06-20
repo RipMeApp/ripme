@@ -6,7 +6,6 @@ import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
@@ -38,7 +37,7 @@ public class XhamsterRipper extends AlbumRipper {
         String nextURL = this.url.toExternalForm();
         while (nextURL != null) {
             logger.info("    Retrieving " + nextURL);
-            Document doc = Jsoup.connect(nextURL).get();
+            Document doc = getDocument(nextURL);
             for (Element thumb : doc.select("table.iListing div.img img")) {
                 if (!thumb.hasAttr("src")) {
                     continue;

@@ -8,7 +8,6 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
@@ -79,10 +78,8 @@ public class ChanRipper extends AlbumRipper {
         Set<String> attempted = new HashSet<String>();
         int index = 0;
         Pattern p; Matcher m;
-        logger.info("    Retrieving " + this.url.toExternalForm());
-        Document doc = Jsoup.connect(this.url.toExternalForm())
-                            .userAgent(USER_AGENT)
-                            .get();
+        logger.info("Retrieving " + this.url);
+        Document doc = getDocument(this.url);
         for (Element link : doc.select("a")) {
             if (!link.hasAttr("href")) { 
                 continue;

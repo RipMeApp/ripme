@@ -6,7 +6,6 @@ import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
 
@@ -54,9 +53,7 @@ public class ViddmeRipper extends VideoRipper {
     @Override
     public void rip() throws IOException {
         logger.info("    Retrieving " + this.url.toExternalForm());
-        Document doc = Jsoup.connect(this.url.toExternalForm())
-                            .userAgent(USER_AGENT)
-                            .get();
+        Document doc = getDocument(this.url);
         Elements videos = doc.select("meta[name=twitter:player:stream]");
         if (videos.size() == 0) {
             throw new IOException("Could not find twitter:player:stream at " + url);

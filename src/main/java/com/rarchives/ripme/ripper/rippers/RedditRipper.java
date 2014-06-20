@@ -11,7 +11,6 @@ import java.util.regex.Pattern;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
-import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
 import com.rarchives.ripme.ripper.AlbumRipper;
@@ -118,10 +117,7 @@ public class RedditRipper extends AlbumRipper {
         logger.info("    Retrieving " + url);
         while(doc == null && attempts++ < 3) {
             try {
-                doc= Jsoup.connect(url.toExternalForm())
-                                        .ignoreContentType(true)
-                                        .userAgent(USER_AGENT)
-                                        .get();
+                doc = getResponse(url, true).parse();
             } catch(SocketTimeoutException ex) {
                 if(attempts >= 3) throw ex;
                 logger.warn(String.format("[!] Connection timed out (attempt %d)", attempts));

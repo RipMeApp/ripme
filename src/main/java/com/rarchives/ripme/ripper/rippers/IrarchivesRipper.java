@@ -6,7 +6,6 @@ import java.net.URL;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.jsoup.Jsoup;
 
 import com.rarchives.ripme.ripper.AlbumRipper;
 import com.rarchives.ripme.ripper.rippers.ImgurRipper.ImgurAlbum;
@@ -16,13 +15,16 @@ import com.rarchives.ripme.utils.Utils;
 
 public class IrarchivesRipper extends AlbumRipper {
 
-    private static final int TIMEOUT = 60000; // Long timeout for this poorly-optimized site.
-
     private static final String DOMAIN = "i.rarchives.com",
                                 HOST   = "irarchives";
 
     public IrarchivesRipper(URL url) throws IOException {
         super(url);
+    }
+
+    @Override
+    public int getTimeout() {
+        return 60 * 1000;
     }
 
     @Override
@@ -46,11 +48,7 @@ public class IrarchivesRipper extends AlbumRipper {
     @Override
     public void rip() throws IOException {
         logger.info("    Retrieving " + this.url);
-        String jsonString = Jsoup.connect(this.url.toExternalForm())
-                .ignoreContentType(true)
-                .timeout(TIMEOUT)
-                .execute()
-                .body();
+        String jsonString = getResponse(url, true).body();
         JSONObject json = new JSONObject(jsonString);
         JSONArray posts = json.getJSONArray("posts");
         if (posts.length() == 0) {

@@ -7,7 +7,6 @@ import java.net.URLDecoder;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -55,10 +54,8 @@ public class XvideosRipper extends VideoRipper {
 
     @Override
     public void rip() throws IOException {
-        logger.info("    Retrieving " + this.url.toExternalForm());
-        Document doc = Jsoup.connect(this.url.toExternalForm())
-                            .userAgent(USER_AGENT)
-                            .get();
+        logger.info("    Retrieving " + this.url);
+        Document doc = getDocument(this.url);
         Elements embeds = doc.select("embed");
         if (embeds.size() == 0) {
             throw new IOException("Could not find Embed code at " + url);

@@ -15,15 +15,12 @@ import javax.swing.JOptionPane;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.jsoup.Jsoup;
 
 import com.rarchives.ripme.ripper.AlbumRipper;
 import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
 import com.rarchives.ripme.utils.Utils;
 
 public class MediacrushRipper extends AlbumRipper {
-
-    private static final int TIMEOUT = 60000; // Long timeout for this poorly-optimized site.
 
     private static final String DOMAIN = "mediacru.sh",
                                 HOST   = "mediacrush";
@@ -72,12 +69,7 @@ public class MediacrushRipper extends AlbumRipper {
         sendUpdate(STATUS.LOADING_RESOURCE, url);
         String jsonString = null;
         try {
-            jsonString = Jsoup.connect(url)
-                              .ignoreContentType(true)
-                              .userAgent(USER_AGENT)
-                              .timeout(TIMEOUT)
-                              .execute()
-                              .body();
+            jsonString = getResponse(url, true).body();
         } catch (Exception re) {
             // Check for >1024 bit encryption but in older versions of Java
             if (re.getCause().getCause() instanceof InvalidAlgorithmParameterException) {

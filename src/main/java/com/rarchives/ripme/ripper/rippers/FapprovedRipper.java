@@ -6,12 +6,12 @@ import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
 import com.rarchives.ripme.ripper.AlbumRipper;
 import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
+import com.rarchives.ripme.utils.Utils;
 
 public class FapprovedRipper extends AlbumRipper {
 
@@ -38,7 +38,7 @@ public class FapprovedRipper extends AlbumRipper {
     }
     @Override
     public void rip() throws IOException {
-        int page = 0;
+        int index = 0, page = 0;
         String url, user = getGID(this.url);
         boolean hasNextPage = true;
         while (hasNextPage) {
@@ -46,15 +46,18 @@ public class FapprovedRipper extends AlbumRipper {
             url = "http://fapproved.com/users/" + user + "/images?page=" + page;
             this.sendUpdate(STATUS.LOADING_RESOURCE, url);
             logger.info("    Retrieving " + url);
-            Document doc = Jsoup.connect(url)
-                                     .ignoreContentType(true)
-                                     .get();
+            Document doc = getDocument(url, true);
             for (Element image : doc.select("div.actual-image img")) {
                 String imageUrl = image.attr("src");
                 if (imageUrl.startsWith("//")) {
                     imageUrl = "http:" + imageUrl;
                 }
-                addURLToDownload(new URL(imageUrl));
+                index++;
+                String prefix = "";
+                if (Utils.getConfigBoolean("download.save_order", true)) {
+                    prefix = String.format("%03d_", index);
+                }
+                addURLToDownload(new URL(imageUrl), prefix);
             }
             if ( (doc.select("div.pagination li.next.disabled").size() != 0)
               || (doc.select("div.pagination").size() == 0) ) {

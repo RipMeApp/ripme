@@ -83,11 +83,7 @@ public class ImgurRipper extends AlbumRipper {
             try {
                 // Attempt to use album title as GID
                 if (albumDoc == null) {
-                    albumDoc = Jsoup.connect(url.toExternalForm())
-                            .userAgent(USER_AGENT)
-                            .timeout(10 * 1000)
-                            .maxBodySize(0)
-                            .get();
+                    albumDoc = getDocument(url);
                 }
                 String title = albumDoc.title();
                 if (!title.contains(" - Imgur")
@@ -261,8 +257,9 @@ public class ImgurRipper extends AlbumRipper {
      * @throws IOException
      */
     private void ripUserAccount(URL url) throws IOException {
-        logger.info("[ ] Retrieving " + url.toExternalForm());
-        Document doc = Jsoup.connect(url.toExternalForm()).get();
+        logger.info("Retrieving " + url);
+        sendUpdate(STATUS.LOADING_RESOURCE, url.toExternalForm());
+        Document doc = getDocument(url);
         for (Element album : doc.select("div.cover a")) {
             stopCheck();
             if (!album.hasAttr("href")
@@ -292,10 +289,7 @@ public class ImgurRipper extends AlbumRipper {
             try {
                 page++;
                 String jsonUrlWithParams = jsonUrl + "?sort=0&order=1&album=0&page=" + page + "&perPage=60";
-                String jsonString = Jsoup.connect(jsonUrlWithParams)
-                        .ignoreContentType(true)
-                        .execute()
-                        .body();
+                String jsonString = getResponse(jsonUrlWithParams, true).body();
                 JSONObject json = new JSONObject(jsonString);
                 JSONObject jsonData = json.getJSONObject("data");
                 if (jsonData.has("count")) {
@@ -333,10 +327,7 @@ public class ImgurRipper extends AlbumRipper {
             }
             pageURL += "page/" + page + "/miss?scrolled";
             logger.info("    Retrieving " + pageURL);
-            Document doc = Jsoup.connect(pageURL)
-                    .userAgent(USER_AGENT)
-                    .timeout(10 * 1000)
-                    .get();
+            Document doc = getDocument(pageURL);
             Elements imgs = doc.select(".post img");
             for (Element img : imgs) {
                 String image = img.attr("src");

@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -47,9 +46,7 @@ public class NfsfwRipper extends AlbumRipper {
         try {
             // Attempt to use album title as GID
             if (albumDoc == null) {
-                albumDoc = Jsoup.connect(url.toExternalForm())
-                                .userAgent(USER_AGENT)
-                                .get();
+                albumDoc = getDocument(url);
             }
             String title = albumDoc.select("h2").first().text().trim();
             return "nfsfw_" + Utils.filesystemSafe(title);
@@ -90,12 +87,13 @@ public class NfsfwRipper extends AlbumRipper {
             sendUpdate(STATUS.LOADING_RESOURCE, nextURL);
             logger.info("    Retrieving " + nextURL);
             if (albumDoc == null) {
-                albumDoc = Jsoup.connect(nextURL)
-                                .userAgent(USER_AGENT)
-                                .get();
+                albumDoc = getDocument(nextURL);
             }
             // Subalbums
             for (Element suba : albumDoc.select("td.IMG > a")) {
+                if (isStopped()) {
+                    break;
+                }
                 String subURL = "http://nfsfw.com" + suba.attr("href");
                 String subdir = subURL;
                 while (subdir.endsWith("/")) {
@@ -106,6 +104,9 @@ public class NfsfwRipper extends AlbumRipper {
             }
             // Images
             for (Element thumb : albumDoc.select("td.giItemCell > div > a")) {
+                if (isStopped()) {
+                    break;
+                }
                 String imagePage = "http://nfsfw.com" + thumb.attr("href");
                 try {
                     NfsfwImageThread t = new NfsfwImageThread(new URL(imagePage), nextSubalbum, ++index);
@@ -155,11 +156,8 @@ public class NfsfwRipper extends AlbumRipper {
         @Override
         public void run() {
             try {
-                Document doc = Jsoup.connect(this.url.toExternalForm())
-                                    .userAgent(USER_AGENT)
-                                    .timeout(5000)
-                                    .referrer(this.url.toExternalForm())
-                                    .get();
+                String u = this.url.toExternalForm();
+                Document doc = getDocument(u, u, null);
                 Elements images = doc.select(".gbBlock img");
                 if (images.size() == 0) {
                     logger.error("Failed to find image at " + this.url);

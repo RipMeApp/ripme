@@ -9,10 +9,10 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
 import com.rarchives.ripme.ripper.AlbumRipper;
+import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
 import com.rarchives.ripme.utils.Utils;
 
 public class TumblrRipper extends AlbumRipper {
@@ -66,10 +66,7 @@ public class TumblrRipper extends AlbumRipper {
         checkURL += url.getHost();
         checkURL += "/info?api_key=" + API_KEY;
         try {
-            Document doc = Jsoup.connect(checkURL)
-                 .ignoreContentType(true)
-                 .userAgent(USER_AGENT)
-                 .get();
+            Document doc = getResponse(checkURL, true).parse();
             String jsonString = doc.body().html().replaceAll("&quot;", "\"");
             JSONObject json = new JSONObject(jsonString);
             int status = json.getJSONObject("meta").getInt("status");
@@ -90,18 +87,18 @@ public class TumblrRipper extends AlbumRipper {
         }
         int offset;
         for (String mediaType : mediaTypes) {
+            if (isStopped()) {
+                break;
+            }
             offset = 0;
             while (true) {
                 if (isStopped()) {
                     break;
                 }
                 String apiURL = getTumblrApiURL(mediaType, offset);
-                logger.info("    Retrieving " + apiURL);
-                Document doc = Jsoup.connect(apiURL)
-                                    .ignoreContentType(true)
-                                    .timeout(10 * 1000)
-                                    .header("User-agent", USER_AGENT)
-                                    .get();
+                logger.info("Retrieving " + apiURL);
+                sendUpdate(STATUS.LOADING_RESOURCE, apiURL);
+                Document doc = getResponse(apiURL, true).parse();
                 try {
                     Thread.sleep(1000);
                 } catch (InterruptedException e) {

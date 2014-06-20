@@ -6,11 +6,11 @@ import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
 import com.rarchives.ripme.ripper.AlbumRipper;
+import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
 import com.rarchives.ripme.utils.Utils;
 
 public class ImagearnRipper extends AlbumRipper {
@@ -41,7 +41,7 @@ public class ImagearnRipper extends AlbumRipper {
     }
 
     private URL getGalleryFromImage(URL url) throws IOException {
-        Document doc = Jsoup.connect(url.toExternalForm()).get();
+        Document doc = getDocument(url);
         for (Element link : doc.select("a[href~=^gallery\\.php.*$]")) {
             logger.info("LINK: " + link.toString());
             if (link.hasAttr("href")
@@ -57,9 +57,13 @@ public class ImagearnRipper extends AlbumRipper {
     @Override
     public void rip() throws IOException {
         int index = 0;
-        logger.info("[ ] Retrieving " + this.url.toExternalForm());
-        Document doc = Jsoup.connect(url.toExternalForm()).get();
+        logger.info("Retrieving " + this.url.toExternalForm());
+        sendUpdate(STATUS.LOADING_RESOURCE, this.url.toExternalForm());
+        Document doc = getDocument(this.url);
         for (Element thumb : doc.select("img.border")) {
+            if (isStopped()) {
+                break;
+            }
             String image = thumb.attr("src");
             image = image.replaceAll("thumbs[0-9]*\\.imagearn\\.com/", "img.imagearn.com/imags/");
             index += 1;

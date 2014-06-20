@@ -46,9 +46,9 @@ public class ButttoucherRipper extends AlbumRipper {
 
     @Override
     public void rip() throws IOException {
-        logger.info("    Retrieving " + this.url.toExternalForm());
+        logger.info("Retrieving " + this.url);
         if (albumDoc == null) {
-            albumDoc = Jsoup.connect(this.url.toExternalForm()).get();
+            albumDoc = getDocument(this.url);
         }
         int index = 0;
         for (Element thumb : albumDoc.select("div.image-gallery > a > img")) {

@@ -7,11 +7,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.jsoup.HttpStatusException;
-import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
 import com.rarchives.ripme.ripper.AlbumRipper;
+import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
 
 public class VineboxRipper extends AlbumRipper {
 
@@ -39,9 +39,10 @@ public class VineboxRipper extends AlbumRipper {
         while (true) {
             page++;
             String urlPaged = this.url.toExternalForm() + "?page=" + page;
-            logger.info("    Retrieving " + urlPaged);
+            logger.info("Retrieving " + urlPaged);
+            sendUpdate(STATUS.LOADING_RESOURCE, urlPaged);
             try {
-                doc = Jsoup.connect(urlPaged).get();
+                doc = getDocument(this.url);;
             } catch (HttpStatusException e) {
                 logger.debug("Hit end of pages at page " + page, e);
                 break;

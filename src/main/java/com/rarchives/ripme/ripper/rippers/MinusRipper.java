@@ -9,7 +9,6 @@ import java.util.regex.Pattern;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.jsoup.Connection.Response;
-import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
 
@@ -48,9 +47,7 @@ public class MinusRipper extends AlbumRipper {
         try {
             // Attempt to use album title as GID
             if (albumDoc == null) {
-                albumDoc = Jsoup.connect(url.toExternalForm())
-                            .userAgent(USER_AGENT)
-                            .get();
+                albumDoc = getDocument(url);
             }
             Elements titles = albumDoc.select("meta[property=og:title]");
             if (titles.size() > 0) {
@@ -132,11 +129,7 @@ public class MinusRipper extends AlbumRipper {
                            + user + "/shares.json/"
                            + page;
             logger.info("    Retrieving " + jsonUrl);
-            Response resp = Jsoup.connect(jsonUrl)
-                                .userAgent(USER_AGENT)
-                                .ignoreContentType(true)
-                                .execute();
-            System.err.println(resp.body());
+            Response resp = getResponse(jsonUrl, true);
             JSONObject json = new JSONObject(resp.body());
             JSONArray galleries = json.getJSONArray("galleries");
             for (int i = 0; i < galleries.length(); i++) {
@@ -158,9 +151,7 @@ public class MinusRipper extends AlbumRipper {
     private void ripAlbum(URL url, String subdir) throws IOException {
         logger.info("    Retrieving " + url.toExternalForm());
         if (albumDoc == null || !subdir.equals("")) {
-            albumDoc = Jsoup.connect(url.toExternalForm())
-                            .userAgent(USER_AGENT)
-                            .get();
+            albumDoc = getDocument(url);
         }
         Pattern p = Pattern.compile("^.*var gallerydata = (\\{.*\\});.*$", Pattern.DOTALL);
         Matcher m = p.matcher(albumDoc.data());

@@ -57,9 +57,7 @@ public class PornhubRipper extends VideoRipper {
     @Override
     public void rip() throws IOException {
         logger.info("    Retrieving " + this.url.toExternalForm());
-        Document doc = Jsoup.connect(this.url.toExternalForm())
-                            .userAgent(USER_AGENT)
-                            .get();
+        Document doc = getDocument(this.url);
         Pattern p = Pattern.compile("^.*var flashvars = (.*});.*$", Pattern.DOTALL);
         Matcher m = p.matcher(doc.body().html());
         if (m.matches()) {

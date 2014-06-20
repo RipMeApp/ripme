@@ -65,10 +65,7 @@ public class DeviantartRipper extends AlbumRipper {
 
             logger.info("    Retrieving " + nextURL);
             sendUpdate(STATUS.LOADING_RESOURCE, "Retrieving " + nextURL);
-            Document doc = Jsoup.connect(nextURL)
-                    .cookies(cookies)
-                    .userAgent(USER_AGENT)
-                    .get();
+            Document doc = getDocument(nextURL, cookies);
 
             // Iterate over all thumbnails
             for (Element thumb : doc.select("div.zones-container a.thumb")) {
@@ -190,12 +187,7 @@ public class DeviantartRipper extends AlbumRipper {
     public String smallToFull(String thumb, String page) {
         try {
             // Fetch the image page
-            Response resp = Jsoup.connect(page)
-                                 .userAgent(USER_AGENT)
-                                 .cookies(cookies)
-                                 .referrer(this.url.toExternalForm())
-                                 .method(Method.GET)
-                                 .execute();
+            Response resp = getResponse(page, Method.GET, USER_AGENT, this.url.toExternalForm(), cookies, false);
             Map<String,String> cookies = resp.cookies();
             cookies.putAll(this.cookies);
 
@@ -262,10 +254,7 @@ public class DeviantartRipper extends AlbumRipper {
         if (username == null || password == null) {
             throw new IOException("could not find username or password in config");
         }
-        Response resp = Jsoup.connect("http://www.deviantart.com/")
-                             .userAgent(USER_AGENT)
-                             .method(Method.GET)
-                             .execute();
+        Response resp = getResponse("http://www.deviantart.com/");
         for (Element input : resp.parse().select("form#form-login input[type=hidden]")) {
             postData.put(input.attr("name"), input.attr("value"));
         }

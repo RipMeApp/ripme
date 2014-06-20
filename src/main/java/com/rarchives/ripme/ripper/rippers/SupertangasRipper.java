@@ -7,7 +7,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.jsoup.HttpStatusException;
-import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -48,10 +47,7 @@ public class SupertangasRipper extends AlbumRipper {
             try {
                 logger.info("    Retrieving " + theURL);
                 sendUpdate(STATUS.LOADING_RESOURCE, theURL);
-                doc = Jsoup.connect(theURL)
-                           .userAgent(USER_AGENT)
-                           .timeout(5 * 1000)
-                           .get();
+                doc = getDocument(theURL);
             } catch (HttpStatusException e) {
                 logger.debug("Hit end of pages at page " + page, e);
                 break;

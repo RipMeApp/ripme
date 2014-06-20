@@ -45,7 +45,7 @@ public class ImagefapRipper extends AlbumRipper {
         try {
             // Attempt to use album title as GID
             if (albumDoc == null) {
-                albumDoc = Jsoup.connect(url.toExternalForm()).get();
+                albumDoc = getDocument(url);
             }
             String title = albumDoc.title();
             Pattern p = Pattern.compile("^Porn pics of (.*) \\(Page 1\\)$");
@@ -92,9 +92,9 @@ public class ImagefapRipper extends AlbumRipper {
     public void rip() throws IOException {
         int index = 0;
         sendUpdate(STATUS.LOADING_RESOURCE, this.url.toExternalForm());
-        logger.info("    Retrieving " + this.url.toExternalForm());
+        logger.info("Retrieving " + this.url);
         if (albumDoc == null) {
-            albumDoc = Jsoup.connect(this.url.toExternalForm()).get();
+            albumDoc = getDocument(this.url);
         }
         while (true) {
             if (isStopped()) {

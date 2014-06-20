@@ -8,7 +8,6 @@ import java.util.regex.Pattern;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
@@ -63,7 +62,7 @@ public class InstagramRipper extends AlbumRipper {
     }
     
     private URL getUserPageFromImage(URL url) throws IOException {
-        Document doc = Jsoup.connect(url.toExternalForm()).get();
+        Document doc = getDocument(url);
         for (Element element : doc.select("meta[property='og:description']")) {
             String content = element.attr("content");
             if (content.endsWith("'s photo on Instagram")) {
@@ -74,9 +73,9 @@ public class InstagramRipper extends AlbumRipper {
     }
     
     private String getUserID(URL url) throws IOException {
-        logger.info("    Retrieving " + url);
+        logger.info("Retrieving " + url);
         this.sendUpdate(STATUS.LOADING_RESOURCE, url.toExternalForm());
-        Document doc = Jsoup.connect(this.url.toExternalForm()).get();
+        Document doc = getDocument(url);
         for (Element element : doc.select("input[id=user_public]")) {
             return element.attr("value");
         }
@@ -92,12 +91,7 @@ public class InstagramRipper extends AlbumRipper {
             String url = baseURL + params;
             this.sendUpdate(STATUS.LOADING_RESOURCE, url);
             logger.info("    Retrieving " + url);
-            String jsonString = Jsoup.connect(url)
-                                     .userAgent(USER_AGENT)
-                                     .timeout(10000)
-                                     .ignoreContentType(true)
-                                     .execute()
-                                     .body();
+            String jsonString = getResponse(url, true).body();
             JSONObject json = new JSONObject(jsonString);
             JSONArray datas = json.getJSONArray("data");
             String nextMaxID = "";

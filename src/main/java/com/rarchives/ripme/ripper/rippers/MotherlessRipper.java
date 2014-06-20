@@ -6,12 +6,12 @@ import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
 import com.rarchives.ripme.ripper.AlbumRipper;
 import com.rarchives.ripme.ripper.DownloadThreadPool;
+import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
 import com.rarchives.ripme.utils.Utils;
 
 public class MotherlessRipper extends AlbumRipper {
@@ -61,13 +61,16 @@ public class MotherlessRipper extends AlbumRipper {
         int index = 0, page = 1;
         String nextURL = this.url.toExternalForm();
         while (nextURL != null) {
-            logger.info("    Retrieving " + nextURL);
-            Document doc = Jsoup.connect(nextURL)
-                    .userAgent(USER_AGENT)
-                    .timeout(5000)
-                    .referrer("http://motherless.com")
-                    .get();
+            if (isStopped()) {
+                break;
+            }
+            logger.info("Retrieving " + nextURL);
+            sendUpdate(STATUS.LOADING_RESOURCE, nextURL);
+            Document doc = getDocument(nextURL, "http://motherless.com", null);
             for (Element thumb : doc.select("div.thumb a.img-container")) {
+                if (isStopped()) {
+                    break;
+                }
                 String thumbURL = thumb.attr("href");
                 if (thumbURL.contains("pornmd.com")) {
                     continue;
@@ -111,11 +114,11 @@ public class MotherlessRipper extends AlbumRipper {
         @Override
         public void run() {
             try {
-                Document doc = Jsoup.connect(this.url.toExternalForm())
-                                    .userAgent(USER_AGENT)
-                                    .timeout(5000)
-                                    .referrer(this.url.toExternalForm())
-                                    .get();
+                if (isStopped()) {
+                    return;
+                }
+                String u = this.url.toExternalForm();
+                Document doc = getDocument(u, u, null);
                 Pattern p = Pattern.compile("^.*__fileurl = '([^']{1,})';.*$", Pattern.DOTALL);
                 Matcher m = p.matcher(doc.outerHtml());
                 if (m.matches()) {

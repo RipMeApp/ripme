@@ -6,7 +6,6 @@ import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -62,8 +61,8 @@ public class DrawcrowdRipper extends AlbumRipper {
     public void rip() throws IOException {
         int index = 0;
         sendUpdate(STATUS.LOADING_RESOURCE, this.url.toExternalForm());
-        logger.info("    Retrieving " + this.url.toExternalForm());
-        Document albumDoc = Jsoup.connect(this.url.toExternalForm()).get();
+        logger.info("Retrieving " + this.url);
+        Document albumDoc = getDocument(this.url);
         while (true) {
             if (isStopped()) {
                 break;
@@ -92,7 +91,7 @@ public class DrawcrowdRipper extends AlbumRipper {
                 throw new IOException(e);
             }
             sendUpdate(STATUS.LOADING_RESOURCE, nextURL);
-            albumDoc = Jsoup.connect(nextURL).get();
+            albumDoc = getDocument(nextURL);
         }
         waitForThreads();
     }

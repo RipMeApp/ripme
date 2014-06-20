@@ -6,12 +6,12 @@ import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import com.rarchives.ripme.ripper.AlbumRipper;
+import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
 import com.rarchives.ripme.utils.Utils;
 
 public class TeenplanetRipper extends AlbumRipper {
@@ -38,7 +38,7 @@ public class TeenplanetRipper extends AlbumRipper {
         try {
             // Attempt to use album title as GID
             if (albumDoc == null) {
-                albumDoc = Jsoup.connect(url.toExternalForm()).get();
+                albumDoc = getDocument(url);
             }
             Elements elems = albumDoc.select("div.header > h2");
             return HOST + "_" + elems.get(0).text();
@@ -68,9 +68,10 @@ public class TeenplanetRipper extends AlbumRipper {
     @Override
     public void rip() throws IOException {
         int index = 0;
-        logger.info("    Retrieving " + this.url.toExternalForm());
+        logger.info("Retrieving " + this.url);
+        sendUpdate(STATUS.LOADING_RESOURCE, this.url.toExternalForm());
         if (albumDoc == null) {
-            albumDoc = Jsoup.connect(this.url.toExternalForm()).get();
+            albumDoc = getDocument(url);
         }
         for (Element thumb : albumDoc.select("#galleryImages > a > img")) {
             if (!thumb.hasAttr("src")) {

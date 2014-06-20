@@ -61,7 +61,7 @@ public class FlickrRipper extends AlbumRipper {
         try {
             // Attempt to use album title as GID
             if (albumDoc == null) {
-                albumDoc = Jsoup.connect(url.toExternalForm()).get();
+                albumDoc = getDocument(url);
             }
             String user = url.toExternalForm();
             user = user.substring(user.indexOf("/photos/") + "/photos/".length());
@@ -124,8 +124,7 @@ public class FlickrRipper extends AlbumRipper {
             }
             logger.info("    Retrieving " + nextURL);
             if (albumDoc == null) {
-                albumDoc = Jsoup.connect(nextURL)
-                                .get();
+                albumDoc = getDocument(nextURL);
             }
             for (Element thumb : albumDoc.select("a[data-track=photo-click]")) {
                 String imageTitle = null;
@@ -212,10 +211,10 @@ public class FlickrRipper extends AlbumRipper {
         postData.put("passwd",  new String(Base64.decode("MUZha2V5ZmFrZQ==")));
         String action = doc.select("form[method=post]").get(0).attr("action");
         resp = Jsoup.connect(action)
-                             .cookies(resp.cookies())
-                             .data(postData)
-                             .method(Method.POST)
-                             .execute();
+                    .cookies(resp.cookies())
+                    .data(postData)
+                    .method(Method.POST)
+                    .execute();
         return resp.cookies();
     }
 
@@ -260,9 +259,7 @@ public class FlickrRipper extends AlbumRipper {
         
         private Document getLargestImagePageDocument(URL url) throws IOException {
             // Get current page
-            Document doc = Jsoup.connect(url.toExternalForm())
-                    .userAgent(USER_AGENT)
-                    .get();
+            Document doc = getDocument(url);
             // Look for larger image page
             String largestImagePage = this.url.toExternalForm();
             for (Element olSize : doc.select("ol.sizes-list > li > ol > li")) {
@@ -280,9 +277,7 @@ public class FlickrRipper extends AlbumRipper {
             }
             if (!largestImagePage.equals(this.url.toExternalForm())) {
                 // Found larger image page, get it.
-                doc = Jsoup.connect(largestImagePage)
-                        .userAgent(USER_AGENT)
-                        .get();
+                doc = getDocument(largestImagePage);
             }
             return doc;
         }

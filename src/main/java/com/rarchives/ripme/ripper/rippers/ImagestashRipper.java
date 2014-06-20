@@ -8,8 +8,6 @@ import java.util.regex.Pattern;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.jsoup.Connection.Method;
-import org.jsoup.Jsoup;
 
 import com.rarchives.ripme.ripper.AlbumRipper;
 import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
@@ -40,20 +38,21 @@ public class ImagestashRipper extends AlbumRipper {
         String baseURL = "https://imagestash.org/images?tags=" + getGID(this.url);
         int page = 0, index = 0;
         while (true) {
+            if (isStopped()) {
+                break;
+            }
             page++;
             String nextURL = baseURL + "&page=" + page;
             logger.info("[ ] Retrieving " + nextURL);
             sendUpdate(STATUS.LOADING_RESOURCE, nextURL);
-            String jsonText = Jsoup.connect(nextURL)
-                                   .ignoreContentType(true)
-                                   .userAgent(USER_AGENT)
-                                   .method(Method.GET)
-                                   .execute()
-                                   .body();
+            String jsonText = getResponse(nextURL, true).body();
             logger.info(jsonText);
             JSONObject json = new JSONObject(jsonText);
             JSONArray images = json.getJSONArray("images");
             for (int i = 0; i < images.length(); i++) {
+                if (isStopped()) {
+                    break;
+                }
                 JSONObject image = images.getJSONObject(i);
                 String imageURL = image.getString("src");
                 if (imageURL.startsWith("/")) {

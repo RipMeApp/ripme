@@ -9,7 +9,6 @@ import java.util.regex.Pattern;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.jsoup.HttpStatusException;
-import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
 import com.rarchives.ripme.ripper.AlbumRipper;
@@ -48,10 +47,7 @@ public class VineRipper extends AlbumRipper {
             try {
                 logger.info("    Retrieving " + theURL);
                 sendUpdate(STATUS.LOADING_RESOURCE, theURL);
-                doc = Jsoup.connect(theURL)
-                           .ignoreContentType(true)
-                           .timeout(5 * 1000)
-                           .get();
+                doc = getResponse(theURL, true).parse();
             } catch (HttpStatusException e) {
                 logger.debug("Hit end of pages at page " + page, e);
                 break;

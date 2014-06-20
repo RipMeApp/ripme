@@ -7,9 +7,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.jsoup.Connection.Method;
 import org.jsoup.Connection.Response;
-import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -42,14 +40,11 @@ public class HentaifoundryRipper extends AlbumRipper {
         int index = 0;
         
         // Get cookies
-        Response resp = Jsoup.connect("http://www.hentai-foundry.com/")
-                             .execute();
+        Response resp = getResponse("http://www.hentai-foundry.com/");
         Map<String,String> cookies = resp.cookies();
-        resp = Jsoup.connect("http://www.hentai-foundry.com/?enterAgree=1&size=1500")
-                    .referrer("http://www.hentai-foundry.com/")
-                    .cookies(cookies)
-                    .method(Method.GET)
-                    .execute();
+        resp = getResponse("http://www.hentai-foundry.com/?enterAgree=1&size=1500",
+                           "http://www.hentai-foundry.com/",
+                           cookies);
         cookies = resp.cookies();
         logger.info("cookies: " + cookies);
         
@@ -59,12 +54,7 @@ public class HentaifoundryRipper extends AlbumRipper {
                 break;
             }
             sendUpdate(STATUS.LOADING_RESOURCE, nextURL);
-            Document doc = Jsoup.connect(nextURL)
-                                .userAgent(USER_AGENT)
-                                .timeout(5000)
-                                .cookies(cookies)
-                                .referrer(this.url.toExternalForm())
-                                .get();
+            Document doc = getDocument(nextURL, this.url.toExternalForm(), cookies);
             for (Element thumb : doc.select("td > a:first-child")) {
                 if (isStopped()) {
                     break;

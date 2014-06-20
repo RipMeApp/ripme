@@ -8,7 +8,6 @@ import java.util.regex.Pattern;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
 import com.rarchives.ripme.ripper.VideoRipper;
@@ -54,10 +53,8 @@ public class BeegRipper extends VideoRipper {
 
     @Override
     public void rip() throws IOException {
-        logger.info("    Retrieving " + this.url.toExternalForm());
-        Document doc = Jsoup.connect(this.url.toExternalForm())
-                            .userAgent(USER_AGENT)
-                            .get();
+        logger.info("    Retrieving " + this.url);
+        Document doc = getDocument(this.url);
         Pattern p = Pattern.compile("^.*var qualityArr = (.*});.*$", Pattern.DOTALL);
         Matcher m = p.matcher(doc.html());
         if (m.matches()) {

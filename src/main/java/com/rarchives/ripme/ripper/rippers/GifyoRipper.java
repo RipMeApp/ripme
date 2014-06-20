@@ -50,11 +50,7 @@ public class GifyoRipper extends AlbumRipper {
             logger.info("    Retrieving " + this.url + "(page #" + page + ")");
             Response resp = null;
             if (page == 0) {
-                resp = Jsoup.connect(this.url.toExternalForm())
-                            .ignoreContentType(true)
-                            .userAgent(USER_AGENT)
-                            .method(Method.GET)
-                            .execute();
+                resp = getResponse(this.url, true);
                 cookies = resp.cookies();
             }
             else {

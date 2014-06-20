@@ -11,7 +11,6 @@ import java.util.regex.Pattern;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.jsoup.Connection.Response;
-import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -50,7 +49,7 @@ public class PhotobucketRipper extends AlbumRipper {
         try {
             // Attempt to use album title as GID
             if (pageResponse == null) {
-                pageResponse = Jsoup.connect(url.toExternalForm()).execute();
+                pageResponse = getResponse(url);
             }
             Document albumDoc = pageResponse.parse();
             Elements els = albumDoc.select("div.libraryTitle > h1");
@@ -132,7 +131,7 @@ public class PhotobucketRipper extends AlbumRipper {
             if (pageIndex > 1 || pageResponse == null) {
                 url = theUrl + String.format("?sort=3&page=", pageIndex);
                 logger.info("    Retrieving " + url);
-                pageResponse = Jsoup.connect(url).execute();
+                pageResponse = getResponse(url);
             }
             Document albumDoc = pageResponse.parse();
             // Retrieve JSON from request
@@ -190,10 +189,7 @@ public class PhotobucketRipper extends AlbumRipper {
                 + "&json=1";
         try {
             logger.info("Loading " + apiUrl);
-            Document doc = Jsoup.connect(apiUrl)
-                                .ignoreContentType(true)
-                                .referrer(url)
-                                .get();
+            Document doc = getDocument(apiUrl, true);
             String jsonString = doc.body().html().replace("&quot;", "\"");
             JSONObject json = new JSONObject(jsonString);
             JSONArray subalbums = json.getJSONObject("body").getJSONArray("subAlbums");

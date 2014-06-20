@@ -57,10 +57,7 @@ public class GonewildRipper extends AlbumRipper {
             gwURL = baseGwURL
                     + "&start=" + start;
             start += count;
-            jsonString = Jsoup.connect(gwURL)
-                    .ignoreContentType(true)
-                    .execute()
-                    .body();
+            jsonString = getResponse(gwURL, true).body();
             json = new JSONObject(jsonString);
             if (json.has("error")) {
                 logger.error("Error while retrieving user posts:" + json.getString("error"));

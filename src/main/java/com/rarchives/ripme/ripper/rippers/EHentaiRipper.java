@@ -4,10 +4,11 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -22,7 +23,6 @@ public class EHentaiRipper extends AlbumRipper {
     private static final int PAGE_SLEEP_TIME     = 3  * 1000;
     private static final int IMAGE_SLEEP_TIME    = 1  * 1000;
     private static final int IP_BLOCK_SLEEP_TIME = 60 * 1000;
-    private static final int TIMEOUT             = 5  * 1000;
 
     private static final String DOMAIN = "g.e-hentai.org", HOST = "e-hentai";
 
@@ -31,6 +31,12 @@ public class EHentaiRipper extends AlbumRipper {
 
     // Current HTML document
     private Document albumDoc = null;
+    
+    private static final Map<String,String> cookies = new HashMap<String,String>();
+    static {
+        cookies.put("nw", "1");
+        cookies.put("tip", "1");
+    }
 
     public EHentaiRipper(URL url) throws IOException {
         super(url);
@@ -49,14 +55,9 @@ public class EHentaiRipper extends AlbumRipper {
         try {
             // Attempt to use album title as GID
             if (albumDoc == null) {
-                logger.info("    Retrieving " + url.toExternalForm());
                 sendUpdate(STATUS.LOADING_RESOURCE, url.toString());
-                albumDoc = Jsoup.connect(url.toExternalForm())
-                                .userAgent(USER_AGENT)
-                                .cookie("nw", "1")
-                                .cookie("tip", "1")
-                                .timeout(TIMEOUT)
-                                .get();
+                logger.info("Retrieving " + url);
+                albumDoc = getDocument(url.toExternalForm(), cookies);
             }
             Elements elems = albumDoc.select("#gn");
             return HOST + "_" + elems.get(0).text();
@@ -95,12 +96,7 @@ public class EHentaiRipper extends AlbumRipper {
             if (albumDoc == null) {
                 logger.info("    Retrieving album page " + nextUrl);
                 sendUpdate(STATUS.LOADING_RESOURCE, nextUrl);
-                albumDoc = Jsoup.connect(nextUrl)
-                                .userAgent(USER_AGENT)
-                                .cookie("nw", "1")
-                                .timeout(TIMEOUT)
-                                .referrer(this.url.toExternalForm())
-                                .get();
+                albumDoc = getDocument(nextUrl, this.url.toExternalForm(), cookies);
             }
             // Check for rate limiting
             if (albumDoc.toString().contains("IP address will be automatically banned")) {
@@ -201,12 +197,8 @@ public class EHentaiRipper extends AlbumRipper {
         
         private void fetchImage() {
             try {
-                Document doc = Jsoup.connect(this.url.toExternalForm())
-                                    .userAgent(USER_AGENT)
-                                    .cookie("nw", "1")
-                                    .timeout(TIMEOUT)
-                                    .referrer(this.url.toExternalForm())
-                                    .get();
+                String u = this.url.toExternalForm();
+                Document doc = getDocument(u, u, cookies);
                 // Check for rate limit
                 if (doc.toString().contains("IP address will be automatically banned")) {
                     if (this.retries == 0) {

@@ -6,7 +6,6 @@ import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
@@ -38,16 +37,16 @@ public class SmuttyRipper extends AlbumRipper {
         String url, tag = getGID(this.url);
         boolean hasNextPage = true;
         while (hasNextPage) {
+            if (isStopped()) {
+                break;
+            }
             page++;
             url = "http://smutty.com/h/" + tag + "/?q=%23" + tag + "&page=" + page + "&sort=date&lazy=1";
             this.sendUpdate(STATUS.LOADING_RESOURCE, url);
             logger.info("    Retrieving " + url);
             Document doc;
             try {
-                doc = Jsoup.connect(url)
-                           .userAgent(USER_AGENT)
-                           .ignoreContentType(true)
-                           .get();
+                doc = getResponse(url, true).parse();
             } catch (IOException e) {
                 if (e.toString().contains("Status=404")) {
                     logger.info("No more pages to load");
@@ -57,6 +56,9 @@ public class SmuttyRipper extends AlbumRipper {
                 break;
             }
             for (Element image : doc.select("a.l > img")) {
+                if (isStopped()) {
+                    break;
+                }
                 String imageUrl = image.attr("src");
 
                 // Construct direct link to image based on thumbnail

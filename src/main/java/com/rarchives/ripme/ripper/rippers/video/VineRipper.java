@@ -6,7 +6,6 @@ import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
 
@@ -55,9 +54,7 @@ public class VineRipper extends VideoRipper {
     @Override
     public void rip() throws IOException {
         logger.info("    Retrieving " + this.url.toExternalForm());
-        Document doc = Jsoup.connect(this.url.toExternalForm())
-                            .userAgent(USER_AGENT)
-                            .get();
+        Document doc = getDocument(this.url);
         Elements props = doc.select("meta[property=twitter:player:stream]");
         if (props.size() == 0) {
             throw new IOException("Could not find meta property 'twitter:player:stream' at " + url);

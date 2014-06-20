@@ -6,7 +6,6 @@ import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -48,10 +47,7 @@ public class ImagebamRipper extends AlbumRipper {
             if (albumDoc == null) {
                 logger.info("    Retrieving " + url.toExternalForm());
                 sendUpdate(STATUS.LOADING_RESOURCE, url.toString());
-                albumDoc = Jsoup.connect(url.toExternalForm())
-                                .userAgent(USER_AGENT)
-                                .timeout(5000)
-                                .get();
+                albumDoc = getDocument(url);
             }
             Elements elems = albumDoc.select("legend");
             String title = elems.first().text();
@@ -98,11 +94,7 @@ public class ImagebamRipper extends AlbumRipper {
             if (albumDoc == null) {
                 logger.info("    Retrieving album page " + nextUrl);
                 sendUpdate(STATUS.LOADING_RESOURCE, nextUrl);
-                albumDoc = Jsoup.connect(nextUrl)
-                                .userAgent(USER_AGENT)
-                                .timeout(5000)
-                                .referrer(this.url.toExternalForm())
-                                .get();
+                albumDoc = getDocument(nextUrl, this.url.toExternalForm(), null);
             }
             // Find thumbnails
             Elements thumbs = albumDoc.select("div > a[target=_blank]:not(.footera)");
@@ -149,6 +141,7 @@ public class ImagebamRipper extends AlbumRipper {
             }
         }
 
+        imagebamThreadPool.waitForThreads();
         waitForThreads();
     }
 
@@ -178,12 +171,7 @@ public class ImagebamRipper extends AlbumRipper {
         
         private void fetchImage() {
             try {
-                Document doc = Jsoup.connect(this.url.toExternalForm())
-                                    .userAgent(USER_AGENT)
-                                    .cookie("nw", "1")
-                                    .timeout(5000)
-                                    .referrer(this.url.toExternalForm())
-                                    .get();
+                Document doc = getDocument(url);
                 // Find image
                 Elements images = doc.select("td > img");
                 if (images.size() == 0) {
@@ -192,7 +180,7 @@ public class ImagebamRipper extends AlbumRipper {
                 }
                 Element image = images.first();
                 String imgsrc = image.attr("src");
-                logger.info("Found URL " + imgsrc + " via " + images.get(0));
+                logger.info("Found URL " + imgsrc);
                 // Provide prefix and let the AbstractRipper "guess" the filename
                 String prefix = "";
                 if (Utils.getConfigBoolean("download.save_order", true)) {
