@@ -10,6 +10,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
 
 import com.rarchives.ripme.ripper.VideoRipper;
+import com.rarchives.ripme.utils.Http;
 
 public class GfycatRipper extends VideoRipper {
 
@@ -51,7 +52,7 @@ public class GfycatRipper extends VideoRipper {
     @Override
     public void rip() throws IOException {
         logger.info("    Retrieving " + this.url.toExternalForm());
-        Document doc = getDocument(this.url);
+        Document doc = Http.url(this.url).get();
         Elements videos = doc.select("source#mp4source");
         if (videos.size() == 0) {
             throw new IOException("Could not find source#mp4source at " + url);

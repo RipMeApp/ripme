@@ -7,7 +7,6 @@ import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -15,12 +14,12 @@ import org.jsoup.select.Elements;
 import com.rarchives.ripme.ripper.AlbumRipper;
 import com.rarchives.ripme.ripper.DownloadThreadPool;
 import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
+import com.rarchives.ripme.utils.Http;
 import com.rarchives.ripme.utils.Utils;
 
 public class PornhubRipper extends AlbumRipper {
     // All sleep times are in milliseconds
     private static final int IMAGE_SLEEP_TIME    = 1  * 1000;
-    private static final int TIMEOUT             = 5  * 1000;
 
     private static final String DOMAIN = "pornhub.com", HOST = "Pornhub";
 
@@ -49,7 +48,7 @@ public class PornhubRipper extends AlbumRipper {
             if (albumDoc == null) {
                 logger.info("    Retrieving " + url.toExternalForm());
                 sendUpdate(STATUS.LOADING_RESOURCE, url.toString());
-                albumDoc = getDocument(url);
+                albumDoc = Http.url(url).get();
             }
             Elements elems = albumDoc.select(".photoAlbumTitleV2");
             return HOST + "_" + elems.get(0).text();
@@ -89,7 +88,9 @@ public class PornhubRipper extends AlbumRipper {
         if (albumDoc == null) {
             logger.info("    Retrieving album page " + nextUrl);
             sendUpdate(STATUS.LOADING_RESOURCE, nextUrl);
-            albumDoc = getDocument(nextUrl, this.url.toExternalForm(), null);
+            albumDoc = Http.url(nextUrl)
+                           .referrer(this.url)
+                           .get();
         }
         
         // Find thumbnails
@@ -146,8 +147,9 @@ public class PornhubRipper extends AlbumRipper {
         
         private void fetchImage() {
             try {
-                String u = this.url.toExternalForm();
-                Document doc = getDocument(u, u, null);
+                Document doc = Http.url(this.url)
+                                   .referrer(this.url)
+                                   .get();
                 
                 // Find image
                 Elements images = doc.select("#photoImageSection img");

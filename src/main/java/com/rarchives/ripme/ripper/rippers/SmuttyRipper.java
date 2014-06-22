@@ -11,6 +11,7 @@ import org.jsoup.nodes.Element;
 
 import com.rarchives.ripme.ripper.AlbumRipper;
 import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
+import com.rarchives.ripme.utils.Http;
 
 public class SmuttyRipper extends AlbumRipper {
 
@@ -46,7 +47,9 @@ public class SmuttyRipper extends AlbumRipper {
             logger.info("    Retrieving " + url);
             Document doc;
             try {
-                doc = getResponse(url, true).parse();
+                doc = Http.url(url)
+                          .ignoreContentType()
+                          .get();
             } catch (IOException e) {
                 if (e.toString().contains("Status=404")) {
                     logger.info("No more pages to load");

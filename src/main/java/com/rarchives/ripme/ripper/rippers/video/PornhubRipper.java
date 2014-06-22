@@ -9,11 +9,11 @@ import java.util.regex.Pattern;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
 import com.rarchives.ripme.ripper.VideoRipper;
 import com.rarchives.ripme.utils.AES;
+import com.rarchives.ripme.utils.Http;
 
 public class PornhubRipper extends VideoRipper {
 
@@ -57,7 +57,7 @@ public class PornhubRipper extends VideoRipper {
     @Override
     public void rip() throws IOException {
         logger.info("    Retrieving " + this.url.toExternalForm());
-        Document doc = getDocument(this.url);
+        Document doc = Http.url(this.url).get();
         Pattern p = Pattern.compile("^.*var flashvars = (.*});.*$", Pattern.DOTALL);
         Matcher m = p.matcher(doc.body().html());
         if (m.matches()) {

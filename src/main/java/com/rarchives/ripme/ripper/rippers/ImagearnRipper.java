@@ -11,6 +11,7 @@ import org.jsoup.nodes.Element;
 
 import com.rarchives.ripme.ripper.AlbumRipper;
 import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
+import com.rarchives.ripme.utils.Http;
 import com.rarchives.ripme.utils.Utils;
 
 public class ImagearnRipper extends AlbumRipper {
@@ -41,7 +42,7 @@ public class ImagearnRipper extends AlbumRipper {
     }
 
     private URL getGalleryFromImage(URL url) throws IOException {
-        Document doc = getDocument(url);
+        Document doc = Http.url(url).get();
         for (Element link : doc.select("a[href~=^gallery\\.php.*$]")) {
             logger.info("LINK: " + link.toString());
             if (link.hasAttr("href")
@@ -59,7 +60,7 @@ public class ImagearnRipper extends AlbumRipper {
         int index = 0;
         logger.info("Retrieving " + this.url.toExternalForm());
         sendUpdate(STATUS.LOADING_RESOURCE, this.url.toExternalForm());
-        Document doc = getDocument(this.url);
+        Document doc = Http.url(this.url).get();
         for (Element thumb : doc.select("img.border")) {
             if (isStopped()) {
                 break;

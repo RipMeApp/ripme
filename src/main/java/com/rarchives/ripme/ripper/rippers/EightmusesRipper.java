@@ -12,6 +12,7 @@ import org.jsoup.nodes.Element;
 
 import com.rarchives.ripme.ripper.AlbumRipper;
 import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
+import com.rarchives.ripme.utils.Http;
 import com.rarchives.ripme.utils.Utils;
 
 public class EightmusesRipper extends AlbumRipper {
@@ -40,7 +41,7 @@ public class EightmusesRipper extends AlbumRipper {
         try {
             // Attempt to use album title as GID
             if (albumDoc == null) {
-                albumDoc = getDocument(url);
+                albumDoc = Http.url(url).get();
             }
             Element titleElement = albumDoc.select("meta[name=description]").first();
             String title = titleElement.attr("content");
@@ -63,7 +64,7 @@ public class EightmusesRipper extends AlbumRipper {
         logger.info("    Retrieving " + url);
         sendUpdate(STATUS.LOADING_RESOURCE, url);
         if (albumDoc == null) {
-            albumDoc = getDocument(url);
+            albumDoc = Http.url(url).get();
         }
 
         int index = 0; // Both album index and image index

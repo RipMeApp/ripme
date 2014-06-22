@@ -12,6 +12,7 @@ import org.jsoup.select.Elements;
 
 import com.rarchives.ripme.ripper.AlbumRipper;
 import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
+import com.rarchives.ripme.utils.Http;
 import com.rarchives.ripme.utils.Utils;
 
 public class TeenplanetRipper extends AlbumRipper {
@@ -38,7 +39,7 @@ public class TeenplanetRipper extends AlbumRipper {
         try {
             // Attempt to use album title as GID
             if (albumDoc == null) {
-                albumDoc = getDocument(url);
+                albumDoc = Http.url(url).get();
             }
             Elements elems = albumDoc.select("div.header > h2");
             return HOST + "_" + elems.get(0).text();
@@ -71,7 +72,7 @@ public class TeenplanetRipper extends AlbumRipper {
         logger.info("Retrieving " + this.url);
         sendUpdate(STATUS.LOADING_RESOURCE, this.url.toExternalForm());
         if (albumDoc == null) {
-            albumDoc = getDocument(url);
+            albumDoc = Http.url(url).get();
         }
         for (Element thumb : albumDoc.select("#galleryImages > a > img")) {
             if (!thumb.hasAttr("src")) {

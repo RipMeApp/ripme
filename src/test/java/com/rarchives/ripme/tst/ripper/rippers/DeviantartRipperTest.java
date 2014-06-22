@@ -8,13 +8,6 @@ import java.util.List;
 import com.rarchives.ripme.ripper.rippers.DeviantartRipper;
 
 public class DeviantartRipperTest extends RippersTest {
-    
-    public void testAlphaSorting() {
-        String[] strings = new String[]{"a", "aa", "aaa", "d6hg2dz", "d6fspba", "d6fcvvr"};
-        for (String string : strings) {
-            System.err.println(string + ": " + DeviantartRipper.alphaToLong(string));
-        }
-    }
 
     public void testDeviantartAlbums() throws IOException {
         if (!DOWNLOAD_CONTENT) {

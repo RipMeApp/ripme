@@ -13,6 +13,7 @@ import org.jsoup.nodes.Element;
 
 import com.rarchives.ripme.ripper.AlbumRipper;
 import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
+import com.rarchives.ripme.utils.Http;
 
 public class InstagramRipper extends AlbumRipper {
 
@@ -62,7 +63,7 @@ public class InstagramRipper extends AlbumRipper {
     }
     
     private URL getUserPageFromImage(URL url) throws IOException {
-        Document doc = getDocument(url);
+        Document doc = Http.url(url).get();
         for (Element element : doc.select("meta[property='og:description']")) {
             String content = element.attr("content");
             if (content.endsWith("'s photo on Instagram")) {
@@ -75,7 +76,7 @@ public class InstagramRipper extends AlbumRipper {
     private String getUserID(URL url) throws IOException {
         logger.info("Retrieving " + url);
         this.sendUpdate(STATUS.LOADING_RESOURCE, url.toExternalForm());
-        Document doc = getDocument(url);
+        Document doc = Http.url(url).get();
         for (Element element : doc.select("input[id=user_public]")) {
             return element.attr("value");
         }
@@ -91,8 +92,7 @@ public class InstagramRipper extends AlbumRipper {
             String url = baseURL + params;
             this.sendUpdate(STATUS.LOADING_RESOURCE, url);
             logger.info("    Retrieving " + url);
-            String jsonString = getResponse(url, true).body();
-            JSONObject json = new JSONObject(jsonString);
+            JSONObject json = Http.url(url).getJSON();
             JSONArray datas = json.getJSONArray("data");
             String nextMaxID = "";
             if (datas.length() == 0) {

@@ -10,6 +10,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
 import com.rarchives.ripme.ripper.AlbumRipper;
+import com.rarchives.ripme.utils.Http;
 import com.rarchives.ripme.utils.Utils;
 
 public class XhamsterRipper extends AlbumRipper {
@@ -37,7 +38,7 @@ public class XhamsterRipper extends AlbumRipper {
         String nextURL = this.url.toExternalForm();
         while (nextURL != null) {
             logger.info("    Retrieving " + nextURL);
-            Document doc = getDocument(nextURL);
+            Document doc = Http.url(nextURL).get();
             for (Element thumb : doc.select("table.iListing div.img img")) {
                 if (!thumb.hasAttr("src")) {
                     continue;

@@ -16,6 +16,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import com.rarchives.ripme.ripper.AlbumRipper;
+import com.rarchives.ripme.utils.Http;
 
 public class PhotobucketRipper extends AlbumRipper {
 
@@ -49,7 +50,7 @@ public class PhotobucketRipper extends AlbumRipper {
         try {
             // Attempt to use album title as GID
             if (pageResponse == null) {
-                pageResponse = getResponse(url);
+                pageResponse = Http.url(url).response();
             }
             Document albumDoc = pageResponse.parse();
             Elements els = albumDoc.select("div.libraryTitle > h1");
@@ -131,7 +132,7 @@ public class PhotobucketRipper extends AlbumRipper {
             if (pageIndex > 1 || pageResponse == null) {
                 url = theUrl + String.format("?sort=3&page=", pageIndex);
                 logger.info("    Retrieving " + url);
-                pageResponse = getResponse(url);
+                pageResponse = Http.url(url).response();
             }
             Document albumDoc = pageResponse.parse();
             // Retrieve JSON from request
@@ -189,9 +190,7 @@ public class PhotobucketRipper extends AlbumRipper {
                 + "&json=1";
         try {
             logger.info("Loading " + apiUrl);
-            Document doc = getDocument(apiUrl, true);
-            String jsonString = doc.body().html().replace("&quot;", "\"");
-            JSONObject json = new JSONObject(jsonString);
+            JSONObject json = Http.url(apiUrl).getJSON();
             JSONArray subalbums = json.getJSONObject("body").getJSONArray("subAlbums");
             for (int i = 0; i < subalbums.length(); i++) {
                 String suburl = 

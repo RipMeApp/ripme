@@ -18,6 +18,7 @@ import org.json.JSONObject;
 
 import com.rarchives.ripme.ripper.AlbumRipper;
 import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
+import com.rarchives.ripme.utils.Http;
 import com.rarchives.ripme.utils.Utils;
 
 public class MediacrushRipper extends AlbumRipper {
@@ -67,9 +68,9 @@ public class MediacrushRipper extends AlbumRipper {
         String url = this.url.toExternalForm();
         logger.info("    Retrieving " + url);
         sendUpdate(STATUS.LOADING_RESOURCE, url);
-        String jsonString = null;
+        JSONObject json = null;
         try {
-            jsonString = getResponse(url, true).body();
+            json = Http.url(url).getJSON();
         } catch (Exception re) {
             // Check for >1024 bit encryption but in older versions of Java
             if (re.getCause().getCause() instanceof InvalidAlgorithmParameterException) {
@@ -96,7 +97,6 @@ public class MediacrushRipper extends AlbumRipper {
         }
 
         // Convert to JSON
-        JSONObject json = new JSONObject(jsonString);
         if (!json.has("files")) {
             sendUpdate(STATUS.RIP_ERRORED, "No files found at " + url);
             throw new IOException("Could not find any files at " + url);

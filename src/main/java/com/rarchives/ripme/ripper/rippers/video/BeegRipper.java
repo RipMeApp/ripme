@@ -11,6 +11,7 @@ import org.json.JSONObject;
 import org.jsoup.nodes.Document;
 
 import com.rarchives.ripme.ripper.VideoRipper;
+import com.rarchives.ripme.utils.Http;
 
 public class BeegRipper extends VideoRipper {
 
@@ -54,7 +55,7 @@ public class BeegRipper extends VideoRipper {
     @Override
     public void rip() throws IOException {
         logger.info("    Retrieving " + this.url);
-        Document doc = getDocument(this.url);
+        Document doc = Http.url(this.url).get();
         Pattern p = Pattern.compile("^.*var qualityArr = (.*});.*$", Pattern.DOTALL);
         Matcher m = p.matcher(doc.html());
         if (m.matches()) {

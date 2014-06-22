@@ -20,6 +20,7 @@ import org.jsoup.select.Elements;
 import com.rarchives.ripme.ripper.AlbumRipper;
 import com.rarchives.ripme.ripper.DownloadThreadPool;
 import com.rarchives.ripme.utils.Base64;
+import com.rarchives.ripme.utils.Http;
 import com.rarchives.ripme.utils.Utils;
 
 public class FlickrRipper extends AlbumRipper {
@@ -61,7 +62,7 @@ public class FlickrRipper extends AlbumRipper {
         try {
             // Attempt to use album title as GID
             if (albumDoc == null) {
-                albumDoc = getDocument(url);
+                albumDoc = Http.url(url).get();
             }
             String user = url.toExternalForm();
             user = user.substring(user.indexOf("/photos/") + "/photos/".length());
@@ -124,7 +125,7 @@ public class FlickrRipper extends AlbumRipper {
             }
             logger.info("    Retrieving " + nextURL);
             if (albumDoc == null) {
-                albumDoc = getDocument(nextURL);
+                albumDoc = Http.url(nextURL).get();
             }
             for (Element thumb : albumDoc.select("a[data-track=photo-click]")) {
                 String imageTitle = null;
@@ -259,7 +260,7 @@ public class FlickrRipper extends AlbumRipper {
         
         private Document getLargestImagePageDocument(URL url) throws IOException {
             // Get current page
-            Document doc = getDocument(url);
+            Document doc = Http.url(url).get();
             // Look for larger image page
             String largestImagePage = this.url.toExternalForm();
             for (Element olSize : doc.select("ol.sizes-list > li > ol > li")) {
@@ -277,7 +278,7 @@ public class FlickrRipper extends AlbumRipper {
             }
             if (!largestImagePage.equals(this.url.toExternalForm())) {
                 // Found larger image page, get it.
-                doc = getDocument(largestImagePage);
+                doc = Http.url(largestImagePage).get();
             }
             return doc;
         }

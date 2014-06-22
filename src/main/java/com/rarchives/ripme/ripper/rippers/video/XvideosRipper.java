@@ -12,6 +12,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import com.rarchives.ripme.ripper.VideoRipper;
+import com.rarchives.ripme.utils.Http;
 
 public class XvideosRipper extends VideoRipper {
 
@@ -55,7 +56,7 @@ public class XvideosRipper extends VideoRipper {
     @Override
     public void rip() throws IOException {
         logger.info("    Retrieving " + this.url);
-        Document doc = getDocument(this.url);
+        Document doc = Http.url(this.url).get();
         Elements embeds = doc.select("embed");
         if (embeds.size() == 0) {
             throw new IOException("Could not find Embed code at " + url);

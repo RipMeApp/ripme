@@ -8,9 +8,9 @@ import java.util.regex.Pattern;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.jsoup.Jsoup;
 
 import com.rarchives.ripme.ripper.AlbumRipper;
+import com.rarchives.ripme.utils.Http;
 import com.rarchives.ripme.utils.Utils;
 
 public class GonewildRipper extends AlbumRipper {
@@ -49,7 +49,7 @@ public class GonewildRipper extends AlbumRipper {
                 + "?method=get_user"
                 + "&user=" + username
                 + "&count=" + count;
-        String gwURL, jsonString, imagePath;
+        String gwURL, imagePath;
         JSONArray posts, images;
         JSONObject json, post, image;
         while (true) {
@@ -57,8 +57,8 @@ public class GonewildRipper extends AlbumRipper {
             gwURL = baseGwURL
                     + "&start=" + start;
             start += count;
-            jsonString = getResponse(gwURL, true).body();
-            json = new JSONObject(jsonString);
+            json = Http.url(gwURL)
+                       .getJSON();
             if (json.has("error")) {
                 logger.error("Error while retrieving user posts:" + json.getString("error"));
                 break;

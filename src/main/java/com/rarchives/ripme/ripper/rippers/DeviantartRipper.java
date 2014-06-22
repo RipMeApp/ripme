@@ -6,148 +6,152 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.jsoup.Connection.Method;
 import org.jsoup.Connection.Response;
-import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import com.rarchives.ripme.ripper.AlbumRipper;
-import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
+import com.rarchives.ripme.ripper.AbstractMultiPageRipper;
 import com.rarchives.ripme.utils.Base64;
+import com.rarchives.ripme.utils.Http;
 import com.rarchives.ripme.utils.Utils;
 
-public class DeviantartRipper extends AlbumRipper {
-
-    private static final String DOMAIN = "deviantart.com",
-                                HOST   = "deviantart";
+public class DeviantartRipper extends AbstractMultiPageRipper {
 
     private static final int SLEEP_TIME = 2000;
 
     private Map<String,String> cookies = new HashMap<String,String>();
+    private Set<String> triedURLs = new HashSet<String>();
 
     public DeviantartRipper(URL url) throws IOException {
         super(url);
     }
 
     @Override
-    public boolean canRip(URL url) {
-        return url.getHost().endsWith(DOMAIN);
+    public String getHost() {
+        return "deviantart";
+    }
+    @Override
+    public String getDomain() {
+        return "deviantart.com";
     }
 
     @Override
     public URL sanitizeURL(URL url) throws MalformedURLException {
         String u = url.toExternalForm();
-        u = u.replaceAll("\\?.*", "");
+        String subdir = "/";
+        if (u.contains("catpath=scraps")) {
+            subdir = "scraps";
+        }
+        u = u.replaceAll("\\?.*", "?catpath=" + subdir);
         return new URL(u);
     }
 
     @Override
-    public void rip() throws IOException {
-        int index = 0;
-        String nextURL = this.url.toExternalForm();
+    public String getGID(URL url) throws MalformedURLException {
+        Pattern p = Pattern.compile("^https?://([a-zA-Z0-9\\-]+)\\.deviantart\\.com(/gallery)?/?(\\?.*)?$");
+        Matcher m = p.matcher(url.toExternalForm());
+        if (m.matches()) {
+            // Root gallery
+            if (url.toExternalForm().contains("catpath=scraps")) {
+                return m.group(1) + "_scraps";
+            }
+            else {
+                return m.group(1);
+            }
+        }
+        p = Pattern.compile("^https?://([a-zA-Z0-9\\-]{1,})\\.deviantart\\.com/gallery/([0-9]{1,}).*$");
+        m = p.matcher(url.toExternalForm());
+        if (m.matches()) {
+            // Subgallery
+            return m.group(1) + "_" + m.group(2);
+        }
+        throw new MalformedURLException("Expected URL format: http://username.deviantart.com/[/gallery/#####], got: " + url);
+    }
 
+    @Override
+    public Document getFirstPage() throws IOException {
         // Login
         try {
             cookies = loginToDeviantart();
         } catch (Exception e) {
             logger.warn("Failed to login: ", e);
         }
+        return Http.url(this.url)
+                   .cookies(cookies)
+                   .get();
+    }
 
-        // Iterate over every page
-        while (nextURL != null) {
+    @Override
+    public List<String> getURLsFromPage(Document page) {
+        List<String> imageURLs = new ArrayList<String>();
 
-            logger.info("    Retrieving " + nextURL);
-            sendUpdate(STATUS.LOADING_RESOURCE, "Retrieving " + nextURL);
-            Document doc = getDocument(nextURL, cookies);
-
-            // Iterate over all thumbnails
-            for (Element thumb : doc.select("div.zones-container a.thumb")) {
-                if (isStopped()) {
-                    break;
-                }
-                Element img = thumb.select("img").get(0);
-                if (img.attr("transparent").equals("false")) {
-                    continue; // a.thumbs to other albums are invisible
-                }
-
-                index++;
-
-                String fullSize = null;
-                try {
-                    fullSize = thumbToFull(img.attr("src"), true);
-                } catch (Exception e) {
-                    logger.info("Attempting to get full size image from " + thumb.attr("href"));
-                    fullSize = smallToFull(img.attr("src"), thumb.attr("href"));
-                    if (fullSize == null) {
-                        continue;
-                    }
-                }
-
-                try {
-                    URL fullsizeURL = new URL(fullSize);
-                    String imageId = fullSize.substring(fullSize.lastIndexOf('-') + 1);
-                    imageId = imageId.substring(0, imageId.indexOf('.'));
-                    long imageIdLong = alphaToLong(imageId);
-                    addURLToDownload(fullsizeURL, String.format("%010d_", imageIdLong));
-                } catch (MalformedURLException e) {
-                    logger.error("[!] Invalid thumbnail image: " + fullSize);
-                    continue;
-                }
-            }
-
-            try {
-                Thread.sleep(SLEEP_TIME);
-            } catch (InterruptedException e) {
-                logger.error("[!] Interrupted while waiting for page to load", e);
+        // Iterate over all thumbnails
+        for (Element thumb : page.select("div.zones-container a.thumb")) {
+            if (isStopped()) {
                 break;
             }
-            
-            // Find the next page
-            nextURL = null;
-            for (Element nextButton : doc.select("a.away")) {
-                if (nextButton.attr("href").contains("offset=" + index)) {
-                    nextURL = this.url.toExternalForm() + "?offset=" + index;
-                }
+            Element img = thumb.select("img").get(0);
+            if (img.attr("transparent").equals("false")) {
+                continue; // a.thumbs to other albums are invisible
             }
-            if (nextURL == null) {
-                logger.info("No next button found");
+
+            // Get full-sized image via helper methods
+            String fullSize = null;
+            try {
+                fullSize = thumbToFull(img.attr("src"), true);
+            } catch (Exception e) {
+                logger.info("Attempting to get full size image from " + thumb.attr("href"));
+                fullSize = smallToFull(img.attr("src"), thumb.attr("href"));
             }
+
+            if (fullSize == null) {
+                continue;
+            }
+            if (triedURLs.contains(fullSize)) {
+                logger.warn("Already tried to download " + fullSize);
+                continue;
+            }
+            triedURLs.add(fullSize);
+            imageURLs.add(fullSize);
         }
-        waitForThreads();
+        return imageURLs;
+    }
+    
+    @Override
+    public Document getNextPage(Document page) throws IOException {
+        Elements nextButtons = page.select("li.next > a");
+        if (nextButtons.size() == 0) {
+            throw new IOException("No next page found");
+        }
+        Element a = nextButtons.first();
+        if (a.hasClass("disabled")) {
+            throw new IOException("Hit end of pages");
+        }
+        String nextPage = a.attr("href");
+        if (nextPage.startsWith("/")) {
+            nextPage = "http://" + this.url.getHost() + nextPage;
+        }
+        if (!sleep(SLEEP_TIME)) {
+            throw new IOException("Interrupted while waiting to load next page: " + nextPage);
+        }
+        logger.info("Found next page: " + nextPage);
+        return Http.url(nextPage)
+                   .cookies(cookies)
+                   .get();
     }
 
-    /**
-     * Convert alpha-numeric string into a corresponding number
-     * @param alpha String to convert
-     * @return Numeric representation of 'alpha'
-     */
-    public static long alphaToLong(String alpha) {
-        long result = 0;
-        for (int i = 0; i < alpha.length(); i++) {
-            result += charToInt(alpha, i);
-        }
-        return result;
-    }
-
-    /**
-     * Convert character at index in a string 'text' to numeric form (base-36)
-     * @param text Text to retrieve the character from
-     * @param index Index of the desired character
-     * @return Number representing character at text[index] 
-     */
-    private static int charToInt(String text, int index) {
-        char c = text.charAt(text.length() - index - 1);
-        c = Character.toLowerCase(c);
-        int number = "0123456789abcdefghijklmnopqrstuvwxyz".indexOf(c);
-        number *= Math.pow(36, index);
-        return number;
+    @Override
+    public void downloadURL(URL url, int index) {
+        addURLToDownload(url, getPrefix(index), "", this.url.toExternalForm(), cookies);
     }
 
     /**
@@ -163,7 +167,6 @@ public class DeviantartRipper extends AlbumRipper {
         fields.remove(4);
         if (!fields.get(4).equals("f") && throwException) {
             // Not a full-size image
-            logger.warn("Can't get full size image from " + thumb);
             throw new Exception("Can't get full size image from " + thumb);
         }
         StringBuilder result = new StringBuilder();
@@ -187,27 +190,20 @@ public class DeviantartRipper extends AlbumRipper {
     public String smallToFull(String thumb, String page) {
         try {
             // Fetch the image page
-            Response resp = getResponse(page, Method.GET, USER_AGENT, this.url.toExternalForm(), cookies, false);
-            Map<String,String> cookies = resp.cookies();
-            cookies.putAll(this.cookies);
+            Response resp = Http.url(page)
+                                .referrer(this.url)
+                                .cookies(cookies)
+                                .response();
+            cookies.putAll(resp.cookies());
 
             // Try to find the "Download" box
             Elements els = resp.parse().select("a.dev-page-download");
             if (els.size() == 0) {
-                throw new IOException("no download page found");
+                throw new IOException("No download page found");
             }
             // Full-size image
             String fsimage = els.get(0).attr("href");
-
-            String prefix = "";
-            if (Utils.getConfigBoolean("download.save_order", true)) {
-                String imageId = fsimage.substring(fsimage.lastIndexOf('-') + 1);
-                imageId = imageId.substring(0, imageId.indexOf('.'));
-                prefix = String.format("%010d_", alphaToLong(imageId));
-            }
-            // Download it
-            addURLToDownload(new URL(fsimage), prefix, "", page, cookies);
-            return null;
+            return fsimage;
         } catch (IOException ioe) {
             try {
                 logger.info("Failed to get full size download image at " + page + " : '" + ioe.getMessage() + "'");
@@ -218,28 +214,6 @@ public class DeviantartRipper extends AlbumRipper {
                 return null;
             }
         }
-    }
-
-    @Override
-    public String getHost() {
-        return HOST;
-    }
-
-    @Override
-    public String getGID(URL url) throws MalformedURLException {
-        Pattern p = Pattern.compile("^https?://([a-zA-Z0-9\\-]{1,})\\.deviantart\\.com(/gallery)?/?$");
-        Matcher m = p.matcher(url.toExternalForm());
-        if (m.matches()) {
-            // Root gallery
-            return m.group(1);
-        }
-        p = Pattern.compile("^https?://([a-zA-Z0-9\\-]{1,})\\.deviantart\\.com/gallery/([0-9]{1,}).*$");
-        m = p.matcher(url.toExternalForm());
-        if (m.matches()) {
-            // Subgallery
-            return m.group(1) + "_" + m.group(2);
-        }
-        throw new MalformedURLException("Expected URL format: http://username.deviantart.com/[/gallery/#####], got: " + url);
     }
 
     /**
@@ -254,7 +228,8 @@ public class DeviantartRipper extends AlbumRipper {
         if (username == null || password == null) {
             throw new IOException("could not find username or password in config");
         }
-        Response resp = getResponse("http://www.deviantart.com/");
+        Response resp = Http.url("http://www.deviantart.com/")
+                            .response();
         for (Element input : resp.parse().select("form#form-login input[type=hidden]")) {
             postData.put(input.attr("name"), input.attr("value"));
         }
@@ -263,17 +238,17 @@ public class DeviantartRipper extends AlbumRipper {
         postData.put("remember_me", "1");
 
         // Send login request
-        resp = Jsoup.connect("https://www.deviantart.com/users/login")
+        resp = Http.url("https://www.deviantart.com/users/login")
                     .userAgent(USER_AGENT)
                     .data(postData)
                     .cookies(resp.cookies())
                     .method(Method.POST)
-                    .execute();
+                    .response();
 
         // Assert we are logged in
         if (resp.hasHeader("Location") && resp.header("Location").contains("password")) {
             // Wrong password
-            throw new IOException("Wrong pasword");
+            throw new IOException("Wrong password");
         }
         if (resp.url().toExternalForm().contains("bad_form")) {
             throw new IOException("Login form was incorrectly submitted");
@@ -285,5 +260,4 @@ public class DeviantartRipper extends AlbumRipper {
         // We are logged in, save the cookies
         return resp.cookies();
     }
-
 }

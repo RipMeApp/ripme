@@ -11,6 +11,7 @@ import org.jsoup.select.Elements;
 
 import com.rarchives.ripme.ripper.AlbumRipper;
 import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
+import com.rarchives.ripme.utils.Http;
 import com.rarchives.ripme.utils.Utils;
 
 public class VidbleRipper extends AlbumRipper {
@@ -49,7 +50,7 @@ public class VidbleRipper extends AlbumRipper {
         logger.info("Retrieving " + this.url);
         sendUpdate(STATUS.LOADING_RESOURCE, this.url.toExternalForm());
         if (albumDoc == null) {
-            albumDoc = getDocument(this.url);
+            albumDoc = Http.url(this.url).get();
         }
         Elements els = albumDoc.select("#ContentPlaceHolder1_thumbs");
         if (els.size() == 0) {

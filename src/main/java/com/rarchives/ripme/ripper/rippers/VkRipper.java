@@ -18,6 +18,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
 import com.rarchives.ripme.ripper.AlbumRipper;
+import com.rarchives.ripme.utils.Http;
 import com.rarchives.ripme.utils.Utils;
 
 public class VkRipper extends AlbumRipper {
@@ -66,13 +67,11 @@ public class VkRipper extends AlbumRipper {
         postData.put("act", "load_videos_silent");
         postData.put("offset", "0");
         postData.put("oid", oid);
-        Document doc = Jsoup.connect(u)
-                            .header("Referer", this.url.toExternalForm())
-                            .ignoreContentType(true)
-                            .userAgent(USER_AGENT)
-                            .timeout(5000)
-                            .data(postData)
-                            .post();
+        Document doc = Http.url(u)
+                           .referrer(this.url)
+                           .ignoreContentType()
+                           .data(postData)
+                           .post();
         String[] jsonStrings = doc.toString().split("<!>");
         JSONObject json = new JSONObject(jsonStrings[jsonStrings.length - 1]);
         JSONArray videos = json.getJSONArray("all");
@@ -108,13 +107,11 @@ public class VkRipper extends AlbumRipper {
             postData.put("al", "1");
             postData.put("offset", Integer.toString(offset));
             postData.put("part", "1");
-            Document doc = Jsoup.connect(this.url.toExternalForm())
-                    .header("Referer", this.url.toExternalForm())
-                    .ignoreContentType(true)
-                    .userAgent(USER_AGENT)
-                    .timeout(5000)
-                    .data(postData)
-                    .post();
+            Document doc = Http.url(this.url)
+                               .referrer(this.url)
+                               .ignoreContentType()
+                               .data(postData)
+                               .post();
 
             String body = doc.toString();
             if (!body.contains("<div")) {

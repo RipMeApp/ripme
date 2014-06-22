@@ -8,11 +8,11 @@ import java.util.regex.Pattern;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.jsoup.Connection.Response;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
 
 import com.rarchives.ripme.ripper.AlbumRipper;
+import com.rarchives.ripme.utils.Http;
 import com.rarchives.ripme.utils.Utils;
 
 public class MinusRipper extends AlbumRipper {
@@ -47,7 +47,7 @@ public class MinusRipper extends AlbumRipper {
         try {
             // Attempt to use album title as GID
             if (albumDoc == null) {
-                albumDoc = getDocument(url);
+                albumDoc = Http.url(url).get();
             }
             Elements titles = albumDoc.select("meta[property=og:title]");
             if (titles.size() > 0) {
@@ -129,8 +129,7 @@ public class MinusRipper extends AlbumRipper {
                            + user + "/shares.json/"
                            + page;
             logger.info("    Retrieving " + jsonUrl);
-            Response resp = getResponse(jsonUrl, true);
-            JSONObject json = new JSONObject(resp.body());
+            JSONObject json = Http.url(jsonUrl).getJSON();
             JSONArray galleries = json.getJSONArray("galleries");
             for (int i = 0; i < galleries.length(); i++) {
                 JSONObject gallery = galleries.getJSONObject(i);
@@ -151,7 +150,7 @@ public class MinusRipper extends AlbumRipper {
     private void ripAlbum(URL url, String subdir) throws IOException {
         logger.info("    Retrieving " + url.toExternalForm());
         if (albumDoc == null || !subdir.equals("")) {
-            albumDoc = getDocument(url);
+            albumDoc = Http.url(url).get();
         }
         Pattern p = Pattern.compile("^.*var gallerydata = (\\{.*\\});.*$", Pattern.DOTALL);
         Matcher m = p.matcher(albumDoc.data());

@@ -11,6 +11,7 @@ import org.jsoup.nodes.Element;
 
 import com.rarchives.ripme.ripper.AlbumRipper;
 import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
+import com.rarchives.ripme.utils.Http;
 import com.rarchives.ripme.utils.Utils;
 
 public class FapprovedRipper extends AlbumRipper {
@@ -46,7 +47,9 @@ public class FapprovedRipper extends AlbumRipper {
             url = "http://fapproved.com/users/" + user + "/images?page=" + page;
             this.sendUpdate(STATUS.LOADING_RESOURCE, url);
             logger.info("    Retrieving " + url);
-            Document doc = getDocument(url, true);
+            Document doc = Http.url(url)
+                               .ignoreContentType()
+                               .get();
             for (Element image : doc.select("div.actual-image img")) {
                 String imageUrl = image.attr("src");
                 if (imageUrl.startsWith("//")) {

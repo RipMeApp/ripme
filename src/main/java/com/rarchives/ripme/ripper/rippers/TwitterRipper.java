@@ -12,10 +12,10 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
-import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
 import com.rarchives.ripme.ripper.AlbumRipper;
+import com.rarchives.ripme.utils.Http;
 import com.rarchives.ripme.utils.Utils;
 
 public class TwitterRipper extends AlbumRipper {
@@ -71,13 +71,13 @@ public class TwitterRipper extends AlbumRipper {
     }
     
     private void getAccessToken() throws IOException {
-        Document doc = Jsoup.connect("https://api.twitter.com/oauth2/token")
-                            .ignoreContentType(true)
-                            .header("Authorization", "Basic " + authKey)
-                            .header("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8")
-                            .header("User-agent", "ripe and zipe")
-                            .data("grant_type", "client_credentials")
-                            .post();
+        Document doc = Http.url("https://api.twitter.com/oauth2/token")
+                           .ignoreContentType()
+                           .header("Authorization", "Basic " + authKey)
+                           .header("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8")
+                           .header("User-agent", "ripe and zipe")
+                           .data("grant_type", "client_credentials")
+                           .post();
         String body = doc.body().html().replaceAll("&quot;", "\"");
         try {
             JSONObject json = new JSONObject(body);
@@ -90,8 +90,8 @@ public class TwitterRipper extends AlbumRipper {
     }
     
     private void checkRateLimits(String resource, String api) throws IOException {
-        Document doc = Jsoup.connect("https://api.twitter.com/1.1/application/rate_limit_status.json?resources=" + resource)
-                            .ignoreContentType(true)
+        Document doc = Http.url("https://api.twitter.com/1.1/application/rate_limit_status.json?resources=" + resource)
+                            .ignoreContentType()
                             .header("Authorization", "Bearer " + accessToken)
                             .header("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8")
                             .header("User-agent", "ripe and zipe")
@@ -143,12 +143,12 @@ public class TwitterRipper extends AlbumRipper {
     private List<JSONObject> getTweets(String url) throws IOException {
         List<JSONObject> tweets = new ArrayList<JSONObject>();
         logger.info("    Retrieving " + url);
-        Document doc = Jsoup.connect(url)
-                            .ignoreContentType(true)
-                            .header("Authorization", "Bearer " + accessToken)
-                            .header("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8")
-                            .header("User-agent", "ripe and zipe")
-                            .get();
+        Document doc = Http.url(url)
+                           .ignoreContentType()
+                           .header("Authorization", "Bearer " + accessToken)
+                           .header("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8")
+                           .header("User-agent", "ripe and zipe")
+                           .get();
         String body = doc.body().html().replaceAll("&quot;", "\"");
         Object jsonObj = new JSONTokener(body).nextValue();
         JSONArray statuses;

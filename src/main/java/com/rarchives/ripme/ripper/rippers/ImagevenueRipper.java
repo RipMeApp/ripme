@@ -13,6 +13,7 @@ import org.jsoup.select.Elements;
 import com.rarchives.ripme.ripper.AlbumRipper;
 import com.rarchives.ripme.ripper.DownloadThreadPool;
 import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
+import com.rarchives.ripme.utils.Http;
 import com.rarchives.ripme.utils.Utils;
 
 public class ImagevenueRipper extends AlbumRipper {
@@ -60,7 +61,7 @@ public class ImagevenueRipper extends AlbumRipper {
         String nextUrl = this.url.toExternalForm();
         logger.info("    Retrieving album page " + nextUrl);
         sendUpdate(STATUS.LOADING_RESOURCE, nextUrl);
-        Document albumDoc = getDocument(nextUrl);
+        Document albumDoc = Http.url(nextUrl).get();
         // Find thumbnails
         Elements thumbs = albumDoc.select("a[target=_blank]");
         if (thumbs.size() == 0) {
@@ -115,7 +116,7 @@ public class ImagevenueRipper extends AlbumRipper {
         private void fetchImage() {
             try {
                 sendUpdate(STATUS.LOADING_RESOURCE, this.url.toExternalForm());
-                Document doc = getDocument(this.url);
+                Document doc = Http.url(this.url).get();
                 // Find image
                 Elements images = doc.select("a > img");
                 if (images.size() == 0) {

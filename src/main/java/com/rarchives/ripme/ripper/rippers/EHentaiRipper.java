@@ -16,6 +16,7 @@ import org.jsoup.select.Elements;
 import com.rarchives.ripme.ripper.AlbumRipper;
 import com.rarchives.ripme.ripper.DownloadThreadPool;
 import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
+import com.rarchives.ripme.utils.Http;
 import com.rarchives.ripme.utils.Utils;
 
 public class EHentaiRipper extends AlbumRipper {
@@ -57,7 +58,9 @@ public class EHentaiRipper extends AlbumRipper {
             if (albumDoc == null) {
                 sendUpdate(STATUS.LOADING_RESOURCE, url.toString());
                 logger.info("Retrieving " + url);
-                albumDoc = getDocument(url.toExternalForm(), cookies);
+                albumDoc = Http.url(url)
+                               .cookies(cookies)
+                               .get();
             }
             Elements elems = albumDoc.select("#gn");
             return HOST + "_" + elems.get(0).text();
@@ -96,7 +99,10 @@ public class EHentaiRipper extends AlbumRipper {
             if (albumDoc == null) {
                 logger.info("    Retrieving album page " + nextUrl);
                 sendUpdate(STATUS.LOADING_RESOURCE, nextUrl);
-                albumDoc = getDocument(nextUrl, this.url.toExternalForm(), cookies);
+                albumDoc = Http.url(nextUrl)
+                                .referrer(this.url)
+                                .cookies(cookies)
+                                .get();
             }
             // Check for rate limiting
             if (albumDoc.toString().contains("IP address will be automatically banned")) {
@@ -197,8 +203,10 @@ public class EHentaiRipper extends AlbumRipper {
         
         private void fetchImage() {
             try {
-                String u = this.url.toExternalForm();
-                Document doc = getDocument(u, u, cookies);
+                Document doc = Http.url(this.url)
+                                   .referrer(this.url)
+                                   .cookies(cookies)
+                                   .get();
                 // Check for rate limit
                 if (doc.toString().contains("IP address will be automatically banned")) {
                     if (this.retries == 0) {

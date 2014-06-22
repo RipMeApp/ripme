@@ -9,10 +9,10 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.jsoup.nodes.Document;
 
 import com.rarchives.ripme.ripper.AlbumRipper;
 import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
+import com.rarchives.ripme.utils.Http;
 import com.rarchives.ripme.utils.Utils;
 
 public class TumblrRipper extends AlbumRipper {
@@ -66,9 +66,8 @@ public class TumblrRipper extends AlbumRipper {
         checkURL += url.getHost();
         checkURL += "/info?api_key=" + API_KEY;
         try {
-            Document doc = getResponse(checkURL, true).parse();
-            String jsonString = doc.body().html().replaceAll("&quot;", "\"");
-            JSONObject json = new JSONObject(jsonString);
+            JSONObject json = Http.url(checkURL)
+                               .getJSON();
             int status = json.getJSONObject("meta").getInt("status");
             return status == 200;
         } catch (IOException e) {
@@ -98,15 +97,14 @@ public class TumblrRipper extends AlbumRipper {
                 String apiURL = getTumblrApiURL(mediaType, offset);
                 logger.info("Retrieving " + apiURL);
                 sendUpdate(STATUS.LOADING_RESOURCE, apiURL);
-                Document doc = getResponse(apiURL, true).parse();
+                JSONObject json = Http.url(apiURL).getJSON();
                 try {
                     Thread.sleep(1000);
                 } catch (InterruptedException e) {
                     logger.error("[!] Interrupted while waiting to load next album:", e);
                     break;
                 }
-                String jsonString = doc.body().html().replaceAll("&quot;", "\"");
-                if (!handleJSON(jsonString)) {
+                if (!handleJSON(json)) {
                     // Returns false if an error occurs and we should stop.
                     break;
                 }
@@ -119,12 +117,7 @@ public class TumblrRipper extends AlbumRipper {
         waitForThreads();
     }
     
-    private boolean handleJSON(String jsonString) {
-        JSONObject json = new JSONObject(jsonString);
-        if (json == null || !json.has("response")) {
-            logger.error("[!] JSON response from tumblr was invalid: " + jsonString);
-            return false;
-        }
+    private boolean handleJSON(JSONObject json) {
         JSONArray posts, photos;
         JSONObject post, photo;
         URL fileURL;

@@ -12,6 +12,7 @@ import org.jsoup.nodes.Element;
 
 import com.rarchives.ripme.ripper.AlbumRipper;
 import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
+import com.rarchives.ripme.utils.Http;
 
 public class VineboxRipper extends AlbumRipper {
 
@@ -42,7 +43,7 @@ public class VineboxRipper extends AlbumRipper {
             logger.info("Retrieving " + urlPaged);
             sendUpdate(STATUS.LOADING_RESOURCE, urlPaged);
             try {
-                doc = getDocument(this.url);;
+                doc = Http.url(this.url).get();
             } catch (HttpStatusException e) {
                 logger.debug("Hit end of pages at page " + page, e);
                 break;

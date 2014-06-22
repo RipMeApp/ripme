@@ -13,6 +13,7 @@ import org.jsoup.select.Elements;
 import com.rarchives.ripme.ripper.AlbumRipper;
 import com.rarchives.ripme.ripper.DownloadThreadPool;
 import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
+import com.rarchives.ripme.utils.Http;
 import com.rarchives.ripme.utils.Utils;
 
 public class ImagebamRipper extends AlbumRipper {
@@ -47,7 +48,7 @@ public class ImagebamRipper extends AlbumRipper {
             if (albumDoc == null) {
                 logger.info("    Retrieving " + url.toExternalForm());
                 sendUpdate(STATUS.LOADING_RESOURCE, url.toString());
-                albumDoc = getDocument(url);
+                albumDoc = Http.url(url).get();
             }
             Elements elems = albumDoc.select("legend");
             String title = elems.first().text();
@@ -94,7 +95,9 @@ public class ImagebamRipper extends AlbumRipper {
             if (albumDoc == null) {
                 logger.info("    Retrieving album page " + nextUrl);
                 sendUpdate(STATUS.LOADING_RESOURCE, nextUrl);
-                albumDoc = getDocument(nextUrl, this.url.toExternalForm(), null);
+                albumDoc = Http.url(nextUrl)
+                               .referrer(this.url)
+                               .get();
             }
             // Find thumbnails
             Elements thumbs = albumDoc.select("div > a[target=_blank]:not(.footera)");
@@ -171,7 +174,7 @@ public class ImagebamRipper extends AlbumRipper {
         
         private void fetchImage() {
             try {
-                Document doc = getDocument(url);
+                Document doc = Http.url(url).get();
                 // Find image
                 Elements images = doc.select("td > img");
                 if (images.size() == 0) {

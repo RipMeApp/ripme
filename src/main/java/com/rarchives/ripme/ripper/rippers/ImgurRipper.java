@@ -19,6 +19,7 @@ import org.jsoup.select.Elements;
 
 import com.rarchives.ripme.ripper.AlbumRipper;
 import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
+import com.rarchives.ripme.utils.Http;
 import com.rarchives.ripme.utils.Utils;
 
 public class ImgurRipper extends AlbumRipper {
@@ -83,7 +84,7 @@ public class ImgurRipper extends AlbumRipper {
             try {
                 // Attempt to use album title as GID
                 if (albumDoc == null) {
-                    albumDoc = getDocument(url);
+                    albumDoc = Http.url(url).get();
                 }
                 String title = albumDoc.title();
                 if (!title.contains(" - Imgur")
@@ -259,7 +260,7 @@ public class ImgurRipper extends AlbumRipper {
     private void ripUserAccount(URL url) throws IOException {
         logger.info("Retrieving " + url);
         sendUpdate(STATUS.LOADING_RESOURCE, url.toExternalForm());
-        Document doc = getDocument(url);
+        Document doc = Http.url(url).get();
         for (Element album : doc.select("div.cover a")) {
             stopCheck();
             if (!album.hasAttr("href")
@@ -289,8 +290,7 @@ public class ImgurRipper extends AlbumRipper {
             try {
                 page++;
                 String jsonUrlWithParams = jsonUrl + "?sort=0&order=1&album=0&page=" + page + "&perPage=60";
-                String jsonString = getResponse(jsonUrlWithParams, true).body();
-                JSONObject json = new JSONObject(jsonString);
+                JSONObject json = Http.url(jsonUrlWithParams).getJSON();
                 JSONObject jsonData = json.getJSONObject("data");
                 if (jsonData.has("count")) {
                     imagesTotal = jsonData.getInt("count");
@@ -327,7 +327,7 @@ public class ImgurRipper extends AlbumRipper {
             }
             pageURL += "page/" + page + "/miss?scrolled";
             logger.info("    Retrieving " + pageURL);
-            Document doc = getDocument(pageURL);
+            Document doc = Http.url(pageURL).get();
             Elements imgs = doc.select(".post img");
             for (Element img : imgs) {
                 String image = img.attr("src");

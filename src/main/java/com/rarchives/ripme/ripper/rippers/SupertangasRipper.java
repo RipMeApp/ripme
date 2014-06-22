@@ -13,6 +13,7 @@ import org.jsoup.select.Elements;
 
 import com.rarchives.ripme.ripper.AlbumRipper;
 import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
+import com.rarchives.ripme.utils.Http;
 
 public class SupertangasRipper extends AlbumRipper {
 
@@ -47,7 +48,7 @@ public class SupertangasRipper extends AlbumRipper {
             try {
                 logger.info("    Retrieving " + theURL);
                 sendUpdate(STATUS.LOADING_RESOURCE, theURL);
-                doc = getDocument(theURL);
+                doc = Http.url(theURL).get();
             } catch (HttpStatusException e) {
                 logger.debug("Hit end of pages at page " + page, e);
                 break;

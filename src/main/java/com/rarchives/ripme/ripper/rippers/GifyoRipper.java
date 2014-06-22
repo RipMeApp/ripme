@@ -10,13 +10,13 @@ import java.util.regex.Pattern;
 
 import org.jsoup.Connection.Method;
 import org.jsoup.Connection.Response;
-import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import com.rarchives.ripme.ripper.AlbumRipper;
 import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
+import com.rarchives.ripme.utils.Http;
 
 public class GifyoRipper extends AlbumRipper {
 
@@ -50,7 +50,9 @@ public class GifyoRipper extends AlbumRipper {
             logger.info("    Retrieving " + this.url + "(page #" + page + ")");
             Response resp = null;
             if (page == 0) {
-                resp = getResponse(this.url, true);
+                resp = Http.url(this.url)
+                           .ignoreContentType()
+                           .response();
                 cookies = resp.cookies();
             }
             else {
@@ -59,13 +61,12 @@ public class GifyoRipper extends AlbumRipper {
                 postData.put("view", "gif");
                 postData.put("layout", "grid");
                 postData.put("page", Integer.toString(page));
-                resp = Jsoup.connect(this.url.toExternalForm())
-                           .ignoreContentType(true)
-                           .userAgent(USER_AGENT)
+                resp = Http.url(this.url)
+                           .ignoreContentType()
                            .data(postData)
                            .cookies(cookies)
                            .method(Method.POST)
-                           .execute();
+                           .response();
                 cookies.putAll(resp.cookies());
             }
             Document doc = resp.parse();

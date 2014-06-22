@@ -11,9 +11,9 @@ import java.util.regex.Pattern;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
-import org.jsoup.nodes.Document;
 
 import com.rarchives.ripme.ripper.AlbumRipper;
+import com.rarchives.ripme.utils.Http;
 import com.rarchives.ripme.utils.RipUtils;
 import com.rarchives.ripme.utils.Utils;
 
@@ -113,27 +113,25 @@ public class RedditRipper extends AlbumRipper {
         lastRequestTime = System.currentTimeMillis();
 
         int attempts = 0;
-        Document doc = null;
         logger.info("    Retrieving " + url);
-        while(doc == null && attempts++ < 3) {
+        JSONObject json = null;
+        while(json == null && attempts++ < 3) {
             try {
-                doc = getResponse(url, true).parse();
+                json = Http.url(url).getJSON();
             } catch(SocketTimeoutException ex) {
                 if(attempts >= 3) throw ex;
                 logger.warn(String.format("[!] Connection timed out (attempt %d)", attempts));
             }
         }
         
-        String jsonString = doc.body().html().replaceAll("&quot;", "\"");
-
-        Object jsonObj = new JSONTokener(jsonString).nextValue();
+        Object jsonObj = new JSONTokener(json.toString()).nextValue();
         JSONArray jsonArray = new JSONArray();
         if (jsonObj instanceof JSONObject) {
             jsonArray.put( (JSONObject) jsonObj);
         } else if (jsonObj instanceof JSONArray){
             jsonArray = (JSONArray) jsonObj;
         } else {
-            logger.warn("[!] Unable to parse child: " + jsonString);
+            logger.warn("[!] Unable to parse child: " + json.toString());
         }
         return jsonArray;
     }

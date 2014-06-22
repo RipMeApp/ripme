@@ -14,6 +14,7 @@ import org.jsoup.select.Elements;
 
 import com.rarchives.ripme.ripper.AlbumRipper;
 import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
+import com.rarchives.ripme.utils.Http;
 import com.rarchives.ripme.utils.Utils;
 
 public class HentaifoundryRipper extends AlbumRipper {
@@ -40,11 +41,12 @@ public class HentaifoundryRipper extends AlbumRipper {
         int index = 0;
         
         // Get cookies
-        Response resp = getResponse("http://www.hentai-foundry.com/");
+        Response resp = Http.url("http://www.hentai-foundry.com/").response();
         Map<String,String> cookies = resp.cookies();
-        resp = getResponse("http://www.hentai-foundry.com/?enterAgree=1&size=1500",
-                           "http://www.hentai-foundry.com/",
-                           cookies);
+        resp = Http.url("http://www.hentai-foundry.com/?enterAgree=1&size=1500")
+                   .referrer("http://www.hentai-foundry.com/")
+                   .cookies(cookies)
+                   .response();
         cookies = resp.cookies();
         logger.info("cookies: " + cookies);
         
@@ -54,7 +56,10 @@ public class HentaifoundryRipper extends AlbumRipper {
                 break;
             }
             sendUpdate(STATUS.LOADING_RESOURCE, nextURL);
-            Document doc = getDocument(nextURL, this.url.toExternalForm(), cookies);
+            Document doc = Http.url(nextURL)
+                               .referrer(this.url)
+                               .cookies(cookies)
+                               .get();
             for (Element thumb : doc.select("td > a:first-child")) {
                 if (isStopped()) {
                     break;

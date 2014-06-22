@@ -12,6 +12,7 @@ import org.jsoup.nodes.Element;
 
 import com.rarchives.ripme.ripper.AlbumRipper;
 import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
+import com.rarchives.ripme.utils.Http;
 import com.rarchives.ripme.utils.Utils;
 
 public class ImagefapRipper extends AlbumRipper {
@@ -45,7 +46,7 @@ public class ImagefapRipper extends AlbumRipper {
         try {
             // Attempt to use album title as GID
             if (albumDoc == null) {
-                albumDoc = getDocument(url);
+                albumDoc = Http.url(url).get();
             }
             String title = albumDoc.title();
             Pattern p = Pattern.compile("^Porn pics of (.*) \\(Page 1\\)$");
@@ -94,7 +95,7 @@ public class ImagefapRipper extends AlbumRipper {
         sendUpdate(STATUS.LOADING_RESOURCE, this.url.toExternalForm());
         logger.info("Retrieving " + this.url);
         if (albumDoc == null) {
-            albumDoc = getDocument(this.url);
+            albumDoc = Http.url(this.url).get();
         }
         while (true) {
             if (isStopped()) {

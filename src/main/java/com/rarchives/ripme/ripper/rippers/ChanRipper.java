@@ -3,18 +3,18 @@ package com.rarchives.ripme.ripper.rippers;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
-import com.rarchives.ripme.ripper.AlbumRipper;
-import com.rarchives.ripme.utils.Utils;
+import com.rarchives.ripme.ripper.AbstractSinglePageRipper;
+import com.rarchives.ripme.utils.Http;
 
-public class ChanRipper extends AlbumRipper {
+public class ChanRipper extends AbstractSinglePageRipper {
 
     public ChanRipper(URL url) throws IOException {
         super(url);
@@ -41,10 +41,6 @@ public class ChanRipper extends AlbumRipper {
         return url.getHost().contains("chan") &&
                 ( url.toExternalForm().contains("/res/")      // Most chans
                || url.toExternalForm().contains("/thread/")); // 4chan
-    }
-
-    public URL sanitizeURL(URL url) throws MalformedURLException {
-        return url;
     }
 
     @Override
@@ -74,13 +70,20 @@ public class ChanRipper extends AlbumRipper {
     }
 
     @Override
-    public void rip() throws IOException {
-        Set<String> attempted = new HashSet<String>();
-        int index = 0;
+    public String getDomain() {
+        return this.url.getHost();
+    }
+
+    @Override
+    public Document getFirstPage() throws IOException {
+        return Http.url(this.url).get();
+    }
+
+    @Override
+    public List<String> getURLsFromPage(Document page) {
+        List<String> imageURLs = new ArrayList<String>();
         Pattern p; Matcher m;
-        logger.info("Retrieving " + this.url);
-        Document doc = getDocument(this.url);
-        for (Element link : doc.select("a")) {
+        for (Element link : page.select("a")) {
             if (!link.hasAttr("href")) { 
                 continue;
             }
@@ -104,20 +107,20 @@ public class ChanRipper extends AlbumRipper {
                 if (image.startsWith("/")) {
                     image = "http://" + this.url.getHost() + image;
                 }
-                if (attempted.contains(image)) {
+                // Don't download the same URL twice
+                if (imageURLs.contains(image)) {
                     logger.debug("Already attempted: " + image);
                     continue;
                 }
-                index += 1;
-                String prefix = "";
-                if (Utils.getConfigBoolean("download.save_order", true)) {
-                    prefix = String.format("%03d_", index);
-                }
-                addURLToDownload(new URL(image), prefix);
-                attempted.add(image);
+                imageURLs.add(image);
             }
         }
-        waitForThreads();
+        return imageURLs;
+    }
+
+    @Override
+    public void downloadURL(URL url, int index) {
+        addURLToDownload(url, getPrefix(index));
     }
 
 }

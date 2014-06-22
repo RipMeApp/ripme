@@ -12,6 +12,7 @@ import org.jsoup.select.Elements;
 
 import com.rarchives.ripme.ripper.AlbumRipper;
 import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
+import com.rarchives.ripme.utils.Http;
 import com.rarchives.ripme.utils.Utils;
 
 public class ImgboxRipper extends AlbumRipper {
@@ -36,7 +37,7 @@ public class ImgboxRipper extends AlbumRipper {
     @Override
     public void rip() throws IOException {
         sendUpdate(STATUS.LOADING_RESOURCE, url.toExternalForm());
-        Document doc = getDocument(this.url);
+        Document doc = Http.url(this.url).get();
         Elements images = doc.select("div.boxed-content > a > img");
         if (images.size() == 0) {
             logger.error("No images found at " + this.url);

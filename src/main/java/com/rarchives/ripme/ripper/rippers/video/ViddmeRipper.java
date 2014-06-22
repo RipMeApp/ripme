@@ -10,6 +10,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
 
 import com.rarchives.ripme.ripper.VideoRipper;
+import com.rarchives.ripme.utils.Http;
 
 public class ViddmeRipper extends VideoRipper {
 
@@ -53,7 +54,7 @@ public class ViddmeRipper extends VideoRipper {
     @Override
     public void rip() throws IOException {
         logger.info("    Retrieving " + this.url.toExternalForm());
-        Document doc = getDocument(this.url);
+        Document doc = Http.url(this.url).get();
         Elements videos = doc.select("meta[name=twitter:player:stream]");
         if (videos.size() == 0) {
             throw new IOException("Could not find twitter:player:stream at " + url);

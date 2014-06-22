@@ -6,10 +6,10 @@ import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
 import com.rarchives.ripme.ripper.VideoRipper;
+import com.rarchives.ripme.utils.Http;
 
 public class VkRipper extends VideoRipper {
 
@@ -59,9 +59,9 @@ public class VkRipper extends VideoRipper {
     }
     
     public static String getVideoURLAtPage(String url) throws IOException {
-        Document doc = Jsoup.connect(url)
-                            .userAgent(USER_AGENT)
-                            .get();
+        Document doc = Http.url(url)
+                           .userAgent(USER_AGENT)
+                           .get();
         String html = doc.outerHtml();
         String videoURL = null;
         for (String quality : new String[] {"1080", "720", "480", "240"}) {

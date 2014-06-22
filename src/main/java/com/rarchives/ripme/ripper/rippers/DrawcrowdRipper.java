@@ -3,6 +3,8 @@ package com.rarchives.ripme.ripper.rippers;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -10,14 +12,10 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import com.rarchives.ripme.ripper.AlbumRipper;
-import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
-import com.rarchives.ripme.utils.Utils;
+import com.rarchives.ripme.ripper.AbstractMultiPageRipper;
+import com.rarchives.ripme.utils.Http;
 
-public class DrawcrowdRipper extends AlbumRipper {
-
-    private static final String DOMAIN = "drawcrowd.com",
-                                HOST   = "drawcrowd";
+public class DrawcrowdRipper extends AbstractMultiPageRipper {
 
     public DrawcrowdRipper(URL url) throws IOException {
         super(url);
@@ -25,14 +23,11 @@ public class DrawcrowdRipper extends AlbumRipper {
 
     @Override
     public String getHost() {
-        return HOST;
+        return "drawcrowd";
     }
-
-    /**
-     * Reformat given URL into the desired format (all images on single page)
-     */
-    public URL sanitizeURL(URL url) throws MalformedURLException {
-        return url;
+    @Override
+    public String getDomain() {
+        return "drawcrowd.com";
     }
 
     @Override
@@ -58,46 +53,39 @@ public class DrawcrowdRipper extends AlbumRipper {
     }
 
     @Override
-    public void rip() throws IOException {
-        int index = 0;
-        sendUpdate(STATUS.LOADING_RESOURCE, this.url.toExternalForm());
-        logger.info("Retrieving " + this.url);
-        Document albumDoc = getDocument(this.url);
-        while (true) {
-            if (isStopped()) {
-                break;
-            }
-            for (Element thumb : albumDoc.select("div.item.asset img")) {
-                String image = thumb.attr("src");
-                image = image
-                        .replaceAll("/medium/", "/large/")
-                        .replaceAll("/small/", "/large/");
-                index++;
-                String prefix = "";
-                if (Utils.getConfigBoolean("download.save_order", true)) {
-                    prefix = String.format("%03d_", index);
-                }
-                addURLToDownload(new URL(image), prefix);
-            }
-            Elements loadMore = albumDoc.select("a#load-more");
-            if (loadMore.size() == 0) {
-                break;
-            }
-            String nextURL = "http://drawcrowd.com" + loadMore.get(0).attr("href");
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                logger.error("Interrupted while waiting to load next page", e);
-                throw new IOException(e);
-            }
-            sendUpdate(STATUS.LOADING_RESOURCE, nextURL);
-            albumDoc = getDocument(nextURL);
-        }
-        waitForThreads();
+    public Document getFirstPage() throws IOException {
+        return Http.url(this.url).get();
     }
 
-    public boolean canRip(URL url) {
-        return url.getHost().endsWith(DOMAIN);
+    @Override
+    public Document getNextPage(Document doc) throws IOException {
+        Elements loadMore = doc.select("a#load-more");
+        if (loadMore.size() == 0) {
+            throw new IOException("No next page found");
+        }
+        if (!sleep(1000)) {
+            throw new IOException("Interrupted while waiting for next page");
+        }
+        String nextPage = "http://drawcrowd.com" + loadMore.get(0).attr("href");
+        return Http.url(nextPage).get();
+    }
+
+    @Override
+    public List<String> getURLsFromPage(Document page) {
+        List<String> imageURLs = new ArrayList<String>();
+        for (Element thumb : page.select("div.item.asset img")) {
+            String image = thumb.attr("src");
+            image = image
+                    .replaceAll("/medium/", "/large/")
+                    .replaceAll("/small/", "/large/");
+            imageURLs.add(image);
+        }
+        return imageURLs;
+    }
+
+    @Override
+    public void downloadURL(URL url, int index) {
+        addURLToDownload(url, getPrefix(index));
     }
 
 }

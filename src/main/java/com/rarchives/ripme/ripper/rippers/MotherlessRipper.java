@@ -12,6 +12,7 @@ import org.jsoup.nodes.Element;
 import com.rarchives.ripme.ripper.AlbumRipper;
 import com.rarchives.ripme.ripper.DownloadThreadPool;
 import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
+import com.rarchives.ripme.utils.Http;
 import com.rarchives.ripme.utils.Utils;
 
 public class MotherlessRipper extends AlbumRipper {
@@ -66,7 +67,9 @@ public class MotherlessRipper extends AlbumRipper {
             }
             logger.info("Retrieving " + nextURL);
             sendUpdate(STATUS.LOADING_RESOURCE, nextURL);
-            Document doc = getDocument(nextURL, "http://motherless.com", null);
+            Document doc = Http.url(nextURL)
+                               .referrer("http://motherless.com")
+                               .get();
             for (Element thumb : doc.select("div.thumb a.img-container")) {
                 if (isStopped()) {
                     break;
@@ -118,7 +121,9 @@ public class MotherlessRipper extends AlbumRipper {
                     return;
                 }
                 String u = this.url.toExternalForm();
-                Document doc = getDocument(u, u, null);
+                Document doc = Http.url(u)
+                                   .referrer(u)
+                                   .get();
                 Pattern p = Pattern.compile("^.*__fileurl = '([^']{1,})';.*$", Pattern.DOTALL);
                 Matcher m = p.matcher(doc.outerHtml());
                 if (m.matches()) {

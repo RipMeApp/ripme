@@ -6,12 +6,12 @@ import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import com.rarchives.ripme.ripper.VideoRipper;
+import com.rarchives.ripme.utils.Http;
 
 public class YoupornRipper extends VideoRipper {
 
@@ -55,7 +55,7 @@ public class YoupornRipper extends VideoRipper {
     @Override
     public void rip() throws IOException {
         logger.info("    Retrieving " + this.url);
-        Document doc = getDocument(this.url);
+        Document doc = Http.url(this.url).get();
         Elements videos = doc.select("video");
         if (videos.size() == 0) {
             throw new IOException("Could not find Embed code at " + url);

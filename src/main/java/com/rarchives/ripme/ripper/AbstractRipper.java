@@ -12,12 +12,7 @@ import java.util.Observable;
 
 import org.apache.log4j.FileAppender;
 import org.apache.log4j.Logger;
-import org.jsoup.Connection;
-import org.jsoup.Connection.Method;
-import org.jsoup.Connection.Response;
 import org.jsoup.HttpStatusException;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
 
 import com.rarchives.ripme.ui.RipStatusHandler;
 import com.rarchives.ripme.ui.RipStatusMessage;
@@ -32,8 +27,6 @@ public abstract class AbstractRipper
 
     public static final String USER_AGENT = 
             "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:29.0) Gecko/20100101 Firefox/29.0";
-
-    public static final int TIMEOUT = Utils.getConfigInteger("page.timeout", 5 * 1000);
 
     protected URL url;
     protected File workingDir;
@@ -59,10 +52,6 @@ public abstract class AbstractRipper
             threadPool.waitForThreads();
             throw new IOException("Ripping interrupted");
         }
-    }
-
-    protected int getTimeout() {
-        return TIMEOUT;
     }
 
     /**
@@ -339,6 +328,16 @@ public abstract class AbstractRipper
             }
         }
     }
+    
+    public boolean sleep(int milliseconds) {
+        try {
+            Thread.sleep(milliseconds);
+            return true;
+        } catch (InterruptedException e) {
+            logger.error("Interrupted while waiting to load next page", e);
+            return false;
+        }
+    }
 
     public void setBytesTotal(int bytes) {
         // Do nothing
@@ -348,82 +347,5 @@ public abstract class AbstractRipper
     }
 
     // Thar be overloaded methods afoot
-    public Document getDocument(URL url) throws IOException {
-        return getDocument(url.toExternalForm());
-    }
-    public Document getDocument(String url) throws IOException {
-        return getResponse(url).parse();
-    }
-    public Document getDocument(String url, boolean ignoreContentType) throws IOException {
-        return getResponse(url, ignoreContentType).parse();
-    }
-    public Document getDocument(String url, Map<String,String> cookies) throws IOException {
-        return getResponse(url, cookies).parse();
-    }
-    public Document getDocument(String url, String referrer, Map<String,String> cookies) throws IOException {
-        return getResponse(url, Method.GET, referrer, cookies).parse();
-    }
-    public Response getResponse(String url) throws IOException {
-        return getResponse(url, Method.GET, USER_AGENT, null, null, false);
-    }
-    public Response getResponse(URL url) throws IOException {
-        return getResponse(url.toExternalForm());
-    }
-    public Response getResponse(String url, String referrer) throws IOException {
-        return getResponse(url, Method.GET, USER_AGENT, referrer, null, false);
-    }
-    public Response getResponse(URL url, boolean ignoreContentType) throws IOException {
-        return getResponse(url.toExternalForm(), Method.GET, USER_AGENT, null, null, ignoreContentType);
-    }
-    public Response getResponse(String url, Map<String, String> cookies) throws IOException {
-        return getResponse(url, Method.GET, USER_AGENT, cookies);
-    }
-    public Response getResponse(String url, String referrer, Map<String, String> cookies) throws IOException {
-        return getResponse(url, Method.GET, referrer, cookies);
-    }
-    public Response getResponse(String url, Method method) throws IOException {
-        return getResponse(url, method, USER_AGENT, null, null, false);
-    }
-    public Response getResponse(String url, Method method, String referrer, Map<String,String> cookies) throws IOException {
-        return getResponse(url, method, USER_AGENT, referrer, cookies, false);
-    }
-    public Response getResponse(String url, boolean ignoreContentType) throws IOException {
-        return getResponse(url, Method.GET, USER_AGENT, null, null, ignoreContentType);
-    }
-    public Response getResponse(String url, Method method, boolean ignoreContentType) throws IOException {
-        return getResponse(url, method, USER_AGENT, null, null, false);
-    }
-
-    public Response getResponse(String url, 
-                                Method method,
-                                String userAgent, 
-                                String referrer, 
-                                Map<String,String> cookies, 
-                                boolean ignoreContentType)
-                    throws IOException {
-        Connection connection = Jsoup.connect(url);
-
-        connection.method(    (method == null)    ? Method.GET : method);
-        connection.userAgent( (userAgent == null) ? USER_AGENT : userAgent);
-        connection.ignoreContentType(ignoreContentType);
-        connection.timeout(getTimeout());
-        connection.maxBodySize(0);
-
-        if (cookies  != null) { connection.cookies(cookies); }
-        if (referrer != null) { connection.referrer(referrer); }
-
-        Response response = null;
-        int retries = Utils.getConfigInteger("download.retries", 1);;
-        while (retries >= 0) {
-            retries--;
-            try {
-                response = connection.execute();
-            } catch (IOException e) {
-                logger.warn("Error while loading " + url, e);
-                continue;
-            }
-        }
-        return response;
-    }
     
 }

@@ -11,6 +11,7 @@ import com.rarchives.ripme.ripper.AlbumRipper;
 import com.rarchives.ripme.ripper.rippers.ImgurRipper.ImgurAlbum;
 import com.rarchives.ripme.ripper.rippers.ImgurRipper.ImgurImage;
 import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
+import com.rarchives.ripme.utils.Http;
 import com.rarchives.ripme.utils.Utils;
 
 public class IrarchivesRipper extends AlbumRipper {
@@ -20,11 +21,6 @@ public class IrarchivesRipper extends AlbumRipper {
 
     public IrarchivesRipper(URL url) throws IOException {
         super(url);
-    }
-
-    @Override
-    public int getTimeout() {
-        return 60 * 1000;
     }
 
     @Override
@@ -48,8 +44,9 @@ public class IrarchivesRipper extends AlbumRipper {
     @Override
     public void rip() throws IOException {
         logger.info("    Retrieving " + this.url);
-        String jsonString = getResponse(url, true).body();
-        JSONObject json = new JSONObject(jsonString);
+        JSONObject json = Http.url(url)
+                                .timeout(60 * 1000)
+                                .getJSON();
         JSONArray posts = json.getJSONArray("posts");
         if (posts.length() == 0) {
             logger.error("No posts found at " + this.url);

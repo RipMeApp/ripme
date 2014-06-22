@@ -10,6 +10,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
 
 import com.rarchives.ripme.ripper.VideoRipper;
+import com.rarchives.ripme.utils.Http;
 
 public class VineRipper extends VideoRipper {
 
@@ -54,7 +55,7 @@ public class VineRipper extends VideoRipper {
     @Override
     public void rip() throws IOException {
         logger.info("    Retrieving " + this.url.toExternalForm());
-        Document doc = getDocument(this.url);
+        Document doc = Http.url(this.url).get();
         Elements props = doc.select("meta[property=twitter:player:stream]");
         if (props.size() == 0) {
             throw new IOException("Could not find meta property 'twitter:player:stream' at " + url);

@@ -9,10 +9,10 @@ import java.util.regex.Pattern;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.jsoup.HttpStatusException;
-import org.jsoup.nodes.Document;
 
 import com.rarchives.ripme.ripper.AlbumRipper;
 import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
+import com.rarchives.ripme.utils.Http;
 
 public class VineRipper extends AlbumRipper {
 
@@ -37,7 +37,7 @@ public class VineRipper extends AlbumRipper {
     public void rip() throws IOException {
         int page = 0;
         String baseURL = "https://vine.co/api/timelines/users/" + getGID(this.url);
-        Document doc;
+        JSONObject json = null;
         while (true) {
             page++;
             String theURL = baseURL;
@@ -47,14 +47,11 @@ public class VineRipper extends AlbumRipper {
             try {
                 logger.info("    Retrieving " + theURL);
                 sendUpdate(STATUS.LOADING_RESOURCE, theURL);
-                doc = getResponse(theURL, true).parse();
+                json = Http.url(theURL).getJSON();
             } catch (HttpStatusException e) {
                 logger.debug("Hit end of pages at page " + page, e);
                 break;
             }
-            String jsonString = doc.body().html();
-            jsonString = jsonString.replace("&quot;", "\"");
-            JSONObject json = new JSONObject(jsonString);
             JSONArray records = json.getJSONObject("data").getJSONArray("records");
             for (int i = 0; i < records.length(); i++) {
                 String videoURL = records.getJSONObject(i).getString("videoUrl");

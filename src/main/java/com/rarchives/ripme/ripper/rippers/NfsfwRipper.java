@@ -15,6 +15,7 @@ import org.jsoup.select.Elements;
 import com.rarchives.ripme.ripper.AlbumRipper;
 import com.rarchives.ripme.ripper.DownloadThreadPool;
 import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
+import com.rarchives.ripme.utils.Http;
 import com.rarchives.ripme.utils.Utils;
 
 public class NfsfwRipper extends AlbumRipper {
@@ -46,7 +47,7 @@ public class NfsfwRipper extends AlbumRipper {
         try {
             // Attempt to use album title as GID
             if (albumDoc == null) {
-                albumDoc = getDocument(url);
+                albumDoc = Http.url(url).get();
             }
             String title = albumDoc.select("h2").first().text().trim();
             return "nfsfw_" + Utils.filesystemSafe(title);
@@ -87,7 +88,7 @@ public class NfsfwRipper extends AlbumRipper {
             sendUpdate(STATUS.LOADING_RESOURCE, nextURL);
             logger.info("    Retrieving " + nextURL);
             if (albumDoc == null) {
-                albumDoc = getDocument(nextURL);
+                albumDoc = Http.url(nextURL).get();
             }
             // Subalbums
             for (Element suba : albumDoc.select("td.IMG > a")) {
@@ -156,8 +157,9 @@ public class NfsfwRipper extends AlbumRipper {
         @Override
         public void run() {
             try {
-                String u = this.url.toExternalForm();
-                Document doc = getDocument(u, u, null);
+                Document doc = Http.url(this.url)
+                                   .referrer(this.url)
+                                   .get();
                 Elements images = doc.select(".gbBlock img");
                 if (images.size() == 0) {
                     logger.error("Failed to find image at " + this.url);

@@ -12,6 +12,7 @@ import org.jsoup.select.Elements;
 
 import com.rarchives.ripme.ripper.AlbumRipper;
 import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
+import com.rarchives.ripme.utils.Http;
 
 public class GirlsOfDesireRipper extends AlbumRipper {
     // All sleep times are in milliseconds
@@ -41,7 +42,7 @@ public class GirlsOfDesireRipper extends AlbumRipper {
             if (albumDoc == null) {
                 logger.info("    Retrieving " + url.toExternalForm());
                 sendUpdate(STATUS.LOADING_RESOURCE, url.toString());
-                albumDoc = getDocument(url);
+                albumDoc = Http.url(url).get();
             }
             Elements elems = albumDoc.select(".albumName");
             return HOST + "_" + elems.first().text();
@@ -76,7 +77,7 @@ public class GirlsOfDesireRipper extends AlbumRipper {
         if (albumDoc == null) {
             logger.info("    Retrieving album page " + nextUrl);
             sendUpdate(STATUS.LOADING_RESOURCE, nextUrl);
-            albumDoc = getDocument(nextUrl);
+            albumDoc = Http.url(nextUrl).get();
         }
 
         // Find thumbnails

@@ -11,6 +11,7 @@ import org.json.JSONObject;
 
 import com.rarchives.ripme.ripper.AlbumRipper;
 import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
+import com.rarchives.ripme.utils.Http;
 import com.rarchives.ripme.utils.Utils;
 
 public class ImagestashRipper extends AlbumRipper {
@@ -45,9 +46,7 @@ public class ImagestashRipper extends AlbumRipper {
             String nextURL = baseURL + "&page=" + page;
             logger.info("[ ] Retrieving " + nextURL);
             sendUpdate(STATUS.LOADING_RESOURCE, nextURL);
-            String jsonText = getResponse(nextURL, true).body();
-            logger.info(jsonText);
-            JSONObject json = new JSONObject(jsonText);
+            JSONObject json = Http.url(nextURL).getJSON();
             JSONArray images = json.getJSONArray("images");
             for (int i = 0; i < images.length(); i++) {
                 if (isStopped()) {
