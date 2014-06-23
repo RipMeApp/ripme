@@ -3,82 +3,33 @@ package com.rarchives.ripme.ripper.rippers;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
-import com.rarchives.ripme.ripper.AlbumRipper;
-import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
+import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 import com.rarchives.ripme.utils.Http;
-import com.rarchives.ripme.utils.Utils;
 
-public class FapprovedRipper extends AlbumRipper {
+public class FapprovedRipper extends AbstractHTMLRipper {
 
-    private static final String DOMAIN = "fapproved.com",
-                                HOST   = "fapproved";
+    private int pageIndex = 1;
+    private String username = null;
 
     public FapprovedRipper(URL url) throws IOException {
         super(url);
     }
 
     @Override
-    public boolean canRip(URL url) {
-        return (url.getHost().endsWith(DOMAIN));
-    }
-
-    @Override
-    public URL sanitizeURL(URL url) throws MalformedURLException {
-        Pattern p = Pattern.compile("^https?://fapproved\\.com/users/([a-zA-Z0-9\\-_]{1,}).*$");
-        Matcher m = p.matcher(url.toExternalForm());
-        if (m.matches()) {
-            return new URL("http://fapproved.com/users/" + m.group(1));
-        }
-        throw new MalformedURLException("Expected username in URL (fapproved.com/users/username and not " + url);
-    }
-    @Override
-    public void rip() throws IOException {
-        int index = 0, page = 0;
-        String url, user = getGID(this.url);
-        boolean hasNextPage = true;
-        while (hasNextPage) {
-            page++;
-            url = "http://fapproved.com/users/" + user + "/images?page=" + page;
-            this.sendUpdate(STATUS.LOADING_RESOURCE, url);
-            logger.info("    Retrieving " + url);
-            Document doc = Http.url(url)
-                               .ignoreContentType()
-                               .get();
-            for (Element image : doc.select("div.actual-image img")) {
-                String imageUrl = image.attr("src");
-                if (imageUrl.startsWith("//")) {
-                    imageUrl = "http:" + imageUrl;
-                }
-                index++;
-                String prefix = "";
-                if (Utils.getConfigBoolean("download.save_order", true)) {
-                    prefix = String.format("%03d_", index);
-                }
-                addURLToDownload(new URL(imageUrl), prefix);
-            }
-            if ( (doc.select("div.pagination li.next.disabled").size() != 0)
-              || (doc.select("div.pagination").size() == 0) ) {
-                break;
-            }
-            try {
-                Thread.sleep(3000);
-            } catch (InterruptedException e) {
-                logger.error("[!] Interrupted while waiting to load next album:", e);
-                break;
-            }
-        }
-        waitForThreads();
-    }
-
-    @Override
     public String getHost() {
-        return HOST;
+        return "fapproved";
+    }
+    @Override
+    public String getDomain() {
+        return "fapproved.com";
     }
 
     @Override
@@ -86,9 +37,62 @@ public class FapprovedRipper extends AlbumRipper {
         Pattern p = Pattern.compile("^https?://[w.]*fapproved.com/users/([a-zA-Z0-9\\-_]{3,}).*$");
         Matcher m = p.matcher(url.toExternalForm());
         if (m.matches()) {
-            return m.group(1);
+            username = m.group(1);
+            return username;
         }
         throw new MalformedURLException("Fapproved user not found in " + url + ", expected http://fapproved.com/users/username/images");
     }
 
+    @Override
+    public URL sanitizeURL(URL url) throws MalformedURLException {
+        return new URL("http://fapproved.com/users/" + getGID(url));
+    }
+
+    @Override
+    public Document getFirstPage() throws IOException {
+        pageIndex = 1;
+        String pageURL = getPageURL(pageIndex);
+        return Http.url(pageURL)
+                   .ignoreContentType()
+                   .get();
+    }
+
+    @Override
+    public Document getNextPage(Document doc) throws IOException {
+        if ( (doc.select("div.pagination li.next.disabled").size() != 0)
+          || (doc.select("div.pagination").size() == 0) ) {
+            throw new IOException("No more pages found");
+        }
+        sleep(1000);
+        pageIndex++;
+        String pageURL = getPageURL(pageIndex);
+        return Http.url(pageURL)
+                   .ignoreContentType()
+                   .get();
+    }
+
+    private String getPageURL(int index) throws IOException {
+        if (username == null) {
+            username = getGID(this.url);
+        }
+        return "http://fapproved.com/users/" + username + "/images?page=" + pageIndex;
+    }
+
+    @Override
+    public List<String> getURLsFromPage(Document page) {
+        List<String> imageURLs = new ArrayList<String>();
+        for (Element image : page.select("div.actual-image img")) {
+            String imageURL = image.attr("src");
+            if (imageURL.startsWith("//")) {
+                imageURL = "http:" + imageURL;
+            }
+            imageURLs.add(imageURL);
+        }
+        return imageURLs;
+    }
+    
+    @Override
+    public void downloadURL(URL url, int index) {
+        addURLToDownload(url, getPrefix(index));
+    }
 }

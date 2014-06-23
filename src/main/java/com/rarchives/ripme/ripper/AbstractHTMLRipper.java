@@ -10,9 +10,9 @@ import org.jsoup.nodes.Document;
 import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
 import com.rarchives.ripme.utils.Utils;
 
-public abstract class AbstractSinglePageRipper extends AlbumRipper {
+public abstract class AbstractHTMLRipper extends AlbumRipper {
 
-    public AbstractSinglePageRipper(URL url) throws IOException {
+    public AbstractHTMLRipper(URL url) throws IOException {
         super(url);
     }
 
@@ -20,8 +20,12 @@ public abstract class AbstractSinglePageRipper extends AlbumRipper {
     public abstract String getHost();
 
     public abstract Document getFirstPage() throws IOException;
+    public abstract Document getNextPage(Document doc) throws IOException;
     public abstract List<String> getURLsFromPage(Document page);
     public abstract void downloadURL(URL url, int index);
+    public DownloadThreadPool getThreadPool() {
+        return null;
+    }
 
     public boolean keepSortOrder() {
         return true;
@@ -43,19 +47,38 @@ public abstract class AbstractSinglePageRipper extends AlbumRipper {
         logger.info("Retrieving " + this.url);
         sendUpdate(STATUS.LOADING_RESOURCE, this.url.toExternalForm());
         Document doc = getFirstPage();
-        List<String> imageURLs = getURLsFromPage(doc);
 
-        if (imageURLs.size() == 0) {
-            throw new IOException("No images found at " + this.url);
-        }
+        while (doc != null) {
+            List<String> imageURLs = getURLsFromPage(doc);
 
-        for (String imageURL : imageURLs) {
+            if (imageURLs.size() == 0) {
+                throw new IOException("No images found at " + this.url);
+            }
+
+            for (String imageURL : imageURLs) {
+                if (isStopped()) {
+                    break;
+                }
+                index += 1;
+                downloadURL(new URL(imageURL), index);
+            }
+
             if (isStopped()) {
-                logger.info("Interrupted");
                 break;
             }
-            index += 1;
-            downloadURL(new URL(imageURL), index);
+
+            try {
+                sendUpdate(STATUS.LOADING_RESOURCE, "next page");
+                doc = getNextPage(doc);
+            } catch (IOException e) {
+                logger.info("Can't get next page: " + e.getMessage());
+                break;
+            }
+        }
+
+        // If they're using a thread pool, wait for it.
+        if (getThreadPool() != null) {
+            getThreadPool().waitForThreads();
         }
         waitForThreads();
     }

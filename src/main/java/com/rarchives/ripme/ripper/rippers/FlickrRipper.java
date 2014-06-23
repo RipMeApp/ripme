@@ -3,8 +3,10 @@ package com.rarchives.ripme.ripper.rippers;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -17,19 +19,22 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import com.rarchives.ripme.ripper.AlbumRipper;
+import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 import com.rarchives.ripme.ripper.DownloadThreadPool;
 import com.rarchives.ripme.utils.Base64;
 import com.rarchives.ripme.utils.Http;
 import com.rarchives.ripme.utils.Utils;
 
-public class FlickrRipper extends AlbumRipper {
+public class FlickrRipper extends AbstractHTMLRipper {
 
-    private static final String DOMAIN = "flickr.com",
-                                HOST   = "flickr";
-
-    private DownloadThreadPool flickrThreadPool;
+    private int page = 1;
+    private Set<String> attempted = new HashSet<String>();
     private Document albumDoc = null;
+    private DownloadThreadPool flickrThreadPool;
+    @Override
+    public DownloadThreadPool getThreadPool() {
+        return flickrThreadPool;
+    }
 
     public FlickrRipper(URL url) throws IOException {
         super(url);
@@ -38,7 +43,11 @@ public class FlickrRipper extends AlbumRipper {
 
     @Override
     public String getHost() {
-        return HOST;
+        return "flickr";
+    }
+    @Override
+    public String getDomain() {
+        return "flickr.com";
     }
 
     public URL sanitizeURL(URL url) throws MalformedURLException {
@@ -61,15 +70,13 @@ public class FlickrRipper extends AlbumRipper {
         }
         try {
             // Attempt to use album title as GID
-            if (albumDoc == null) {
-                albumDoc = Http.url(url).get();
-            }
+            Document doc = getFirstPage();
             String user = url.toExternalForm();
             user = user.substring(user.indexOf("/photos/") + "/photos/".length());
             user = user.substring(0, user.indexOf("/"));
-            String title = albumDoc.select("meta[name=description]").get(0).attr("content");
+            String title = doc.select("meta[name=description]").get(0).attr("content");
             if (!title.equals("")) {
-                return HOST + "_" + user + "_" + title;
+                return getHost() + "_" + user + "_" + title;
             }
         } catch (Exception e) {
             // Fall back to default album naming convention
@@ -114,79 +121,79 @@ public class FlickrRipper extends AlbumRipper {
     }
 
     @Override
-    public void rip() throws IOException {
-        //Map<String,String> cookies = signinToFlickr();
-        Set<String> attempted = new HashSet<String>();
-        int index = 0, page = 1;
-        String nextURL = this.url.toExternalForm();
-        while (true) {
-            if (isStopped()) {
-                break;
-            }
-            logger.info("    Retrieving " + nextURL);
-            if (albumDoc == null) {
-                albumDoc = Http.url(nextURL).get();
-            }
-            for (Element thumb : albumDoc.select("a[data-track=photo-click]")) {
-                String imageTitle = null;
-                if (thumb.hasAttr("title")) {
-                    imageTitle = thumb.attr("title");
-                }
-                String imagePage = thumb.attr("href");
-                if (imagePage.startsWith("/")) {
-                    imagePage = "http://www.flickr.com" + imagePage;
-                }
-                if (imagePage.contains("/in/")) {
-                    imagePage = imagePage.substring(0, imagePage.indexOf("/in/") + 1);
-                }
-                if (!imagePage.endsWith("/")) {
-                    imagePage += "/";
-                }
-                imagePage += "sizes/o/";
-
-                // Check for duplicates
-                if (attempted.contains(imagePage)) {
-                    continue;
-                }
-                attempted.add(imagePage);
-
-                index += 1;
-                // Add image page to threadpool to grab the image & download it
-                FlickrImageThread mit = new FlickrImageThread(new URL(imagePage), imageTitle, index);
-                flickrThreadPool.addThread(mit);
-            }
-            // Find how many pages there are
-            int lastPage = 0;
-            for (Element apage : albumDoc.select("a[data-track^=page-]")) {
-                String lastPageStr = apage.attr("data-track").replace("page-", "");
-                lastPage = Integer.parseInt(lastPageStr);
-            }
-            // If we're at the last page, stop.
-            if (page >= lastPage) {
-                break;
-            }
-            // Load the next page
-            page++;
-            albumDoc = null;
-            nextURL = this.url.toExternalForm();
-            if (!nextURL.endsWith("/")) {
-                nextURL += "/";
-            }
-            nextURL += "page" + page + "/";
-            // Wait a bit
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                logger.error("Interrupted while waiting to load next page " + nextURL, e);
-                break;
-            }
+    public Document getFirstPage() throws IOException {
+        if (albumDoc == null) {
+            albumDoc = Http.url(url).get();
         }
-        flickrThreadPool.waitForThreads();
-        waitForThreads();
+        return albumDoc;
     }
 
-    public boolean canRip(URL url) {
-        return url.getHost().endsWith(DOMAIN);
+    @Override
+    public Document getNextPage(Document doc) throws IOException {
+        // Find how many pages there are
+        int lastPage = 0;
+        for (Element apage : doc.select("a[data-track^=page-]")) {
+            String lastPageStr = apage.attr("data-track").replace("page-", "");
+            lastPage = Integer.parseInt(lastPageStr);
+        }
+        // If we're at the last page, stop.
+        if (page >= lastPage) {
+            throw new IOException("No more pages");
+        }
+        // Load the next page
+        page++;
+        albumDoc = null;
+        String nextURL = this.url.toExternalForm();
+        if (!nextURL.endsWith("/")) {
+            nextURL += "/";
+        }
+        nextURL += "page" + page + "/";
+        // Wait a bit
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            throw new IOException("Interrupted while waiting to load next page " + nextURL);
+        }
+        return Http.url(nextURL).get();
+    }
+    
+    @Override
+    public List<String> getURLsFromPage(Document page) {
+        List<String> imageURLs = new ArrayList<String>();
+        for (Element thumb : page.select("a[data-track=photo-click]")) {
+            /* TODO find a way to persist the image title
+            String imageTitle = null;
+            if (thumb.hasAttr("title")) {
+                imageTitle = thumb.attr("title");
+            }
+            */
+            String imagePage = thumb.attr("href");
+            if (imagePage.startsWith("/")) {
+                imagePage = "http://www.flickr.com" + imagePage;
+            }
+            if (imagePage.contains("/in/")) {
+                imagePage = imagePage.substring(0, imagePage.indexOf("/in/") + 1);
+            }
+            if (!imagePage.endsWith("/")) {
+                imagePage += "/";
+            }
+            imagePage += "sizes/o/";
+
+            // Check for duplicates
+            if (attempted.contains(imagePage)) {
+                continue;
+            }
+            attempted.add(imagePage);
+            imageURLs.add(imagePage);
+        }
+        return imageURLs;
+    }
+    
+    @Override
+    public void downloadURL(URL url, int index) {
+        // Add image page to threadpool to grab the image & download it
+        FlickrImageThread mit = new FlickrImageThread(url, index);
+        flickrThreadPool.addThread(mit);
     }
 
     /**
@@ -224,13 +231,11 @@ public class FlickrRipper extends AlbumRipper {
      */
     private class FlickrImageThread extends Thread {
         private URL    url;
-        private String title;
         private int    index;
 
-        public FlickrImageThread(URL url, String title, int index) {
+        public FlickrImageThread(URL url, int index) {
             super();
             this.url = url;
-            this.title = title;
             this.index = index;
         }
 
@@ -248,9 +253,8 @@ public class FlickrRipper extends AlbumRipper {
                     if (Utils.getConfigBoolean("download.save_order", true)) {
                         prefix = String.format("%03d_", index);
                     }
-                    prefix += Utils.filesystemSafe(title);
                     synchronized (flickrThreadPool) {
-                        addURLToDownload(new URL(fullsizeImages.get(0).attr("src")), prefix);
+                        addURLToDownload(new URL(fullsizeImages.first().attr("src")), prefix);
                     }
                 }
             } catch (IOException e) {

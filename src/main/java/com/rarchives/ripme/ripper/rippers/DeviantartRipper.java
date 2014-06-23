@@ -19,12 +19,12 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import com.rarchives.ripme.ripper.AbstractMultiPageRipper;
+import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 import com.rarchives.ripme.utils.Base64;
 import com.rarchives.ripme.utils.Http;
 import com.rarchives.ripme.utils.Utils;
 
-public class DeviantartRipper extends AbstractMultiPageRipper {
+public class DeviantartRipper extends AbstractHTMLRipper {
 
     private static final int SLEEP_TIME = 2000;
 

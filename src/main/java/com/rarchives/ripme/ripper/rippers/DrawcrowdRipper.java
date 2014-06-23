@@ -12,10 +12,10 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import com.rarchives.ripme.ripper.AbstractMultiPageRipper;
+import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 import com.rarchives.ripme.utils.Http;
 
-public class DrawcrowdRipper extends AbstractMultiPageRipper {
+public class DrawcrowdRipper extends AbstractHTMLRipper {
 
     public DrawcrowdRipper(URL url) throws IOException {
         super(url);

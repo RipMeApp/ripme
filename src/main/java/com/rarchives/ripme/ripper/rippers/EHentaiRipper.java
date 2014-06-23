@@ -4,7 +4,9 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -13,22 +15,26 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import com.rarchives.ripme.ripper.AlbumRipper;
+import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 import com.rarchives.ripme.ripper.DownloadThreadPool;
 import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
 import com.rarchives.ripme.utils.Http;
 import com.rarchives.ripme.utils.Utils;
 
-public class EHentaiRipper extends AlbumRipper {
+public class EHentaiRipper extends AbstractHTMLRipper {
     // All sleep times are in milliseconds
-    private static final int PAGE_SLEEP_TIME     = 3  * 1000;
-    private static final int IMAGE_SLEEP_TIME    = 1  * 1000;
-    private static final int IP_BLOCK_SLEEP_TIME = 60 * 1000;
+    private static final int PAGE_SLEEP_TIME     = 3000;
+    private static final int IMAGE_SLEEP_TIME    = 1500;
+    private static final int IP_BLOCK_SLEEP_TIME = 60  * 1000;
 
-    private static final String DOMAIN = "g.e-hentai.org", HOST = "e-hentai";
+    private String lastURL = null;
 
     // Thread pool for finding direct image links from "image" pages (html)
     private DownloadThreadPool ehentaiThreadPool = new DownloadThreadPool("ehentai");
+    @Override
+    public DownloadThreadPool getThreadPool() {
+        return ehentaiThreadPool;
+    }
 
     // Current HTML document
     private Document albumDoc = null;
@@ -45,25 +51,22 @@ public class EHentaiRipper extends AlbumRipper {
 
     @Override
     public String getHost() {
-        return HOST;
+        return "e-hentai";
     }
-
-    public URL sanitizeURL(URL url) throws MalformedURLException {
-        return url;
+    
+    @Override
+    public String getDomain() {
+        return "g.e-hentai.org";
     }
 
     public String getAlbumTitle(URL url) throws MalformedURLException {
         try {
             // Attempt to use album title as GID
             if (albumDoc == null) {
-                sendUpdate(STATUS.LOADING_RESOURCE, url.toString());
-                logger.info("Retrieving " + url);
-                albumDoc = Http.url(url)
-                               .cookies(cookies)
-                               .get();
+                albumDoc = getPageWithRetries(url);
             }
             Elements elems = albumDoc.select("#gn");
-            return HOST + "_" + elems.get(0).text();
+            return getHost() + "_" + elems.first().text();
         } catch (Exception e) {
             // Fall back to default album naming convention
             logger.warn("Failed to get album title from " + url, e);
@@ -87,95 +90,97 @@ public class EHentaiRipper extends AlbumRipper {
                         + "http://g.e-hentai.org/g/####/####/"
                         + " Got: " + url);
     }
-
-    @Override
-    public void rip() throws IOException {
-        int index = 0, retries = 3;
-        String nextUrl = this.url.toExternalForm();
+    
+    /**
+     * Attempts to get page, checks for IP ban, waits.
+     * @param url
+     * @return Page document
+     * @throws IOException If page loading errors, or if retries are exhausted
+     */
+    private Document getPageWithRetries(URL url) throws IOException {
+        Document doc;
+        int retries = 3;
         while (true) {
-            if (isStopped()) {
-                break;
-            }
-            if (albumDoc == null) {
-                logger.info("    Retrieving album page " + nextUrl);
-                sendUpdate(STATUS.LOADING_RESOURCE, nextUrl);
-                albumDoc = Http.url(nextUrl)
-                                .referrer(this.url)
-                                .cookies(cookies)
-                                .get();
-            }
-            // Check for rate limiting
-            if (albumDoc.toString().contains("IP address will be automatically banned")) {
+            sendUpdate(STATUS.LOADING_RESOURCE, url.toExternalForm());
+            logger.info("Retrieving " + url);
+            doc = Http.url(url)
+                      .referrer(this.url)
+                      .cookies(cookies)
+                      .get();
+            if (doc.toString().contains("IP address will be automatically banned")) {
                 if (retries == 0) {
-                    logger.error("Hit rate limit and maximum number of retries, giving up");
-                    break;
+                    throw new IOException("Hit rate limit and maximum number of retries, giving up");
                 }
-                logger.warn("Hit rate limit while loading " + nextUrl + ", sleeping for " + IP_BLOCK_SLEEP_TIME + "ms, " + retries + " retries remaining");
+                logger.warn("Hit rate limit while loading " + url + ", sleeping for " + IP_BLOCK_SLEEP_TIME + "ms, " + retries + " retries remaining");
                 retries--;
                 try {
                     Thread.sleep(IP_BLOCK_SLEEP_TIME);
                 } catch (InterruptedException e) {
-                    logger.error("Interrupted while waiting for rate limit to subside", e);
-                    break;
-                }
-                albumDoc = null;
-                continue;
-            }
-            // Find thumbnails
-            Elements thumbs = albumDoc.select("#gdt > .gdtm a");
-            if (thumbs.size() == 0) {
-                logger.info("albumDoc: " + albumDoc);
-                logger.info("No images found at " + nextUrl);
-                break;
-            }
-            // Iterate over images on page
-            for (Element thumb : thumbs) {
-                if (isStopped()) {
-                    break;
-                }
-                index++;
-                EHentaiImageThread t = new EHentaiImageThread(new URL(thumb.attr("href")), index, this.workingDir);
-                ehentaiThreadPool.addThread(t);
-                try {
-                    Thread.sleep(IMAGE_SLEEP_TIME);
-                } catch (InterruptedException e) {
-                    logger.warn("Interrupted while waiting to load next image", e);
+                    throw new IOException("Interrupted while waiting for rate limit to subside");
                 }
             }
-
-            if (isStopped()) {
-                break;
-            }
-            // Find next page
-            Elements hrefs = albumDoc.select(".ptt a");
-            if (hrefs.size() == 0) {
-                logger.info("No navigation links found at " + nextUrl);
-                break;
-            }
-            // Ensure next page is different from the current page
-            String lastUrl = nextUrl;
-            nextUrl = hrefs.last().attr("href");
-            if (lastUrl.equals(nextUrl)) {
-                break; // We're on the last page
-            }
-
-            // Reset albumDoc so we fetch the page next time
-            albumDoc = null;
-
-            // Sleep before loading next page
-            try {
-                Thread.sleep(PAGE_SLEEP_TIME);
-            } catch (InterruptedException e) {
-                logger.error("Interrupted while waiting to load next page", e);
-                break;
+            else {
+                return doc;
             }
         }
-
-        waitForThreads();
     }
 
-    public boolean canRip(URL url) {
-        return url.getHost().endsWith(DOMAIN);
+    @Override
+    public Document getFirstPage() throws IOException {
+        if (albumDoc == null) {
+            albumDoc = getPageWithRetries(this.url);
+        }
+        this.lastURL = this.url.toExternalForm();
+        return albumDoc;
+    }
+
+    @Override
+    public Document getNextPage(Document doc) throws IOException {
+        // Check if we've stopped
+        if (isStopped()) {
+            throw new IOException("Ripping interrupted");
+        }
+        // Find next page
+        Elements hrefs = doc.select(".ptt a");
+        if (hrefs.size() == 0) {
+            logger.info("doc: " + doc.html());
+            throw new IOException("No navigation links found");
+        }
+        // Ensure next page is different from the current page
+        String nextURL = hrefs.last().attr("href");
+        if (nextURL.equals(this.lastURL)) {
+            logger.info("lastURL = nextURL : " + nextURL);
+            throw new IOException("Reached last page of results");
+        }
+        // Sleep before loading next page
+        sleep(PAGE_SLEEP_TIME);
+        // Load next page
+        Document nextPage = getPageWithRetries(new URL(nextURL));
+        this.lastURL = nextURL;
+        return nextPage;
+    }
+
+    @Override
+    public List<String> getURLsFromPage(Document page) {
+        List<String> imageURLs = new ArrayList<String>();
+        Elements thumbs = page.select("#gdt > .gdtm a");
+        // Iterate over images on page
+        for (Element thumb : thumbs) {
+            imageURLs.add(thumb.attr("href"));
+        }
+        return imageURLs;
+    }
+
+    @Override
+    public void downloadURL(URL url, int index) {
+        EHentaiImageThread t = new EHentaiImageThread(url, index, this.workingDir);
+        ehentaiThreadPool.addThread(t);
+        try {
+            Thread.sleep(IMAGE_SLEEP_TIME);
+        }
+        catch (InterruptedException e) {
+            logger.warn("Interrupted while waiting to load next image", e);
+        }
     }
 
     /**
@@ -187,7 +192,6 @@ public class EHentaiRipper extends AlbumRipper {
         private URL url;
         private int index;
         private File workingDir;
-        private int retries = 3;
 
         public EHentaiImageThread(URL url, int index, File workingDir) {
             super();
@@ -203,27 +207,7 @@ public class EHentaiRipper extends AlbumRipper {
         
         private void fetchImage() {
             try {
-                Document doc = Http.url(this.url)
-                                   .referrer(this.url)
-                                   .cookies(cookies)
-                                   .get();
-                // Check for rate limit
-                if (doc.toString().contains("IP address will be automatically banned")) {
-                    if (this.retries == 0) {
-                        logger.error("Rate limited & ran out of retries, skipping image at " + this.url);
-                        return;
-                    }
-                    logger.warn("Hit rate limit. Sleeping for " + IP_BLOCK_SLEEP_TIME + "ms");
-                    try {
-                        Thread.sleep(IP_BLOCK_SLEEP_TIME);
-                    } catch (InterruptedException e) {
-                        logger.error("Interrupted while waiting for rate limit to subside", e);
-                        return;
-                    }
-                    this.retries--;
-                    fetchImage(); // Re-attempt to download the image
-                    return;
-                }
+                Document doc = getPageWithRetries(this.url);
 
                 // Find image
                 Elements images = doc.select(".sni > a > img");

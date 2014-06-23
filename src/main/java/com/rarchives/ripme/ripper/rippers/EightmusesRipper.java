@@ -1,168 +1,41 @@
 package com.rarchives.ripme.ripper.rippers;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.jsoup.Connection.Response;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
-import com.rarchives.ripme.ripper.AlbumRipper;
+import com.rarchives.ripme.ripper.AbstractSinglePageRipper;
 import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
 import com.rarchives.ripme.utils.Http;
-import com.rarchives.ripme.utils.Utils;
 
-public class EightmusesRipper extends AlbumRipper {
-
-    private static final String DOMAIN = "8muses.com",
-                                HOST   = "8muses";
+public class EightmusesRipper extends AbstractSinglePageRipper {
 
     private Document albumDoc = null;
+    private Map<String,String> cookies = new HashMap<String,String>();
 
     public EightmusesRipper(URL url) throws IOException {
         super(url);
     }
 
     @Override
-    public boolean canRip(URL url) {
-        return url.getHost().endsWith(DOMAIN);
-    }
-
-    @Override
-    public URL sanitizeURL(URL url) throws MalformedURLException {
-        return url;
-    }
-    
-    @Override
-    public String getAlbumTitle(URL url) throws MalformedURLException {
-        try {
-            // Attempt to use album title as GID
-            if (albumDoc == null) {
-                albumDoc = Http.url(url).get();
-            }
-            Element titleElement = albumDoc.select("meta[name=description]").first();
-            String title = titleElement.attr("content");
-            title = title.substring(title.lastIndexOf('/') + 1);
-            return HOST + "_" + title.trim();
-        } catch (IOException e) {
-            // Fall back to default album naming convention
-            logger.info("Unable to find title at " + url);
-        }
-        return super.getAlbumTitle(url);
-    }
-
-    @Override
-    public void rip() throws IOException {
-        ripAlbum(this.url.toExternalForm(), this.workingDir);
-        waitForThreads();
-    }
-    
-    private void ripAlbum(String url, File subdir) throws IOException {
-        logger.info("    Retrieving " + url);
-        sendUpdate(STATUS.LOADING_RESOURCE, url);
-        if (albumDoc == null) {
-            albumDoc = Http.url(url).get();
-        }
-
-        int index = 0; // Both album index and image index
-        if (albumDoc.select(".preview > span").size() > 0) {
-            // Page contains subalbums (not images)
-            for (Element subalbum : albumDoc.select("a.preview")) {
-                ripSubalbumFromPreview(subalbum, subdir, ++index);
-            }
-        }
-        else {
-            // Page contains images
-            for (Element thumb : albumDoc.select("img")) {
-                downloadImage(thumb, subdir, ++index);
-            }
-        }
-    }
-    
-    /**
-     * @param subalbum Anchor element of a subalbum
-     * @throws IOException
-     */
-    private void ripSubalbumFromPreview(Element subalbum, File subdir, int index) throws IOException {
-        // Find + sanitize URL from Element
-        String subUrl = subalbum.attr("href");
-        subUrl = subUrl.replaceAll("\\.\\./", "");
-        if (subUrl.startsWith("//")) {
-            subUrl = "http:";
-        }
-        else if (!subUrl.startsWith("http://")) {
-            subUrl = "http://www.8muses.com/" + subUrl;
-        }
-        // Prepend image index if enabled
-        // Get album title
-        String subTitle = subalbum.attr("alt");
-        if (subTitle.equals("")) {
-            subTitle = getGID(new URL(subUrl));
-        }
-        subTitle = Utils.filesystemSafe(subTitle);
-        // Create path to subdirectory
-        File subDir = new File(subdir.getAbsolutePath() + File.separator + subTitle);
-        if (!subDir.exists()) {
-            subDir.mkdirs();
-        }
-        albumDoc = null;
-        ripAlbum(subUrl, subDir);
-        try {
-            Thread.sleep(2000);
-        } catch (InterruptedException e) {
-            logger.warn("Interrupted whiel waiting to load next album");
-        }
-    }
-
-    private void downloadImage(Element thumb, File subdir, int index) {
-        // Find thumbnail image source
-        String image = null;
-        if (thumb.hasAttr("data-cfsrc")) {
-            image = thumb.attr("data-cfsrc");
-        }
-        else if (thumb.hasAttr("src")) {
-            image = thumb.attr("src");
-        }
-        else {
-            logger.warn("Thumb does not havedata-cfsrc or src: " + thumb);
-            return;
-        }
-        // Remove relative directory path naming
-        image = image.replaceAll("\\.\\./", "");
-        if (image.startsWith("//")) {
-            image = "http:" + image;
-        }
-        // Convert from thumb URL to full-size
-        if (image.contains("-cu_")) {
-            image = image.replaceAll("-cu_[^.]+", "-me");
-        }
-        // Set download path
-        try {
-            URL imageURL = new URL(image);
-            String saveAs = subdir.getAbsolutePath() + File.separator;
-            if (Utils.getConfigBoolean("download.save_order", true)) {
-                // Append image index
-                saveAs += String.format("%03d_", index);
-            }
-            // Append image title
-            saveAs += Utils.filesystemSafe(thumb.attr("title"));
-            // Append extension
-            saveAs += image.substring(image.lastIndexOf('.'));
-            File saveFile = new File(saveAs);
-            // Download
-            addURLToDownload(imageURL, saveFile, thumb.baseUri(), null);
-        } catch (IOException e) {
-            logger.error("Failed to download image at " + image, e);
-            sendUpdate(STATUS.DOWNLOAD_ERRORED, "Failed to download image at " + image);
-        }
-    }
-
-    @Override
     public String getHost() {
-        return HOST;
+        return "8muses";
+    }
+    @Override
+    public String getDomain() {
+        return "8muses.com";
     }
 
     @Override
@@ -175,4 +48,100 @@ public class EightmusesRipper extends AlbumRipper {
         return m.group(m.groupCount());
     }
 
+    @Override
+    public String getAlbumTitle(URL url) throws MalformedURLException {
+        try {
+            // Attempt to use album title as GID
+            Element titleElement = getFirstPage().select("meta[name=description]").first();
+            String title = titleElement.attr("content");
+            title = title.substring(title.lastIndexOf('/') + 1);
+            return getHost() + "_" + title.trim();
+        } catch (IOException e) {
+            // Fall back to default album naming convention
+            logger.info("Unable to find title at " + url);
+        }
+        return super.getAlbumTitle(url);
+    }
+
+    @Override
+    public Document getFirstPage() throws IOException {
+        if (albumDoc == null) {
+            Response resp = Http.url(url).response();
+            cookies.putAll(resp.cookies());
+            albumDoc = resp.parse();
+        }
+        return albumDoc;
+    }
+
+    @Override
+    public List<String> getURLsFromPage(Document page) {
+        List<String> imageURLs = new ArrayList<String>();
+        if (page.select(".preview > span").size() > 0) {
+            // Page contains subalbums (not images)
+            Elements albumElements = page.select("a.preview");
+            List<Element> albumsList = albumElements.subList(0, albumElements.size());
+            Collections.reverse(albumsList);
+            // Iterate over elements in reverse order
+            for (Element subalbum : albumsList) {
+                String subUrl = subalbum.attr("href");
+                subUrl = subUrl.replaceAll("\\.\\./", "");
+                if (subUrl.startsWith("//")) {
+                    subUrl = "http:";
+                }
+                else if (!subUrl.startsWith("http://")) {
+                    subUrl = "http://www.8muses.com/" + subUrl;
+                }
+                try {
+                    logger.info("Retrieving " + subUrl);
+                    sendUpdate(STATUS.LOADING_RESOURCE, subUrl);
+                    Document subPage = Http.url(subUrl).get();
+                    // Get all images in subalbum, add to list.
+                    List<String> subalbumImages = getURLsFromPage(subPage);
+                    logger.info("Found " + subalbumImages.size() + " images in subalbum");
+                    imageURLs.addAll(subalbumImages);
+                } catch (IOException e) {
+                    logger.warn("Error while loading subalbum " + subUrl, e);
+                    continue;
+                }
+            }
+        }
+        else {
+            // Page contains images
+            for (Element thumb : page.select("img")) {
+                // Find thumbnail image source
+                String image = null;
+                if (thumb.hasAttr("data-cfsrc")) {
+                    image = thumb.attr("data-cfsrc");
+                }
+                else if (thumb.hasAttr("src")) {
+                    image = thumb.attr("src");
+                }
+                else {
+                    logger.warn("Thumb does not have data-cfsrc or src: " + thumb);
+                    continue;
+                }
+                // Remove relative directory path naming
+                image = image.replaceAll("\\.\\./", "");
+                if (image.startsWith("//")) {
+                    image = "http:" + image;
+                }
+                // Convert from thumb URL to full-size
+                if (image.contains("-cu_")) {
+                    image = image.replaceAll("-cu_[^.]+", "-me");
+                }
+                imageURLs.add(image);
+            }
+        }
+        return imageURLs;
+    }
+
+    @Override
+    public void downloadURL(URL url, int index) {
+        addURLToDownload(url, getPrefix(index), "", this.url.toExternalForm(), cookies);
+    }
+
+    @Override
+    public String getPrefix(int index) {
+        return String.format("%03d_", index);
+    }
 }
