@@ -10,6 +10,9 @@ import org.json.JSONObject;
 import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
 import com.rarchives.ripme.utils.Utils;
 
+/**
+ * Simplified ripper, designed for ripping from sites by parsing JSON.
+ */
 public abstract class AbstractJSONRipper extends AlbumRipper {
 
     public AbstractJSONRipper(URL url) throws IOException {

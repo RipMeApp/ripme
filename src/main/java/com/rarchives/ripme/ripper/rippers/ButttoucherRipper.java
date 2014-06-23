@@ -11,10 +11,10 @@ import java.util.regex.Pattern;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
-import com.rarchives.ripme.ripper.AbstractSinglePageRipper;
+import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 import com.rarchives.ripme.utils.Http;
 
-public class ButttoucherRipper extends AbstractSinglePageRipper {
+public class ButttoucherRipper extends AbstractHTMLRipper {
 
     public ButttoucherRipper(URL url) throws IOException {
         super(url);

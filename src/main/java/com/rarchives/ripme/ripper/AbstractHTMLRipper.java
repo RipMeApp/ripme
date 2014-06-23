@@ -10,6 +10,9 @@ import org.jsoup.nodes.Document;
 import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
 import com.rarchives.ripme.utils.Utils;
 
+/**
+ * Simplified ripper, designed for ripping from sites by parsing HTML.
+ */
 public abstract class AbstractHTMLRipper extends AlbumRipper {
 
     public AbstractHTMLRipper(URL url) throws IOException {
@@ -20,7 +23,9 @@ public abstract class AbstractHTMLRipper extends AlbumRipper {
     public abstract String getHost();
 
     public abstract Document getFirstPage() throws IOException;
-    public abstract Document getNextPage(Document doc) throws IOException;
+    public Document getNextPage(Document doc) throws IOException {
+        throw new IOException("getNextPage not implemented");
+    }
     public abstract List<String> getURLsFromPage(Document page);
     public abstract void downloadURL(URL url, int index);
     public DownloadThreadPool getThreadPool() {

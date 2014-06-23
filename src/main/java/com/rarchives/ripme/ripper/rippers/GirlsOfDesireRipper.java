@@ -12,14 +12,10 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import com.rarchives.ripme.ripper.AbstractSinglePageRipper;
-import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
+import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 import com.rarchives.ripme.utils.Http;
 
-public class GirlsOfDesireRipper extends AbstractSinglePageRipper {
-    // All sleep times are in milliseconds
-    private static final int IMAGE_SLEEP_TIME    = 100;
-
+public class GirlsOfDesireRipper extends AbstractHTMLRipper {
     // Current HTML document
     private Document albumDoc = null;
 
@@ -65,7 +61,7 @@ public class GirlsOfDesireRipper extends AbstractSinglePageRipper {
                         + "http://www.girlsofdesire.org/galleries/<name>/"
                         + " Got: " + url);
     }
-    
+
     @Override
     public Document getFirstPage() throws IOException {
         if (albumDoc == null) {
@@ -90,44 +86,7 @@ public class GirlsOfDesireRipper extends AbstractSinglePageRipper {
     
     @Override
     public void downloadURL(URL url, int index) {
-        addURLToDownload(url, getPrefix(index));
-    }
-
-    @Override
-    public void rip() throws IOException {
-        String nextUrl = this.url.toExternalForm();
-
-        if (albumDoc == null) {
-            logger.info("    Retrieving album page " + nextUrl);
-            sendUpdate(STATUS.LOADING_RESOURCE, nextUrl);
-            albumDoc = Http.url(nextUrl).get();
-        }
-
-        // Find thumbnails
-        Elements thumbs = albumDoc.select("td.vtop > a > img");
-        if (thumbs.size() == 0) {
-            logger.info("No images found at " + nextUrl);
-        }
-
-        // Iterate over images on page
-        for (Element thumb : thumbs) {
-            if (isStopped()) {
-                break;
-            }
-            // Convert thumbnail to full-size image
-            String imgSrc = thumb.attr("src");
-            imgSrc = imgSrc.replaceAll("_thumb\\.", ".");
-            URL imgUrl = new URL(url, imgSrc);
-
-            addURLToDownload(imgUrl, "", "", this.url.toExternalForm(), null);
-
-            try {
-                Thread.sleep(IMAGE_SLEEP_TIME);
-            } catch (InterruptedException e) {
-                logger.warn("Interrupted while waiting to load next image", e);
-            }
-        }
-
-        waitForThreads();
+        // Send referrer when downloading images
+        addURLToDownload(url, getPrefix(index), "", this.url.toExternalForm(), null);
     }
 }

@@ -16,11 +16,11 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import com.rarchives.ripme.ripper.AbstractSinglePageRipper;
+import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
 import com.rarchives.ripme.utils.Http;
 
-public class EightmusesRipper extends AbstractSinglePageRipper {
+public class EightmusesRipper extends AbstractHTMLRipper {
 
     private Document albumDoc = null;
     private Map<String,String> cookies = new HashMap<String,String>();
