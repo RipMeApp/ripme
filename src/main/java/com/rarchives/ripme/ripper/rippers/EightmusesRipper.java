@@ -129,6 +129,7 @@ public class EightmusesRipper extends AbstractHTMLRipper {
                 if (image.contains("-cu_")) {
                     image = image.replaceAll("-cu_[^.]+", "-me");
                 }
+                image = image.replaceAll(" ", "%20");
                 imageURLs.add(image);
             }
         }
