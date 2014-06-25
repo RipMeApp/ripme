@@ -51,8 +51,20 @@ public class GfycatRipper extends VideoRipper {
 
     @Override
     public void rip() throws IOException {
-        logger.info("    Retrieving " + this.url.toExternalForm());
-        Document doc = Http.url(this.url).get();
+        String vidUrl = getVideoURL(this.url);
+        addURLToDownload(new URL(vidUrl), "gfycat_" + getGID(this.url));
+        waitForThreads();
+    }
+
+    /**
+     * Helper method for retrieving video URLs.
+     * @param url URL to gfycat page
+     * @return URL to video
+     * @throws IOException
+     */
+    public static String getVideoURL(URL url) throws IOException {
+        logger.info("Retrieving " + url.toExternalForm());
+        Document doc = Http.url(url).get();
         Elements videos = doc.select("source#mp4source");
         if (videos.size() == 0) {
             throw new IOException("Could not find source#mp4source at " + url);
@@ -61,7 +73,6 @@ public class GfycatRipper extends VideoRipper {
         if (vidUrl.startsWith("//")) {
             vidUrl = "http:" + vidUrl;
         }
-        addURLToDownload(new URL(vidUrl), "gfycat_" + getGID(this.url));
-        waitForThreads();
+        return vidUrl;
     }
 }

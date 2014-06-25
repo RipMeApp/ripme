@@ -3,23 +3,18 @@ package com.rarchives.ripme.ripper.rippers;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
 
-import com.rarchives.ripme.ripper.AlbumRipper;
-import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
+import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 import com.rarchives.ripme.utils.Http;
-import com.rarchives.ripme.utils.Utils;
 
-public class VidbleRipper extends AlbumRipper {
-
-    private static final String DOMAIN = "vidble.com",
-                                HOST   = "vidble";
-
-    private Document albumDoc = null;
+public class VidbleRipper extends AbstractHTMLRipper {
 
     public VidbleRipper(URL url) throws IOException {
         super(url);
@@ -27,7 +22,11 @@ public class VidbleRipper extends AlbumRipper {
 
     @Override
     public String getHost() {
-        return HOST;
+        return "vidble";
+    }
+    @Override
+    public String getDomain() {
+        return "vidble.com";
     }
     
     @Override
@@ -46,44 +45,40 @@ public class VidbleRipper extends AlbumRipper {
     }
 
     @Override
-    public void rip() throws IOException {
-        logger.info("Retrieving " + this.url);
-        sendUpdate(STATUS.LOADING_RESOURCE, this.url.toExternalForm());
-        if (albumDoc == null) {
-            albumDoc = Http.url(this.url).get();
-        }
-        Elements els = albumDoc.select("#ContentPlaceHolder1_thumbs");
-        if (els.size() == 0) {
-            throw new IOException("No thumbnails found at " + this.url);
-        }
-        int index = 0;
-        String thumbs = els.get(0).attr("value");
+    public Document getFirstPage() throws IOException {
+        return Http.url(url).get();
+    }
+
+    @Override
+    public List<String> getURLsFromPage(Document doc) {
+        return getURLsFromPageStatic(doc);
+    }
+
+    private static List<String> getURLsFromPageStatic(Document doc) {
+        List<String> imageURLs = new ArrayList<String>();
+        Elements els = doc.select("#ContentPlaceHolder1_thumbs");
+        String thumbs = els.first().attr("value");
         for (String thumb : thumbs.split(",")) {
             if (thumb.trim().equals("")) {
                 continue;
             }
             thumb = thumb.replaceAll("_[a-zA-Z]{3,5}", "");
-            String image = "http://vidble.com/" + thumb;
-            index += 1;
-            String prefix = "";
-            if (Utils.getConfigBoolean("download.save_order", true)) {
-                prefix = String.format("%03d_", index);
-            }
-            addURLToDownload(new URL(image), prefix);
+            imageURLs.add("http://vidble.com/" + thumb);
         }
-        waitForThreads();
-    }
-
-    public boolean canRip(URL url) {
-        if (!url.getHost().endsWith(DOMAIN)) {
-            return false;
-        }
-        return true;
+        return imageURLs;
     }
 
     @Override
-    public URL sanitizeURL(URL url) throws MalformedURLException {
-        return url;
+    public void downloadURL(URL url, int index) {
+        addURLToDownload(url, getPrefix(index));
     }
 
+    public static List<URL> getURLsFromPage(URL url) throws IOException {
+        List<URL> urls = new ArrayList<URL>();
+        Document doc = Http.url(url).get();
+        for (String stringURL : getURLsFromPageStatic(doc)) {
+            urls.add(new URL(stringURL));
+        }
+        return urls;
+    }
 }

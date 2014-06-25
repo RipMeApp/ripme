@@ -15,8 +15,10 @@ import org.jsoup.nodes.Element;
 
 import com.rarchives.ripme.ripper.AbstractRipper;
 import com.rarchives.ripme.ripper.rippers.ImgurRipper;
+import com.rarchives.ripme.ripper.rippers.VidbleRipper;
 import com.rarchives.ripme.ripper.rippers.ImgurRipper.ImgurAlbum;
 import com.rarchives.ripme.ripper.rippers.ImgurRipper.ImgurImage;
+import com.rarchives.ripme.ripper.rippers.video.GfycatRipper;
 
 public class RipUtils {
     private static final Logger logger = Logger.getLogger(RipUtils.class);
@@ -25,19 +27,36 @@ public class RipUtils {
         List<URL> result = new ArrayList<URL>();
 
         // Imgur album
-        if ((url.getHost().equals("m.imgur.com") || url.getHost().equals("imgur.com")) 
+        if ((url.getHost().endsWith("imgur.com")) 
                 && url.toExternalForm().contains("imgur.com/a/")) {
             try {
                 ImgurAlbum imgurAlbum = ImgurRipper.getImgurAlbum(url);
                 for (ImgurImage imgurImage : imgurAlbum.images) {
                     result.add(imgurImage.url);
                 }
-                return result;
             } catch (IOException e) {
                 logger.error("[!] Exception while loading album " + url, e);
-                return result;
             }
-           
+            return result;
+        }
+        else if (url.getHost().endsWith("gfycat.com")) {
+            try {
+                String videoURL = GfycatRipper.getVideoURL(url);
+                result.add(new URL(videoURL));
+            } catch (IOException e) {
+                // Do nothing
+                logger.warn("Exception while retrieving gfycat page:", e);
+            }
+            return result;
+        }
+        else if (url.toExternalForm().contains("vidble.com/album/")) {
+            try {
+                result.addAll(VidbleRipper.getURLsFromPage(url));
+            } catch (IOException e) {
+                // Do nothing
+                logger.warn("Exception while retrieving vidble page:", e);
+            }
+            return result;
         }
 
         // Direct link to image
