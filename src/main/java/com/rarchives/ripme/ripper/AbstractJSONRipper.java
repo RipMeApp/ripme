@@ -23,7 +23,9 @@ public abstract class AbstractJSONRipper extends AlbumRipper {
     public abstract String getHost();
 
     public abstract JSONObject getFirstPage() throws IOException;
-    public abstract JSONObject getNextPage(JSONObject json) throws IOException;
+    public JSONObject getNextPage(JSONObject doc) throws IOException {
+        throw new IOException("getNextPage not implemented");
+    }
     public abstract List<String> getURLsFromJSON(JSONObject json);
     public abstract void downloadURL(URL url, int index);
     public DownloadThreadPool getThreadPool() {

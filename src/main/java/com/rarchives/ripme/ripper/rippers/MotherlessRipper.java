@@ -41,6 +41,25 @@ public class MotherlessRipper extends AlbumRipper {
     public URL sanitizeURL(URL url) throws MalformedURLException {
         return url;
     }
+    /*
+    @Override
+    public Document getFirstPage() throws IOException {
+        
+    }
+    @Override
+    public Document getNextPage(Document doc) throws IOException {
+        
+    }
+    @Override
+    public List<String> getURLsFromPage(Document doc) {
+        List<String> imageURLs = new ArrayList<String>();
+        return imageURLs;
+    }
+    @Override
+    public void downloadURL(URL url, int index) {
+        addURLToDownload(url, getPrefix(index));
+    }
+    */
 
     @Override
     public String getGID(URL url) throws MalformedURLException {

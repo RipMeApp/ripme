@@ -3,6 +3,8 @@ package com.rarchives.ripme.ripper.rippers;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -11,24 +13,42 @@ import org.json.JSONObject;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
-import com.rarchives.ripme.ripper.AlbumRipper;
+import com.rarchives.ripme.ripper.AbstractJSONRipper;
 import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
 import com.rarchives.ripme.utils.Http;
 
-public class InstagramRipper extends AlbumRipper {
+public class InstagramRipper extends AbstractJSONRipper {
 
-    private static final String DOMAIN = "instagram.com",
-                                HOST   = "instagram";
+    private String userID;
 
     public InstagramRipper(URL url) throws IOException {
         super(url);
     }
 
     @Override
+    public String getHost() {
+        return "instagram";
+    }
+    @Override
+    public String getDomain() {
+        return "instagram.com";
+    }
+
+    @Override
     public boolean canRip(URL url) {
-        return (url.getHost().endsWith(DOMAIN)
+        return (url.getHost().endsWith("instagram.com")
              || url.getHost().endsWith("statigr.am")
              || url.getHost().endsWith("iconosquare.com"));
+    }
+
+    @Override
+    public String getGID(URL url) throws MalformedURLException {
+        Pattern p = Pattern.compile("^https?://iconosquare.com/([a-zA-Z0-9\\-_.]{3,}).*$");
+        Matcher m = p.matcher(url.toExternalForm());
+        if (m.matches()) {
+            return m.group(1);
+        }
+        throw new MalformedURLException("Unable to find user in " + url);
     }
 
     @Override
@@ -82,69 +102,68 @@ public class InstagramRipper extends AlbumRipper {
         }
         throw new IOException("Unable to find userID at " + this.url);
     }
-
+    
     @Override
-    public void rip() throws IOException {
-        String userID = getUserID(this.url);
-        String baseURL = "http://iconosquare.com/controller_nl.php?action=getPhotoUserPublic&user_id=" + userID;
-        String params = "";
-        while (true) {
-            String url = baseURL + params;
-            this.sendUpdate(STATUS.LOADING_RESOURCE, url);
-            logger.info("    Retrieving " + url);
-            JSONObject json = Http.url(url).getJSON();
-            JSONArray datas = json.getJSONArray("data");
-            String nextMaxID = "";
-            if (datas.length() == 0) {
-                break;
-            }
-            for (int i = 0; i < datas.length(); i++) {
-                JSONObject data = (JSONObject) datas.get(i);
-                if (data.has("id")) {
-                    nextMaxID = data.getString("id");
-                }
-                String imageUrl;
-                if (data.has("videos")) {
-                    imageUrl = data.getJSONObject("videos").getJSONObject("standard_resolution").getString("url");
-                } else if (data.has("images")) {
-                    imageUrl = data.getJSONObject("images").getJSONObject("standard_resolution").getString("url");
-                } else {
-                    continue;
-                }
-                addURLToDownload(new URL(imageUrl));
-            }
-            JSONObject pagination = json.getJSONObject("pagination");
-            if (nextMaxID.equals("")) {
-                if (!pagination.has("next_max_id")) {
-                    break;
-                } else {
-                    nextMaxID = pagination.getString("next_max_id");
-                }
-            }
-            params = "&max_id=" + nextMaxID;
-            try {
-                Thread.sleep(3000);
-            } catch (InterruptedException e) {
-                logger.error("[!] Interrupted while waiting to load next album:", e);
-                break;
-            }
-        }
-        waitForThreads();
+    public JSONObject getFirstPage() throws IOException {
+        userID = getUserID(url);
+        String baseURL = "http://iconosquare.com/controller_nl.php?action=getPhotoUserPublic&user_id="
+                        + userID;
+        logger.info("Loading " + baseURL);
+        return Http.url(baseURL).getJSON();
     }
 
     @Override
-    public String getHost() {
-        return HOST;
-    }
-
-    @Override
-    public String getGID(URL url) throws MalformedURLException {
-        Pattern p = Pattern.compile("^https?://iconosquare.com/([a-zA-Z0-9\\-_.]{3,}).*$");
-        Matcher m = p.matcher(url.toExternalForm());
-        if (m.matches()) {
-            return m.group(1);
+    public JSONObject getNextPage(JSONObject json) throws IOException {
+        JSONObject pagination = json.getJSONObject("pagination");
+        String nextMaxID = "";
+        JSONArray datas = json.getJSONArray("data");
+        for (int i = 0; i < datas.length(); i++) {
+            JSONObject data = datas.getJSONObject(i);
+            if (data.has("id")) {
+                nextMaxID = data.getString("id");
+            }
         }
-        throw new MalformedURLException("Unable to find user in " + url);
+        if (nextMaxID.equals("")) {
+            if (!pagination.has("next_max_id")) {
+                throw new IOException("No next_max_id found, stopping");
+            }
+            nextMaxID = pagination.getString("next_max_id");
+        }
+        String baseURL = "http://iconosquare.com/controller_nl.php?action=getPhotoUserPublic&user_id="
+                        + userID
+                        + "&max_id=" + nextMaxID;
+        logger.info("Loading " + baseURL);
+        sleep(1000);
+        JSONObject nextJSON = Http.url(baseURL).getJSON();
+        datas = nextJSON.getJSONArray("data");
+        if (datas.length() == 0) {
+            throw new IOException("No more images found");
+        }
+        return nextJSON;
+    }
+    
+    @Override
+    public List<String> getURLsFromJSON(JSONObject json) {
+        List<String> imageURLs = new ArrayList<String>();
+        JSONArray datas = json.getJSONArray("data");
+        for (int i = 0; i < datas.length(); i++) {
+            JSONObject data = (JSONObject) datas.get(i);
+            String imageURL;
+            if (data.has("videos")) {
+                imageURL = data.getJSONObject("videos").getJSONObject("standard_resolution").getString("url");
+            } else if (data.has("images")) {
+                imageURL = data.getJSONObject("images").getJSONObject("standard_resolution").getString("url");
+            } else {
+                continue;
+            }
+            imageURLs.add(imageURL);
+        }
+        return imageURLs;
+    }
+    
+    @Override
+    public void downloadURL(URL url, int index) {
+        addURLToDownload(url);
     }
 
 }

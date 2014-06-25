@@ -3,6 +3,8 @@ package com.rarchives.ripme.ripper.rippers;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -10,24 +12,22 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import com.rarchives.ripme.ripper.AlbumRipper;
+import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 import com.rarchives.ripme.ripper.DownloadThreadPool;
-import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
 import com.rarchives.ripme.utils.Http;
 import com.rarchives.ripme.utils.Utils;
 
-public class ImagebamRipper extends AlbumRipper {
-
-    private static final int IMAGE_SLEEP_TIME = 250,
-                             PAGE_SLEEP_TIME  = 3000;
-
-    private static final String DOMAIN = "imagebam.com", HOST = "imagebam";
-
-    // Thread pool for finding direct image links from "image" pages (html)
-    private DownloadThreadPool imagebamThreadPool = new DownloadThreadPool("imagebam");
+public class ImagebamRipper extends AbstractHTMLRipper {
 
     // Current HTML document
     private Document albumDoc = null;
+
+    // Thread pool for finding direct image links from "image" pages (html)
+    private DownloadThreadPool imagebamThreadPool = new DownloadThreadPool("imagebam");
+    @Override
+    public DownloadThreadPool getThreadPool() {
+        return imagebamThreadPool;
+    }
 
     public ImagebamRipper(URL url) throws IOException {
         super(url);
@@ -35,36 +35,11 @@ public class ImagebamRipper extends AlbumRipper {
 
     @Override
     public String getHost() {
-        return HOST;
+        return "imagebam";
     }
-
-    public URL sanitizeURL(URL url) throws MalformedURLException {
-        return url;
-    }
-
-    public String getAlbumTitle(URL url) throws MalformedURLException {
-        try {
-            // Attempt to use album title as GID
-            if (albumDoc == null) {
-                logger.info("    Retrieving " + url.toExternalForm());
-                sendUpdate(STATUS.LOADING_RESOURCE, url.toString());
-                albumDoc = Http.url(url).get();
-            }
-            Elements elems = albumDoc.select("legend");
-            String title = elems.first().text();
-            logger.info("Title text: '" + title + "'");
-            Pattern p = Pattern.compile("^(.*)\\s\\d* image.*$");
-            Matcher m = p.matcher(title);
-            if (m.matches()) {
-                logger.info("matches!");
-                return HOST + "_" + getGID(url) + " (" + m.group(1).trim() + ")";
-            }
-            logger.info("Doesn't match " + p.pattern());
-        } catch (Exception e) {
-            // Fall back to default album naming convention
-            logger.warn("Failed to get album title from " + url, e);
-        }
-        return super.getAlbumTitle(url);
+    @Override
+    public String getDomain() {
+        return "imagebam.com";
     }
 
     @Override
@@ -83,73 +58,61 @@ public class ImagebamRipper extends AlbumRipper {
                         + "http://www.imagebam.com/gallery/galleryid"
                         + " Got: " + url);
     }
-
+    
     @Override
-    public void rip() throws IOException {
-        int index = 0;
-        String nextUrl = this.url.toExternalForm();
-        while (true) {
-            if (isStopped()) {
-                break;
-            }
-            if (albumDoc == null) {
-                logger.info("    Retrieving album page " + nextUrl);
-                sendUpdate(STATUS.LOADING_RESOURCE, nextUrl);
-                albumDoc = Http.url(nextUrl)
-                               .referrer(this.url)
-                               .get();
-            }
-            // Find thumbnails
-            Elements thumbs = albumDoc.select("div > a[target=_blank]:not(.footera)");
-            if (thumbs.size() == 0) {
-                logger.info("No images found at " + nextUrl);
-                break;
-            }
-            // Iterate over images on page
-            for (Element thumb : thumbs) {
-                if (isStopped()) {
-                    break;
-                }
-                index++;
-                ImagebamImageThread t = new ImagebamImageThread(new URL(thumb.attr("href")), index);
-                imagebamThreadPool.addThread(t);
-                try {
-                    Thread.sleep(IMAGE_SLEEP_TIME);
-                } catch (InterruptedException e) {
-                    logger.warn("Interrupted while waiting to load next image", e);
-                }
-            }
-
-            if (isStopped()) {
-                break;
-            }
-            // Find next page
-            Elements hrefs = albumDoc.select("a.pagination_current + a.pagination_link");
-            if (hrefs.size() == 0) {
-                logger.info("No more pages found at " + nextUrl);
-                break;
-            }
-            nextUrl = "http://www.imagebam.com" + hrefs.first().attr("href");
-            logger.info("Found next page: " + nextUrl);
-
-            // Reset albumDoc so we fetch the page next time
-            albumDoc = null;
-
-            // Sleep before loading next page
-            try {
-                Thread.sleep(PAGE_SLEEP_TIME);
-            } catch (InterruptedException e) {
-                logger.error("Interrupted while waiting to load next page", e);
-                break;
-            }
+    public Document getFirstPage() throws IOException {
+        if (albumDoc == null) {
+            albumDoc = Http.url(url).get();
         }
-
-        imagebamThreadPool.waitForThreads();
-        waitForThreads();
+        return albumDoc;
+    }
+    
+    @Override
+    public Document getNextPage(Document doc) throws IOException {
+        // Find next page
+        Elements hrefs = doc.select("a.pagination_current + a.pagination_link");
+        if (hrefs.size() == 0) {
+            throw new IOException("No more pages");
+        }
+        String nextUrl = "http://www.imagebam.com" + hrefs.first().attr("href");
+        sleep(500);
+        return Http.url(nextUrl).get();
+    }
+    
+    @Override
+    public List<String> getURLsFromPage(Document doc) {
+        List<String> imageURLs = new ArrayList<String>();
+        for (Element thumb : doc.select("div > a[target=_blank]:not(.footera)")) {
+            imageURLs.add(thumb.attr("href"));
+        }
+        return imageURLs;
     }
 
-    public boolean canRip(URL url) {
-        return url.getHost().endsWith(DOMAIN);
+    @Override
+    public void downloadURL(URL url, int index) {
+        ImagebamImageThread t = new ImagebamImageThread(url, index);
+        imagebamThreadPool.addThread(t);
+        sleep(500);
+    }
+
+    @Override
+    public String getAlbumTitle(URL url) throws MalformedURLException {
+        try {
+            // Attempt to use album title as GID
+            Elements elems = getFirstPage().select("legend");
+            String title = elems.first().text();
+            logger.info("Title text: '" + title + "'");
+            Pattern p = Pattern.compile("^(.*)\\s\\d* image.*$");
+            Matcher m = p.matcher(title);
+            if (m.matches()) {
+                return getHost() + "_" + getGID(url) + " (" + m.group(1).trim() + ")";
+            }
+            logger.info("Doesn't match " + p.pattern());
+        } catch (Exception e) {
+            // Fall back to default album naming convention
+            logger.warn("Failed to get album title from " + url, e);
+        }
+        return super.getAlbumTitle(url);
     }
 
     /**

@@ -3,56 +3,66 @@ package com.rarchives.ripme.ripper.rippers;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import com.rarchives.ripme.ripper.AlbumRipper;
+import com.rarchives.ripme.ripper.AbstractJSONRipper;
 import com.rarchives.ripme.ripper.rippers.ImgurRipper.ImgurAlbum;
 import com.rarchives.ripme.ripper.rippers.ImgurRipper.ImgurImage;
 import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
 import com.rarchives.ripme.utils.Http;
 import com.rarchives.ripme.utils.Utils;
 
-public class IrarchivesRipper extends AlbumRipper {
-
-    private static final String DOMAIN = "i.rarchives.com",
-                                HOST   = "irarchives";
+public class IrarchivesRipper extends AbstractJSONRipper {
 
     public IrarchivesRipper(URL url) throws IOException {
         super(url);
     }
 
     @Override
-    public boolean canRip(URL url) {
-        return url.getHost().endsWith(DOMAIN);
+    public String getHost() {
+        return "irarchives";
+    }
+    @Override
+    public String getDomain() {
+        return "i.rarchives.com";
     }
 
     @Override
     public URL sanitizeURL(URL url) throws MalformedURLException {
         String u = url.toExternalForm();
         String searchTerm = u.substring(u.indexOf("?") + 1);
+        searchTerm = searchTerm.replace("%3A", "=");
         if (searchTerm.startsWith("url=")) {
             if (!searchTerm.contains("http")
                     && !searchTerm.contains(":")) {
                 searchTerm = searchTerm.replace("url=", "user=");
             }
         }
+        searchTerm = searchTerm.replace("user=user=", "user=");
         return new URL("http://i.rarchives.com/search.cgi?" + searchTerm);
     }
 
     @Override
-    public void rip() throws IOException {
-        logger.info("    Retrieving " + this.url);
-        JSONObject json = Http.url(url)
-                                .timeout(60 * 1000)
-                                .getJSON();
+    public String getGID(URL url) throws MalformedURLException {
+        String u = url.toExternalForm();
+        String searchTerm = u.substring(u.indexOf("?") + 1);
+        return Utils.filesystemSafe(searchTerm);
+    }
+    
+    @Override
+    public JSONObject getFirstPage() throws IOException {
+        return Http.url(url)
+                   .timeout(60 * 1000)
+                   .getJSON();
+    }
+    @Override
+    public List<String> getURLsFromJSON(JSONObject json) {
+        List<String> imageURLs = new ArrayList<String>();
         JSONArray posts = json.getJSONArray("posts");
-        if (posts.length() == 0) {
-            logger.error("No posts found at " + this.url);
-            sendUpdate(STATUS.DOWNLOAD_ERRORED, "No posts found at " + this.url);
-            throw new IOException("No posts found at this URL");
-        }
         for (int i = 0; i < posts.length(); i++) {
             JSONObject post = (JSONObject) posts.get(i);
             String theUrl = post.getString("url");
@@ -65,34 +75,18 @@ public class IrarchivesRipper extends AlbumRipper {
                     sendUpdate(STATUS.DOWNLOAD_ERRORED, "Can't download " + theUrl + " : " + e.getMessage());
                     continue;
                 }
-                int albumIndex = 0;
                 for (ImgurImage image : album.images) {
-                    albumIndex++;
-                    String saveAs = String.format("%s-", post.getString("hexid"));
-                    if (Utils.getConfigBoolean("download.save_order", true)) {
-                        saveAs += String.format("%03d_", albumIndex);
-                    }
-                    addURLToDownload(image.url, saveAs);
+                    imageURLs.add(image.url.toExternalForm());
                 }
             }
             else {
-                theUrl = post.getString("imageurl");
-                String saveAs = String.format("%s-", post.getString("hexid"));
-                addURLToDownload(new URL(theUrl), saveAs);
+                imageURLs.add(post.getString("imageurl"));
             }
         }
-        waitForThreads();
+        return imageURLs;
     }
-
     @Override
-    public String getHost() {
-        return HOST;
-    }
-
-    @Override
-    public String getGID(URL url) throws MalformedURLException {
-        String u = url.toExternalForm();
-        String searchTerm = u.substring(u.indexOf("?") + 1);
-        return Utils.filesystemSafe(searchTerm);
+    public void downloadURL(URL url, int index) {
+        addURLToDownload(url, getPrefix(index));
     }
 }

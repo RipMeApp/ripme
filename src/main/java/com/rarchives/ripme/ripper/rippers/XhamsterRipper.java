@@ -15,8 +15,7 @@ import com.rarchives.ripme.utils.Utils;
 
 public class XhamsterRipper extends AlbumRipper {
 
-    private static final String DOMAIN = "xhamster.com",
-                                HOST   = "xhamster";
+    private static final String HOST = "xhamster";
 
     public XhamsterRipper(URL url) throws IOException {
         super(url);
@@ -24,7 +23,9 @@ public class XhamsterRipper extends AlbumRipper {
 
     @Override
     public boolean canRip(URL url) {
-        return url.getHost().endsWith(DOMAIN);
+        Pattern p = Pattern.compile("^https?://[wm.]*xhamster\\.com/photos/gallery/[0-9]+.*$");
+        Matcher m = p.matcher(url.toExternalForm());
+        return m.matches();
     }
 
     @Override

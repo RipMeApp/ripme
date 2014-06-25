@@ -3,6 +3,8 @@ package com.rarchives.ripme.ripper.rippers;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -10,20 +12,19 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import com.rarchives.ripme.ripper.AlbumRipper;
+import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 import com.rarchives.ripme.ripper.DownloadThreadPool;
-import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
 import com.rarchives.ripme.utils.Http;
 import com.rarchives.ripme.utils.Utils;
 
-public class ImagevenueRipper extends AlbumRipper {
-
-    private static final int IMAGE_SLEEP_TIME = 0;
-
-    private static final String DOMAIN = "imagevenue.com", HOST = "imagevenue";
+public class ImagevenueRipper extends AbstractHTMLRipper {
 
     // Thread pool for finding direct image links from "image" pages (html)
     private DownloadThreadPool imagevenueThreadPool = new DownloadThreadPool("imagevenue");
+    @Override
+    public DownloadThreadPool getThreadPool() {
+        return imagevenueThreadPool;
+    }
 
     public ImagevenueRipper(URL url) throws IOException {
         super(url);
@@ -31,11 +32,11 @@ public class ImagevenueRipper extends AlbumRipper {
 
     @Override
     public String getHost() {
-        return HOST;
+        return "imagevenue";
     }
-
-    public URL sanitizeURL(URL url) throws MalformedURLException {
-        return url;
+    @Override
+    public String getDomain() {
+        return "imagevenue.com";
     }
 
     @Override
@@ -54,43 +55,23 @@ public class ImagevenueRipper extends AlbumRipper {
                         + "http://...imagevenue.com/galshow.php?gal=gallery_...."
                         + " Got: " + url);
     }
-
+    
     @Override
-    public void rip() throws IOException {
-        int index = 0;
-        String nextUrl = this.url.toExternalForm();
-        logger.info("    Retrieving album page " + nextUrl);
-        sendUpdate(STATUS.LOADING_RESOURCE, nextUrl);
-        Document albumDoc = Http.url(nextUrl).get();
-        // Find thumbnails
-        Elements thumbs = albumDoc.select("a[target=_blank]");
-        if (thumbs.size() == 0) {
-            logger.info("No images found at " + nextUrl);
-        }
-        else {
-            // Iterate over images on page
-            for (Element thumb : thumbs) {
-                if (isStopped()) {
-                    break;
-                }
-                index++;
-                ImagevenueImageThread t = new ImagevenueImageThread(new URL(thumb.attr("href")), index);
-                imagevenueThreadPool.addThread(t);
-                try {
-                    Thread.sleep(IMAGE_SLEEP_TIME);
-                } catch (InterruptedException e) {
-                    logger.warn("Interrupted while waiting to load next image", e);
-                    break;
-                }
-            }
-        }
-
-        imagevenueThreadPool.waitForThreads();
-        waitForThreads();
+    public Document getFirstPage() throws IOException {
+        return Http.url(url).get();
     }
-
-    public boolean canRip(URL url) {
-        return url.getHost().endsWith(DOMAIN);
+    
+    public List<String> getURLsFromPage(Document doc) {
+        List<String> imageURLs = new ArrayList<String>();
+        for (Element thumb : doc.select("a[target=_blank]")) {
+            imageURLs.add(thumb.attr("href"));
+        }
+        return imageURLs;
+    }
+    
+    public void downloadURL(URL url, int index) {
+        ImagevenueImageThread t = new ImagevenueImageThread(url, index);
+        imagevenueThreadPool.addThread(t);
     }
 
     /**
@@ -115,8 +96,9 @@ public class ImagevenueRipper extends AlbumRipper {
         
         private void fetchImage() {
             try {
-                sendUpdate(STATUS.LOADING_RESOURCE, this.url.toExternalForm());
-                Document doc = Http.url(this.url).get();
+                Document doc = Http.url(url)
+                                   .retries(3)
+                                   .get();
                 // Find image
                 Elements images = doc.select("a > img");
                 if (images.size() == 0) {

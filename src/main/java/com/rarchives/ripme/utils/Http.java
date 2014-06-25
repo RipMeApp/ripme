@@ -103,6 +103,9 @@ public class Http {
     }
 
     // Getters
+    public Connection connection() {
+        return connection;
+    }
     public Document get() throws IOException {
         connection.method(Method.GET);
         return response().parse();

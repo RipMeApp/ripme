@@ -3,6 +3,9 @@ package com.rarchives.ripme.ripper.rippers;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -12,95 +15,23 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import com.rarchives.ripme.ripper.AlbumRipper;
-import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
+import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 import com.rarchives.ripme.utils.Http;
-import com.rarchives.ripme.utils.Utils;
 
-public class HentaifoundryRipper extends AlbumRipper {
+public class HentaifoundryRipper extends AbstractHTMLRipper {
 
-    private static final String DOMAIN = "hentai-foundry.com",
-                                HOST   = "hentai-foundry";
-
+    private Map<String,String> cookies = new HashMap<String,String>();
     public HentaifoundryRipper(URL url) throws IOException {
         super(url);
     }
 
-    public boolean canRip(URL url) {
-        return url.getHost().endsWith(DOMAIN);
-    }
-
-    public URL sanitizeURL(URL url) throws MalformedURLException {
-        return url;
-    }
-
-    @Override
-    public void rip() throws IOException {
-        Pattern imgRegex = Pattern.compile(".*/user/([a-zA-Z0-9\\-_]+)/(\\d+)/.*");
-        String nextURL = this.url.toExternalForm();
-        int index = 0;
-        
-        // Get cookies
-        Response resp = Http.url("http://www.hentai-foundry.com/").response();
-        Map<String,String> cookies = resp.cookies();
-        resp = Http.url("http://www.hentai-foundry.com/?enterAgree=1&size=1500")
-                   .referrer("http://www.hentai-foundry.com/")
-                   .cookies(cookies)
-                   .response();
-        cookies = resp.cookies();
-        logger.info("cookies: " + cookies);
-        
-        // Iterate over every page
-        while (true) {
-            if (isStopped()) {
-                break;
-            }
-            sendUpdate(STATUS.LOADING_RESOURCE, nextURL);
-            Document doc = Http.url(nextURL)
-                               .referrer(this.url)
-                               .cookies(cookies)
-                               .get();
-            for (Element thumb : doc.select("td > a:first-child")) {
-                if (isStopped()) {
-                    break;
-                }
-                Matcher imgMatcher = imgRegex.matcher(thumb.attr("href"));
-                if (!imgMatcher.matches()) {
-                    logger.info("Couldn't find user & image ID in " + thumb.attr("href"));
-                    continue;
-                }
-                String user = imgMatcher.group(1),
-                       imageId = imgMatcher.group(2);
-                String image = "http://pictures.hentai-foundry.com//";
-                logger.info("user: " + user + "; imageId: " + imageId + "; image: " + image);
-                image += user.toLowerCase().charAt(0);
-                image += "/" + user + "/" + imageId + ".jpg";
-                index += 1;
-                String prefix = "";
-                if (Utils.getConfigBoolean("download.save_order", true)) {
-                    prefix = String.format("%03d_", index);
-                }
-                addURLToDownload(new URL(image), prefix);
-            }
-            
-            if (doc.select("li.next.hidden").size() > 0) {
-                // Last page
-                break;
-            }
-            Elements els = doc.select("li.next > a");
-            logger.info("li.next > a : " + els);
-            Element first = els.first();
-            logger.info("li.next > a .first() : " + first);
-            nextURL = first.attr("href");
-            logger.info("first().attr(href) : " + nextURL);
-            nextURL = "http://www.hentai-foundry.com" + nextURL;
-        }
-        waitForThreads();
-    }
-
     @Override
     public String getHost() {
-        return HOST;
+        return "hentai-foundry";
+    }
+    @Override
+    public String getDomain() {
+        return "hentai-foundry.com";
     }
 
     @Override
@@ -115,4 +46,67 @@ public class HentaifoundryRipper extends AlbumRipper {
                         + "hentai-foundry.com/pictures/user/USERNAME"
                         + " Got: " + url);
     }
+
+    @Override
+    public Document getFirstPage() throws IOException {
+        Response resp = Http.url("http://www.hentai-foundry.com/").response();
+        cookies = resp.cookies();
+        resp = Http.url("http://www.hentai-foundry.com/?enterAgree=1&size=1500")
+                   .referrer("http://www.hentai-foundry.com/")
+                   .cookies(cookies)
+                   .response();
+        cookies.putAll(resp.cookies());
+        sleep(500);
+        resp = Http.url(url)
+                   .referrer("http://www.hentai-foundry.com/")
+                   .cookies(cookies)
+                   .response();
+        cookies.putAll(resp.cookies());
+        return resp.parse();
+    }
+    
+    @Override
+    public Document getNextPage(Document doc) throws IOException {
+        if (doc.select("li.next.hidden").size() > 0) {
+            // Last page
+            throw new IOException("No more pages");
+        }
+        Elements els = doc.select("li.next > a");
+        Element first = els.first();
+        String nextURL = first.attr("href");
+        nextURL = "http://www.hentai-foundry.com" + nextURL;
+        return Http.url(nextURL)
+                   .referrer(url)
+                   .cookies(cookies)
+                   .get();
+    }
+
+    @Override
+    public List<String> getURLsFromPage(Document doc) {
+        List<String> imageURLs = new ArrayList<String>();
+        Pattern imgRegex = Pattern.compile(".*/user/([a-zA-Z0-9\\-_]+)/(\\d+)/.*");
+        for (Element thumb : doc.select("td > a:first-child")) {
+            if (isStopped()) {
+                break;
+            }
+            Matcher imgMatcher = imgRegex.matcher(thumb.attr("href"));
+            if (!imgMatcher.matches()) {
+                logger.info("Couldn't find user & image ID in " + thumb.attr("href"));
+                continue;
+            }
+            String user = imgMatcher.group(1),
+                imageId = imgMatcher.group(2);
+            String image = "http://pictures.hentai-foundry.com//";
+            image += user.toLowerCase().charAt(0);
+            image += "/" + user + "/" + imageId + ".jpg";
+            imageURLs.add(image);
+        }
+        return imageURLs;
+    }
+    
+    @Override
+    public void downloadURL(URL url, int index) {
+        addURLToDownload(url, getPrefix(index));
+    }
+
 }

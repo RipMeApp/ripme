@@ -3,22 +3,18 @@ package com.rarchives.ripme.ripper.rippers;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
-import com.rarchives.ripme.ripper.AlbumRipper;
-import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
+import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 import com.rarchives.ripme.utils.Http;
-import com.rarchives.ripme.utils.Utils;
 
-public class ImagefapRipper extends AlbumRipper {
-
-    private static final String DOMAIN = "imagefap.com",
-                                HOST   = "imagefap";
+public class ImagefapRipper extends AbstractHTMLRipper {
 
     private Document albumDoc = null;
 
@@ -28,36 +24,23 @@ public class ImagefapRipper extends AlbumRipper {
 
     @Override
     public String getHost() {
-        return HOST;
+        return "imagefap";
+    }
+    @Override
+    public String getDomain() {
+        return "imagefap.com";
     }
 
     /**
      * Reformat given URL into the desired format (all images on single page)
      */
+    @Override
     public URL sanitizeURL(URL url) throws MalformedURLException {
         String gid = getGID(url);
         URL newURL = new URL("http://www.imagefap.com/gallery.php?gid="
                             + gid + "&view=2");
-        logger.debug("Sanitized URL from " + url + " to " + newURL);
+        logger.debug("Changed URL from " + url + " to " + newURL);
         return newURL;
-    }
-    
-    public String getAlbumTitle(URL url) throws MalformedURLException {
-        try {
-            // Attempt to use album title as GID
-            if (albumDoc == null) {
-                albumDoc = Http.url(url).get();
-            }
-            String title = albumDoc.title();
-            Pattern p = Pattern.compile("^Porn pics of (.*) \\(Page 1\\)$");
-            Matcher m = p.matcher(title);
-            if (m.matches()) {
-                return m.group(1);
-            }
-        } catch (IOException e) {
-            // Fall back to default album naming convention
-        }
-        return super.getAlbumTitle(url);
     }
 
     @Override
@@ -88,61 +71,67 @@ public class ImagefapRipper extends AlbumRipper {
                         + "imagefap.com/pictures/####..."
                         + " Got: " + url);
     }
-
+    
     @Override
-    public void rip() throws IOException {
-        int index = 0;
-        sendUpdate(STATUS.LOADING_RESOURCE, this.url.toExternalForm());
-        logger.info("Retrieving " + this.url);
+    public Document getFirstPage() throws IOException {
         if (albumDoc == null) {
-            albumDoc = Http.url(this.url).get();
+            albumDoc = Http.url(url).get();
         }
-        while (true) {
-            if (isStopped()) {
+        return albumDoc;
+    }
+    
+    @Override
+    public Document getNextPage(Document doc) throws IOException {
+        String nextURL = null;
+        for (Element a : albumDoc.select("a.link3")) {
+            if (a.text().contains("next")) {
+                nextURL = a.attr("href");
+                nextURL = "http://imagefap.com/gallery.php" + nextURL;
                 break;
             }
-            for (Element thumb : albumDoc.select("#gallery img")) {
-                if (!thumb.hasAttr("src") || !thumb.hasAttr("width")) {
-                    continue;
-                }
-                String image = thumb.attr("src");
-                image = image.replaceAll(
-                        "http://x.*.fap.to/images/thumb/",
-                        "http://fap.to/images/full/");
-                index += 1;
-                String prefix = "";
-                if (Utils.getConfigBoolean("download.save_order", true)) {
-                    prefix = String.format("%03d_", index);
-                }
-                addURLToDownload(new URL(image), prefix);
-            }
-            String nextURL = null;
-            for (Element a : albumDoc.select("a.link3")) {
-                if (a.text().contains("next")) {
-                    nextURL = a.attr("href");
-                    nextURL = "http://imagefap.com/gallery.php" + nextURL;
-                    break;
-                }
-            }
-            if (nextURL == null) {
-                break;
-            }
-            else {
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    logger.error("Interrupted while waiting to load next page", e);
-                    throw new IOException(e);
-                }
-                sendUpdate(STATUS.LOADING_RESOURCE, this.url.toExternalForm());
-                albumDoc = Jsoup.connect(nextURL).get();
-            }
         }
-        waitForThreads();
+        if (nextURL == null) {
+            throw new IOException("No next page found");
+        }
+        sleep(1000);
+        return Http.url(nextURL).get();
+    }
+    
+    @Override
+    public List<String> getURLsFromPage(Document doc) {
+        List<String> imageURLs = new ArrayList<String>();
+        for (Element thumb : albumDoc.select("#gallery img")) {
+            if (!thumb.hasAttr("src") || !thumb.hasAttr("width")) {
+                continue;
+            }
+            String image = thumb.attr("src");
+            image = image.replaceAll(
+                    "http://x.*.fap.to/images/thumb/",
+                    "http://fap.to/images/full/");
+            imageURLs.add(image);
+        }
+        return imageURLs;
+    }
+    
+    @Override
+    public void downloadURL(URL url, int index) {
+        addURLToDownload(url, getPrefix(index));
     }
 
-    public boolean canRip(URL url) {
-        return url.getHost().endsWith(DOMAIN);
+    @Override
+    public String getAlbumTitle(URL url) throws MalformedURLException {
+        try {
+            // Attempt to use album title as GID
+            String title = getFirstPage().title();
+            Pattern p = Pattern.compile("^Porn pics of (.*) \\(Page 1\\)$");
+            Matcher m = p.matcher(title);
+            if (m.matches()) {
+                return getHost() + "_" + m.group(1);
+            }
+        } catch (IOException e) {
+            // Fall back to default album naming convention
+        }
+        return super.getAlbumTitle(url);
     }
 
 }
