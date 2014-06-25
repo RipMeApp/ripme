@@ -261,8 +261,8 @@ public class Utils {
         text = text.replaceAll("[^a-zA-Z0-9.-]", "_")
                    .replaceAll("__", "_")
                    .replaceAll("_+$", "");
-        if (text.length() > 255) {
-            text = text.substring(0, 254);
+        if (text.length() > 100) {
+            text = text.substring(0, 99);
         }
         return text;
     }
