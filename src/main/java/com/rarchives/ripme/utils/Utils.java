@@ -333,4 +333,26 @@ public class Utils {
         logger.info("Loaded " + logFile);
     }
 
+    /**
+     * Gets list of strings between two strings.
+     * @param fullText Text to retrieve from.
+     * @param start String that precedes the desired text
+     * @param finish String that follows the desired text
+     * @return List of all strings that are between 'start' and 'finish'
+     */
+    public static List<String> between(String fullText, String start, String finish) {
+        List<String> result = new ArrayList<String>();
+        int i, j;
+        i = fullText.indexOf(start);
+        while (i >= 0) {
+            i += start.length();
+            j = fullText.indexOf(finish, i);
+            if (j < 0) {
+                break;
+            }
+            result.add(fullText.substring(i, j));
+            i = fullText.indexOf(start, j + finish.length());
+        }
+        return result;
+    }
 }
