@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -11,7 +12,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.swing.JOptionPane;
+import javax.swing.JPasswordField;
 
+import org.jsoup.Connection.Method;
+import org.jsoup.Connection.Response;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -22,7 +26,7 @@ import com.rarchives.ripme.utils.Http;
 
 public class FuraffinityRipper extends AbstractHTMLRipper {
 
-	static Map<String, String> cookies;
+	static Map<String, String> cookies=null;
 	static final String urlBase = "http://www.furaffinity.net";
 
 	// Thread pool for finding direct image links from "image" pages (html)
@@ -51,12 +55,32 @@ public class FuraffinityRipper extends AbstractHTMLRipper {
 	@Override
 	public Document getFirstPage() throws IOException {
 		if (cookies == null || cookies.size() == 0) {
-			String a = JOptionPane.showInputDialog("Value of a-cookie");
-			String b = JOptionPane.showInputDialog("Value of b-cookie");
+			JPasswordField passwordField=new JPasswordField();
+			String user = JOptionPane.showInputDialog("Username");
+			JOptionPane.showMessageDialog(null,passwordField,"Password",JOptionPane.QUESTION_MESSAGE|JOptionPane.OK_OPTION);
+			String pass = Arrays.toString(passwordField.getPassword());
 
-			cookies = new HashMap<String, String>();
-			cookies.put("a", a);
-			cookies.put("b", b);
+			Response loginPage=Http.url(urlBase+"/login/")
+					.referrer(urlBase)
+					.response();
+			cookies=loginPage.cookies();
+			System.out.println("Cookies: "+cookies);
+			
+			Map<String,String> formData=new HashMap<String,String>();
+			formData.put("action", "login");
+			formData.put("retard_protection", "1");
+			formData.put("name", user);
+			formData.put("pass", pass);
+			formData.put("login", "Login to FurAffinity");
+			
+			Response doLogin=Http.url(urlBase+"/login/")
+					.referrer(urlBase+"/login/")
+					.cookies(cookies)
+					.data(formData)
+					.method(Method.POST)
+					.response();
+			cookies.putAll(doLogin.cookies());
+			System.out.println("Cookies: "+cookies);
 		}
 
 		return Http.url(url).cookies(cookies).get();
