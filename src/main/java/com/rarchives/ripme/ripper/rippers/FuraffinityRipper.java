@@ -73,7 +73,7 @@ public class FuraffinityRipper extends AbstractHTMLRipper {
 			formData.put("pass", pass);
 			formData.put("login", "Login to FurAffinity");
 			
-			Response doLogin=Http.url(urlBase+"/login/")
+			Response doLogin=Http.url(urlBase+"/login/?ref=http://www.furaffinity.net/")
 					.referrer(urlBase+"/login/")
 					.cookies(cookies)
 					.data(formData)
