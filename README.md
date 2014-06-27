@@ -37,7 +37,9 @@ Supported sites:
 * xhamster
 * (more)
 
-Request more sites [here](https://github.com/4pr0n/ripme/issues/8)
+[Full updated list](https://github.com/4pr0n/ripme/issues/8)
+
+Request more sites by adding a comment to [this Github issue](https://github.com/4pr0n/ripme/issues/8) or by following the wiki guide [How To Create A Ripper for HTML Websites](https://github.com/4pr0n/ripme/wiki/How-To-Create-A-Ripper-for-HTML-websites)
 
 Compiling & Building
 --------------------
