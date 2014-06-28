@@ -1,6 +1,7 @@
 package com.rarchives.ripme.ripper;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -41,15 +42,32 @@ public abstract class AlbumRipper extends AbstractRipper {
             logger.info("[!] Skipping " + url + " -- already attempted: " + Utils.removeCWD(saveAs));
             return;
         }
-        itemsPending.put(url, saveAs);
-        DownloadFileThread dft = new DownloadFileThread(url,  saveAs,  this);
-        if (referrer != null) {
-            dft.setReferrer(referrer);
+        if (Utils.getConfigBoolean("urls_only.save", false)) {
+            // Output URL to file
+            String urlFile = this.workingDir + File.separator + "urls.txt";
+            try {
+                FileWriter fw = new FileWriter(urlFile, true);
+                fw.write(url.toExternalForm());
+                fw.write("\n");
+                fw.close();
+                RipStatusMessage msg = new RipStatusMessage(STATUS.DOWNLOAD_COMPLETE, urlFile);
+                itemsCompleted.put(url, new File(urlFile));
+                observer.update(this, msg);
+            } catch (IOException e) {
+                logger.error("Error while writing to " + urlFile, e);
+            }
         }
-        if (cookies != null) {
-            dft.setCookies(cookies);
+        else {
+            itemsPending.put(url, saveAs);
+            DownloadFileThread dft = new DownloadFileThread(url,  saveAs,  this);
+            if (referrer != null) {
+                dft.setReferrer(referrer);
+            }
+            if (cookies != null) {
+                dft.setCookies(cookies);
+            }
+            threadPool.addThread(dft);
         }
-        threadPool.addThread(dft);
     }
 
     @Override

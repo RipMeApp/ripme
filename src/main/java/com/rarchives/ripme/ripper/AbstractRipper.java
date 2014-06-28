@@ -1,5 +1,6 @@
 package com.rarchives.ripme.ripper;
 
+import java.awt.Desktop;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
@@ -208,7 +209,7 @@ public abstract class AbstractRipper
         if (!completed) {
             completed = true;
             logger.info("   Rip completed!");
-            
+
             RipStatusMessage msg = new RipStatusMessage(STATUS.RIP_COMPLETE, workingDir);
             observer.update(this, msg);
             Logger rootLogger = Logger.getRootLogger();
@@ -216,6 +217,14 @@ public abstract class AbstractRipper
             if (fa != null) {
                 fa.setFile("ripme.log");
                 fa.activateOptions();
+            }
+            if (Utils.getConfigBoolean("urls_only.save", false)) {
+                String urlFile = this.workingDir + File.separator + "urls.txt";
+                try {
+                    Desktop.getDesktop().open(new File(urlFile));
+                } catch (IOException e) {
+                    logger.warn("Error while opening " + urlFile, e);
+                }
             }
         }
     }

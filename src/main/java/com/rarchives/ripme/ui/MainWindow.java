@@ -110,6 +110,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
     private static JCheckBox configSaveOrderCheckbox;
     private static JCheckBox configShowPopup;
     private static JCheckBox configSaveLogs;
+    private static JCheckBox configSaveURLsOnly;
 
     private static TrayIcon trayIcon;
     private static MenuItem trayMenuMain;
@@ -176,6 +177,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
         Utils.setConfigBoolean("download.save_order", configSaveOrderCheckbox.isSelected());
         Utils.setConfigBoolean("download.show_popup", configShowPopup.isSelected());
         Utils.setConfigBoolean("log.save", configSaveLogs.isSelected());
+        Utils.setConfigBoolean("urls_only.save", configSaveURLsOnly.isSelected());
         saveHistory();
         Utils.saveConfig();
     }
@@ -337,6 +339,9 @@ public class MainWindow implements Runnable, RipStatusHandler {
         configSaveLogs = new JCheckBox("Save logs", Utils.getConfigBoolean("log.save", false));
         configSaveLogs.setHorizontalAlignment(JCheckBox.RIGHT);
         configSaveLogs.setHorizontalTextPosition(JCheckBox.LEFT);
+        configSaveURLsOnly = new JCheckBox("Save URLs only", Utils.getConfigBoolean("urls_only.save", false));
+        configSaveURLsOnly.setHorizontalAlignment(JCheckBox.RIGHT);
+        configSaveURLsOnly.setHorizontalTextPosition(JCheckBox.LEFT);
         configSaveDirLabel = new JLabel();
         try {
             String workingDir = (Utils.shortenPath(Utils.getWorkingDirectory()));
@@ -359,6 +364,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
         gbc.gridy = 6; gbc.gridx = 0; configurationPanel.add(configPlaySound, gbc);
                        gbc.gridx = 1; configurationPanel.add(configSaveLogs, gbc);
         gbc.gridy = 7; gbc.gridx = 0; configurationPanel.add(configShowPopup, gbc);
+                       gbc.gridx = 1; configurationPanel.add(configSaveURLsOnly, gbc);
         gbc.gridy = 8; gbc.gridx = 0; configurationPanel.add(configSaveDirLabel, gbc);
                        gbc.gridx = 1; configurationPanel.add(configSaveDirButton, gbc);
 
@@ -560,6 +566,13 @@ public class MainWindow implements Runnable, RipStatusHandler {
                 Utils.configureLogger();
             }
         });
+        configSaveURLsOnly.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent arg0) {
+                Utils.setConfigBoolean("urls_only.save", configSaveURLsOnly.isSelected());
+                Utils.configureLogger();
+            }
+        });
     }
 
     private void setupTrayIcon() {
@@ -704,7 +717,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
 
         logText.setCaretPosition(sd.getLength());
     }
-    
+
     private void loadHistory() {
         for (String url : Utils.getConfigList("download.history")) {
             historyListModel.addElement(url.trim());
