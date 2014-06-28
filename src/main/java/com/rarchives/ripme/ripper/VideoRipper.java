@@ -1,6 +1,7 @@
 package com.rarchives.ripme.ripper;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -40,7 +41,23 @@ public abstract class VideoRipper extends AbstractRipper {
 
     @Override
     public void addURLToDownload(URL url, File saveAs) {
-        threadPool.addThread(new DownloadVideoThread(url, saveAs, this));
+        if (Utils.getConfigBoolean("urls_only.save", false)) {
+            // Output URL to file
+            String urlFile = this.workingDir + File.separator + "urls.txt";
+            try {
+                FileWriter fw = new FileWriter(urlFile, true);
+                fw.write(url.toExternalForm());
+                fw.write("\n");
+                fw.close();
+                RipStatusMessage msg = new RipStatusMessage(STATUS.DOWNLOAD_COMPLETE, urlFile);
+                observer.update(this, msg);
+            } catch (IOException e) {
+                logger.error("Error while writing to " + urlFile, e);
+            }
+        }
+        else {
+            threadPool.addThread(new DownloadVideoThread(url, saveAs, this));
+        }
     }
 
     @Override
