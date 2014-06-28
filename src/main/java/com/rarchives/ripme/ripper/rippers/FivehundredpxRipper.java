@@ -1,6 +1,7 @@
 package com.rarchives.ripme.ripper.rippers;
 
 import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -64,6 +65,7 @@ public class FivehundredpxRipper extends AbstractJSONRipper {
             baseURL += "/blogs/" + blogid
                      + "?feature=user"
                      + "&username=" + username
+                     + "&image_size=5"
                      + "&rpp=100";
             return username + "_stories_" + blogid;
         }
@@ -89,7 +91,7 @@ public class FivehundredpxRipper extends AbstractJSONRipper {
                      + "?feature=user_favorites"
                      + "&username=" + username
                      + "&rpp=100"
-                     + "&image_size=4";
+                     + "&image_size=5";
             return username + "_faves";
         }
 
@@ -102,8 +104,8 @@ public class FivehundredpxRipper extends AbstractJSONRipper {
                      + "?feature=user"
                      + "&username=" + username
                      + "&rpp=100"
-                     + "&image_size=4";
-            return username + "_faves";
+                     + "&image_size=5";
+            return username;
         }
 
         throw new MalformedURLException(
@@ -133,6 +135,7 @@ public class FivehundredpxRipper extends AbstractJSONRipper {
                      + "?feature=user"
                      + "&username=" + username
                      + "&rpp=100"
+                     + "&image_size=5"
                      + "&consumer_key=" + CONSUMER_KEY;
                 logger.info("Loading " + blogURL);
                 sendUpdate(STATUS.LOADING_RESOURCE, "Story ID " + blogid + " for user " + username);
@@ -174,9 +177,35 @@ public class FivehundredpxRipper extends AbstractJSONRipper {
         List<String> imageURLs = new ArrayList<String>();
         JSONArray photos = json.getJSONArray("photos");
         for (int i = 0; i < photos.length(); i++) {
-            imageURLs.add(photos.getJSONObject(i).getString("image_url"));
+            JSONObject photo = photos.getJSONObject(i);
+            String imageURL = photo.getString("image_url");
+            imageURL = imageURL.replaceAll("/4\\.", "/5.");
+            // See if there's larger images
+            for (String imageSize : new String[] { "2048" } ) {
+                String fsURL = imageURL.replaceAll("/5\\.", "/" + imageSize + ".");
+                sleep(10);
+                if (urlExists(fsURL)) {
+                    logger.info("Found larger image at " + fsURL);
+                    imageURL = fsURL;
+                    break;
+                }
+            }
+            imageURLs.add(imageURL);
         }
         return imageURLs;
+    }
+    
+    private boolean urlExists(String url) {
+        try {
+            HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
+            connection.setRequestMethod("HEAD");
+            if (connection.getResponseCode() != 200) {
+                throw new IOException("Couldn't find full-size image at " + url);
+            }
+            return true;
+        } catch (IOException e) {
+            return false;
+        }
     }
 
     @Override
