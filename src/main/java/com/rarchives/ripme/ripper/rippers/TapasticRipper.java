@@ -97,7 +97,7 @@ public class TapasticRipper extends AbstractHTMLRipper {
             String link=images.get(i).attr("src");
             String postfix=String.format(" %d-%d ", i+1,images.size());
             TapasticEpisode episode=episodes.get(index-1);
-            addURLToDownload(new URL(link), getPrefix(index)+episode.filename+postfix+" ");
+            addURLToDownload(new URL(link), getPrefix(index)+episode.filename+postfix);
         }
         } catch (IOException e) {
             logger.error("[!] Exception while loading/parsing " + this.url,e);
