@@ -11,31 +11,20 @@ import java.util.regex.Pattern;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 import com.rarchives.ripme.utils.Http;
+import com.rarchives.ripme.utils.Utils;
 
 class TapasticEpisode {
-    int index;
-    int id;    
-    String title;
-    String filename;
+    protected int index, id;
+    protected String title, filename;
     public TapasticEpisode(int index, int id, String title) {
-        this.index=index;
-        this.id=id;
-        this.title=title;
-        this.filename=title // Windows filenames may not contain any of these...
-                .replace("\\", "")
-                .replace("/", "")
-                .replace(":", "")
-                .replace("*", "")
-                .replace("?", "")
-                .replace("\"", "")
-                .replace("<", "")
-                .replace(">", "")
-                .replace("|", "");
+        this.index = index;
+        this.id    = id;
+        this.title = title;
+        this.filename = Utils.filesystemSafe(title);
     }
 }
 
@@ -65,25 +54,18 @@ public class TapasticRipper extends AbstractHTMLRipper {
     @Override
     public List<String> getURLsFromPage(Document page) {
         List<String> urls = new ArrayList<String>();
-        Elements scripts=page.select("script");
-        for(Element script: scripts) {
-            String text=script.data();
-            if(text.contains("var _data")) {
-                String[] lines=text.split("\n");
-                for(String line:lines) {
-                    String trimmed=line.trim();
-                    if(trimmed.startsWith("episodeList : ")) {
-                        JSONArray json_episodes=new JSONArray(trimmed.substring("episodeList : ".length()));
-                        for(int i=0;i<json_episodes.length();i++) {
-                            JSONObject obj=json_episodes.getJSONObject(i);
-                            TapasticEpisode episode=new TapasticEpisode(i, obj.getInt("id"), obj.getString("title"));
-                            episodes.add(episode);
-                            urls.add("http://tapastic.com/episode/"+episode.id);
-                        }
-                    }
-                }
-                break;
-            }
+        String html = page.data();
+        if (!html.contains("episodeList : ")) {
+            logger.error("No 'episodeList' found at " + this.url);
+            return urls;
+        }
+        String jsonString = Utils.between(html, "episodeList : ", ",\n").get(0);
+        JSONArray json = new JSONArray(jsonString);
+        for (int i = 0; i < json.length(); i++) {
+            JSONObject obj = json.getJSONObject(i);
+            TapasticEpisode episode = new TapasticEpisode(i, obj.getInt("id"), obj.getString("title"));
+            episodes.add(episode);
+            urls.add("http://tapastic.com/episode/" + episode.id);
         }
         return urls;
     }
@@ -91,28 +73,41 @@ public class TapasticRipper extends AbstractHTMLRipper {
     @Override
     public void downloadURL(URL url, int index) {
         try {
-        Document doc = Http.url(url).get();
-        Elements images=doc.select("article.ep-contents img");
-        for(int i=0;i<images.size();i++) {
-            String link=images.get(i).attr("src");
-            String postfix=String.format(" %d-%d ", i+1,images.size());
-            TapasticEpisode episode=episodes.get(index-1);
-            addURLToDownload(new URL(link), getPrefix(index)+episode.filename+postfix);
-        }
+            Document doc = Http.url(url).get();
+            Elements images = doc.select("article.ep-contents img");
+            // Find maximum # of images for optimal filename indexing
+            int epiLog = (int) (Math.floor(Math.log10(episodes.size())) + 1),
+                imgLog = (int) (Math.floor(Math.log10(images.size()  )) + 1);
+            for (int i = 0; i < images.size(); i++) {
+                String link = images.get(i).attr("src");
+                TapasticEpisode episode = episodes.get(index - 1);
+                // Build elaborate filename prefix
+                StringBuilder prefix = new StringBuilder();
+                prefix.append(String.format("ep%0" + epiLog + "d", index));
+                prefix.append(String.format("-%0" + imgLog + "dof%0" + imgLog + "d-", i + 1, images.size()));
+                prefix.append(episode.filename.replace(" ", "-"));
+                prefix.append("-");
+                addURLToDownload(new URL(link), prefix.toString());
+            }
         } catch (IOException e) {
-            logger.error("[!] Exception while loading/parsing " + this.url,e);
+            logger.error("[!] Exception while downloading " + url, e);
         }
 
     }
 
     @Override
     public String getGID(URL url) throws MalformedURLException {
-        Pattern p = Pattern.compile("^http://tapastic.com/series/(.*)$");
+        Pattern p = Pattern.compile("^http://tapastic.com/series/([^/?]+).*$");
         Matcher m = p.matcher(url.toExternalForm());
         if (m.matches()) {
-            return m.group(1);
+            return "series_ " + m.group(1);
+        }
+        p = Pattern.compile("^http://tapastic.com/episode/([^/?]+).*$");
+        m = p.matcher(url.toExternalForm());
+        if (m.matches()) {
+            return "ep_" + m.group(1);
         }
         throw new MalformedURLException("Expected tapastic.com URL format: "
-                + "tapastic.com/series/name - got " + url + " instead");
+                + "tapastic.com/[series|episode]/name - got " + url + " instead");
     }
 }
