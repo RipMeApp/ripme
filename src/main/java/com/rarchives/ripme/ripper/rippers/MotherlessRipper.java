@@ -73,6 +73,11 @@ public class MotherlessRipper extends AlbumRipper {
         if (m.matches()) {
             return m.group(m.groupCount());
         }
+        p = Pattern.compile("^https?://(www\\.)?motherless\\.com/g[iv]/([a-zA-Z0-9%\\-_]+)$");
+        m = p.matcher(url.toExternalForm());
+        if (m.matches()) {
+            return m.group(m.groupCount());
+        }
         throw new MalformedURLException("Expected URL format: http://motherless.com/GIXXXXXXX, got: " + url);
     }
 
