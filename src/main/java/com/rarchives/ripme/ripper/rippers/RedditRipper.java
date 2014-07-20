@@ -167,7 +167,11 @@ public class RedditRipper extends AlbumRipper {
         Pattern p = RipUtils.getURLRegex();
         Matcher m = p.matcher(body);
         while (m.find()) {
-            handleURL(m.group(1), id);
+            String url = m.group(1);
+            while (url.endsWith(")")) {
+                url = url.substring(0, url.length() - 1);
+            }
+            handleURL(url, id);
         }
     }
 

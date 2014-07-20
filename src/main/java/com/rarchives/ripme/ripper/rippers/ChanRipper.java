@@ -49,7 +49,7 @@ public class ChanRipper extends AbstractHTMLRipper {
 
         String u = url.toExternalForm();
         if (u.contains("/res/")) {
-            p = Pattern.compile("^.*(chan|anon-ib).*\\.[a-z]{2,3}/[a-zA-Z0-9]+/res/([0-9]+)(\\.html|\\.php)?.*$");
+            p = Pattern.compile("^.*(chan|anon-ib).*\\.[a-z]{2,3}/[a-zA-Z0-9/]+/res/([0-9]+)(\\.html|\\.php)?.*$");
             m = p.matcher(u);
             if (m.matches()) {
                 return m.group(2);

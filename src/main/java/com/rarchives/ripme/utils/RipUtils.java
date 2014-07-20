@@ -26,6 +26,7 @@ public class RipUtils {
     public static List<URL> getFilesFromURL(URL url) {
         List<URL> result = new ArrayList<URL>();
 
+        logger.debug("Checking " + url);
         // Imgur album
         if ((url.getHost().endsWith("imgur.com")) 
                 && url.toExternalForm().contains("imgur.com/a/")) {
@@ -60,7 +61,7 @@ public class RipUtils {
         }
 
         // Direct link to image
-        Pattern p = Pattern.compile("(https?://[a-zA-Z0-9\\-\\.]+\\.[a-zA-Z]{2,3}(/\\S*)\\.(jpg|jpeg|gif|png|mp4))");
+        Pattern p = Pattern.compile("(https?://[a-zA-Z0-9\\-\\.]+\\.[a-zA-Z]{2,3}(/\\S*)\\.(jpg|jpeg|gif|png|mp4)(\\?.*)?)");
         Matcher m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             try {
@@ -72,7 +73,7 @@ public class RipUtils {
             }
         }
         
-        if(url.getHost().equals("imgur.com") || 
+        if (url.getHost().equals("imgur.com") || 
                 url.getHost().equals("m.imgur.com")){
             try {
                 // Fetch the page
