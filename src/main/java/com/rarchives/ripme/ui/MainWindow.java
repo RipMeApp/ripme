@@ -766,6 +766,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
         }
         if (!failed) {
             try {
+                mainFrame.setTitle("Ripping - RipMe v" + UpdateUtils.getThisJarVersion());
                 synchronized (this) {
                     ripTextfield.setText(ripper.getURL().toExternalForm());
                 }
@@ -869,6 +870,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
             File f = (File) msg.getObject();
             String prettyFile = Utils.shortenPath(f);
             openButton.setText("Open " + prettyFile);
+            mainFrame.setTitle("RipMe v" + UpdateUtils.getThisJarVersion());
             try {
                 Image folderIcon = ImageIO.read(getClass().getClassLoader().getResource("folder.png"));
                 openButton.setIcon(new ImageIcon(folderIcon));
