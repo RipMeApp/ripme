@@ -57,7 +57,7 @@ public abstract class AbstractHTMLRipper extends AlbumRipper {
             List<String> imageURLs = getURLsFromPage(doc);
 
             if (imageURLs.size() == 0) {
-                throw new IOException("No images found at " + this.url);
+                throw new IOException("No images found at " + doc.location());
             }
 
             for (String imageURL : imageURLs) {
