@@ -16,6 +16,8 @@ import com.rarchives.ripme.utils.Http;
 
 public class CheebyRipper extends AbstractHTMLRipper {
 
+    private int offset = 0;
+
     public CheebyRipper(URL url) throws IOException {
         super(url);
     }
@@ -46,8 +48,21 @@ public class CheebyRipper extends AbstractHTMLRipper {
 
     @Override
     public Document getFirstPage() throws IOException {
-        return Http.url(this.url)
+        String url = this.url + "?limit=10&offset=0";
+        return Http.url(url)
                    .get();
+    }
+
+    @Override
+    public Document getNextPage(Document doc) throws IOException {
+        sleep(500);
+        offset += 10;
+        String url = this.url + "?limit=10&offset=" + offset;
+        Document nextDoc = Http.url(url).get();
+        if (nextDoc.select("div.i a img").size() == 0) {
+            throw new IOException("No more images to fetch");
+        }
+        return nextDoc;
     }
 
     @Override
