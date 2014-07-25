@@ -145,7 +145,7 @@ public abstract class AlbumRipper extends AbstractRipper {
     /**
      * Sets directory to save all ripped files to.
      * @param url
-     *      URL to define how the workin directory should be saved.
+     *      URL to define how the working directory should be saved.
      */
     @Override
     public void setWorkingDir(URL url) throws IOException {
@@ -153,7 +153,12 @@ public abstract class AlbumRipper extends AbstractRipper {
         if (!path.endsWith(File.separator)) {
             path += File.separator;
         }
-        String title = getAlbumTitle(this.url);
+        String title;
+        if (Utils.getConfigBoolean("album_titles.save", true)) {
+            title = getAlbumTitle(this.url);
+        } else {
+            title = super.getAlbumTitle(this.url);
+        }
         title = Utils.filesystemSafe(title);
         path += title + File.separator;
         this.workingDir = new File(path);

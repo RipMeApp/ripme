@@ -111,6 +111,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
     private static JCheckBox configShowPopup;
     private static JCheckBox configSaveLogs;
     private static JCheckBox configSaveURLsOnly;
+    private static JCheckBox configSaveAlbumTitles;
 
     private static TrayIcon trayIcon;
     private static MenuItem trayMenuMain;
@@ -178,6 +179,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
         Utils.setConfigBoolean("download.show_popup", configShowPopup.isSelected());
         Utils.setConfigBoolean("log.save", configSaveLogs.isSelected());
         Utils.setConfigBoolean("urls_only.save", configSaveURLsOnly.isSelected());
+        Utils.setConfigBoolean("album_titles.save", configSaveAlbumTitles.isSelected());
         saveHistory();
         Utils.saveConfig();
     }
@@ -342,6 +344,9 @@ public class MainWindow implements Runnable, RipStatusHandler {
         configSaveURLsOnly = new JCheckBox("Save URLs only", Utils.getConfigBoolean("urls_only.save", false));
         configSaveURLsOnly.setHorizontalAlignment(JCheckBox.RIGHT);
         configSaveURLsOnly.setHorizontalTextPosition(JCheckBox.LEFT);
+        configSaveAlbumTitles = new JCheckBox("Save album titles", Utils.getConfigBoolean("album_titles.save", true));
+        configSaveAlbumTitles.setHorizontalAlignment(JCheckBox.RIGHT);
+        configSaveAlbumTitles.setHorizontalTextPosition(JCheckBox.LEFT);
         configSaveDirLabel = new JLabel();
         try {
             String workingDir = (Utils.shortenPath(Utils.getWorkingDirectory()));
@@ -365,7 +370,8 @@ public class MainWindow implements Runnable, RipStatusHandler {
                        gbc.gridx = 1; configurationPanel.add(configSaveLogs, gbc);
         gbc.gridy = 7; gbc.gridx = 0; configurationPanel.add(configShowPopup, gbc);
                        gbc.gridx = 1; configurationPanel.add(configSaveURLsOnly, gbc);
-        gbc.gridy = 8; gbc.gridx = 0; configurationPanel.add(configSaveDirLabel, gbc);
+        gbc.gridy = 8; gbc.gridx = 0; configurationPanel.add(configSaveAlbumTitles, gbc);
+        gbc.gridy = 9; gbc.gridx = 0; configurationPanel.add(configSaveDirLabel, gbc);
                        gbc.gridx = 1; configurationPanel.add(configSaveDirButton, gbc);
 
         gbc.gridy = 0; pane.add(ripPanel, gbc);
@@ -570,6 +576,13 @@ public class MainWindow implements Runnable, RipStatusHandler {
             @Override
             public void actionPerformed(ActionEvent arg0) {
                 Utils.setConfigBoolean("urls_only.save", configSaveURLsOnly.isSelected());
+                Utils.configureLogger();
+            }
+        });
+        configSaveAlbumTitles.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent arg0) {
+                Utils.setConfigBoolean("album_titles.save", configSaveAlbumTitles.isSelected());
                 Utils.configureLogger();
             }
         });
