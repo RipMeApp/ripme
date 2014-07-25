@@ -52,7 +52,7 @@ public class ButttoucherRipper extends AbstractHTMLRipper {
     @Override
     public List<String> getURLsFromPage(Document page) {
         List<String> thumbs = new ArrayList<String>();
-        for (Element thumb : page.select("div.image-gallery > a > img")) {
+        for (Element thumb : page.select(".thumb img")) {
             if (!thumb.hasAttr("src")) {
                 continue;
             }
