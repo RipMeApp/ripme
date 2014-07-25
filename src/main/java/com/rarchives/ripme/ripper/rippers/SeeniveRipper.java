@@ -3,6 +3,7 @@ package com.rarchives.ripme.ripper.rippers;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -119,6 +120,10 @@ public class SeeniveRipper extends AlbumRipper {
                 sendUpdate(STATUS.LOADING_RESOURCE, this.url.toExternalForm());
                 for (Element element : doc.select("source")) {
                     String video = element.attr("src");
+                    if (video.contains("redirect?url=")) {
+                        video = video.substring("redirect?url=".length() + 1);
+                        video = URLDecoder.decode(video, "UTF-8");
+                    }
                     synchronized (threadPool) {
                         addURLToDownload(new URL(video));
                     }
