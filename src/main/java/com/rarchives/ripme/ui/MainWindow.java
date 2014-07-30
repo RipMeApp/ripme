@@ -27,7 +27,6 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
-import java.util.Arrays;
 import java.util.List;
 
 import javax.imageio.ImageIO;
@@ -51,6 +50,8 @@ import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.event.ListDataEvent;
+import javax.swing.event.ListDataListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
@@ -67,6 +68,10 @@ import com.rarchives.ripme.utils.Utils;
 public class MainWindow implements Runnable, RipStatusHandler {
 
     private static final Logger logger = Logger.getLogger(MainWindow.class);
+    
+    private boolean isRipping = false; // Flag to indicate if we're ripping something
+    
+    private History history = new History();
     
     private static JFrame mainFrame;
     private static JTextField ripTextfield;
@@ -93,6 +98,13 @@ public class MainWindow implements Runnable, RipStatusHandler {
     private static JButton historyButtonRemove,
                            historyButtonClear,
                            historyButtonRerip;
+
+    // Queue
+    private static JButton optionQueue;
+    private static JPanel queuePanel;
+    private static JList queueList;
+    private static DefaultListModel queueListModel;
+    private static JScrollPane queueListScroll;
 
     // Configuration
     private static JButton optionConfiguration;
@@ -227,7 +239,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
         ImageIcon ripIcon = new ImageIcon(mainIcon);
         ripButton = new JButton("<html><font size=\"5\"><b>Rip</b></font></html>", ripIcon);
         stopButton = new JButton("<html><font size=\"5\"><b>Stop</b></font></html>");
-        stopButton.setVisible(false);
+        stopButton.setEnabled(false);
         try {
             Image stopIcon = ImageIO.read(getClass().getClassLoader().getResource("stop.png"));
             stopButton.setIcon(new ImageIcon(stopIcon));
@@ -238,7 +250,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
         gbc.gridx = 0; ripPanel.add(new JLabel("URL:", JLabel.RIGHT), gbc);
         gbc.gridx = 1; ripPanel.add(ripTextfield, gbc);
         gbc.gridx = 2; ripPanel.add(ripButton, gbc);
-                       ripPanel.add(stopButton, gbc);
+        gbc.gridx = 3; ripPanel.add(stopButton, gbc);
 
         statusLabel  = new JLabel("Inactive");
         statusLabel.setHorizontalAlignment(JLabel.CENTER);
@@ -260,6 +272,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
         optionsPanel.setBorder(emptyBorder);
         optionLog = new JButton("Log");
         optionHistory = new JButton("History");
+        optionQueue = new JButton("Queue");
         optionConfiguration = new JButton("Configuration");
         try {
             Image icon;
@@ -267,12 +280,15 @@ public class MainWindow implements Runnable, RipStatusHandler {
             optionLog.setIcon(new ImageIcon(icon));
             icon = ImageIO.read(getClass().getClassLoader().getResource("time.png"));
             optionHistory.setIcon(new ImageIcon(icon));
+            icon = ImageIO.read(getClass().getClassLoader().getResource("list.png"));
+            optionQueue.setIcon(new ImageIcon(icon));
             icon = ImageIO.read(getClass().getClassLoader().getResource("gear.png"));
             optionConfiguration.setIcon(new ImageIcon(icon));
         } catch (Exception e) { }
         gbc.gridx = 0; optionsPanel.add(optionLog, gbc);
         gbc.gridx = 1; optionsPanel.add(optionHistory, gbc);
-        gbc.gridx = 2; optionsPanel.add(optionConfiguration, gbc);
+        gbc.gridx = 2; optionsPanel.add(optionQueue, gbc);
+        gbc.gridx = 3; optionsPanel.add(optionConfiguration, gbc);
 
         logPanel = new JPanel(new GridBagLayout());
         logPanel.setBorder(emptyBorder);
@@ -298,7 +314,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
         gbc.gridx = 0;
         JPanel historyListPanel = new JPanel(new GridBagLayout());
         historyListPanel.add(historyListScroll, gbc);
-        gbc.ipady = 150;
+        gbc.ipady = 180;
         historyPanel.add(historyListPanel, gbc);
         gbc.ipady = 0;
         historyButtonPanel = new JPanel(new GridBagLayout());
@@ -309,6 +325,22 @@ public class MainWindow implements Runnable, RipStatusHandler {
         gbc.gridx = 2; historyButtonPanel.add(historyButtonRerip, gbc);
         gbc.gridy = 1; gbc.gridx = 0;
         historyPanel.add(historyButtonPanel, gbc);
+
+        queuePanel = new JPanel(new GridBagLayout());
+        queuePanel.setBorder(emptyBorder);
+        queuePanel.setVisible(false);
+        queuePanel.setPreferredSize(new Dimension(300, 250));
+        queueListModel  = new DefaultListModel();
+        queueList       = new JList(queueListModel);
+        queueList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+        queueListScroll = new JScrollPane(queueList,
+                JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+                JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        gbc.gridx = 0;
+        JPanel queueListPanel = new JPanel(new GridBagLayout());
+        queueListPanel.add(queueListScroll, gbc);
+        queuePanel.add(queueListPanel, gbc);
+        gbc.ipady = 0;
 
         configurationPanel = new JPanel(new GridBagLayout());
         configurationPanel.setBorder(emptyBorder);
@@ -354,7 +386,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
         } catch (Exception e) { }
         configSaveDirLabel.setToolTipText(configSaveDirLabel.getText());
         configSaveDirLabel.setHorizontalAlignment(JLabel.RIGHT);
-        configSaveDirButton = new JButton("Browse...");
+        configSaveDirButton = new JButton("Select Save Directory...");
         gbc.gridy = 0; gbc.gridx = 0; configurationPanel.add(configUpdateLabel, gbc);
                        gbc.gridx = 1; configurationPanel.add(configUpdateButton, gbc);
         gbc.gridy = 1; gbc.gridx = 0; configurationPanel.add(configAutoupdateCheckbox, gbc);
@@ -380,6 +412,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
         gbc.gridy = 3; pane.add(optionsPanel, gbc);
         gbc.gridy = 4; pane.add(logPanel, gbc);
         gbc.gridy = 5; pane.add(historyPanel, gbc);
+        gbc.gridy = 5; pane.add(queuePanel, gbc);
         gbc.gridy = 5; pane.add(configurationPanel, gbc);
     }
     
@@ -400,9 +433,6 @@ public class MainWindow implements Runnable, RipStatusHandler {
                 update();
             }
             private void update() {
-                if (!ripTextfield.isEnabled()) {
-                    return;
-                }
                 try {
                     String urlText = ripTextfield.getText().trim();
                     if (!urlText.startsWith("http")) {
@@ -421,9 +451,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
             public void actionPerformed(ActionEvent event) {
                 if (ripper != null) {
                     ripper.stop();
-                    ripButton.setVisible(true);
-                    stopButton.setVisible(false);
-                    ripTextfield.setEnabled(true);
+                    stopButton.setEnabled(false);
                     statusProgress.setValue(0);
                     statusProgress.setVisible(false);
                     pack();
@@ -438,9 +466,11 @@ public class MainWindow implements Runnable, RipStatusHandler {
             public void actionPerformed(ActionEvent event) {
                 logPanel.setVisible(!logPanel.isVisible());
                 historyPanel.setVisible(false);
+                queuePanel.setVisible(false);
                 configurationPanel.setVisible(false);
                 optionLog.setFont(optionLog.getFont().deriveFont(Font.BOLD));
                 optionHistory.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
+                optionQueue.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
                 optionConfiguration.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
                 pack();
             }
@@ -450,9 +480,25 @@ public class MainWindow implements Runnable, RipStatusHandler {
             public void actionPerformed(ActionEvent event) {
                 logPanel.setVisible(false);
                 historyPanel.setVisible(!historyPanel.isVisible());
+                queuePanel.setVisible(false);
                 configurationPanel.setVisible(false);
                 optionLog.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
                 optionHistory.setFont(optionLog.getFont().deriveFont(Font.BOLD));
+                optionQueue.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
+                optionConfiguration.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
+                pack();
+            }
+        });
+        optionQueue.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent event) {
+                logPanel.setVisible(false);
+                historyPanel.setVisible(false);
+                queuePanel.setVisible(!queuePanel.isVisible());
+                configurationPanel.setVisible(false);
+                optionLog.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
+                optionHistory.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
+                optionQueue.setFont(optionLog.getFont().deriveFont(Font.BOLD));
                 optionConfiguration.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
                 pack();
             }
@@ -462,9 +508,11 @@ public class MainWindow implements Runnable, RipStatusHandler {
             public void actionPerformed(ActionEvent event) {
                 logPanel.setVisible(false);
                 historyPanel.setVisible(false);
+                queuePanel.setVisible(false);
                 configurationPanel.setVisible(!configurationPanel.isVisible());
                 optionLog.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
                 optionHistory.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
+                optionQueue.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
                 optionConfiguration.setFont(optionLog.getFont().deriveFont(Font.BOLD));
                 pack();
             }
@@ -585,6 +633,23 @@ public class MainWindow implements Runnable, RipStatusHandler {
                 Utils.setConfigBoolean("album_titles.save", configSaveAlbumTitles.isSelected());
                 Utils.configureLogger();
             }
+        });
+        queueListModel.addListDataListener(new ListDataListener() {
+            @Override
+            public void intervalAdded(ListDataEvent arg0) {
+                if (queueListModel.size() > 0) {
+                    optionQueue.setText("Queue (" + queueListModel.size() + ")");
+                } else {
+                    optionQueue.setText("Queue");
+                }
+                if (!isRipping) {
+                    ripNextAlbum();
+                }
+            }
+            @Override
+            public void contentsChanged(ListDataEvent arg0) { }
+            @Override
+            public void intervalRemoved(ListDataEvent arg0) { }
         });
     }
 
@@ -732,13 +797,59 @@ public class MainWindow implements Runnable, RipStatusHandler {
     }
 
     private void loadHistory() {
-        for (String url : Utils.getConfigList("download.history")) {
-            historyListModel.addElement(url.trim());
+        history = new History();
+        File historyFile = new File("history.json");
+        if (historyFile.exists()) {
+            try {
+                logger.info("Loading history from history.json");
+                history.fromFile("history.json");
+            } catch (IOException e) {
+                logger.error("Failed to load history from file history.json", e);
+            }
+        }
+        else {
+            logger.info("Loading history from configuration");
+            history.fromList(Utils.getConfigList("download.history"));
+        }
+        for (History.Entry entry : history.toList()) {
+            historyListModel.addElement(entry);
         }
     }
 
     private void saveHistory() {
-        Utils.setConfigList("download.history", Arrays.asList(historyListModel.toArray()));
+        try {
+            history.toFile("history.json");
+        } catch (IOException e) {
+            logger.error("Failed to save history to file history.json", e);
+        }
+    }
+
+    private void ripNextAlbum() {
+        isRipping = true;
+        if (queueListModel.size() == 0) {
+            // End of queue
+            isRipping = false;
+            return;
+        }
+        String nextAlbum = (String) queueListModel.remove(0);
+        if (queueListModel.size() == 0) {
+            optionQueue.setText("Queue");
+        }
+        else {
+            optionQueue.setText("Queue (" + queueListModel.size() + ")");
+        }
+        Thread t = ripAlbum(nextAlbum);
+        if (t == null) {
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException ie) {
+                logger.error("Interrupted while waiting to rip next album", ie);
+            }
+            ripNextAlbum();
+        }
+        else {
+            t.start();
+        }
     }
 
     private Thread ripAlbum(String urlString) {
@@ -761,9 +872,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
             error("Given URL is not valid, expecting http://website.com/page/...");
             return null;
         }
-        ripButton.setVisible(false);
-        stopButton.setVisible(true);
-        ripTextfield.setEnabled(false);
+        stopButton.setEnabled(true);
         statusProgress.setValue(100);
         openButton.setVisible(false);
         statusLabel.setVisible(true);
@@ -775,18 +884,14 @@ public class MainWindow implements Runnable, RipStatusHandler {
         } catch (Exception e) {
             failed = true;
             logger.error("Could not find ripper for URL " + url, e);
-            error("Error: " + e.getMessage());
+            error(e.getMessage());
         }
         if (!failed) {
             try {
                 mainFrame.setTitle("Ripping - RipMe v" + UpdateUtils.getThisJarVersion());
-                synchronized (this) {
-                    ripTextfield.setText(ripper.getURL().toExternalForm());
-                }
                 status("Starting rip...");
                 ripper.setObserver((RipStatusHandler) this);
                 Thread t = new Thread(ripper);
-                t.start();
                 if (configShowPopup.isSelected() &&
                         (!mainFrame.isVisible() || !mainFrame.isActive())) {
                     mainFrame.toFront();
@@ -800,9 +905,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
                 error("Unable to rip this URL: " + e.getMessage());
             }
         }
-        ripButton.setVisible(true);
-        stopButton.setVisible(false);
-        ripTextfield.setEnabled(true);
+        stopButton.setEnabled(false);
         statusProgress.setValue(0);
         pack();
         return null;
@@ -810,7 +913,15 @@ public class MainWindow implements Runnable, RipStatusHandler {
 
     class RipButtonHandler implements ActionListener {
         public void actionPerformed(ActionEvent event) {
-            ripAlbum(ripTextfield.getText());
+            if (!queueListModel.contains(ripTextfield.getText())) {
+                queueListModel.add(queueListModel.size(), ripTextfield.getText());
+                ripTextfield.setText("");
+            }
+            else {
+                if (!isRipping) {
+                    ripNextAlbum();
+                }
+            }
         }
     }
     
@@ -856,9 +967,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
         
         case RIP_ERRORED:
             appendLog( "Error: " + (String) msg.getObject(), Color.RED);
-            ripButton.setVisible(true);
-            stopButton.setVisible(false);
-            ripTextfield.setEnabled(true);
+            stopButton.setEnabled(false);
             statusProgress.setValue(0);
             statusProgress.setVisible(false);
             openButton.setVisible(false);
@@ -874,9 +983,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
                 Utils.playSound("camera.wav");
             }
             saveHistory();
-            ripButton.setVisible(true);
-            stopButton.setVisible(false);
-            ripTextfield.setEnabled(true);
+            stopButton.setEnabled(false);
             statusProgress.setValue(0);
             statusProgress.setVisible(false);
             openButton.setVisible(true);
@@ -901,6 +1008,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
                 }
             });
             pack();
+            ripNextAlbum();
             break;
         case COMPLETED_BYTES:
             // Update completed bytes
