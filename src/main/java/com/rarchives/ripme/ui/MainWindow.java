@@ -71,8 +71,6 @@ public class MainWindow implements Runnable, RipStatusHandler {
     
     private boolean isRipping = false; // Flag to indicate if we're ripping something
     
-    private History history = new History();
-    
     private static JFrame mainFrame;
     private static JTextField ripTextfield;
     private static JButton ripButton,
@@ -157,7 +155,9 @@ public class MainWindow implements Runnable, RipStatusHandler {
             upgradeProgram();
         }
 
-        ClipboardUtils.setClipboardAutoRip(Utils.getConfigBoolean("clipboard.autorip", false));
+        boolean autoripEnabled = Utils.getConfigBoolean("clipboard.autorip", false);
+        ClipboardUtils.setClipboardAutoRip(autoripEnabled);
+        trayMenuAutorip.setState(autoripEnabled);
     }
     
     public void upgradeProgram() {
@@ -709,7 +709,6 @@ public class MainWindow implements Runnable, RipStatusHandler {
             }
         });
         trayMenuAutorip = new CheckboxMenuItem("Clipboard Autorip");
-        trayMenuAutorip.setState(ClipboardUtils.getClipboardAutoRip());
         trayMenuAutorip.addItemListener(new ItemListener() {
             @Override
             public void itemStateChanged(ItemEvent arg0) {
@@ -774,7 +773,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
     }
 
     private void loadHistory() {
-        history = new History();
+        History history = new History();
         File historyFile = new File("history.json");
         if (historyFile.exists()) {
             try {
@@ -794,6 +793,10 @@ public class MainWindow implements Runnable, RipStatusHandler {
     }
 
     private void saveHistory() {
+        History history = new History();
+        for (int i = 0; i < historyListModel.size(); i++) {
+            history.add( (HistoryEntry) historyListModel.get(i) );
+        }
         try {
             history.toFile("history.json");
         } catch (IOException e) {
