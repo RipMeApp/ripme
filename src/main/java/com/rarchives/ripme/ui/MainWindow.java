@@ -539,33 +539,10 @@ public class MainWindow implements Runnable, RipStatusHandler {
         historyButtonRerip.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent event) {
-                Runnable ripAllThread = new Runnable() {
-                    @Override
-                    public void run() {
-                        historyButtonPanel.setEnabled(false);
-                        historyList.setEnabled(false);
-                        for (int i = 0; i < historyListModel.size(); i++) {
-                            historyList.clearSelection();
-                            historyList.setSelectedIndex(i);
-                            Thread t = ripAlbum( (String) historyListModel.get(i) );
-                            if (t == null) {
-                                continue;
-                            }
-                            try {
-                                synchronized (t) {
-                                    t.wait();
-                                }
-                                t.join();
-                            } catch (InterruptedException e) {
-                                logger.error("[!] Exception while waiting for ripper to finish:", e);
-                            }
-                        }
-                        historyList.setEnabled(true);
-                        historyButtonPanel.setEnabled(true);
-                    }
-
-                };
-                new Thread(ripAllThread).start();
+                for (int i = 0; i < historyListModel.size(); i++) {
+                    HistoryEntry entry = (HistoryEntry) historyListModel.get(i);
+                    queueListModel.addElement(entry.url);
+                }
             }
         });
         configUpdateButton.addActionListener(new ActionListener() {
@@ -811,7 +788,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
             logger.info("Loading history from configuration");
             history.fromList(Utils.getConfigList("download.history"));
         }
-        for (History.Entry entry : history.toList()) {
+        for (HistoryEntry entry : history.toList()) {
             historyListModel.addElement(entry);
         }
     }
@@ -976,8 +953,22 @@ public class MainWindow implements Runnable, RipStatusHandler {
             break;
 
         case RIP_COMPLETE:
-            if (!historyListModel.contains(ripTextfield.getText())) {
-                historyListModel.addElement(ripTextfield.getText());
+            boolean alreadyInHistory = false;
+            String url = ripper.getURL().toExternalForm();
+            for (int i = 0; i < historyListModel.size(); i++) {
+                HistoryEntry entry = (HistoryEntry) historyListModel.get(i);
+                if (entry.url.equals(url)) {
+                    alreadyInHistory = true;
+                    break;
+                }
+            }
+            if (!alreadyInHistory) {
+                HistoryEntry entry = new HistoryEntry();
+                entry.url = url;
+                try {
+                    entry.title = ripper.getAlbumTitle(ripper.getURL());
+                } catch (MalformedURLException e) { }
+                historyListModel.addElement(entry);
             }
             if (configPlaySound.isSelected()) {
                 Utils.playSound("camera.wav");
