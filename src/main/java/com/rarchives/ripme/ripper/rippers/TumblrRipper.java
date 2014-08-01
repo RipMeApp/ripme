@@ -5,7 +5,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import org.apache.commons.lang.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -18,7 +17,8 @@ import com.rarchives.ripme.utils.Utils;
 public class TumblrRipper extends AlbumRipper {
 
     private static final String DOMAIN = "tumblr.com",
-                                HOST   = "tumblr";
+                                HOST   = "tumblr",
+                                IMAGE_PATTERN = "([^\\s]+(\\.(?i)(jpg|png|gif|bmp))$)";
     
     private enum ALBUM_TYPE {
         SUBDOMAIN,
@@ -120,6 +120,10 @@ public class TumblrRipper extends AlbumRipper {
     private boolean handleJSON(JSONObject json) {
         JSONArray posts, photos;
         JSONObject post, photo;
+        Pattern p;
+        Matcher m;
+        p = Pattern.compile(IMAGE_PATTERN);
+
         URL fileURL;
 
         posts = json.getJSONObject("response").getJSONArray("posts");
@@ -136,7 +140,13 @@ public class TumblrRipper extends AlbumRipper {
                     photo = photos.getJSONObject(j);
                     try {
                         fileURL = new URL(photo.getJSONObject("original_size").getString("url"));
-                        addURLToDownload(fileURL);
+                        m = p.matcher(fileURL.toString());
+                        if(m.matches()) {
+                            addURLToDownload(fileURL);
+                        } else{
+                            URL redirectedURL = Http.url(fileURL).ignoreContentType().response().url();
+                            addURLToDownload(redirectedURL);
+                        }
                     } catch (Exception e) {
                         logger.error("[!] Error while parsing photo in " + photo, e);
                         continue;
