@@ -122,6 +122,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
     private static JCheckBox configSaveLogs;
     private static JCheckBox configSaveURLsOnly;
     private static JCheckBox configSaveAlbumTitles;
+    private static JCheckBox configClipboardAutorip;
 
     private static TrayIcon trayIcon;
     private static MenuItem trayMenuMain;
@@ -192,6 +193,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
         Utils.setConfigBoolean("log.save", configSaveLogs.isSelected());
         Utils.setConfigBoolean("urls_only.save", configSaveURLsOnly.isSelected());
         Utils.setConfigBoolean("album_titles.save", configSaveAlbumTitles.isSelected());
+        Utils.setConfigBoolean("clipboard.autorip", configClipboardAutorip.isSelected());
         saveHistory();
         Utils.saveConfig();
     }
@@ -379,6 +381,9 @@ public class MainWindow implements Runnable, RipStatusHandler {
         configSaveAlbumTitles = new JCheckBox("Save album titles", Utils.getConfigBoolean("album_titles.save", true));
         configSaveAlbumTitles.setHorizontalAlignment(JCheckBox.RIGHT);
         configSaveAlbumTitles.setHorizontalTextPosition(JCheckBox.LEFT);
+        configClipboardAutorip = new JCheckBox("Autorip from Clipboard", Utils.getConfigBoolean("clipboard.autorip", false));
+        configClipboardAutorip.setHorizontalAlignment(JCheckBox.RIGHT);
+        configClipboardAutorip.setHorizontalTextPosition(JCheckBox.LEFT);
         configSaveDirLabel = new JLabel();
         try {
             String workingDir = (Utils.shortenPath(Utils.getWorkingDirectory()));
@@ -402,7 +407,8 @@ public class MainWindow implements Runnable, RipStatusHandler {
                        gbc.gridx = 1; configurationPanel.add(configSaveLogs, gbc);
         gbc.gridy = 7; gbc.gridx = 0; configurationPanel.add(configShowPopup, gbc);
                        gbc.gridx = 1; configurationPanel.add(configSaveURLsOnly, gbc);
-        gbc.gridy = 8; gbc.gridx = 0; configurationPanel.add(configSaveAlbumTitles, gbc);
+        gbc.gridy = 8; gbc.gridx = 0; configurationPanel.add(configClipboardAutorip, gbc);
+                       gbc.gridx = 1; configurationPanel.add(configSaveAlbumTitles, gbc);
         gbc.gridy = 9; gbc.gridx = 0; configurationPanel.add(configSaveDirLabel, gbc);
                        gbc.gridx = 1; configurationPanel.add(configSaveDirButton, gbc);
 
@@ -611,6 +617,15 @@ public class MainWindow implements Runnable, RipStatusHandler {
                 Utils.configureLogger();
             }
         });
+        configClipboardAutorip.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent arg0) {
+                Utils.setConfigBoolean("clipboard.autorip", configClipboardAutorip.isSelected());
+                ClipboardUtils.setClipboardAutoRip(configClipboardAutorip.isSelected());
+                trayMenuAutorip.setState(configClipboardAutorip.isSelected());
+                Utils.configureLogger();
+            }
+        });
         queueListModel.addListDataListener(new ListDataListener() {
             @Override
             public void intervalAdded(ListDataEvent arg0) {
@@ -713,6 +728,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
             @Override
             public void itemStateChanged(ItemEvent arg0) {
                 ClipboardUtils.setClipboardAutoRip(trayMenuAutorip.getState());
+                configClipboardAutorip.setSelected(trayMenuAutorip.getState());
             }
         });
         trayMenu.add(trayMenuMain);
