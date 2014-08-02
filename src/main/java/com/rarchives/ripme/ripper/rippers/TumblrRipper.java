@@ -26,10 +26,10 @@ public class TumblrRipper extends AlbumRipper {
     }
     private ALBUM_TYPE albumType;
     private String subdomain, tagName, postNumber;
-    
+
     private static final String API_KEY;
     static {
-        API_KEY = Utils.getConfigString("tumblr.auth", null);
+        API_KEY = Utils.getConfigString("tumblr.auth", "v5kUqGQXUtmF7K0itri1DGtgTs0VQpbSEbh1jxYgj9d2Sq18F8");
     }
 
     public TumblrRipper(URL url) throws IOException {
