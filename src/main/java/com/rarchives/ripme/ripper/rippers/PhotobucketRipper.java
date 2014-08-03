@@ -130,7 +130,7 @@ public class PhotobucketRipper extends AlbumRipper {
             }
             pageIndex++;
             if (pageIndex > 1 || pageResponse == null) {
-                url = theUrl + String.format("?sort=3&page=", pageIndex);
+                url = theUrl + String.format("?sort=3&page=%d", pageIndex);
                 logger.info("    Retrieving " + url);
                 pageResponse = Http.url(url).response();
             }
@@ -139,10 +139,10 @@ public class PhotobucketRipper extends AlbumRipper {
             String jsonString = null;
             for (Element script : albumDoc.select("script[type=text/javascript]")) {
                 String data = script.data();
+                // Ensure this chunk of javascript contains the album info
                 if (!data.contains("libraryAlbumsPageCollectionData")) {
                     continue;
                 }
-                // Ensure this chunk of javascript contains the album info
                 // Grab the JSON
                 Pattern p; Matcher m;
                 p = Pattern.compile("^.*collectionData: (\\{.*\\}).*$", Pattern.DOTALL);
