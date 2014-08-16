@@ -457,6 +457,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
             public void actionPerformed(ActionEvent event) {
                 if (ripper != null) {
                     ripper.stop();
+                    isRipping = false;
                     stopButton.setEnabled(false);
                     statusProgress.setValue(0);
                     statusProgress.setVisible(false);
