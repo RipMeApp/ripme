@@ -83,10 +83,9 @@ public class ImagefapRipper extends AbstractHTMLRipper {
     @Override
     public Document getNextPage(Document doc) throws IOException {
         String nextURL = null;
-        for (Element a : albumDoc.select("a.link3")) {
+        for (Element a : doc.select("a.link3")) {
             if (a.text().contains("next")) {
-                nextURL = a.attr("href");
-                nextURL = "http://imagefap.com/gallery.php" + nextURL;
+                nextURL = "http://imagefap.com/gallery.php" + a.attr("href");
                 break;
             }
         }
@@ -100,7 +99,7 @@ public class ImagefapRipper extends AbstractHTMLRipper {
     @Override
     public List<String> getURLsFromPage(Document doc) {
         List<String> imageURLs = new ArrayList<String>();
-        for (Element thumb : albumDoc.select("#gallery img")) {
+        for (Element thumb : doc.select("#gallery img")) {
             if (!thumb.hasAttr("src") || !thumb.hasAttr("width")) {
                 continue;
             }
