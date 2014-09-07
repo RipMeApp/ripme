@@ -1,17 +1,7 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package com.rarchives.ripme.ripper.rippers.ripperhelpers;
 
 import java.util.List;
 
-/**
- *
- * @author Erwin
- */
 public class ChanSite {
     //The domains where the threads are hosted.
     public List<String> domains;
