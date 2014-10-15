@@ -94,14 +94,14 @@ public abstract class AbstractRipper
      * @param saveAs
      *      Path of the local file to save the content to.
      */
-    public abstract void addURLToDownload(URL url, File saveAs);
-    public abstract void addURLToDownload(URL url, File saveAs, String referrer, Map<String,String> cookies);
+    public abstract boolean addURLToDownload(URL url, File saveAs);
+    public abstract boolean addURLToDownload(URL url, File saveAs, String referrer, Map<String,String> cookies);
 
-    public void addURLToDownload(URL url, String prefix, String subdirectory, String referrer, Map<String,String> cookies) {
+    public boolean addURLToDownload(URL url, String prefix, String subdirectory, String referrer, Map<String,String> cookies) {
         try {
             stopCheck();
         } catch (IOException e) {
-            return;
+            return false;
         }
         String saveAs = url.toExternalForm();
         saveAs = saveAs.substring(saveAs.lastIndexOf('/')+1);
@@ -122,14 +122,14 @@ public abstract class AbstractRipper
                     + saveAs);
         } catch (IOException e) {
             logger.error("[!] Error creating save file path for URL '" + url + "':", e);
-            return;
+            return false;
         }
         logger.debug("Downloading " + url + " to " + saveFileAs);
         if (!saveFileAs.getParentFile().exists()) {
             logger.info("[+] Creating directory: " + Utils.removeCWD(saveFileAs.getParent()));
             saveFileAs.getParentFile().mkdirs();
         }
-        addURLToDownload(url, saveFileAs, referrer, cookies);
+        return addURLToDownload(url, saveFileAs, referrer, cookies);
     }
     
     /**
@@ -141,8 +141,8 @@ public abstract class AbstractRipper
      * @param subdirectory
      *      Sub-directory of the working directory to save the images to.
      */
-    public void addURLToDownload(URL url, String prefix, String subdirectory) {
-        addURLToDownload(url, prefix, subdirectory, null, null);
+    public boolean addURLToDownload(URL url, String prefix, String subdirectory) {
+        return addURLToDownload(url, prefix, subdirectory, null, null);
     }
 
     /**
@@ -153,9 +153,9 @@ public abstract class AbstractRipper
      * @param prefix
      *      Text to append to saved filename.
      */
-    public void addURLToDownload(URL url, String prefix) {
+    public boolean addURLToDownload(URL url, String prefix) {
         // Use empty subdirectory
-        addURLToDownload(url, prefix, "");
+        return addURLToDownload(url, prefix, "");
     }
     /**
      * Waits for downloading threads to complete.
