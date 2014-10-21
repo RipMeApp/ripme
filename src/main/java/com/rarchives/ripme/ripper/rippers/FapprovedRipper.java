@@ -86,6 +86,9 @@ public class FapprovedRipper extends AbstractHTMLRipper {
             if (imageURL.startsWith("//")) {
                 imageURL = "http:" + imageURL;
             }
+            else if (imageURL.startsWith("/")) {
+                imageURL = "http://fapproved.com" + imageURL;
+            }
             imageURLs.add(imageURL);
         }
         return imageURLs;
