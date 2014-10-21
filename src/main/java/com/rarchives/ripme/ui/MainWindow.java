@@ -441,6 +441,9 @@ public class MainWindow implements Runnable, RipStatusHandler {
             private void update() {
                 try {
                     String urlText = ripTextfield.getText().trim();
+                    if (urlText.equals("")) {
+                        return;
+                    }
                     if (!urlText.startsWith("http")) {
                         urlText = "http://" + urlText;
                     }
