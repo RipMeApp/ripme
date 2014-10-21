@@ -448,7 +448,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
                     AbstractRipper ripper = AbstractRipper.getRipper(url);
                     statusWithColor(ripper.getHost() + " album detected", Color.GREEN);
                 } catch (Exception e) {
-                    statusWithColor("Can't rip this URL", Color.RED);
+                    statusWithColor("Can't rip this URL: "+e.getMessage(), Color.RED);
                 }
             }
         });

@@ -33,14 +33,14 @@ public abstract class AlbumRipper extends AbstractRipper {
         return false;
     }
 
-    public void addURLToDownload(URL url, File saveAs, String referrer, Map<String,String> cookies) {
+    public boolean addURLToDownload(URL url, File saveAs, String referrer, Map<String,String> cookies) {
         if (!allowDuplicates()
                 && ( itemsPending.containsKey(url)
                   || itemsCompleted.containsKey(url)
                   || itemsErrored.containsKey(url) )) {
             // Item is already downloaded/downloading, skip it.
             logger.info("[!] Skipping " + url + " -- already attempted: " + Utils.removeCWD(saveAs));
-            return;
+            return false;
         }
         if (Utils.getConfigBoolean("urls_only.save", false)) {
             // Output URL to file
@@ -68,11 +68,12 @@ public abstract class AlbumRipper extends AbstractRipper {
             }
             threadPool.addThread(dft);
         }
+        return true;
     }
 
     @Override
-    public void addURLToDownload(URL url, File saveAs) {
-        addURLToDownload(url, saveAs, null, null);
+    public boolean addURLToDownload(URL url, File saveAs) {
+        return addURLToDownload(url, saveAs, null, null);
     }
 
     /**
@@ -80,10 +81,12 @@ public abstract class AlbumRipper extends AbstractRipper {
      * Uses filename from URL to decide filename.
      * @param url
      *      URL to download
+     * @return 
+     *      True on success
      */
-    public void addURLToDownload(URL url) {
+    public boolean addURLToDownload(URL url) {
         // Use empty prefix and empty subdirectory
-        addURLToDownload(url, "", "");
+        return addURLToDownload(url, "", "");
     }
 
     @Override
@@ -146,6 +149,8 @@ public abstract class AlbumRipper extends AbstractRipper {
      * Sets directory to save all ripped files to.
      * @param url
      *      URL to define how the working directory should be saved.
+     * @throws 
+     *      IOException      
      */
     @Override
     public void setWorkingDir(URL url) throws IOException {
