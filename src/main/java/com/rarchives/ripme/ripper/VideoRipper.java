@@ -40,7 +40,7 @@ public abstract class VideoRipper extends AbstractRipper {
     }
 
     @Override
-    public void addURLToDownload(URL url, File saveAs) {
+    public boolean addURLToDownload(URL url, File saveAs) {
         if (Utils.getConfigBoolean("urls_only.save", false)) {
             // Output URL to file
             String urlFile = this.workingDir + File.separator + "urls.txt";
@@ -53,16 +53,18 @@ public abstract class VideoRipper extends AbstractRipper {
                 observer.update(this, msg);
             } catch (IOException e) {
                 logger.error("Error while writing to " + urlFile, e);
+                return false;
             }
         }
         else {
             threadPool.addThread(new DownloadVideoThread(url, saveAs, this));
         }
+        return true;
     }
 
     @Override
-    public void addURLToDownload(URL url, File saveAs, String referrer, Map<String,String> cookies) {
-        addURLToDownload(url, saveAs);
+    public boolean addURLToDownload(URL url, File saveAs, String referrer, Map<String,String> cookies) {
+        return addURLToDownload(url, saveAs);
     }
 
     @Override

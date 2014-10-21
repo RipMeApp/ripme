@@ -29,6 +29,11 @@ public class MotherlessRipper extends AlbumRipper {
 
     @Override
     public boolean canRip(URL url) {
+        try {
+            getGID(url);
+        } catch (Exception e) {
+            return false;
+        }
         return url.getHost().endsWith(DOMAIN);
     }
 
