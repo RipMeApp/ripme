@@ -18,18 +18,12 @@ import java.util.Arrays;
 
 public class ChanRipper extends AbstractHTMLRipper {
     
-    //ArrayList<String> explicit_domains = new ArrayList<String>();
     public static List<ChanSite> explicit_domains = Arrays.asList(
-        //Tested (main boards)
-        //Untested (main boards)
-        new ChanSite(Arrays.asList("anon-ib.com")),
-        new ChanSite(Arrays.asList("boards.4chan.org"),Arrays.asList("4cdn.org")),
-        //Tested (archives)
-        new ChanSite(Arrays.asList("archive.moe"),Arrays.asList("data.archive.moe")), //4chan archive (successor of foolz archive) Archives: [ a / biz / c / co / diy / gd / i / int / jp / m / mlp / out / po / q / s4s / sci / sp / tg / tv / v / vg / vp / vr / wsg ]  
-        //Untested (archives)new ChanSite(Arrays.asList("anon-ib.com")),
-        new ChanSite(Arrays.asList("4archive.org"),Arrays.asList("imgur.com")), //4chan archive (on demand)
-        new ChanSite(Arrays.asList("archive.4plebs.org"),Arrays.asList("img.4plebs.org")), //4chan archive Archives: [ adv / f / hr / o / pol / s4s / tg / trv / tv / x ] Boards: [ plebs ]  
-        new ChanSite(Arrays.asList("fgts.jp"),Arrays.asList("dat.fgts.jp")) //4chan archive Archives: [ asp / cm / h / hc / hm / n / p / r / s / soc / y ]
+        new ChanSite(Arrays.asList("boards.4chan.org"),   Arrays.asList("4cdn.org")),
+        new ChanSite(Arrays.asList("archive.moe"),        Arrays.asList("data.archive.moe")),
+        new ChanSite(Arrays.asList("4archive.org"),       Arrays.asList("imgur.com")),
+        new ChanSite(Arrays.asList("archive.4plebs.org"), Arrays.asList("img.4plebs.org")),
+        new ChanSite(Arrays.asList("fgts.jp"),            Arrays.asList("dat.fgts.jp"))
         );
     public static List<String> url_piece_blacklist = Arrays.asList(
         "=http",
@@ -44,15 +38,13 @@ public class ChanRipper extends AbstractHTMLRipper {
     public ChanRipper(URL url) throws IOException {
         super(url);
         for (ChanSite _chanSite : explicit_domains) {
-            for (String host : _chanSite.domains) {
-                if (url.getHost().equals(host)) {
-                    chanSite = _chanSite;
-                    generalChanSite = false;
-                }
+            if (_chanSite.domains.contains(url.getHost())) {
+                chanSite = _chanSite;
+                generalChanSite = false;
             }
         }
-        if(chanSite==null){
-            chanSite = new ChanSite(Arrays.asList("url.getHost()"));
+        if (chanSite == null) {
+            chanSite = new ChanSite(Arrays.asList(url.getHost()));
         }        
     }
 
@@ -70,17 +62,13 @@ public class ChanRipper extends AbstractHTMLRipper {
 
     @Override
     public boolean canRip(URL url) {        
-        //explicit_domains testing 
         for (ChanSite _chanSite : explicit_domains) {
-            for (String host : _chanSite.domains) {
-                if (url.getHost().equals(host)) {
-                    return true;
-                }
-            } 
+            if (_chanSite.domains.contains(url.getHost())) {
+                return true;
+            }
         }
-        //It'll fail further down the road.
-        return  url.toExternalForm().contains("/res/")      // Most chans
-               || url.toExternalForm().contains("/thread/"); // 4chan, archive.moe
+        return  url.toExternalForm().contains("/res/")     // Most chans
+             || url.toExternalForm().contains("/thread/"); // 4chan, archive.moe
     }
     /**
      * For example the achrives are all known. (Check 4chan-x)
@@ -92,7 +80,7 @@ public class ChanRipper extends AbstractHTMLRipper {
         Pattern p; Matcher m;
 
         String u = url.toExternalForm();        
-        if (u.contains("/thread/")||u.contains("/res/")) {
+        if (u.contains("/thread/") || u.contains("/res/")) {
             p = Pattern.compile("^.*\\.[a-z]{1,3}/[a-zA-Z0-9]+/(thread|res)/([0-9]+)(\\.html|\\.php)?.*$");
             m = p.matcher(u);
             if (m.matches()) {
@@ -125,27 +113,28 @@ public class ChanRipper extends AbstractHTMLRipper {
             if (!link.hasAttr("href")) { 
                 continue;
             }
-            String href = link.attr("href");
-            
+            String href = link.attr("href").trim();
+
             //Check all blacklist items
-            for(String blacklist_item : url_piece_blacklist){                
-                if (href.contains(blacklist_item)){
+            for (String blacklist_item : url_piece_blacklist) {
+                if (href.contains(blacklist_item)) {
                     logger.debug("Skipping link that contains '"+blacklist_item+"': " + href);
                     continue elementloop;
                 }            
             }
             Boolean self_hosted = false;
-            if(!generalChanSite){              
-                for(String cdnDomain : chanSite.cdnDomains){                
+            if (!generalChanSite) {
+                for (String cdnDomain : chanSite.cdnDomains) {
                     if (href.contains(cdnDomain)){                    
                         self_hosted = true;
                     }            
                 }   
             }
+
             if(self_hosted||generalChanSite){
                 p = Pattern.compile("^.*\\.(jpg|jpeg|png|gif|apng|webp|tif|tiff|webm)$", Pattern.CASE_INSENSITIVE);
                 m = p.matcher(href);
-                if (m.matches()) {                
+                if (m.matches()) {
                     if (href.startsWith("//")) {
                         href = "http:" + href;
                     }
