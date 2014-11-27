@@ -118,7 +118,7 @@ public class Http {
 
     public JSONObject getJSON() throws IOException {
         ignoreContentType();
-        String jsonString = response().body().replace("&quot;", "\"");
+        String jsonString = response().body();
         return new JSONObject(jsonString);
     }
 

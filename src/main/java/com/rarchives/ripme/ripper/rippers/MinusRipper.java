@@ -66,8 +66,8 @@ public class MinusRipper extends AlbumRipper {
         // http://minus.com/mw7ztQ6xzP7ae
         // http://vampyr3.minus.com/mw7ztQ6xzP7ae
         String u = url.toExternalForm();
-        u = u.replace("www.minus.com", "minus.com");
-        u = u.replace("/i.minus.com", "minus.com");
+        u = u.replace("/www.minus.com", "/minus.com");
+        u = u.replace("/i.minus.com", "/minus.com");
         Pattern p; Matcher m;
 
         p = Pattern.compile("^https?://minus\\.com/m([a-zA-Z0-9]+).*$");
