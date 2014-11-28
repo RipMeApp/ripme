@@ -231,10 +231,12 @@ public class Utils {
                             classes.add(Class.forName(className));
                         } catch (ClassNotFoundException e) {
                             logger.error("ClassNotFoundException loading " + className);
+                            jarFile.close(); // Resource leak fix?
                             throw new RuntimeException("ClassNotFoundException loading " + className);
                         }
                     }
                 }
+                jarFile.close(); // Eclipse said not closing it would have a resource leak
             } catch (IOException e) {
                 logger.error("Error while loading jar file:", e);
                 throw new RuntimeException(pkgname + " (" + directory + ") does not appear to be a valid package", e);

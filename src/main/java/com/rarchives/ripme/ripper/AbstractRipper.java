@@ -2,6 +2,7 @@ package com.rarchives.ripme.ripper;
 
 import java.awt.Desktop;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.net.MalformedURLException;
@@ -130,6 +131,46 @@ public abstract class AbstractRipper
             saveFileAs.getParentFile().mkdirs();
         }
         return addURLToDownload(url, saveFileAs, referrer, cookies);
+    }
+    public boolean saveText(URL url, String subdirectory, String referrer, Map<String,String> cookies, String text) {
+        try {
+            stopCheck();
+        } catch (IOException e) {
+            return false;
+        }
+        String saveAs = url.toExternalForm();
+        saveAs = saveAs.substring(saveAs.lastIndexOf('/')+1);
+        if (saveAs.indexOf('?') >= 0) { saveAs = saveAs.substring(0, saveAs.indexOf('?')); }
+        if (saveAs.indexOf('#') >= 0) { saveAs = saveAs.substring(0, saveAs.indexOf('#')); }
+        if (saveAs.indexOf('&') >= 0) { saveAs = saveAs.substring(0, saveAs.indexOf('&')); }
+        if (saveAs.indexOf(':') >= 0) { saveAs = saveAs.substring(0, saveAs.indexOf(':')); }
+        File saveFileAs;
+        try {
+            if (!subdirectory.equals("")) {
+                subdirectory = File.separator + subdirectory;
+            }
+            // TODO Get prefix working again, probably requires reworking a lot of stuff!
+            saveFileAs = new File(
+                    workingDir.getCanonicalPath()
+                    + subdirectory
+                    // + prefix
+                    + File.separator
+                    + saveAs
+                    + ".txt");
+            // Write the file
+            FileOutputStream out = (new FileOutputStream(saveFileAs));
+            out.write(text.getBytes());
+            out.close();
+        } catch (IOException e) {
+            logger.error("[!] Error creating save file path for description '" + url + "':", e);
+            return false;
+        }
+        logger.debug("Downloading " + url + "'s description to " + saveFileAs);
+        if (!saveFileAs.getParentFile().exists()) {
+            logger.info("[+] Creating directory: " + Utils.removeCWD(saveFileAs.getParent()));
+            saveFileAs.getParentFile().mkdirs();
+        }
+        return true;
     }
     
     /**
