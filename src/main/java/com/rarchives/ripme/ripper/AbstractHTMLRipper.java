@@ -1,5 +1,7 @@
 package com.rarchives.ripme.ripper;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -14,7 +16,7 @@ import com.rarchives.ripme.utils.Utils;
  * Simplified ripper, designed for ripping from sites by parsing HTML.
  */
 public abstract class AbstractHTMLRipper extends AlbumRipper {
-
+	
     public AbstractHTMLRipper(URL url) throws IOException {
         super(url);
     }
@@ -27,6 +29,9 @@ public abstract class AbstractHTMLRipper extends AlbumRipper {
         throw new IOException("getNextPage not implemented");
     }
     public abstract List<String> getURLsFromPage(Document page);
+    public List<String> getDescriptionsFromPage(Document doc) throws IOException {
+    	throw new IOException("getDescriptionsFromPage not implemented"); // Do I do this or make an abstract function?
+    }
     public abstract void downloadURL(URL url, int index);
     public DownloadThreadPool getThreadPool() {
         return null;
@@ -45,27 +50,48 @@ public abstract class AbstractHTMLRipper extends AlbumRipper {
     public URL sanitizeURL(URL url) throws MalformedURLException {
         return url;
     }
-
+    public boolean hasDescriptionSupport() {
+		return false;
+    }
+    public String getDescription(String page) throws IOException {
+    	throw new IOException("getDescription not implemented"); // Do I do this or make an abstract function?
+    }
     @Override
     public void rip() throws IOException {
         int index = 0;
+        int textindex = 0;
         logger.info("Retrieving " + this.url);
         sendUpdate(STATUS.LOADING_RESOURCE, this.url.toExternalForm());
         Document doc = getFirstPage();
-
+        
         while (doc != null) {
             List<String> imageURLs = getURLsFromPage(doc);
 
             if (imageURLs.size() == 0) {
                 throw new IOException("No images found at " + doc.location());
             }
-
+            
             for (String imageURL : imageURLs) {
                 if (isStopped()) {
                     break;
                 }
                 index += 1;
                 downloadURL(new URL(imageURL), index);
+            }
+            if (hasDescriptionSupport()) {
+            	List<String> textURLs = getDescriptionsFromPage(doc);
+            	if (textURLs.size() > 0) {
+            		for (String textURL : textURLs) {
+            			if (isStopped()) {
+            				break;
+            			}
+            			textindex += 1;
+            			String tempDesc = getDescription(textURL);
+            			if (tempDesc != null) {
+            				saveText(new URL(textURL), "", tempDesc, textindex);
+            			}
+            		}
+            	}
             }
 
             if (isStopped()) {
@@ -87,7 +113,46 @@ public abstract class AbstractHTMLRipper extends AlbumRipper {
         }
         waitForThreads();
     }
-
+    public boolean saveText(URL url, String subdirectory, String text, int index) {
+        try {
+            stopCheck();
+        } catch (IOException e) {
+            return false;
+        }
+        String saveAs = url.toExternalForm();
+        saveAs = saveAs.substring(saveAs.lastIndexOf('/')+1);
+        if (saveAs.indexOf('?') >= 0) { saveAs = saveAs.substring(0, saveAs.indexOf('?')); }
+        if (saveAs.indexOf('#') >= 0) { saveAs = saveAs.substring(0, saveAs.indexOf('#')); }
+        if (saveAs.indexOf('&') >= 0) { saveAs = saveAs.substring(0, saveAs.indexOf('&')); }
+        if (saveAs.indexOf(':') >= 0) { saveAs = saveAs.substring(0, saveAs.indexOf(':')); }
+        File saveFileAs;
+        try {
+            if (!subdirectory.equals("")) { // Not sure about this part
+                subdirectory = File.separator + subdirectory;
+            }
+            // TODO Get prefix working again, probably requires reworking a lot of stuff!
+            saveFileAs = new File(
+                    workingDir.getCanonicalPath()
+                    + subdirectory
+                    + File.separator
+                    + getPrefix(index)
+                    + saveAs
+                    + ".txt");
+            // Write the file
+            FileOutputStream out = (new FileOutputStream(saveFileAs));
+            out.write(text.getBytes());
+            out.close();
+        } catch (IOException e) {
+            logger.error("[!] Error creating save file path for description '" + url + "':", e);
+            return false;
+        }
+        logger.debug("Downloading " + url + "'s description to " + saveFileAs);
+        if (!saveFileAs.getParentFile().exists()) {
+            logger.info("[+] Creating directory: " + Utils.removeCWD(saveFileAs.getParent()));
+            saveFileAs.getParentFile().mkdirs();
+        }
+        return true;
+    }
     public String getPrefix(int index) {
         String prefix = "";
         if (keepSortOrder() && Utils.getConfigBoolean("download.save_order", true)) {
