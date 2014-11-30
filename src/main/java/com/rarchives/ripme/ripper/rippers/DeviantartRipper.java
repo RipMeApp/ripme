@@ -15,8 +15,10 @@ import java.util.regex.Pattern;
 
 import org.jsoup.Connection.Method;
 import org.jsoup.Connection.Response;
+import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.safety.Whitelist;
 import org.jsoup.select.Elements;
 
 import com.rarchives.ripme.ripper.AbstractHTMLRipper;
@@ -220,14 +222,18 @@ public class DeviantartRipper extends AbstractHTMLRipper {
                                 .response();
             cookies.putAll(resp.cookies());
 
-            // Try to find the "Download" box
+            // Try to find the description
             Elements els = resp.parse().select("div[class=dev-description]");
             if (els.size() == 0) {
                 throw new IOException("No description found");
             }
-            // Full-size image
-            String desc = els.text(); // TODO Figure out how to preserve newlines
-            return desc;
+            Document documentz = resp.parse();
+            Element ele = documentz.select("div[class=dev-description]").get(0);
+            documentz.outputSettings(new Document.OutputSettings().prettyPrint(false));
+            ele.select("br").append("\\n");
+            ele.select("p").prepend("\\n\\n");
+            return Jsoup.clean(ele.html().replaceAll("\\\\n", System.getProperty("line.separator")), "", Whitelist.none(), new Document.OutputSettings().prettyPrint(false));
+            // TODO Make this not make a newline if someone just types \n into the description.
         } catch (IOException ioe) {
                 logger.info("Failed to get description " + page + " : '" + ioe.getMessage() + "'");
                 return null;
@@ -251,7 +257,7 @@ public class DeviantartRipper extends AbstractHTMLRipper {
                                 .response();
             cookies.putAll(resp.cookies());
 
-            // Try to find the description
+            // Try to find the download button
             Elements els = resp.parse().select("a.dev-page-download");
             if (els.size() == 0) {
                 throw new IOException("No download page found");
