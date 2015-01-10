@@ -132,6 +132,7 @@ public abstract class AbstractRipper
         return addURLToDownload(url, saveFileAs, referrer, cookies);
     }
     
+    
     /**
      * Queues file to be downloaded and saved. With options.
      * @param url

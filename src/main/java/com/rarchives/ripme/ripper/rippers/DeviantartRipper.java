@@ -15,8 +15,10 @@ import java.util.regex.Pattern;
 
 import org.jsoup.Connection.Method;
 import org.jsoup.Connection.Response;
+import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.safety.Whitelist;
 import org.jsoup.select.Elements;
 
 import com.rarchives.ripme.ripper.AbstractHTMLRipper;
@@ -43,7 +45,10 @@ public class DeviantartRipper extends AbstractHTMLRipper {
     public String getDomain() {
         return "deviantart.com";
     }
-
+    @Override
+    public boolean hasDescriptionSupport() {
+		return true;
+    }
     @Override
     public URL sanitizeURL(URL url) throws MalformedURLException {
         String u = url.toExternalForm();
@@ -118,7 +123,6 @@ public class DeviantartRipper extends AbstractHTMLRipper {
                 logger.info("Attempting to get full size image from " + thumb.attr("href"));
                 fullSize = smallToFull(img.attr("src"), thumb.attr("href"));
             }
-
             if (fullSize == null) {
                 continue;
             }
@@ -131,7 +135,23 @@ public class DeviantartRipper extends AbstractHTMLRipper {
         }
         return imageURLs;
     }
-    
+    @Override
+    public List<String> getDescriptionsFromPage(Document page) {
+        List<String> textURLs = new ArrayList<String>();
+
+        // Iterate over all thumbnails
+        for (Element thumb : page.select("div.zones-container a.thumb")) {
+            if (isStopped()) {
+                break;
+            }
+            Element img = thumb.select("img").get(0);
+            if (img.attr("transparent").equals("false")) {
+                continue; // a.thumbs to other albums are invisible
+            }
+            textURLs.add(thumb.attr("href"));
+        }
+        return textURLs;
+    }
     @Override
     public Document getNextPage(Document page) throws IOException {
         Elements nextButtons = page.select("li.next > a");
@@ -184,7 +204,42 @@ public class DeviantartRipper extends AbstractHTMLRipper {
         }
         return result.toString();
     }
+    
+    /**
+     * Attempts to download description for image.
+     * Comes in handy when people put entire stories in their description.
+     * If no description was found, returns null.
+     * @param page The page the description will be retrieved from
+     * @return The description
+     */
+    @Override
+    public String getDescription(String page) {
+        try {
+            // Fetch the image page
+            Response resp = Http.url(page)
+                                .referrer(this.url)
+                                .cookies(cookies)
+                                .response();
+            cookies.putAll(resp.cookies());
 
+            // Try to find the description
+            Elements els = resp.parse().select("div[class=dev-description]");
+            if (els.size() == 0) {
+                throw new IOException("No description found");
+            }
+            Document documentz = resp.parse();
+            Element ele = documentz.select("div[class=dev-description]").get(0);
+            documentz.outputSettings(new Document.OutputSettings().prettyPrint(false));
+            ele.select("br").append("\\n");
+            ele.select("p").prepend("\\n\\n");
+            return Jsoup.clean(ele.html().replaceAll("\\\\n", System.getProperty("line.separator")), "", Whitelist.none(), new Document.OutputSettings().prettyPrint(false));
+            // TODO Make this not make a newline if someone just types \n into the description.
+        } catch (IOException ioe) {
+                logger.info("Failed to get description " + page + " : '" + ioe.getMessage() + "'");
+                return null;
+        }
+    }
+   
     /**
      * If largest resolution for image at 'thumb' is found, starts downloading
      * and returns null.
@@ -202,7 +257,7 @@ public class DeviantartRipper extends AbstractHTMLRipper {
                                 .response();
             cookies.putAll(resp.cookies());
 
-            // Try to find the "Download" box
+            // Try to find the download button
             Elements els = resp.parse().select("a.dev-page-download");
             if (els.size() == 0) {
                 throw new IOException("No download page found");
