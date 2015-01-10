@@ -60,9 +60,9 @@ public class App {
         if (cl.hasOption('t')) {
             Utils.setConfigInteger("threads.size", Integer.parseInt(cl.getOptionValue('t')));
         }
-	if (cl.hasOption('4')) {
-	    Utils.setConfigBoolean("errors.skip404", true);
-	}
+        if (cl.hasOption('4')) {
+            Utils.setConfigBoolean("errors.skip404", true);
+        }
         if (cl.hasOption('r')) {
             // Re-rip all via command-line
             List<String> history = Utils.getConfigList("download.history");
@@ -83,6 +83,16 @@ public class App {
             }
             // Exit
             System.exit(0);
+        }
+        if (cl.hasOption('d')) {
+            Utils.setConfigBoolean("download.save_order", true);
+        }
+        if (cl.hasOption('D')) {
+            Utils.setConfigBoolean("download.save_order", false);
+        }
+        if ((cl.hasOption('d'))&&(cl.hasOption('D'))) {
+            System.err.println("\nCannot specify '-d' and '-D' simultaneously");
+            System.exit(-1);
         }
         if (cl.hasOption('u')) {
             // User provided URL, rip it.
@@ -117,7 +127,9 @@ public class App {
         opts.addOption("t", "threads",   true,  "Number of download threads per rip");
         opts.addOption("w", "overwrite", false, "Overwrite existing files");
         opts.addOption("r", "rerip",     false, "Re-rip all ripped albums");
-	opts.addOption("4", "skip404",   false, "Don't retry after a 404 (not found) error");
+        opts.addOption("d", "saveorder",   false, "Save the order of images in album");
+        opts.addOption("D", "nosaveorder", false, "Don't save order of images");
+        opts.addOption("4", "skip404",   false, "Don't retry after a 404 (not found) error");
         return opts;
     }
 
