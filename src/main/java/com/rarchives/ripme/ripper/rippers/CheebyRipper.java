@@ -56,8 +56,8 @@ public class CheebyRipper extends AbstractHTMLRipper {
     @Override
     public Document getNextPage(Document doc) throws IOException {
         sleep(500);
-        offset += 10;
-        String url = this.url + "?limit=10&offset=" + offset;
+        offset += 1;
+        String url = this.url + "?p=" + offset;
         Document nextDoc = Http.url(url).get();
         if (nextDoc.select("div.i a img").size() == 0) {
             throw new IOException("No more images to fetch");
