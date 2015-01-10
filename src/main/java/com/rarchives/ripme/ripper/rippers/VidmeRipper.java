@@ -38,7 +38,7 @@ public class VidmeRipper extends AbstractHTMLRipper {
 
 	@Override
 	public List<String> getURLsFromPage(Document page) {
-		List<String> result = new LinkedList<>();
+		List<String> result = new LinkedList<String>();
 		for(Element elem : page.select("a.js-download-video-link")){
 			String link = StringEscapeUtils.unescapeHtml(elem.attr("data-href").toString());
 			result.add(link);
