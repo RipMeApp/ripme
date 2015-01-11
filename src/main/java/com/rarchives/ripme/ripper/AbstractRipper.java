@@ -328,8 +328,12 @@ public abstract class AbstractRipper
         } catch (HttpStatusException e) {
             logger.error("Got exception while running ripper:", e);
             waitForThreads();
-            sendUpdate(STATUS.RIP_ERRORED, "Status=" + e.getStatusCode() + ", URL=" + e.getUrl());
+            sendUpdate(STATUS.RIP_ERRORED, "HTTP status code " + e.getStatusCode() + " for URL " + e.getUrl());
         } catch (IOException e) {
+            logger.error("Got exception while running ripper:", e);
+            waitForThreads();
+            sendUpdate(STATUS.RIP_ERRORED, e.getMessage());
+        } catch (Exception e) {
             logger.error("Got exception while running ripper:", e);
             waitForThreads();
             sendUpdate(STATUS.RIP_ERRORED, e.getMessage());

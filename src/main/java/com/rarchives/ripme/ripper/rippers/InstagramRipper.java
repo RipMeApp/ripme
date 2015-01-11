@@ -9,6 +9,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -109,7 +110,12 @@ public class InstagramRipper extends AbstractJSONRipper {
         String baseURL = "http://iconosquare.com/controller_nl.php?action=getPhotoUserPublic&user_id="
                         + userID;
         logger.info("Loading " + baseURL);
-        return Http.url(baseURL).getJSON();
+        try {
+            JSONObject result = Http.url(baseURL).getJSON();
+            return result;
+        } catch (JSONException e) {
+            throw new IOException("Could not get instagram user via iconosquare", e);
+        }
     }
 
     @Override
