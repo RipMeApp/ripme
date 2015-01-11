@@ -11,6 +11,8 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.net.ssl.HttpsURLConnection;
+
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 import org.jsoup.HttpStatusException;
@@ -76,16 +78,25 @@ public class DownloadFileThread extends Thread {
             }
         }
 
+        URL urlToDownload = this.url;
+        boolean redirected = false;
         int tries = 0; // Number of attempts to download
         do {
             tries += 1;
             InputStream bis = null; OutputStream fos = null;
             try {
-                logger.info("    Downloading file: " + url + (tries > 0 ? " Retry #" + tries : ""));
+                logger.info("    Downloading file: " + urlToDownload + (tries > 0 ? " Retry #" + tries : ""));
                 observer.sendUpdate(STATUS.DOWNLOAD_STARTED, url.toExternalForm());
 
                 // Setup HTTP request
-                HttpURLConnection huc = (HttpURLConnection) this.url.openConnection();
+                HttpURLConnection huc;
+                if (this.url.toString().startsWith("https")) {
+                    huc = (HttpsURLConnection) urlToDownload.openConnection();
+                }
+                else {
+                    huc = (HttpURLConnection) urlToDownload.openConnection();
+                }
+                huc.setInstanceFollowRedirects(true);
                 huc.setConnectTimeout(TIMEOUT);
                 huc.setRequestProperty("accept",  "*/*");
                 huc.setRequestProperty("Referer", referrer); // Sic
@@ -101,6 +112,17 @@ public class DownloadFileThread extends Thread {
                 huc.connect();
 
                 int statusCode = huc.getResponseCode();
+                if (statusCode  / 100 == 3) { // 3xx Redirect
+                    if (!redirected) {
+                        // Don't increment retries on the first redirect
+                        tries--;
+                        redirected = true;
+                    }
+                    String location = huc.getHeaderField("Location");
+                    urlToDownload = new URL(location);
+                    // Throw exception so download can be retried
+                    throw new IOException("Redirect status code " + statusCode + " - redirect to " + location);
+                }
                 if (statusCode / 100 == 4) { // 4xx errors
                     logger.error("[!] Non-retriable status code " + statusCode + " while downloading from " + url);
                     observer.downloadErrored(url, "Non-retriable status code " + statusCode + " while downloading " + url.toExternalForm());
@@ -111,7 +133,7 @@ public class DownloadFileThread extends Thread {
                     // Throw exception so download can be retried
                     throw new IOException("Retriable status code " + statusCode);
                 }
-                if (huc.getContentLength() == 503 && url.getHost().endsWith("imgur.com")) {
+                if (huc.getContentLength() == 503 && urlToDownload.getHost().endsWith("imgur.com")) {
                     // Imgur image with 503 bytes is "404"
                     logger.error("[!] Imgur image is 404 (503 bytes long): " + url);
                     observer.downloadErrored(url, "Imgur image is 404: " + url.toExternalForm());
@@ -124,13 +146,13 @@ public class DownloadFileThread extends Thread {
                 IOUtils.copy(bis, fos);
                 break; // Download successful: break out of infinite loop
             } catch (HttpStatusException hse) {
-                logger.error("[!] HTTP status " + hse.getStatusCode() + " while downloading from " + url);
+                logger.error("[!] HTTP status " + hse.getStatusCode() + " while downloading from " + urlToDownload);
                 if (hse.getStatusCode() == 404 && Utils.getConfigBoolean("errors.skip404", false)) {
                     observer.downloadErrored(url, "HTTP status code " + hse.getStatusCode() + " while downloading " + url.toExternalForm());
                     return;
                 }
             } catch (IOException e) {
-                logger.error("[!] Exception while downloading file: " + url + " - " + e.getMessage(), e);
+                logger.error("[!] Exception while downloading file: " + url + " - " + e.getMessage());
             } finally {
                 // Close any open streams
                 try {
