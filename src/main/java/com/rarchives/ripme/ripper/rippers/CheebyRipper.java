@@ -1,5 +1,6 @@
 package com.rarchives.ripme.ripper.rippers;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -153,6 +154,18 @@ public class CheebyRipper extends AbstractHTMLRipper {
             getThreadPool().waitForThreads();
         }
         waitForThreads();
+
+        // Delete empty subdirectories
+        for (String prefix : albumSets.keySet()) {
+            if (prefix.trim().equals("")) {
+                continue;
+            }
+            File f = new File(this.workingDir, prefix);
+            if (f.list() != null && f.list().length == 0) {
+                logger.info("Deleting empty directory: " + f.getAbsolutePath());
+                f.delete();
+            }
+        }
     }
     
     private class Image {
