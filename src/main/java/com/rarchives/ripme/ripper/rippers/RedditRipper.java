@@ -96,6 +96,13 @@ public class RedditRipper extends AlbumRipper {
                 nextURL = new URL(nextURLString);
             }
         }
+
+        // Wait to avoid rate-limiting against reddit's API
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            logger.warn("Interrupted while sleeping", e);
+        }
         return nextURL;
     }
     
