@@ -125,14 +125,14 @@ public abstract class AlbumRipper extends AbstractRipper {
     }
 
     @Override
-    public void downloadProblem(URL url, String message) {
+    public void downloadExists(URL url, File file) {
         if (observer == null) {
             return;
         }
-        
+
         itemsPending.remove(url);
-        itemsErrored.put(url, message);
-        observer.update(this, new RipStatusMessage(STATUS.DOWNLOAD_WARN, url + " : " + message));
+        itemsCompleted.put(url, file);
+        observer.update(this, new RipStatusMessage(STATUS.DOWNLOAD_WARN, url + " already saved as " + file.getAbsolutePath()));
             
         checkIfComplete();
     }

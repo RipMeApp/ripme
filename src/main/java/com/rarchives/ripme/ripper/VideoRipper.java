@@ -111,11 +111,11 @@ public abstract class VideoRipper extends AbstractRipper {
         checkIfComplete();
     }
     @Override
-    public void downloadProblem(URL url, String message) {
+    public void downloadExists(URL url, File file) {
         if (observer == null) {
             return;
         }
-        observer.update(this, new RipStatusMessage(STATUS.DOWNLOAD_WARN, url + " : " + message));
+        observer.update(this, new RipStatusMessage(STATUS.DOWNLOAD_WARN, url + " already saved as " + file));
         checkIfComplete();
     }
 

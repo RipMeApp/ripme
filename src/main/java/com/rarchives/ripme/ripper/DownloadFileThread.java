@@ -73,7 +73,7 @@ public class DownloadFileThread extends Thread {
                 saveAs.delete();
             } else {
                 logger.info("[!] Skipping " + url + " -- file already exists: " + prettySaveAs);
-                observer.downloadProblem(url, "File already exists: " + prettySaveAs);
+                observer.downloadExists(url, saveAs);
                 return;
             }
         }

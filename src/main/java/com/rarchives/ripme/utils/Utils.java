@@ -333,6 +333,9 @@ public class Utils {
             PropertyConfigurator.configure(stream);
         }
         logger.info("Loaded " + logFile);
+        try {
+            stream.close();
+        } catch (IOException e) { }
     }
 
     /**

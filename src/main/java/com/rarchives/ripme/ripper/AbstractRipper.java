@@ -198,7 +198,7 @@ public abstract class AbstractRipper
      * @param url
      * @param message
      */
-    public abstract void downloadProblem(URL url, String message);
+    public abstract void downloadExists(URL url, File file);
 
     /**
      * @return Number of files downloaded.

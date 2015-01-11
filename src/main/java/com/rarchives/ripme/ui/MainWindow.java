@@ -60,6 +60,7 @@ import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import com.rarchives.ripme.ripper.AbstractRipper;
@@ -139,6 +140,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
     private static AbstractRipper ripper;
 
     public MainWindow() {
+        Logger.getRootLogger().setLevel(Level.ERROR);
         mainFrame = new JFrame("RipMe v" + UpdateUtils.getThisJarVersion());
         mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         mainFrame.setResizable(false);
@@ -1021,20 +1023,26 @@ public class MainWindow implements Runnable, RipStatusHandler {
         switch(msg.getStatus()) {
         case LOADING_RESOURCE:
         case DOWNLOAD_STARTED:
-            appendLog( "Downloading: " + (String) msg.getObject(), Color.BLACK);
+            if (logger.isEnabledFor(Level.INFO)) {
+                appendLog( "Downloading " + (String) msg.getObject(), Color.BLACK);
+            }
             break;
         case DOWNLOAD_COMPLETE:
-            appendLog( "Completed: " + (String) msg.getObject(), Color.GREEN);
+            appendLog( "Downloaded " + (String) msg.getObject(), Color.GREEN);
             break;
         case DOWNLOAD_ERRORED:
-            appendLog( "Error: " + (String) msg.getObject(), Color.RED);
+            if (logger.isEnabledFor(Level.ERROR)) {
+                appendLog((String) msg.getObject(), Color.RED);
+            }
             break;
         case DOWNLOAD_WARN:
-            appendLog( "Warn: " + (String) msg.getObject(), Color.ORANGE);
+            appendLog((String) msg.getObject(), Color.ORANGE);
             break;
         
         case RIP_ERRORED:
-            appendLog( "Error: " + (String) msg.getObject(), Color.RED);
+            if (logger.isEnabledFor(Level.ERROR)) {
+                appendLog((String) msg.getObject(), Color.RED);
+            }
             stopButton.setEnabled(false);
             statusProgress.setValue(0);
             statusProgress.setVisible(false);
@@ -1079,7 +1087,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
                 Image folderIcon = ImageIO.read(getClass().getClassLoader().getResource("folder.png"));
                 openButton.setIcon(new ImageIcon(folderIcon));
             } catch (Exception e) { }
-            appendLog( "Rip complete, saved to " + prettyFile, Color.GREEN);
+            appendLog( "Rip complete, saved to " + f.getAbsolutePath(), Color.GREEN);
             openButton.setActionCommand(f.toString());
             openButton.addActionListener(new ActionListener() {
                 @Override
