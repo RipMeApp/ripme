@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.util.Date;
 import java.util.List;
 
 import javax.imageio.ImageIO;
@@ -977,17 +978,21 @@ public class MainWindow implements Runnable, RipStatusHandler {
 
         case RIP_COMPLETE:
             boolean alreadyInHistory = false;
+            RipStatusComplete rsc = (RipStatusComplete) msg.getObject();
             String url = ripper.getURL().toExternalForm();
             for (int i = 0; i < historyListModel.size(); i++) {
                 HistoryEntry entry = (HistoryEntry) historyListModel.get(i);
                 if (entry.url.equals(url)) {
                     alreadyInHistory = true;
+                    entry.modifiedDate = new Date();
                     break;
                 }
             }
             if (!alreadyInHistory) {
                 HistoryEntry entry = new HistoryEntry();
                 entry.url = url;
+                entry.dir = rsc.getDir();
+                entry.count = rsc.count;
                 try {
                     entry.title = ripper.getAlbumTitle(ripper.getURL());
                 } catch (MalformedURLException e) { }
@@ -1001,7 +1006,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
             statusProgress.setValue(0);
             statusProgress.setVisible(false);
             openButton.setVisible(true);
-            File f = (File) msg.getObject();
+            File f = rsc.dir;
             String prettyFile = Utils.shortenPath(f);
             openButton.setText("Open " + prettyFile);
             mainFrame.setTitle("RipMe v" + UpdateUtils.getThisJarVersion());

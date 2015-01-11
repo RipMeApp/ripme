@@ -15,6 +15,7 @@ import org.apache.log4j.FileAppender;
 import org.apache.log4j.Logger;
 import org.jsoup.HttpStatusException;
 
+import com.rarchives.ripme.ui.RipStatusComplete;
 import com.rarchives.ripme.ui.RipStatusHandler;
 import com.rarchives.ripme.ui.RipStatusMessage;
 import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
@@ -200,19 +201,28 @@ public abstract class AbstractRipper
     public abstract void downloadProblem(URL url, String message);
 
     /**
+     * @return Number of files downloaded.
+     */
+    public int getCount() {
+        return 1;
+    }
+
+    /**
      * Notifies observers and updates state if all files have been ripped.
      */
     protected void checkIfComplete() {
         if (observer == null) {
             return;
         }
-        
+
         if (!completed) {
             completed = true;
             logger.info("   Rip completed!");
 
-            RipStatusMessage msg = new RipStatusMessage(STATUS.RIP_COMPLETE, workingDir);
+            RipStatusComplete rsc = new RipStatusComplete(workingDir, getCount());
+            RipStatusMessage msg = new RipStatusMessage(STATUS.RIP_COMPLETE, rsc);
             observer.update(this, msg);
+
             Logger rootLogger = Logger.getRootLogger();
             FileAppender fa = (FileAppender) rootLogger.getAppender("FILE");
             if (fa != null) {

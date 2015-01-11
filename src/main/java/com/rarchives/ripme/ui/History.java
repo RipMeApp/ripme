@@ -68,7 +68,7 @@ public class History {
     public void toFile(String filename) throws IOException {
         OutputStream os = new FileOutputStream(filename);
         try {
-            IOUtils.write(toJSON().toString(), os);
+            IOUtils.write(toJSON().toString(2), os);
         } finally {
             os.close();
         }
