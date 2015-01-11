@@ -35,7 +35,7 @@ public abstract class AlbumRipper extends AbstractRipper {
 
     @Override
     public int getCount() {
-        return itemsCompleted.size();
+        return itemsCompleted.size() + itemsErrored.size();
     }
 
     public boolean addURLToDownload(URL url, File saveAs, String referrer, Map<String,String> cookies) {
