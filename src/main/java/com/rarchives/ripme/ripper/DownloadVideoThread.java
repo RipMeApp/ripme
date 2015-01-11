@@ -9,6 +9,8 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+import javax.net.ssl.HttpsURLConnection;
+
 import org.apache.log4j.Logger;
 
 import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
@@ -78,8 +80,24 @@ public class DownloadVideoThread extends Thread {
             try {
                 logger.info("    Downloading file: " + url + (tries > 0 ? " Retry #" + tries : ""));
                 observer.sendUpdate(STATUS.DOWNLOAD_STARTED, url.toExternalForm());
+
+                // Setup HTTP request
+                HttpURLConnection huc;
+                if (this.url.toString().startsWith("https")) {
+                    huc = (HttpsURLConnection) this.url.openConnection();
+                }
+                else {
+                    huc = (HttpURLConnection) this.url.openConnection();
+                }
+                huc.setInstanceFollowRedirects(true);
+                huc.setConnectTimeout(0); // Never timeout
+                huc.setRequestProperty("accept",  "*/*");
+                huc.setRequestProperty("Referer", this.url.toExternalForm()); // Sic
+                huc.setRequestProperty("User-agent", AbstractRipper.USER_AGENT);
                 tries += 1;
-                bis = new BufferedInputStream(this.url.openStream());
+                huc.connect();
+                // Check status code
+                bis = new BufferedInputStream(huc.getInputStream());
                 fos = new FileOutputStream(saveAs);
                 while ( (bytesRead = bis.read(data)) != -1) {
                     try {
@@ -120,6 +138,9 @@ public class DownloadVideoThread extends Thread {
     private int getTotalBytes(URL url) throws IOException {
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestMethod("HEAD");
+        conn.setRequestProperty("accept",  "*/*");
+        conn.setRequestProperty("Referer", this.url.toExternalForm()); // Sic
+        conn.setRequestProperty("User-agent", AbstractRipper.USER_AGENT);
         return conn.getContentLength();
     }
 
