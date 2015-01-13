@@ -99,7 +99,9 @@ public class DownloadFileThread extends Thread {
                 huc.setInstanceFollowRedirects(true);
                 huc.setConnectTimeout(TIMEOUT);
                 huc.setRequestProperty("accept",  "*/*");
-                huc.setRequestProperty("Referer", referrer); // Sic
+                if (!referrer.equals("")) {
+                    huc.setRequestProperty("Referer", referrer); // Sic
+                }
                 huc.setRequestProperty("User-agent", AbstractRipper.USER_AGENT);
                 String cookie = "";
                 for (String key : cookies.keySet()) {

@@ -195,7 +195,7 @@ public class RedditRipper extends AlbumRipper {
 
         List<URL> urls = RipUtils.getFilesFromURL(originalURL);
         if (urls.size() == 1) {
-            addURLToDownload(urls.get(0), id + "-");
+            addURLToDownload(urls.get(0), id + "-", "", theUrl, null);
         } else if (urls.size() > 1) {
             for (int i = 0; i < urls.size(); i++) {
                 String prefix = id + "-";
