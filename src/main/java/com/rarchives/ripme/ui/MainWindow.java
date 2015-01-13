@@ -344,6 +344,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
             }
         };
         historyTable = new JTable(historyTableModel);
+        historyTable.addMouseListener(new HistoryMenuMouseListener());
         historyTable.setAutoCreateRowSorter(true);
         for (int i = 0; i < historyTable.getColumnModel().getColumnCount(); i++) {
             int width = 130; // Default
@@ -625,7 +626,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
                 if (added == 0) {
                     JOptionPane.showMessageDialog(null,
                                                   "No history entries have been 'Checked'\n" + 
-                                                  "Check an entry by clicking the checkbox to the right of the URL",
+                                                  "Check an entry by clicking the checkbox to the right of the URL or Right-click a URL to check/uncheck all items",
                                                   "RipMe Error",
                                                   JOptionPane.ERROR_MESSAGE);
                     return;
