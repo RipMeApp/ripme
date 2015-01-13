@@ -121,24 +121,27 @@ public class RedditRipper extends AlbumRipper {
 
         int attempts = 0;
         logger.info("    Retrieving " + url);
-        JSONObject json = null;
-        while(json == null && attempts++ < 3) {
+        String jsonString = null;
+        while(jsonString == null && attempts++ < 3) {
             try {
-                json = Http.url(url).getJSON();
+                jsonString = Http.url(url)
+                                 .ignoreContentType()
+                                 .response()
+                                 .body();
             } catch(SocketTimeoutException ex) {
                 if(attempts >= 3) throw ex;
                 logger.warn(String.format("[!] Connection timed out (attempt %d)", attempts));
             }
         }
         
-        Object jsonObj = new JSONTokener(json.toString()).nextValue();
+        Object jsonObj = new JSONTokener(jsonString).nextValue();
         JSONArray jsonArray = new JSONArray();
         if (jsonObj instanceof JSONObject) {
             jsonArray.put( (JSONObject) jsonObj);
         } else if (jsonObj instanceof JSONArray){
             jsonArray = (JSONArray) jsonObj;
         } else {
-            logger.warn("[!] Unable to parse child: " + json.toString());
+            logger.warn("[!] Unable to parse JSON: " + jsonString);
         }
         return jsonArray;
     }
