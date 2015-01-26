@@ -46,7 +46,7 @@ public class HistoryMenuMouseListener extends MouseAdapter {
             @Override
             public void actionPerformed(ActionEvent ae) {
                 for (int row : tableComponent.getSelectedRows()) {
-                    tableComponent.setValueAt(new Boolean(false), row, 4);
+                    tableComponent.setValueAt(new Boolean(true), row, 4);
                 }
             }
         };
