@@ -28,7 +28,8 @@ import com.rarchives.ripme.utils.Utils;
 
 public class DeviantartRipper extends AbstractHTMLRipper {
 
-    private static final int SLEEP_TIME = 2000;
+    private static final int PAGE_SLEEP_TIME  = 3000,
+                             IMAGE_SLEEP_TIME = 1500;
 
     private Map<String,String> cookies = new HashMap<String,String>();
     private Set<String> triedURLs = new HashSet<String>();
@@ -52,6 +53,15 @@ public class DeviantartRipper extends AbstractHTMLRipper {
     @Override
     public URL sanitizeURL(URL url) throws MalformedURLException {
         String u = url.toExternalForm();
+
+        if (u.replace("/", "").endsWith(".deviantart.com")) {
+            // Root user page, get all albums
+            if (!u.endsWith("/")) {
+                u += "/";
+            }
+            u += "gallery/?";
+        }
+
         String subdir = "/";
         if (u.contains("catpath=scraps")) {
             subdir = "scraps";
@@ -166,7 +176,7 @@ public class DeviantartRipper extends AbstractHTMLRipper {
         if (nextPage.startsWith("/")) {
             nextPage = "http://" + this.url.getHost() + nextPage;
         }
-        if (!sleep(SLEEP_TIME)) {
+        if (!sleep(PAGE_SLEEP_TIME)) {
             throw new IOException("Interrupted while waiting to load next page: " + nextPage);
         }
         logger.info("Found next page: " + nextPage);
@@ -178,6 +188,7 @@ public class DeviantartRipper extends AbstractHTMLRipper {
     @Override
     public void downloadURL(URL url, int index) {
         addURLToDownload(url, getPrefix(index), "", this.url.toExternalForm(), cookies);
+        sleep(IMAGE_SLEEP_TIME);
     }
 
     /**
