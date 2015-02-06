@@ -119,6 +119,9 @@ public class InstagramRipper extends AbstractJSONRipper {
 
     @Override
     public JSONObject getNextPage(JSONObject json) throws IOException {
+        if (isThisATest()) {
+            return null;
+        }
         JSONObject pagination = json.getJSONObject("pagination");
         String nextMaxID = "";
         JSONArray datas = json.getJSONArray("data");
@@ -162,6 +165,9 @@ public class InstagramRipper extends AbstractJSONRipper {
                 continue;
             }
             imageURLs.add(imageURL);
+            if (isThisATest()) {
+                break;
+            }
         }
         return imageURLs;
     }

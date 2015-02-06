@@ -58,7 +58,7 @@ public abstract class VideoRipper extends AbstractRipper {
         }
         else {
             if (isThisATest()) {
-                System.err.println("TEST, download url: " + url);
+                this.url = url;
                 return true;
             }
             threadPool.addThread(new DownloadVideoThread(url, saveAs, this));

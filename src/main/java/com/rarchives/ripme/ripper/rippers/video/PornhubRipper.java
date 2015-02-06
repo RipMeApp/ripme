@@ -58,7 +58,7 @@ public class PornhubRipper extends VideoRipper {
     public void rip() throws IOException {
         logger.info("    Retrieving " + this.url.toExternalForm());
         Document doc = Http.url(this.url).get();
-        Pattern p = Pattern.compile("^.*var flashvars = (.*});.*$", Pattern.DOTALL);
+        Pattern p = Pattern.compile("^.*'flashvars' : (.*});.*$", Pattern.DOTALL);
         Matcher m = p.matcher(doc.body().html());
         if (m.matches()) {
             String title = null,
@@ -89,6 +89,9 @@ public class PornhubRipper extends VideoRipper {
                 logger.error("Error while retrieving video URL at " + url, e);
                 throw new IOException(e);
             }
+        }
+        else {
+            throw new IOException("Failed to download " + this.url + " : could not find 'flashvars'");
         }
         waitForThreads();
     }

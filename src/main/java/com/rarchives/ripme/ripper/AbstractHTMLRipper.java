@@ -26,7 +26,7 @@ public abstract class AbstractHTMLRipper extends AlbumRipper {
 
     public abstract Document getFirstPage() throws IOException;
     public Document getNextPage(Document doc) throws IOException {
-        throw new IOException("getNextPage not implemented");
+        return null;
     }
     public abstract List<String> getURLsFromPage(Document page);
     public List<String> getDescriptionsFromPage(Document doc) throws IOException {

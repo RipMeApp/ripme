@@ -105,24 +105,29 @@ public class ChanRipper extends AbstractHTMLRipper {
         return Http.url(this.url).get();
     }
 
+    private boolean isURLBlacklisted(String url) {
+        for (String blacklist_item : url_piece_blacklist) {
+            if (url.contains(blacklist_item)) {
+                logger.debug("Skipping link that contains '"+blacklist_item+"': " + url);
+                return true;
+            }            
+        }
+        return false;
+    }
     @Override
     public List<String> getURLsFromPage(Document page) {
         List<String> imageURLs = new ArrayList<String>();
         Pattern p; Matcher m;
-        elementloop:
         for (Element link : page.select("a")) {
             if (!link.hasAttr("href")) { 
                 continue;
             }
             String href = link.attr("href").trim();
 
-            //Check all blacklist items
-            for (String blacklist_item : url_piece_blacklist) {
-                if (href.contains(blacklist_item)) {
-                    logger.debug("Skipping link that contains '"+blacklist_item+"': " + href);
-                    continue elementloop;
-                }            
+            if (isURLBlacklisted(href)) {
+                continue;
             }
+            //Check all blacklist items
             Boolean self_hosted = false;
             if (!generalChanSite) {
                 for (String cdnDomain : chanSite.cdnDomains) {
@@ -132,7 +137,7 @@ public class ChanRipper extends AbstractHTMLRipper {
                 }   
             }
 
-            if(self_hosted||generalChanSite){
+            if (self_hosted || generalChanSite){
                 p = Pattern.compile("^.*\\.(jpg|jpeg|png|gif|apng|webp|tif|tiff|webm)$", Pattern.CASE_INSENSITIVE);
                 m = p.matcher(href);
                 if (m.matches()) {
@@ -148,10 +153,17 @@ public class ChanRipper extends AbstractHTMLRipper {
                         continue;
                     }
                     imageURLs.add(href);
+                    if (isThisATest()) {
+                        break;
+                    }
                 }
             } else {
                 //TODO also grab imgur/flickr albums (And all other supported rippers) Maybe add a setting?
             }            
+
+            if (isStopped()) {
+                break;
+            }
         }
         return imageURLs;
     }

@@ -1,5 +1,6 @@
 package com.rarchives.ripme.utils;
 
+import java.lang.reflect.Field;
 import java.util.Arrays;
 
 import javax.crypto.Cipher;
@@ -8,6 +9,22 @@ import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
 public class AES {
+
+    /**
+     * Hack to get JCE Unlimited Strenght so we can use weird AES encryption stuff.
+     * From http://stackoverflow.com/a/20286961
+     */
+    static {
+        try {
+            Field field = Class.forName("javax.crypto.JceSecurity").getDeclaredField("isRestricted");
+            if (!field.isAccessible()) {
+                field.setAccessible(true);
+                field.set(null, java.lang.Boolean.FALSE);
+            }
+        } catch (Exception ex) {
+            // Assume it's fine.
+        }
+    }
 
     public static String decrypt(String cipherText, String key, int nBits) throws Exception {
         String res = null;
@@ -31,6 +48,7 @@ public class AES {
             cipher.init(Cipher.ENCRYPT_MODE, secretKey);
             keyBytes = cipher.doFinal(keyBytes);
         } catch (Throwable e1) {
+            e1.printStackTrace();
             return null;
         }
         System.arraycopy(keyBytes, 0, keyBytes, nBits / 2, nBits / 2);

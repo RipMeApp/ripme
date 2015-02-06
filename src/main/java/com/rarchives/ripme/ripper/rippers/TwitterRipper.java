@@ -190,6 +190,7 @@ public class TwitterRipper extends AlbumRipper {
             }
         }
 
+        /*
         if (entities.has("urls")) {
             JSONArray urls = entities.getJSONArray("urls");
             JSONObject url;
@@ -202,10 +203,7 @@ public class TwitterRipper extends AlbumRipper {
                 }
             }
         }
-    }
-    
-    private void handleTweetedURL(String url) {
-        logger.error("[!] Need to handle URL: " + url);
+        */
     }
 
     @Override
@@ -223,6 +221,10 @@ public class TwitterRipper extends AlbumRipper {
 
         Long lastMaxID = 0L;
         for (int i = 0; i < MAX_REQUESTS; i++) {
+            if (isStopped()) {
+                break;
+            }
+
             List<JSONObject> tweets = getTweets(getApiURL(lastMaxID - 1));
             if (tweets.size() == 0) {
                 logger.info("   No more tweets found.");
