@@ -120,6 +120,10 @@ public class EightmusesRipper extends AbstractHTMLRipper {
                     logger.warn("Thumb does not have data-cfsrc or src: " + thumb);
                     continue;
                 }
+                if (!image.contains("8muses.com")) {
+                    // Not hosted on 8mues.
+                    continue;
+                }
                 // Remove relative directory path naming
                 image = image.replaceAll("\\.\\./", "");
                 if (image.startsWith("//")) {
