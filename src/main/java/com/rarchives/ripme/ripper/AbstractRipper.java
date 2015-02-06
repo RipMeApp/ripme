@@ -52,7 +52,6 @@ public abstract class AbstractRipper
     }
     protected void stopCheck() throws IOException {
         if (shouldStop) {
-            threadPool.waitForThreads();
             throw new IOException("Ripping interrupted");
         }
     }

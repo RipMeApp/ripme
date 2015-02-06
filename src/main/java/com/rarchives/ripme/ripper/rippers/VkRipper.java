@@ -148,16 +148,15 @@ public class VkRipper extends AlbumRipper {
                 }
                 String url = photoIDsToURLs.get(photoID);
                 addURLToDownload(new URL(url));
+                if (isStopped() || isThisATest()) {
+                    break;
+                }
             }
-            logger.info("Received " + elements.size() + " elements");
-            if (elements.size() < 40) {
+
+            if (elements.size() < 40 || isStopped() || isThisATest()) {
                 break;
             }
             offset += elements.size();
-
-            if (isStopped() || isThisATest()) {
-                break;
-            }
         }
         waitForThreads();
     }
