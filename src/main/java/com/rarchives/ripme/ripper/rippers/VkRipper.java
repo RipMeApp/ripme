@@ -155,7 +155,7 @@ public class VkRipper extends AlbumRipper {
             }
             offset += elements.size();
 
-            if (isThisATest()) {
+            if (isStopped() || isThisATest()) {
                 break;
             }
         }

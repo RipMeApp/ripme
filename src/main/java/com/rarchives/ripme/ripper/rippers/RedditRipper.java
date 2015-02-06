@@ -2,7 +2,6 @@ package com.rarchives.ripme.ripper.rippers;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -59,7 +58,7 @@ public class RedditRipper extends AlbumRipper {
         URL jsonURL = getJsonURL(this.url);
         while (true) {
             jsonURL = getAndParseAndReturnNext(jsonURL);
-            if (jsonURL == null) {
+            if (jsonURL == null || isThisATest() || isStopped()) {
                 break;
             }
         }
@@ -119,21 +118,11 @@ public class RedditRipper extends AlbumRipper {
         }
         lastRequestTime = System.currentTimeMillis();
 
-        int attempts = 0;
-        logger.info("    Retrieving " + url);
-        String jsonString = null;
-        while(jsonString == null && attempts++ < 3) {
-            try {
-                jsonString = Http.url(url)
-                                 .ignoreContentType()
-                                 .response()
-                                 .body();
-            } catch(SocketTimeoutException ex) {
-                if(attempts >= 3) throw ex;
-                logger.warn(String.format("[!] Connection timed out (attempt %d)", attempts));
-            }
-        }
-        
+        String jsonString = Http.url(url)
+                                .ignoreContentType()
+                                .response()
+                                .body();
+
         Object jsonObj = new JSONTokener(jsonString).nextValue();
         JSONArray jsonArray = new JSONArray();
         if (jsonObj instanceof JSONObject) {
