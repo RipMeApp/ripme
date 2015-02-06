@@ -14,6 +14,10 @@ import com.rarchives.ripme.ripper.rippers.video.YoupornRipper;
 
 public class VideoRippersTest extends RippersTest {
     
+    /**
+     * Helper method for testing a video ripper
+     * @param ripper The video ripper
+     */
     private void videoTestHelper(VideoRipper ripper) {
         URL oldURL = ripper.getURL();
         try {
@@ -21,8 +25,8 @@ public class VideoRippersTest extends RippersTest {
             ripper.markAsTest();
             ripper.rip();
             // Video ripper testing is... weird.
-            // If we find the URL to download the video, and it's a test,
-            // then the ripper sets it as the ripper's URL.
+            // If the ripper finds the URL to download the video, and it's a test,
+            // then the ripper sets the download URL as the ripper's URL.
             assertFalse("Failed to find download url for " + oldURL, oldURL.equals(ripper.getURL()));
         } catch (Exception e) {
             fail("Error while ripping " + ripper.getURL() + " : " + e);
@@ -33,9 +37,6 @@ public class VideoRippersTest extends RippersTest {
     }
 
     public void testXvideosRipper() throws IOException {
-        if (!DOWNLOAD_CONTENT) {
-            return;
-        }
         List<URL> contentURLs = new ArrayList<URL>();
         contentURLs.add(new URL("http://www.xvideos.com/video1428195/stephanie_first_time_anal"));
         contentURLs.add(new URL("http://www.xvideos.com/video7136868/vid-20140205-wa0011"));
@@ -46,9 +47,6 @@ public class VideoRippersTest extends RippersTest {
     }
     
     public void testPornhubRipper() throws IOException {
-        if (!DOWNLOAD_CONTENT) {
-            return;
-        }
         List<URL> contentURLs = new ArrayList<URL>();
         contentURLs.add(new URL("http://www.pornhub.com/view_video.php?viewkey=993166542"));
         for (URL url : contentURLs) {
@@ -58,9 +56,6 @@ public class VideoRippersTest extends RippersTest {
     }
 
     public void testVineRipper() throws IOException {
-        if (!DOWNLOAD_CONTENT) {
-            return;
-        }
         List<URL> contentURLs = new ArrayList<URL>();
         contentURLs.add(new URL("https://vine.co/v/hiqQrP0eUZx"));
         for (URL url : contentURLs) {
@@ -70,9 +65,6 @@ public class VideoRippersTest extends RippersTest {
     }
 
     public void testYoupornRipper() throws IOException {
-        if (!DOWNLOAD_CONTENT) {
-            return;
-        }
         List<URL> contentURLs = new ArrayList<URL>();
         contentURLs.add(new URL("http://www.youporn.com/watch/7669155/mrs-li-amateur-69-orgasm/?from=categ"));
         for (URL url : contentURLs) {
@@ -82,9 +74,6 @@ public class VideoRippersTest extends RippersTest {
     }
 
     public void testBeegRipper() throws IOException {
-        if (!DOWNLOAD_CONTENT) {
-            return;
-        }
         List<URL> contentURLs = new ArrayList<URL>();
         contentURLs.add(new URL("http://beeg.com/4554321"));
         for (URL url : contentURLs) {

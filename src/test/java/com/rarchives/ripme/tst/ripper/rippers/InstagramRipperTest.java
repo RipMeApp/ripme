@@ -26,9 +26,6 @@ public class InstagramRipperTest extends RippersTest {
     }
 
     public void testInstagramAlbums() throws IOException {
-        if (!DOWNLOAD_CONTENT) {
-            return;
-        }
         List<URL> contentURLs = new ArrayList<URL>();
         contentURLs.add(new URL("http://instagram.com/tayloralesia/"));
         for (URL url : contentURLs) {

@@ -15,9 +15,6 @@ import com.rarchives.ripme.utils.Utils;
  */
 public class RippersTest extends TestCase {
 
-    // Flag for avoiding downloading content with every unit test
-    public final boolean DOWNLOAD_CONTENT = true;
-
     public final Logger logger = Logger.getLogger(RippersTest.class);
 
     /** Dummy test to make JUnit not complain */
@@ -30,8 +27,6 @@ public class RippersTest extends TestCase {
             Utils.setConfigInteger("page.timeout", 5 * 1000);
             ripper.setup();
             ripper.markAsTest();
-            System.err.println("Sleeping 1000ms");
-            Thread.sleep(1000);
             ripper.rip();
             for (File f : ripper.getWorkingDir().listFiles()) {
                 System.err.println(f.toString());

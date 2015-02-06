@@ -45,9 +45,6 @@ public class ChanRipperTest extends RippersTest {
     }
 
     public void testChanRipper() throws IOException {
-        if (!DOWNLOAD_CONTENT) {
-            return;
-        }
         List<URL> contentURLs = new ArrayList<URL>();
         // URLs that should return more than 1 image
         contentURLs.add(new URL("http://desuchan.net/v/res/7034.html"));
