@@ -34,6 +34,7 @@ public class ChanRipperTest extends RippersTest {
         passURLs.add(new URL("http://unichan2.org/b/res/518004.html"));
         passURLs.add(new URL("http://xchan.pw/porn/res/437.html"));
         passURLs.add(new URL("http://archive.moe/c/thread/2295132/"));
+        passURLs.add(new URL("http://drawchan.net/dc/dw/res/114910.html"));
         for (URL url : passURLs) {
             ChanRipper ripper = new ChanRipper(url);
             ripper.setup();
@@ -50,6 +51,7 @@ public class ChanRipperTest extends RippersTest {
         contentURLs.add(new URL("http://desuchan.net/v/res/7034.html"));
         contentURLs.add(new URL("http://boards.420chan.org/ana/res/75984.php"));
         contentURLs.add(new URL("http://archive.4plebs.org/s4s/thread/3005257/"));
+        contentURLs.add(new URL("http://drawchan.net/dc/dw/res/114910.html"));
 
         // Most *chans have volatile threads & can't be trusted for integration testing.
 

@@ -87,6 +87,13 @@ public class ChanRipper extends AbstractHTMLRipper {
             if (m.matches()) {
                 return m.group(2);
             }
+
+            // Drawchan is weird, has drawchan.net/dc/dw/res/####.html
+            p = Pattern.compile("^.*\\.[a-z]{1,3}/[a-zA-Z0-9]+/[a-zA-Z0-9]+/res/([0-9]+)(\\.html|\\.php)?.*$");
+            m = p.matcher(u);
+            if (m.matches()) {
+                return m.group(1);
+            }
         }
 
         throw new MalformedURLException(
