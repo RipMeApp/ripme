@@ -17,6 +17,7 @@ import com.rarchives.ripme.utils.Http;
 public class ImagefapRipper extends AbstractHTMLRipper {
 
     private Document albumDoc = null;
+    private boolean isNewAlbumType = false;
 
     public ImagefapRipper(URL url) throws IOException {
         super(url);
@@ -37,16 +38,25 @@ public class ImagefapRipper extends AbstractHTMLRipper {
     @Override
     public URL sanitizeURL(URL url) throws MalformedURLException {
         String gid = getGID(url);
-        URL newURL = new URL("http://www.imagefap.com/gallery.php?gid="
-                            + gid + "&view=2");
+        String newURL = "http://www.imagefap.com/gallery.php?";
+        if (isNewAlbumType) {
+            newURL += "p";
+        }
+        newURL += "gid=" + gid + "&view=2";
         logger.debug("Changed URL from " + url + " to " + newURL);
-        return newURL;
+        return new URL(newURL);
     }
 
     @Override
     public String getGID(URL url) throws MalformedURLException {
         Pattern p; Matcher m;
 
+        p = Pattern.compile("^.*imagefap.com/gallery.php\\?pgid=([a-f0-9]+).*$");
+        m = p.matcher(url.toExternalForm());
+        if (m.matches()) {
+            isNewAlbumType = true;
+            return m.group(1);
+        }
         p = Pattern.compile("^.*imagefap.com/gallery.php\\?gid=([0-9]+).*$");
         m = p.matcher(url.toExternalForm());
         if (m.matches()) {
@@ -58,10 +68,22 @@ public class ImagefapRipper extends AbstractHTMLRipper {
         if (m.matches()) {
             return m.group(1);
         }
+        p = Pattern.compile("^.*imagefap.com/pictures/([a-f0-9]+).*$");
+        m = p.matcher(url.toExternalForm());
+        if (m.matches()) {
+            isNewAlbumType = true;
+            return m.group(1);
+        }
 
         p = Pattern.compile("^.*imagefap.com/gallery/([0-9]+).*$");
         m = p.matcher(url.toExternalForm());
         if (m.matches()) {
+            return m.group(1);
+        }
+        p = Pattern.compile("^.*imagefap.com/gallery/([a-f0-9]+).*$");
+        m = p.matcher(url.toExternalForm());
+        if (m.matches()) {
+            isNewAlbumType = true;
             return m.group(1);
         }
 
@@ -108,6 +130,9 @@ public class ImagefapRipper extends AbstractHTMLRipper {
                     "http://x.*.fap.to/images/thumb/",
                     "http://fap.to/images/full/");
             imageURLs.add(image);
+            if (isThisATest()) {
+                break;
+            }
         }
         return imageURLs;
     }

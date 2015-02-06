@@ -14,18 +14,11 @@ public class TwitterRipperTest extends RippersTest {
             return;
         }
         List<URL> contentURLs = new ArrayList<URL>();
-        //contentURLs.add(new URL("https://twitter.com/danngamber01/media"));
+        contentURLs.add(new URL("https://twitter.com/danngamber01/media"));
         contentURLs.add(new URL("https://twitter.com/search?q=from%3Apurrbunny%20filter%3Aimages&src=typd"));
         for (URL url : contentURLs) {
-            try {
-                TwitterRipper ripper = new TwitterRipper(url);
-                ripper.rip();
-                assert(ripper.getWorkingDir().listFiles().length > 1);
-                deleteDir(ripper.getWorkingDir());
-            } catch (Exception e) {
-                e.printStackTrace();
-                fail("Error while ripping URL " + url + ": " + e.getMessage());
-            }
+            TwitterRipper ripper = new TwitterRipper(url);
+            testRipper(ripper);
         }
     }
 }

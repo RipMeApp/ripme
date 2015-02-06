@@ -23,15 +23,8 @@ public class DeviantartRipperTest extends RippersTest {
         contentURLs.add(new URL("http://geekysica.deviantart.com/gallery/35209412"));
 
         for (URL url : contentURLs) {
-            try {
-                DeviantartRipper ripper = new DeviantartRipper(url);
-                ripper.rip();
-                assert(ripper.getWorkingDir().listFiles().length > 1);
-                deleteDir(ripper.getWorkingDir());
-            } catch (Exception e) {
-                e.printStackTrace();
-                fail("Error while ripping URL " + url + ": " + e.getMessage());
-            }
+            DeviantartRipper ripper = new DeviantartRipper(url);
+            testRipper(ripper);
         }
     }
 

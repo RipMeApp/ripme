@@ -95,7 +95,6 @@ public class InstagramRipper extends AbstractJSONRipper {
     }
     
     private String getUserID(URL url) throws IOException {
-        logger.info("Retrieving " + url);
         this.sendUpdate(STATUS.LOADING_RESOURCE, url.toExternalForm());
         Document doc = Http.url(url).get();
         for (Element element : doc.select("input[id=user_public]")) {

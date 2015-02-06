@@ -18,18 +18,12 @@ public class MotherlessRipperTest extends RippersTest {
         // Image album
         contentURLs.add(new URL("http://motherless.com/G4DAA18D"));
         // Video album
-        contentURLs.add(new URL("http://motherless.com/GFD0F537"));
+        // XXX: Commented out because test takes too long to download the file.
+        // contentURLs.add(new URL("http://motherless.com/GFD0F537"));
 
         for (URL url : contentURLs) {
-            try {
-                MotherlessRipper ripper = new MotherlessRipper(url);
-                ripper.rip();
-                assert(ripper.getWorkingDir().listFiles().length > 1);
-                deleteDir(ripper.getWorkingDir());
-            } catch (Exception e) {
-                e.printStackTrace();
-                fail("Error while ripping URL " + url + ": " + e.getMessage());
-            }
+            MotherlessRipper ripper = new MotherlessRipper(url);
+            testRipper(ripper);
         }
     }
 

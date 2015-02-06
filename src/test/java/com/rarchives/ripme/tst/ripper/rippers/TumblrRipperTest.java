@@ -16,17 +16,10 @@ public class TumblrRipperTest extends RippersTest {
         List<URL> contentURLs = new ArrayList<URL>();
         contentURLs.add(new URL("http://wrouinr.tumblr.com/archive"));
         contentURLs.add(new URL("http://topinstagirls.tumblr.com/tagged/berlinskaya"));
-        contentURLs.add(new URL("http://fittingroomgirls.tumblr.com/post/78268776776"));
+        contentURLs.add(new URL("http://genekellyclarkson.tumblr.com/post/86100752527/lucyannebrooks-rachaelboden-friends-goodtimes-bed-boobs"));
         for (URL url : contentURLs) {
-            try {
-                TumblrRipper ripper = new TumblrRipper(url);
-                ripper.rip();
-                assert(ripper.getWorkingDir().listFiles().length > 1);
-                deleteDir(ripper.getWorkingDir());
-            } catch (Exception e) {
-                e.printStackTrace();
-                fail("Error while ripping URL " + url + ": " + e.getMessage());
-            }
+            TumblrRipper ripper = new TumblrRipper(url);
+            testRipper(ripper);
         }
     }
 

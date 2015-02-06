@@ -56,7 +56,7 @@ public class SeeniveRipper extends AlbumRipper {
                     break;
                 }
                 String card = element.attr("href"); // "/v/<video_id>"
-                URL videoURL = new URL("https://seenive.com" + card);
+                URL videoURL = new URL("http://seenive.com" + card);
                 SeeniveImageThread vit = new SeeniveImageThread(videoURL);
                 seeniveThreadPool.addThread(vit);
                 lastID = card.substring(card.lastIndexOf('/') + 1);
@@ -96,7 +96,7 @@ public class SeeniveRipper extends AlbumRipper {
         Pattern p = Pattern.compile("^https?://(www\\.)?seenive\\.com/u/([a-zA-Z0-9]{1,}).*$");
         Matcher m = p.matcher(url.toExternalForm());
         if (!m.matches()) {
-            throw new MalformedURLException("Expected format: https://seenive.com/u/USERID");
+            throw new MalformedURLException("Expected format: http://seenive.com/u/USERID");
         }
         return m.group(m.groupCount());
     }

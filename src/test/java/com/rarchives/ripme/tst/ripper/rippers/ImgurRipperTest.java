@@ -30,59 +30,24 @@ public class ImgurRipperTest extends RippersTest {
         }
     }
 
-    public void testImgurURLPasses() throws IOException {
-        List<URL> passURLs    = new ArrayList<URL>();
-        // Imgur URLs that should work
-        passURLs.add(new URL("http://imgur.com/a/XPd4F"));
-        passURLs.add(new URL("http://imgur.com/a/XPd4F/"));
-        passURLs.add(new URL("http://imgur.com/a/WxG6f/all"));
-        passURLs.add(new URL("http://imgur.com/a/WxG6f/layout/vertical#0"));
-        passURLs.add(new URL("http://imgur.com/a/WxG6f/layout/horizontal#0"));
-        passURLs.add(new URL("http://imgur.com/a/WxG6f/layout/grid#0"));
-        passURLs.add(new URL("http://imgur.com/YOdjht3,x5VxH9G,5juXjJ2"));
-        passURLs.add(new URL("http://markedone911.imgur.com"));
-        passURLs.add(new URL("http://markedone911.imgur.com/"));
-        passURLs.add(new URL("http://imgur.com/r/nsfw_oc/top/all"));
-        passURLs.add(new URL("http://imgur.com/r/nsfw_oc/top"));
-        passURLs.add(new URL("http://imgur.com/r/nsfw_oc/new"));
-        passURLs.add(new URL("http://imgur.com/r/nsfw_oc"));
-
-        for (URL url : passURLs) {
-            try {
-                ImgurRipper ripper = new ImgurRipper(url);
-                assert(ripper.canRip(url));
-                deleteDir(ripper.getWorkingDir());
-            } catch (Exception e) {
-                fail("Failed to instantiate ripper for " + url);
-            }
-        }
-    }
-
     public void testImgurAlbums() throws IOException {
         if (!DOWNLOAD_CONTENT) {
             return;
         }
         List<URL> contentURLs = new ArrayList<URL>();
         // URLs that should return more than 1 image
-        /*
         contentURLs.add(new URL("http://imgur.com/a/hqJIu")); // Vertical layout
         contentURLs.add(new URL("http://imgur.com/a/dS9OQ#0")); // Horizontal layout
         contentURLs.add(new URL("http://imgur.com/a/YpsW9#0")); // Grid layout
         contentURLs.add(new URL("http://imgur.com/a/WxG6f/layout/vertical#0"));
         contentURLs.add(new URL("http://imgur.com/a/WxG6f/layout/horizontal#0"));
         contentURLs.add(new URL("http://imgur.com/a/WxG6f/layout/grid#0"));
-        contentURLs.add(new URL("http://imgur.com/r/nsfw_oc/top/all"));
-        */
+        // Sometimes hangs up
+        //contentURLs.add(new URL("http://imgur.com/r/nsfw_oc/top/all"));
         contentURLs.add(new URL("http://imgur.com/a/bXQpH"));
         for (URL url : contentURLs) {
-            try {
-                ImgurRipper ripper = new ImgurRipper(url);
-                ripper.rip();
-                assert(ripper.getWorkingDir().listFiles().length > 1);
-                deleteDir(ripper.getWorkingDir());
-            } catch (Exception e) {
-                fail("Error while ripping URL " + url + ": " + e.getMessage());
-            }
+            ImgurRipper ripper = new ImgurRipper(url);
+            testRipper(ripper);
         }
     }
 

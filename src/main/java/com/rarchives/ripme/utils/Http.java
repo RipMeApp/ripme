@@ -53,7 +53,6 @@ public class Http {
         connection.method(Method.GET);
         connection.timeout(TIMEOUT);
         connection.maxBodySize(0);
-
     }
 
     // Setters

@@ -28,7 +28,7 @@ public abstract class AbstractRipper
     protected static final Logger logger = Logger.getLogger(AbstractRipper.class);
 
     public static final String USER_AGENT = 
-            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:34.0) Gecko/20100101 Firefox/34.0";
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:35.0) Gecko/20100101 Firefox/35.0";
 
     protected URL url;
     protected File workingDir;
@@ -42,6 +42,7 @@ public abstract class AbstractRipper
     public abstract String getGID(URL url) throws MalformedURLException;
 
     private boolean shouldStop = false;
+    private boolean thisIsATest = false;
 
     public void stop() {
         shouldStop = true;
@@ -370,6 +371,11 @@ public abstract class AbstractRipper
         // Do nothing
     }
 
-    // Thar be overloaded methods afoot
-    
+    /** Methods for detecting when we're running a test. */
+    public void markAsTest() {
+        thisIsATest = true;
+    }
+    public boolean isThisATest() {
+        return thisIsATest;
+    }
 }

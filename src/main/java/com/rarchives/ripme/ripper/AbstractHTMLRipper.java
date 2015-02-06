@@ -72,11 +72,11 @@ public abstract class AbstractHTMLRipper extends AlbumRipper {
             }
             
             for (String imageURL : imageURLs) {
+                index += 1;
+                downloadURL(new URL(imageURL), index);
                 if (isStopped()) {
                     break;
                 }
-                index += 1;
-                downloadURL(new URL(imageURL), index);
             }
             if (hasDescriptionSupport()) {
             	List<String> textURLs = getDescriptionsFromPage(doc);

@@ -57,6 +57,7 @@ public class FineboxRipper extends AlbumRipper {
                 if(videourl.substring(0,4)!="http"){                    
                     videourl = "http://"+DOMAIN+ videourl;
                 }
+                logger.error("URL to download: " + videourl);
                 if(!addURLToDownload(new URL(videourl))){                    
                    hasPagesLeft = false;
                    break;

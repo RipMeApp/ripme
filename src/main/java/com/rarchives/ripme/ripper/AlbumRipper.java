@@ -39,6 +39,12 @@ public abstract class AlbumRipper extends AbstractRipper {
     }
 
     public boolean addURLToDownload(URL url, File saveAs, String referrer, Map<String,String> cookies) {
+        // Only download one file if this is a test.
+        if (super.isThisATest() &&
+                (itemsPending.size() > 0 || itemsCompleted.size() > 0 || itemsErrored.size() > 0)) {
+            stop();
+            return false;
+        }
         if (!allowDuplicates()
                 && ( itemsPending.containsKey(url)
                   || itemsCompleted.containsKey(url)

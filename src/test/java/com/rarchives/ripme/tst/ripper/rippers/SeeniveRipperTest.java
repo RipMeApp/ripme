@@ -16,15 +16,8 @@ public class SeeniveRipperTest extends RippersTest {
         List<URL> contentURLs = new ArrayList<URL>();
         contentURLs.add(new URL("http://seenive.com/u/946491170220040192"));
         for (URL url : contentURLs) {
-            try {
-                SeeniveRipper ripper = new SeeniveRipper(url);
-                ripper.rip();
-                assert(ripper.getWorkingDir().listFiles().length > 1);
-                deleteDir(ripper.getWorkingDir());
-            } catch (Exception e) {
-                e.printStackTrace();
-                fail("Error while ripping URL " + url + ": " + e.getMessage());
-            }
+            SeeniveRipper ripper = new SeeniveRipper(url);
+            testRipper(ripper);
         }
     }
 

@@ -14,17 +14,10 @@ public class GonewildRipperTest extends RippersTest {
             return;
         }
         List<URL> contentURLs = new ArrayList<URL>();
-        contentURLs.add(new URL("http://gonewild.com/u/amle69"));
+        contentURLs.add(new URL("http://gonewild.com/user/amle69"));
         for (URL url : contentURLs) {
-            try {
-                GonewildRipper ripper = new GonewildRipper(url);
-                ripper.rip();
-                assert(ripper.getWorkingDir().listFiles().length > 1);
-                deleteDir(ripper.getWorkingDir());
-            } catch (Exception e) {
-                e.printStackTrace();
-                fail("Error while ripping URL " + url + ": " + e.getMessage());
-            }
+            GonewildRipper ripper = new GonewildRipper(url);
+            testRipper(ripper);
         }
     }
 

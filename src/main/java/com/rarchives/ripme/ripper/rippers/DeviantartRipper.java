@@ -142,6 +142,11 @@ public class DeviantartRipper extends AbstractHTMLRipper {
             }
             triedURLs.add(fullSize);
             imageURLs.add(fullSize);
+
+            if (isThisATest()) {
+                // Only need one image for a test
+                break;
+            }
         }
         return imageURLs;
     }
@@ -164,6 +169,9 @@ public class DeviantartRipper extends AbstractHTMLRipper {
     }
     @Override
     public Document getNextPage(Document page) throws IOException {
+        if (isThisATest()) {
+            return null;
+        }
         Elements nextButtons = page.select("li.next > a");
         if (nextButtons.size() == 0) {
             throw new IOException("No next page found");
@@ -225,6 +233,9 @@ public class DeviantartRipper extends AbstractHTMLRipper {
      */
     @Override
     public String getDescription(String page) {
+        if (isThisATest()) {
+            return null;
+        }
         try {
             // Fetch the image page
             Response resp = Http.url(page)

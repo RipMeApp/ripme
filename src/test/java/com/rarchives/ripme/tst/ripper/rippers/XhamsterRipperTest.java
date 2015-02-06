@@ -17,15 +17,8 @@ public class XhamsterRipperTest extends RippersTest {
         contentURLs.add(new URL("http://xhamster.com/photos/gallery/1462237/alyssa_gadson.html"));
         contentURLs.add(new URL("http://xhamster.com/photos/gallery/2941201/tableau_d_039_art_ii.html"));
         for (URL url : contentURLs) {
-            try {
-                XhamsterRipper ripper = new XhamsterRipper(url);
-                ripper.rip();
-                assert(ripper.getWorkingDir().listFiles().length > 1);
-                deleteDir(ripper.getWorkingDir());
-            } catch (Exception e) {
-                e.printStackTrace();
-                fail("Error while ripping URL " + url + ": " + e.getMessage());
-            }
+            XhamsterRipper ripper = new XhamsterRipper(url);
+            testRipper(ripper);
         }
     }
 

@@ -18,15 +18,8 @@ public class EightmusesRipperTest extends RippersTest {
         contentURLs.add(new URL("http://www.8muses.com/index/category/jab-hotassneighbor7"));
 
         for (URL url : contentURLs) {
-            try {
-                EightmusesRipper ripper = new EightmusesRipper(url);
-                ripper.rip();
-                assert(ripper.getWorkingDir().listFiles().length > 1);
-                deleteDir(ripper.getWorkingDir());
-            } catch (Exception e) {
-                e.printStackTrace();
-                fail("Error while ripping URL " + url + ": " + e.getMessage());
-            }
+            EightmusesRipper ripper = new EightmusesRipper(url);
+            testRipper(ripper);
         }
     }
 

@@ -45,7 +45,7 @@ public class ChanRipper extends AbstractHTMLRipper {
         }
         if (chanSite == null) {
             chanSite = new ChanSite(Arrays.asList(url.getHost()));
-        }        
+        }
     }
 
     @Override
@@ -61,7 +61,7 @@ public class ChanRipper extends AbstractHTMLRipper {
     }
 
     @Override
-    public boolean canRip(URL url) {        
+    public boolean canRip(URL url) {
         for (ChanSite _chanSite : explicit_domains) {
             if (_chanSite.domains.contains(url.getHost())) {
                 return true;
@@ -70,6 +70,7 @@ public class ChanRipper extends AbstractHTMLRipper {
         return  url.toExternalForm().contains("/res/")     // Most chans
              || url.toExternalForm().contains("/thread/"); // 4chan, archive.moe
     }
+
     /**
      * For example the achrives are all known. (Check 4chan-x)
      * Should be based on the software the specific chan uses.
@@ -79,7 +80,7 @@ public class ChanRipper extends AbstractHTMLRipper {
     public String getGID(URL url) throws MalformedURLException {
         Pattern p; Matcher m;
 
-        String u = url.toExternalForm();        
+        String u = url.toExternalForm();
         if (u.contains("/thread/") || u.contains("/res/")) {
             p = Pattern.compile("^.*\\.[a-z]{1,3}/[a-zA-Z0-9]+/(thread|res)/([0-9]+)(\\.html|\\.php)?.*$");
             m = p.matcher(u);
