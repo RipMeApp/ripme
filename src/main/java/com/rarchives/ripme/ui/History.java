@@ -12,6 +12,7 @@ import java.util.List;
 
 import org.apache.commons.io.IOUtils;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 public class History {
@@ -100,6 +101,8 @@ public class History {
             String jsonString = IOUtils.toString(is);
             JSONArray jsonArray = new JSONArray(jsonString);
             fromJSON(jsonArray);
+        } catch (JSONException e) {
+            throw new IOException("Failed to load JSON file " + filename + ": " + e.getMessage(), e);
         } finally {
             is.close();
         }

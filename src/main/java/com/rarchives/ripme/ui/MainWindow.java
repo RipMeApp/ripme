@@ -879,6 +879,13 @@ public class MainWindow implements Runnable, RipStatusHandler {
                 HISTORY.fromFile("history.json");
             } catch (IOException e) {
                 logger.error("Failed to load history from file " + historyFile, e);
+                JOptionPane.showMessageDialog(null,
+                        "RipMe failed to load the history file at " + historyFile.getAbsolutePath() + "\n\n" +
+                        "Error: " + e.getMessage() + "\n\n" + 
+                        "Closing RipMe will automatically overwrite the contents of this file,\n" +
+                        "so you may want to back the file up before closing RipMe!",
+                        "RipMe - history load failure",
+                        JOptionPane.ERROR_MESSAGE);
             }
         }
         else {
