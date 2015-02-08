@@ -29,7 +29,7 @@ import com.rarchives.ripme.utils.Utils;
 public class DeviantartRipper extends AbstractHTMLRipper {
 
     private static final int PAGE_SLEEP_TIME  = 3000,
-                             IMAGE_SLEEP_TIME = 1500;
+                             IMAGE_SLEEP_TIME = 2000;
 
     private Map<String,String> cookies = new HashMap<String,String>();
     private Set<String> triedURLs = new HashSet<String>();
@@ -191,6 +191,13 @@ public class DeviantartRipper extends AbstractHTMLRipper {
         return Http.url(nextPage)
                    .cookies(cookies)
                    .get();
+    }
+
+    @Override
+    public boolean keepSortOrder() {
+         // Don't keep sort order (do not add prefixes).
+         // Causes file duplication, as outlined in https://github.com/4pr0n/ripme/issues/113
+        return false;
     }
 
     @Override
