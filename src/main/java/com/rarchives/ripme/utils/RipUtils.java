@@ -4,10 +4,12 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang.math.NumberUtils;
 import org.apache.log4j.Logger;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -15,9 +17,9 @@ import org.jsoup.nodes.Element;
 
 import com.rarchives.ripme.ripper.AbstractRipper;
 import com.rarchives.ripme.ripper.rippers.ImgurRipper;
-import com.rarchives.ripme.ripper.rippers.VidbleRipper;
 import com.rarchives.ripme.ripper.rippers.ImgurRipper.ImgurAlbum;
 import com.rarchives.ripme.ripper.rippers.ImgurRipper.ImgurImage;
+import com.rarchives.ripme.ripper.rippers.VidbleRipper;
 import com.rarchives.ripme.ripper.rippers.video.GfycatRipper;
 
 public class RipUtils {
@@ -98,5 +100,136 @@ public class RipUtils {
     
     public static Pattern getURLRegex() {
         return Pattern.compile("(https?://[a-zA-Z0-9\\-\\.]+\\.[a-zA-Z]{2,3}(/\\S*))");
+    }
+    
+    public static String urlFromDirectoryName(String dir) {
+        String url = null;
+        if (url == null) url = urlFromImgurDirectoryName(dir);
+        if (url == null) url = urlFromImagefapDirectoryName(dir);
+        if (url == null) url = urlFromDeviantartDirectoryName(dir);
+        if (url == null) url = urlFromRedditDirectoryName(dir);
+        if (url == null) url = urlFromSiteDirectoryName(dir, "bfcakes",     "http://www.bcfakes.com/celebritylist/", "");
+        if (url == null) url = urlFromSiteDirectoryName(dir, "butttoucher", "http://butttoucher.com/users/", "");
+        if (url == null) url = urlFromSiteDirectoryName(dir, "cheeby",      "http://cheeby.com/u/", "");
+        if (url == null) url = urlFromSiteDirectoryName(dir, "datwin",      "http://datw.in/", "");
+        if (url == null) url = urlFromSiteDirectoryName(dir, "drawcrowd",   "http://drawcrowd.com/", "");
+        if (url == null) url = urlFromSiteDirectoryName(dir.replace("-", "/"), "ehentai", "http://g.e-hentai.org/g/", "");
+        if (url == null) url = urlFromSiteDirectoryName(dir, "8muses",      "http://www.8muses.com/index/category/", "");
+        if (url == null) url = urlFromSiteDirectoryName(dir, "fapproved", "http://fapproved.com/users/", "");
+        if (url == null) url = urlFromSiteDirectoryName(dir, "vinebox", "http://finebox.co/u/", "");
+        /*
+        if (url == null) url = urlFromSiteDirectoryName(dir, "", "", "");
+        if (url == null) url = urlFromSiteDirectoryName(dir, "", "", "");
+        if (url == null) url = urlFromSiteDirectoryName(dir, "", "", "");
+        if (url == null) url = urlFromSiteDirectoryName(dir, "", "", "");
+        if (url == null) url = urlFromSiteDirectoryName(dir, "", "", "");
+        if (url == null) url = urlFromSiteDirectoryName(dir, "", "", "");
+        if (url == null) url = urlFromSiteDirectoryName(dir, "", "", "");
+        if (url == null) url = urlFromSiteDirectoryName(dir, "", "", "");
+        if (url == null) url = urlFromSiteDirectoryName(dir, "", "", "");
+        if (url == null) url = urlFromSiteDirectoryName(dir, "", "", "");
+        */
+        return url;
+    }
+
+    private static String urlFromSiteDirectoryName(String dir, String site, String before, String after) {
+        if (!dir.startsWith(site + "_")) {
+            return null;
+        }
+        dir = dir.substring((site + "_").length());
+        return before + dir + after;
+    }
+
+    private static String urlFromRedditDirectoryName(String dir) {
+        if (!dir.startsWith("reddit_")) {
+            return null;
+        }
+        String url = null;
+        String[] fields = dir.split("_");
+        if (fields[0].equals("sub")) {
+            url = "http://reddit.com/r/" + dir;
+        }
+        else if (fields[0].equals("user")) {
+            url = "http://reddit.com/user/" + dir;
+        }
+        else if (fields[0].equals("post")) {
+            url = "http://reddit.com/comments/" + dir;
+        }
+        return url;
+    }
+
+    private static String urlFromImagefapDirectoryName(String dir) {
+        if (!dir.startsWith("imagefap")) {
+            return null;
+        }
+        String url = null;
+        dir = dir.substring("imagefap_".length());
+        if (NumberUtils.isDigits(dir)) {
+            url = "http://www.imagefap.com/gallery.php?gid=" + dir;
+        }
+        else {
+            url = "http://www.imagefap.com/gallery.php?pgid=" + dir;
+        }
+        return url;
+    }
+
+    private static String urlFromDeviantartDirectoryName(String dir) {
+        if (!dir.startsWith("deviantart")) {
+            return null;
+        }
+        dir = dir.substring("deviantart_".length());
+        String url = null;
+        if (!dir.contains("_")) {
+            url = "http://" + dir + ".deviantart.com/";
+        }
+        else {
+            String[] fields = dir.split("_");
+            url = "http://" + fields[0] + ".deviantart.com/gallery/" + fields[1];
+        }
+        return url;
+    }
+
+    private static String urlFromImgurDirectoryName(String dir) {
+        if (!dir.startsWith("imgur_")) {
+            return null;
+        }
+        if (dir.contains(" ")) {
+            dir = dir.substring(0, dir.indexOf(" "));
+        }
+        List<String> fields = Arrays.asList(dir.split("_"));
+        String album = fields.get(1);
+        String url = "http://";
+        if ( (fields.contains("top") || fields.contains("new"))
+          && (fields.contains("year") || fields.contains("month") || fields.contains("week") || fields.contains("all"))
+           ) {
+            // Subreddit
+            fields.remove(0); // "imgur"
+            String sub = "";
+            while (fields.size() > 2) {
+                if (!sub.equals("")) {
+                    sub += "_";
+                }
+                sub = fields.remove(0); // Subreddit that may contain "_"
+            }
+            url += "imgur.com/r/" + sub + "/";
+            url += fields.remove(0) + "/";
+            url += fields.remove(0);
+        }
+        else if (album.contains("-")) {
+            // Series of images
+            url += "imgur.com/" + album.replaceAll("-", ",");
+        }
+        else if (album.length() == 5 || album.length() == 6) {
+            // Album
+            url += "imgur.com/a/" + album;
+        }
+        else {
+            // User account
+            url += album + ".imgur.com/";
+            if (fields.size() > 2) {
+                url += fields.get(2);
+            }
+        }
+        return url;
     }
 }

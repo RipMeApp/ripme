@@ -209,5 +209,4 @@ public abstract class AlbumRipper extends AbstractRipper {
           .append(", Errored: "  ).append(itemsErrored.size());
         return sb.toString();
     }
-
 }

@@ -23,10 +23,12 @@ import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -64,6 +66,7 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import com.rarchives.ripme.ripper.AbstractRipper;
+import com.rarchives.ripme.utils.RipUtils;
 import com.rarchives.ripme.utils.Utils;
 
 /**
@@ -891,12 +894,32 @@ public class MainWindow implements Runnable, RipStatusHandler {
         else {
             logger.info("Loading history from configuration");
             HISTORY.fromList(Utils.getConfigList("download.history"));
+            if (HISTORY.toList().size() == 0) {
+                // Loaded from config, still no entries.
+                // Guess rip history based on rip folder
+                String[] dirs = Utils.getWorkingDirectory().list(new FilenameFilter() {
+                    @Override
+                    public boolean accept(File dir, String file) {
+                        return new File(dir.getAbsolutePath() + File.separator + file).isDirectory();
+                    }
+                });
+                for (String dir : dirs) {
+                    String url = RipUtils.urlFromDirectoryName(dir);
+                    if (url != null) {
+                        // We found one, add it to history
+                        HistoryEntry entry = new HistoryEntry();
+                        entry.url = url;
+                        HISTORY.add(entry);
+                    }
+                }
+            }
         }
     }
 
     private void saveHistory() {
         try {
             HISTORY.toFile("history.json");
+            Utils.setConfigList("download.history", Collections.emptyList());
         } catch (IOException e) {
             logger.error("Failed to save history to file history.json", e);
         }
