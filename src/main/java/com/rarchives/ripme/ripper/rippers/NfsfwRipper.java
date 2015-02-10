@@ -92,7 +92,7 @@ public class NfsfwRipper extends AlbumRipper {
             }
             // Subalbums
             for (Element suba : albumDoc.select("td.IMG > a")) {
-                if (isStopped()) {
+                if (isStopped() || isThisATest()) {
                     break;
                 }
                 String subURL = "http://nfsfw.com" + suba.attr("href");
@@ -112,9 +112,15 @@ public class NfsfwRipper extends AlbumRipper {
                 try {
                     NfsfwImageThread t = new NfsfwImageThread(new URL(imagePage), nextSubalbum, ++index);
                     nfsfwThreadPool.addThread(t);
+                    if (isThisATest()) {
+                        break;
+                    }
                 } catch (MalformedURLException mue) {
                     logger.warn("Invalid URL: " + imagePage);
                 }
+            }
+            if (isThisATest()) {
+                break;
             }
             // Get next page
             for (Element a : albumDoc.select("a.next")) {

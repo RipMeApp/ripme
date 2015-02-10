@@ -66,6 +66,12 @@ public abstract class AbstractHTMLRipper extends AlbumRipper {
         
         while (doc != null) {
             List<String> imageURLs = getURLsFromPage(doc);
+            // Remove all but 1 image
+            if (isThisATest()) {
+                while (imageURLs.size() > 1) {
+                    imageURLs.remove(1);
+                }
+            }
 
             if (imageURLs.size() == 0) {
                 throw new IOException("No images found at " + doc.location());
@@ -73,12 +79,14 @@ public abstract class AbstractHTMLRipper extends AlbumRipper {
             
             for (String imageURL : imageURLs) {
                 index += 1;
+                logger.debug("Found image url #" + index + ": " + imageURL);
                 downloadURL(new URL(imageURL), index);
                 if (isStopped()) {
                     break;
                 }
             }
             if (hasDescriptionSupport()) {
+                logger.debug("Fetching description(s) from " + doc.location());
             	List<String> textURLs = getDescriptionsFromPage(doc);
             	if (textURLs.size() > 0) {
             		for (String textURL : textURLs) {
@@ -86,15 +94,17 @@ public abstract class AbstractHTMLRipper extends AlbumRipper {
             				break;
             			}
             			textindex += 1;
+            			logger.debug("Getting decription from " + textURL);
             			String tempDesc = getDescription(textURL);
             			if (tempDesc != null) {
+            			    logger.debug("Got description: " + tempDesc);
             				saveText(new URL(textURL), "", tempDesc, textindex);
             			}
             		}
             	}
             }
 
-            if (isStopped()) {
+            if (isStopped() || isThisATest()) {
                 break;
             }
 
@@ -109,6 +119,7 @@ public abstract class AbstractHTMLRipper extends AlbumRipper {
 
         // If they're using a thread pool, wait for it.
         if (getThreadPool() != null) {
+            logger.debug("Waiting for threadpool " + getThreadPool().getClass().getName());
             getThreadPool().waitForThreads();
         }
         waitForThreads();

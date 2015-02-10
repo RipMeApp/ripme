@@ -58,6 +58,9 @@ public abstract class VideoRipper extends AbstractRipper {
         }
         else {
             if (isThisATest()) {
+                // Tests shouldn't download the whole video
+                // Just change this.url to the download URL so the test knows we found it.
+                logger.debug("Test rip, found URL: " + url);
                 this.url = url;
                 return true;
             }

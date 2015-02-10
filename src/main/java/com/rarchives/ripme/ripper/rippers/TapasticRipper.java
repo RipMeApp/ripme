@@ -88,6 +88,9 @@ public class TapasticRipper extends AbstractHTMLRipper {
                 prefix.append(episode.filename.replace(" ", "-"));
                 prefix.append("-");
                 addURLToDownload(new URL(link), prefix.toString());
+                if (isThisATest()) {
+                    break;
+                }
             }
         } catch (IOException e) {
             logger.error("[!] Exception while downloading " + url, e);

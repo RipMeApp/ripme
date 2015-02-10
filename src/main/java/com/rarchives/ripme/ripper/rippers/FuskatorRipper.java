@@ -63,7 +63,7 @@ public class FuskatorRipper extends AbstractHTMLRipper {
         List<String> imageURLs = new ArrayList<String>();
         String html = doc.html();
         // Get "baseUrl"
-        String baseUrl = Utils.between(html, "var baseUrl = unescape('", "'").get(0);
+        String baseUrl = Utils.between(html, "unescape('", "'").get(0);
         try {
             baseUrl = URLDecoder.decode(baseUrl, "UTF-8");
         } catch (UnsupportedEncodingException e) {
@@ -73,7 +73,7 @@ public class FuskatorRipper extends AbstractHTMLRipper {
             baseUrl = "http:" + baseUrl;
         }
         // Iterate over images
-        for (String filename : Utils.between(html, ".src=baseUrl+'", "'")) {
+        for (String filename : Utils.between(html, "+'", "'")) {
             imageURLs.add(baseUrl + filename);
         }
         return imageURLs;

@@ -41,6 +41,7 @@ public class UpdateUtils {
         
         Document doc = null;
         try {
+            logger.debug("Retrieving " + UpdateUtils.updateJsonURL);
             doc = Jsoup.connect(UpdateUtils.updateJsonURL)
                        .timeout(10 * 1000)
                        .ignoreContentType(true)
@@ -69,6 +70,7 @@ public class UpdateUtils {
 
         String latestVersion = json.getString("latestVersion");
         if (UpdateUtils.isNewerVersion(latestVersion)) {
+            logger.info("Found newer version: " + latestVersion);
             int result = JOptionPane.showConfirmDialog(
                     null,
                     "<html><font color=\"green\">New version (" + latestVersion + ") is available!</font>"
@@ -95,8 +97,10 @@ public class UpdateUtils {
                 return;
             }
         } else {
+            logger.debug("This version (" + UpdateUtils.getThisJarVersion() +
+                        ") is the same or newer than the website's version (" + latestVersion + ")");
             configUpdateLabel.setText("<html><font color=\"green\">v" + UpdateUtils.getThisJarVersion() + " is the latest version</font></html>");
-            logger.info("Running latest version: " + UpdateUtils.getThisJarVersion());
+            logger.debug("Running latest version: " + UpdateUtils.getThisJarVersion());
         }
     }
     

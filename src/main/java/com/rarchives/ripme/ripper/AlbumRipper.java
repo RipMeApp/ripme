@@ -175,6 +175,7 @@ public abstract class AlbumRipper extends AbstractRipper {
         } else {
             title = super.getAlbumTitle(this.url);
         }
+        logger.debug("Using album title '" + title + "'");
         title = Utils.filesystemSafe(title);
         path += title + File.separator;
         this.workingDir = new File(path);

@@ -71,7 +71,7 @@ public class DownloadVideoThread extends Thread {
         }
         observer.setBytesTotal(bytesTotal);
         observer.sendUpdate(STATUS.TOTAL_BYTES, bytesTotal);
-        logger.info("Size of file at " + this.url + " = " + bytesTotal + "b");
+        logger.debug("Size of file at " + this.url + " = " + bytesTotal + "b");
 
         int tries = 0; // Number of attempts to download
         do {
@@ -95,6 +95,7 @@ public class DownloadVideoThread extends Thread {
                 huc.setRequestProperty("Referer", this.url.toExternalForm()); // Sic
                 huc.setRequestProperty("User-agent", AbstractRipper.USER_AGENT);
                 tries += 1;
+                logger.debug("Request properties: " + huc.getRequestProperties().toString());
                 huc.connect();
                 // Check status code
                 bis = new BufferedInputStream(huc.getInputStream());

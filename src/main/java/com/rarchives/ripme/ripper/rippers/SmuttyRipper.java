@@ -13,6 +13,13 @@ import com.rarchives.ripme.ripper.AlbumRipper;
 import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
 import com.rarchives.ripme.utils.Http;
 
+/**
+ * Appears to be broken as of 2015-02-11.
+ * Generating large image from thumbnail requires replacing "/m/" with something else:
+ * -> Sometimes "/b/"
+ * -> Sometimes "/p/"
+ * No way to know without loading the image page.
+ */
 public class SmuttyRipper extends AlbumRipper {
 
     private static final String DOMAIN = "smutty.com",

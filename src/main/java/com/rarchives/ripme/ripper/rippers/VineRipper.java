@@ -56,6 +56,12 @@ public class VineRipper extends AlbumRipper {
             for (int i = 0; i < records.length(); i++) {
                 String videoURL = records.getJSONObject(i).getString("videoUrl");
                 addURLToDownload(new URL(videoURL));
+                if (isThisATest()) {
+                    break;
+                }
+            }
+            if (isThisATest()) {
+                break;
             }
             if (records.length() == 0) {
                 logger.info("Zero records returned");

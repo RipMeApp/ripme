@@ -34,12 +34,12 @@ public class SankakuComplexRipper extends AbstractHTMLRipper {
     
     @Override
     public String getDomain() {
-        return "idol.sankakucomplex.com";
+        return "sankakucomplex.com";
     }
 
     @Override
     public String getGID(URL url) throws MalformedURLException {
-        Pattern p = Pattern.compile("^https?://idol\\.sankakucomplex\\.com/.*tags=([^&]+).*$");
+        Pattern p = Pattern.compile("^https?://([a-zA-Z0-9]+\\.)?sankakucomplex\\.com/.*tags=([^&]+).*$");
         Matcher m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             try {
@@ -72,8 +72,8 @@ public class SankakuComplexRipper extends AbstractHTMLRipper {
             String postId = thumbSpan.attr("id").replaceAll("p", "");
             Element thumb = thumbSpan.getElementsByTag("img").first();
             String image = thumb.attr("abs:src")
-                                .replace("i.sankakucomplex.com/data/preview",
-                                         "is.sankakucomplex.com/data") + "?" + postId;
+                                .replace(".sankakucomplex.com/data/preview",
+                                         "s.sankakucomplex.com/data") + "?" + postId;
             imageURLs.add(image);
         }
         return imageURLs;

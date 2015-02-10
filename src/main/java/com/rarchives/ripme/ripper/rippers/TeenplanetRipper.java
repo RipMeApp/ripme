@@ -88,6 +88,9 @@ public class TeenplanetRipper extends AlbumRipper {
                 prefix = String.format("%03d_", index);
             }
             addURLToDownload(new URL(image), prefix);
+            if (isThisATest()) {
+                break;
+            }
         }
         waitForThreads();
     }

@@ -33,8 +33,10 @@ public class RipUtils {
         if ((url.getHost().endsWith("imgur.com")) 
                 && url.toExternalForm().contains("imgur.com/a/")) {
             try {
+                logger.debug("Fetching imgur album at " + url);
                 ImgurAlbum imgurAlbum = ImgurRipper.getImgurAlbum(url);
                 for (ImgurImage imgurImage : imgurAlbum.images) {
+                    logger.debug("Got imgur image: " + imgurImage.url);
                     result.add(imgurImage.url);
                 }
             } catch (IOException e) {
@@ -44,7 +46,9 @@ public class RipUtils {
         }
         else if (url.getHost().endsWith("gfycat.com")) {
             try {
+                logger.debug("Fetching gfycat page " + url);
                 String videoURL = GfycatRipper.getVideoURL(url);
+                logger.debug("Got gfycat URL: " + videoURL);
                 result.add(new URL(videoURL));
             } catch (IOException e) {
                 // Do nothing
@@ -54,6 +58,7 @@ public class RipUtils {
         }
         else if (url.toExternalForm().contains("vidble.com/album/")) {
             try {
+                logger.info("Getting vidble album " + url);
                 result.addAll(VidbleRipper.getURLsFromPage(url));
             } catch (IOException e) {
                 // Do nothing
@@ -68,6 +73,7 @@ public class RipUtils {
         if (m.matches()) {
             try {
                 URL singleURL = new URL(m.group(1));
+                logger.debug("Found single URL: " + singleURL);
                 result.add(singleURL);
                 return result;
             } catch (MalformedURLException e) {
@@ -101,7 +107,7 @@ public class RipUtils {
     public static Pattern getURLRegex() {
         return Pattern.compile("(https?://[a-zA-Z0-9\\-\\.]+\\.[a-zA-Z]{2,3}(/\\S*))");
     }
-    
+
     public static String urlFromDirectoryName(String dir) {
         String url = null;
         if (url == null) url = urlFromImgurDirectoryName(dir);
@@ -114,9 +120,10 @@ public class RipUtils {
         if (url == null) url = urlFromSiteDirectoryName(dir, "datwin",      "http://datw.in/", "");
         if (url == null) url = urlFromSiteDirectoryName(dir, "drawcrowd",   "http://drawcrowd.com/", "");
         if (url == null) url = urlFromSiteDirectoryName(dir.replace("-", "/"), "ehentai", "http://g.e-hentai.org/g/", "");
-        if (url == null) url = urlFromSiteDirectoryName(dir, "8muses",      "http://www.8muses.com/index/category/", "");
         if (url == null) url = urlFromSiteDirectoryName(dir, "fapproved", "http://fapproved.com/users/", "");
         if (url == null) url = urlFromSiteDirectoryName(dir, "vinebox", "http://finebox.co/u/", "");
+        if (url == null) url = urlFromSiteDirectoryName(dir, "imgbox", "http://imgbox.com/g/", "");
+        if (url == null) url = urlFromSiteDirectoryName(dir, "modelmayhem", "http://www.modelmayhem.com/", "");
         /*
         if (url == null) url = urlFromSiteDirectoryName(dir, "", "", "");
         if (url == null) url = urlFromSiteDirectoryName(dir, "", "", "");
@@ -129,6 +136,7 @@ public class RipUtils {
         if (url == null) url = urlFromSiteDirectoryName(dir, "", "", "");
         if (url == null) url = urlFromSiteDirectoryName(dir, "", "", "");
         */
+        //if (url == null) url = urlFromSiteDirectoryName(dir, "8muses",      "http://www.8muses.com/index/category/", "");
         return url;
     }
 

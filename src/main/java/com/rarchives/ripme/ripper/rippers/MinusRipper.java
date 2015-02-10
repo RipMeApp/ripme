@@ -136,8 +136,12 @@ public class MinusRipper extends AlbumRipper {
                 String title = gallery.getString("name");
                 String albumUrl = "http://" + user + ".minus.com/m" + gallery.getString("reader_id");
                 ripAlbum(new URL(albumUrl), Utils.filesystemSafe(title));
+
+                if (isThisATest()) {
+                    break;
+                }
             }
-            if (page >= json.getInt("total_pages")) {
+            if (page >= json.getInt("total_pages") || isThisATest()) {
                 break;
             }
             page++;
@@ -169,6 +173,9 @@ public class MinusRipper extends AlbumRipper {
                     prefix = String.format("%03d_", i + 1);
                 }
                 addURLToDownload(new URL(image), prefix, subdir);
+                if (isThisATest()) {
+                    break;
+                }
             }
         }
     }

@@ -111,9 +111,11 @@ public class DownloadFileThread extends Thread {
                     cookie += key + "=" + cookies.get(key);
                 }
                 huc.setRequestProperty("Cookie", cookie);
+                logger.debug("Request properties: " + huc.getRequestProperties());
                 huc.connect();
 
                 int statusCode = huc.getResponseCode();
+                logger.debug("Status code: " + statusCode);
                 if (statusCode  / 100 == 3) { // 3xx Redirect
                     if (!redirected) {
                         // Don't increment retries on the first redirect
@@ -148,12 +150,14 @@ public class DownloadFileThread extends Thread {
                 IOUtils.copy(bis, fos);
                 break; // Download successful: break out of infinite loop
             } catch (HttpStatusException hse) {
+                logger.debug("HTTP status exception", hse);
                 logger.error("[!] HTTP status " + hse.getStatusCode() + " while downloading from " + urlToDownload);
                 if (hse.getStatusCode() == 404 && Utils.getConfigBoolean("errors.skip404", false)) {
                     observer.downloadErrored(url, "HTTP status code " + hse.getStatusCode() + " while downloading " + url.toExternalForm());
                     return;
                 }
             } catch (IOException e) {
+                logger.debug("IOException", e);
                 logger.error("[!] Exception while downloading file: " + url + " - " + e.getMessage());
             } finally {
                 // Close any open streams

@@ -59,7 +59,7 @@ public class VidbleRipper extends AbstractHTMLRipper {
         Elements els = doc.select("#ContentPlaceHolder1_thumbs");
         String thumbs = els.first().attr("value");
         for (String thumb : thumbs.split(",")) {
-            if (thumb.trim().equals("")) {
+            if (thumb.trim().equals("") || thumb.contains("reddit.com")) {
                 continue;
             }
             thumb = thumb.replaceAll("_[a-zA-Z]{3,5}", "");

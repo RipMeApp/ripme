@@ -5,6 +5,8 @@ import java.io.IOException;
 
 import junit.framework.TestCase;
 
+import org.apache.log4j.ConsoleAppender;
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import com.rarchives.ripme.ripper.AbstractRipper;
@@ -24,14 +26,16 @@ public class RippersTest extends TestCase {
 
     protected void testRipper(AbstractRipper ripper) {
         try {
-            Utils.setConfigInteger("page.timeout", 5 * 1000);
+            // Turn on Debug logging
+            ((ConsoleAppender)Logger.getRootLogger().getAppender("stdout")).setThreshold(Level.DEBUG);
+
+            // Decrease timeout
+            Utils.setConfigInteger("page.timeout", 10 * 1000);
+
             ripper.setup();
             ripper.markAsTest();
             ripper.rip();
-            for (File f : ripper.getWorkingDir().listFiles()) {
-                System.err.println(f.toString());
-            }
-            assertTrue("Failed to download files from " + ripper.getURL(), ripper.getWorkingDir().listFiles().length >= 1);
+            assertTrue("Failed to download a single file from " + ripper.getURL(), ripper.getWorkingDir().listFiles().length >= 1);
         } catch (IOException e) {
             if (e.getMessage().contains("Ripping interrupted")) {
                 // We expect some rips to get interrupted
@@ -77,6 +81,18 @@ public class RippersTest extends TestCase {
             f.delete();
         }
         dir.delete();
+    }
+    protected void deleteSubdirs(File workingDir) {
+        for (File f : workingDir.listFiles()) {
+            if (f.isDirectory()) {
+                for (File sf : f.listFiles()) {
+                    logger.debug("Deleting " + sf);
+                    sf.delete();
+                }
+                logger.debug("Deleting " + f);
+                f.delete();
+            }
+        }
     }
 
 }

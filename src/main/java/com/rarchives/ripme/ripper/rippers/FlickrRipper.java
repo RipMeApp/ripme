@@ -130,6 +130,9 @@ public class FlickrRipper extends AbstractHTMLRipper {
 
     @Override
     public Document getNextPage(Document doc) throws IOException {
+        if (isThisATest()) {
+            return null;
+        }
         // Find how many pages there are
         int lastPage = 0;
         for (Element apage : doc.select("a[data-track^=page-]")) {
@@ -185,6 +188,9 @@ public class FlickrRipper extends AbstractHTMLRipper {
             }
             attempted.add(imagePage);
             imageURLs.add(imagePage);
+            if (isThisATest()) {
+                break;
+            }
         }
         return imageURLs;
     }

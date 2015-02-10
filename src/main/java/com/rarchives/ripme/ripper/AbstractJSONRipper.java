@@ -55,6 +55,12 @@ public abstract class AbstractJSONRipper extends AlbumRipper {
 
         while (json != null) {
             List<String> imageURLs = getURLsFromJSON(json);
+            // Remove all but 1 image
+            if (isThisATest()) {
+                while (imageURLs.size() > 1) {
+                    imageURLs.remove(1);
+                }
+            }
 
             if (imageURLs.size() == 0) {
                 throw new IOException("No images found at " + this.url);
@@ -65,10 +71,11 @@ public abstract class AbstractJSONRipper extends AlbumRipper {
                     break;
                 }
                 index += 1;
+                logger.debug("Found image url #" + index+ ": " + imageURL);
                 downloadURL(new URL(imageURL), index);
             }
 
-            if (isStopped()) {
+            if (isStopped() || isThisATest()) {
                 break;
             }
 
@@ -83,6 +90,7 @@ public abstract class AbstractJSONRipper extends AlbumRipper {
 
         // If they're using a thread pool, wait for it.
         if (getThreadPool() != null) {
+            logger.debug("Waiting for threadpool " + getThreadPool().getClass().getName());
             getThreadPool().waitForThreads();
         }
         waitForThreads();

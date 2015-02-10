@@ -102,8 +102,10 @@ public abstract class AbstractRipper
         try {
             stopCheck();
         } catch (IOException e) {
+            logger.debug("Ripper has been stopped");
             return false;
         }
+        logger.debug("url: " + url + ", prefix: " + prefix + ", subdirectory" + subdirectory + ", referrer: " + referrer + ", cookies: " + cookies);
         String saveAs = url.toExternalForm();
         saveAs = saveAs.substring(saveAs.lastIndexOf('/')+1);
         if (saveAs.indexOf('?') >= 0) { saveAs = saveAs.substring(0, saveAs.indexOf('?')); }
@@ -163,6 +165,7 @@ public abstract class AbstractRipper
      * Waits for downloading threads to complete.
      */
     protected void waitForThreads() {
+        logger.debug("Waiting for threads to finish");
         completed = false;
         threadPool.waitForThreads();
         checkIfComplete();
@@ -212,6 +215,7 @@ public abstract class AbstractRipper
      */
     protected void checkIfComplete() {
         if (observer == null) {
+            logger.debug("observer is null");
             return;
         }
 
@@ -226,6 +230,7 @@ public abstract class AbstractRipper
             Logger rootLogger = Logger.getRootLogger();
             FileAppender fa = (FileAppender) rootLogger.getAppender("FILE");
             if (fa != null) {
+                logger.debug("Changing log file back to 'ripme.log'");
                 fa.setFile("ripme.log");
                 fa.activateOptions();
             }
@@ -272,6 +277,7 @@ public abstract class AbstractRipper
         for (Constructor<?> constructor : getRipperConstructors("com.rarchives.ripme.ripper.rippers")) {
             try {
                 AlbumRipper ripper = (AlbumRipper) constructor.newInstance(url);
+                logger.debug("Found album ripper: " + ripper.getClass().getName());
                 return ripper;
             } catch (Exception e) {
                 // Incompatible rippers *will* throw exceptions during instantiation.
@@ -280,6 +286,7 @@ public abstract class AbstractRipper
         for (Constructor<?> constructor : getRipperConstructors("com.rarchives.ripme.ripper.rippers.video")) {
             try {
                 VideoRipper ripper = (VideoRipper) constructor.newInstance(url);
+                logger.debug("Found video ripper: " + ripper.getClass().getName());
                 return ripper;
             } catch (Exception e) {
                 // Incompatible rippers *will* throw exceptions during instantiation.
@@ -355,6 +362,7 @@ public abstract class AbstractRipper
     
     public boolean sleep(int milliseconds) {
         try {
+            logger.debug("Sleeping " + milliseconds + "ms");
             Thread.sleep(milliseconds);
             return true;
         } catch (InterruptedException e) {
@@ -372,6 +380,7 @@ public abstract class AbstractRipper
 
     /** Methods for detecting when we're running a test. */
     public void markAsTest() {
+        logger.debug("THIS IS A TEST RIP");
         thisIsATest = true;
     }
     public boolean isThisATest() {

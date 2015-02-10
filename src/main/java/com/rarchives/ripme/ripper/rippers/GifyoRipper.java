@@ -93,8 +93,8 @@ public class GifyoRipper extends AbstractHTMLRipper {
     @Override
     public List<String> getURLsFromPage(Document doc) {
         List<String> imageURLs = new ArrayList<String>();
-        for (Element image : doc.select("div.gif img")) {
-            String imageUrl = image.attr("src");
+        for (Element image : doc.select("img.profile_gif")) {
+            String imageUrl = image.attr("data-animated");
             if (imageUrl.startsWith("//")) {
                 imageUrl = "http:" + imageUrl;
             }
@@ -102,7 +102,7 @@ public class GifyoRipper extends AbstractHTMLRipper {
             imageUrl = imageUrl.replace("_s.gif", ".gif");
             imageURLs.add(imageUrl);
         }
-        logger.info("Found " + imageURLs.size() + " images");
+        logger.debug("Found " + imageURLs.size() + " images");
         return imageURLs;
     }
     

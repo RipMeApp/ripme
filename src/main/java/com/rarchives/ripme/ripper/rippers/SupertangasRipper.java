@@ -15,6 +15,10 @@ import com.rarchives.ripme.ripper.AlbumRipper;
 import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
 import com.rarchives.ripme.utils.Http;
 
+/**
+ * Appears to be broken as of 2015-02-11.
+ * Looks like supertangas changed their site completely.
+ */
 public class SupertangasRipper extends AlbumRipper {
 
     private static final String DOMAIN = "supertangas.com",

@@ -1,5 +1,6 @@
 package com.rarchives.ripme.ripper.rippers;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -117,13 +118,15 @@ public class FivehundredpxRipper extends AbstractJSONRipper {
     @Override
     public JSONObject getFirstPage() throws IOException {
         URL apiURL = new URL(baseURL + "&consumer_key=" + CONSUMER_KEY);
+        logger.debug("apiURL: " + apiURL);
         JSONObject json = Http.url(apiURL).getJSON();
         if (baseURL.contains("/blogs?")) {
-            // List of stories
+            // List of stories to return
             JSONObject result = new JSONObject();
             result.put("photos", new JSONArray());
-            JSONArray jsonBlogs = json.getJSONArray("blog_posts");
+
             // Iterate over every story
+            JSONArray jsonBlogs = json.getJSONArray("blog_posts");
             for (int i = 0; i < jsonBlogs.length(); i++) {
                 if (i > 0) {
                     sleep(500);
@@ -153,6 +156,9 @@ public class FivehundredpxRipper extends AbstractJSONRipper {
 
     @Override
     public JSONObject getNextPage(JSONObject json) throws IOException {
+        if (isThisATest()) {
+            return null;
+        }
         // Check previous JSON to see if we hit the last page
         if (!json.has("current_page")
          || !json.has("total_pages")) {
@@ -191,6 +197,9 @@ public class FivehundredpxRipper extends AbstractJSONRipper {
                 }
             }
             imageURLs.add(imageURL);
+            if (isThisATest()) {
+                break;
+            }
         }
         return imageURLs;
     }
@@ -209,11 +218,17 @@ public class FivehundredpxRipper extends AbstractJSONRipper {
     }
 
     @Override
+    public boolean keepSortOrder() {
+        return false;
+    }
+
+    @Override
     public void downloadURL(URL url, int index) {
         String u = url.toExternalForm();
         String[] fields = u.split("/");
-        String prefix = getPrefix(index) + fields[fields.length - 2] + "-";
-        addURLToDownload(url, prefix);
+        String prefix = getPrefix(index) + fields[fields.length - 3];
+        File saveAs = new File(getWorkingDir() + File.separator + prefix + ".jpg");
+        addURLToDownload(url,  saveAs,  "", null);
     }
 
 }

@@ -167,7 +167,7 @@ public class PhotobucketRipper extends AlbumRipper {
                 filesIndex += 1;
                 addURLToDownload(new URL(image), 
                         "",
-                        object.getString("location"),
+                        object.getString("location").replaceAll(" ", "_"),
                         albumDoc.location(),
                         pageResponse.cookies());
             }

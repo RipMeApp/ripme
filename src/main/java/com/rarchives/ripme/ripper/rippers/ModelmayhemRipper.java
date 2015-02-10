@@ -110,6 +110,10 @@ public class ModelmayhemRipper extends AlbumRipper {
                 prefix = String.format("%03d_", i + 1);
             }
             addURLToDownload(new URL(bigImage), prefix);
+
+            if (isThisATest()) {
+                break;
+            }
         }
         waitForThreads();
     }

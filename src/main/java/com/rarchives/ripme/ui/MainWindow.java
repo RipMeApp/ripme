@@ -37,6 +37,7 @@ import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -62,6 +63,8 @@ import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 
+import org.apache.log4j.ConsoleAppender;
+import org.apache.log4j.FileAppender;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
@@ -124,6 +127,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
     private static JButton configSaveDirButton;
     private static JTextField configRetriesText;
     private static JCheckBox configAutoupdateCheckbox;
+    private static JComboBox configLogLevelCombobox;
     private static JCheckBox configPlaySound;
     private static JCheckBox configSaveOrderCheckbox;
     private static JCheckBox configShowPopup;
@@ -143,7 +147,6 @@ public class MainWindow implements Runnable, RipStatusHandler {
     private static AbstractRipper ripper;
 
     public MainWindow() {
-        Logger.getRootLogger().setLevel(Level.ERROR);
         mainFrame = new JFrame("RipMe v" + UpdateUtils.getThisJarVersion());
         mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         mainFrame.setResizable(false);
@@ -196,6 +199,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
         Utils.setConfigInteger("download.timeout", Integer.parseInt(configTimeoutText.getText()));
         Utils.setConfigBoolean("clipboard.autorip", ClipboardUtils.getClipboardAutoRip());
         Utils.setConfigBoolean("auto.update", configAutoupdateCheckbox.isSelected());
+        Utils.setConfigString("log.level", configLogLevelCombobox.getSelectedItem().toString());
         Utils.setConfigBoolean("play.sound", configPlaySound.isSelected());
         Utils.setConfigBoolean("download.save_order", configSaveOrderCheckbox.isSelected());
         Utils.setConfigBoolean("download.show_popup", configShowPopup.isSelected());
@@ -419,6 +423,9 @@ public class MainWindow implements Runnable, RipStatusHandler {
         configAutoupdateCheckbox = new JCheckBox("Auto-update?", Utils.getConfigBoolean("auto.update", true));
         configAutoupdateCheckbox.setHorizontalAlignment(JCheckBox.RIGHT);
         configAutoupdateCheckbox.setHorizontalTextPosition(JCheckBox.LEFT);
+        configLogLevelCombobox = new JComboBox(new String[] {"Log level: Error", "Log level: Warn", "Log level: Info", "Log level: Debug"});
+        configLogLevelCombobox.setSelectedItem(Utils.getConfigString("log.level", "Log level: Debug"));
+        setLogLevel(configLogLevelCombobox.getSelectedItem().toString());
         configPlaySound = new JCheckBox("Sound when rip completes", Utils.getConfigBoolean("play.sound", false));
         configPlaySound.setHorizontalAlignment(JCheckBox.RIGHT);
         configPlaySound.setHorizontalTextPosition(JCheckBox.LEFT);
@@ -451,6 +458,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
         gbc.gridy = 0; gbc.gridx = 0; configurationPanel.add(configUpdateLabel, gbc);
                        gbc.gridx = 1; configurationPanel.add(configUpdateButton, gbc);
         gbc.gridy = 1; gbc.gridx = 0; configurationPanel.add(configAutoupdateCheckbox, gbc);
+                       gbc.gridx = 1; configurationPanel.add(configLogLevelCombobox, gbc);
         gbc.gridy = 2; gbc.gridx = 0; configurationPanel.add(configThreadsLabel, gbc);
                        gbc.gridx = 1; configurationPanel.add(configThreadsText, gbc);
         gbc.gridy = 3; gbc.gridx = 0; configurationPanel.add(configTimeoutLabel, gbc);
@@ -648,6 +656,14 @@ public class MainWindow implements Runnable, RipStatusHandler {
                 t.start();
             }
         });
+        configLogLevelCombobox.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent arg0) {
+                String level = ((JComboBox) arg0.getSource()).getSelectedItem().toString();
+                setLogLevel(level);
+            }
+        });
+
         configSaveDirButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent arg0) {
@@ -728,6 +744,27 @@ public class MainWindow implements Runnable, RipStatusHandler {
             @Override
             public void intervalRemoved(ListDataEvent arg0) { }
         });
+    }
+    
+    private void setLogLevel(String level) {
+        Level newLevel = Level.ERROR;
+        level = level.substring(level.lastIndexOf(' ') + 1);
+        if (level.equals("Debug")) {
+            newLevel = Level.DEBUG;
+        }
+        else if (level.equals("Info")) {
+            newLevel = Level.INFO;
+        }
+        else if (level.equals("Warn")) {
+            newLevel = Level.WARN;
+        }
+        else if (level.equals("Error")) {
+            newLevel = Level.ERROR;
+        }
+        Logger.getRootLogger().setLevel(newLevel);
+        logger.setLevel(newLevel);
+        ((ConsoleAppender)Logger.getRootLogger().getAppender("stdout")).setThreshold(newLevel);
+        ((FileAppender)Logger.getRootLogger().getAppender("FILE")).setThreshold(newLevel);
     }
 
     private void setupTrayIcon() {

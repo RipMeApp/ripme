@@ -81,10 +81,6 @@ public class PornhubRipper extends AlbumRipper {
         int index = 0;
         String nextUrl = this.url.toExternalForm();
         
-        if (isStopped()) {
-            return;
-        }
-        
         if (albumDoc == null) {
             logger.info("    Retrieving album page " + nextUrl);
             sendUpdate(STATUS.LOADING_RESOURCE, nextUrl);
@@ -92,15 +88,15 @@ public class PornhubRipper extends AlbumRipper {
                            .referrer(this.url)
                            .get();
         }
-        
+
         // Find thumbnails
         Elements thumbs = albumDoc.select(".photoBlockBox li");
         if (thumbs.size() == 0) {
-            logger.info("albumDoc: " + albumDoc);
-            logger.info("No images found at " + nextUrl);
+            logger.debug("albumDoc: " + albumDoc);
+            logger.debug("No images found at " + nextUrl);
             return;
         }
-        
+
         // Iterate over images on page
         for (Element thumb : thumbs) {
             if (isStopped()) {
@@ -111,6 +107,9 @@ public class PornhubRipper extends AlbumRipper {
             URL imagePage = new URL(url, imagePageUrl);
             PornhubImageThread t = new PornhubImageThread(imagePage, index, this.workingDir);
             pornhubThreadPool.addThread(t);
+            if (isThisATest()) {
+                break;
+            }
             try {
                 Thread.sleep(IMAGE_SLEEP_TIME);
             } catch (InterruptedException e) {
@@ -118,6 +117,7 @@ public class PornhubRipper extends AlbumRipper {
             }
         }
 
+        pornhubThreadPool.waitForThreads();
         waitForThreads();
     }
 
