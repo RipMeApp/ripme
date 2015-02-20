@@ -30,7 +30,7 @@ public class RippersTest extends TestCase {
             ((ConsoleAppender)Logger.getRootLogger().getAppender("stdout")).setThreshold(Level.DEBUG);
 
             // Decrease timeout
-            Utils.setConfigInteger("page.timeout", 10 * 1000);
+            Utils.setConfigInteger("page.timeout", 20 * 1000);
 
             ripper.setup();
             ripper.markAsTest();
