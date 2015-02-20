@@ -139,7 +139,8 @@ public class ImagefapRipper extends AbstractHTMLRipper {
     
     @Override
     public void downloadURL(URL url, int index) {
-        addURLToDownload(url, getPrefix(index));
+        // Send referrer for image downloads
+        addURLToDownload(url, getPrefix(index), "", this.url.toExternalForm(), null);
     }
 
     @Override
