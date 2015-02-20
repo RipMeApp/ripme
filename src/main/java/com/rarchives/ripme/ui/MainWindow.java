@@ -763,8 +763,14 @@ public class MainWindow implements Runnable, RipStatusHandler {
         }
         Logger.getRootLogger().setLevel(newLevel);
         logger.setLevel(newLevel);
-        ((ConsoleAppender)Logger.getRootLogger().getAppender("stdout")).setThreshold(newLevel);
-        ((FileAppender)Logger.getRootLogger().getAppender("FILE")).setThreshold(newLevel);
+        ConsoleAppender ca = (ConsoleAppender)Logger.getRootLogger().getAppender("stdout");
+        if (ca != null) {
+            ca.setThreshold(newLevel);
+        }
+        FileAppender fa = (FileAppender)Logger.getRootLogger().getAppender("FILE");
+        if (fa != null) {
+            fa.setThreshold(newLevel);
+        }
     }
 
     private void setupTrayIcon() {
