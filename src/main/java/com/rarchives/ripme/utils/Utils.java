@@ -47,6 +47,25 @@ public class Utils {
             }
             config = new PropertiesConfiguration(configPath);
             logger.info("Loaded " + config.getPath());
+            if (f.exists()){
+                // Config was loaded from file
+                if ( !config.containsKey("twitter.auth")
+                  || !config.containsKey("twitter.max_requests")
+                  || !config.containsKey("tumblr.auth")
+                  || !config.containsKey("error.skip404")
+                  || !config.containsKey("gw.api")
+                  || !config.containsKey("page.timeout")
+                  || !config.containsKey("download.max_size")
+                  ) {
+                    // Config is missing key fields
+                    // Need to reload the default config
+                    // See https://github.com/4pr0n/ripme/issues/158
+                    logger.warn("Config does not contain key fields, deleting old config");
+                    f.delete();
+                    config = new PropertiesConfiguration(configFile);
+                    logger.info("Loaded " + config.getPath());
+                }
+            }
         } catch (Exception e) {
             logger.error("[!] Failed to load properties file from " + configFile, e);
         }
