@@ -123,6 +123,7 @@ public class Http {
 
     public Response response() throws IOException {
         Response response = null;
+        IOException lastException = null;
         int retries = this.retries;
         while (--retries >= 0) {
             try {
@@ -130,9 +131,10 @@ public class Http {
                 return response;
             } catch (IOException e) {
                 logger.warn("Error while loading " + url, e);
+                lastException = e;
                 continue;
             }
         }
-        throw new IOException("Failed to load " + url + " after " + this.retries + " attempts");
+        throw new IOException("Failed to load " + url + " after " + this.retries + " attempts", lastException);
     }
 }

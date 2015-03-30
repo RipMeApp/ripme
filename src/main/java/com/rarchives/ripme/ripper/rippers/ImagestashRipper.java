@@ -73,7 +73,7 @@ public class ImagestashRipper extends AbstractJSONRipper {
             JSONObject image = images.getJSONObject(i);
             String imageURL = image.getString("src");
             if (imageURL.startsWith("/")) {
-                imageURL = "http://imagestash.org" + imageURL;
+                imageURL = "https://imagestash.org" + imageURL;
             }
             imageURLs.add(imageURL);
         }
