@@ -287,13 +287,24 @@ public class DeviantartRipper extends AbstractHTMLRipper {
             cookies.putAll(resp.cookies());
 
             // Try to find the download button
-            Elements els = resp.parse().select("a.dev-page-download");
-            if (els.size() == 0) {
-                throw new IOException("No download page found");
+            Document doc = resp.parse();
+            Elements els = doc.select("a.dev-page-download");
+            if (els.size() > 0) {
+                // Full-size image
+                String fsimage = els.get(0).attr("href");
+                logger.info("Found download page: " + fsimage);
+                return fsimage;
             }
-            // Full-size image
-            String fsimage = els.get(0).attr("href");
-            return fsimage;
+
+            // Get the largest resolution image on the page
+            els = doc.select("img.dev-content-full");
+            if (els.size() > 0) {
+                // Large image
+                String fsimage = els.get(0).attr("src");
+                logger.info("Found large-scale: " + fsimage);
+                return fsimage;
+            }
+            throw new IOException("No download page found");
         } catch (IOException ioe) {
             try {
                 logger.info("Failed to get full size download image at " + page + " : '" + ioe.getMessage() + "'");
