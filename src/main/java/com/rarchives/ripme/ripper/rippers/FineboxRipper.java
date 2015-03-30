@@ -53,12 +53,12 @@ public class FineboxRipper extends AlbumRipper {
             }            
             Elements videos = doc.select("video");
             for (Element element : videos) {
-                String videourl = element.attr("src");
-                if(videourl.substring(0,4)!="http"){                    
-                    videourl = "http://"+DOMAIN+ videourl;
+                String videourl = element.select("source").attr("src");
+                if (!videourl.startsWith("http")) {
+                    videourl = "http://" + DOMAIN + videourl;
                 }
-                logger.error("URL to download: " + videourl);
-                if(!addURLToDownload(new URL(videourl))){                    
+                logger.info("URL to download: " + videourl);
+                if (!addURLToDownload(new URL(videourl))) {
                    hasPagesLeft = false;
                    break;
                 }
