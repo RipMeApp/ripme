@@ -83,8 +83,7 @@ public class SankakuComplexRipper extends AbstractHTMLRipper {
     public void downloadURL(URL url, int index) {
         // Mock up the URL of the post page based on the post ID at the end of the URL.
         String postId = url.toExternalForm().replaceAll(".*\\?", "");
-        String refererURL = "https://idol.sankakucomplex.com/post/show/" + postId;
-        addURLToDownload(url, postId + "_", "", refererURL, cookies);
+        addURLToDownload(url, postId + "_", "", "", null);
     }
 
     @Override

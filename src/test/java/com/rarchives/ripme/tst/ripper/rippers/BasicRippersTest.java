@@ -228,7 +228,7 @@ public class BasicRippersTest extends RippersTest {
     }
 
     public void testSankakuChanRip() throws IOException {
-        AbstractRipper ripper = new SankakuComplexRipper(new URL("https://chan.sankakucomplex.com/?tags=blue_necktie"));
+        AbstractRipper ripper = new SankakuComplexRipper(new URL("https://chan.sankakucomplex.com/?tags=1girl"));
         testRipper(ripper);
     }
     public void testSankakuIdolRip() throws IOException {
