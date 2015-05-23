@@ -39,12 +39,12 @@ public class InstagramRipper extends AbstractJSONRipper {
     public boolean canRip(URL url) {
         return (url.getHost().endsWith("instagram.com")
              || url.getHost().endsWith("statigr.am")
-             || url.getHost().endsWith("iconosquare.com"));
+             || url.getHost().endsWith("iconosquare.com/user"));
     }
 
     @Override
     public String getGID(URL url) throws MalformedURLException {
-        Pattern p = Pattern.compile("^https?://iconosquare.com/([a-zA-Z0-9\\-_.]{3,}).*$");
+        Pattern p = Pattern.compile("^https?://iconosquare.com/user/([a-zA-Z0-9\\-_.]{3,}).*$");
         Matcher m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             return m.group(1);
@@ -68,17 +68,17 @@ public class InstagramRipper extends AbstractJSONRipper {
         p = Pattern.compile("^.*instagram\\.com/([a-zA-Z0-9\\-_.]{3,}).*$");
         m = p.matcher(url.toExternalForm());
         if (m.matches()) {
-            return new URL("http://iconosquare.com/" + m.group(1));
+            return new URL("http://iconosquare.com/user/" + m.group(1));
         }
-        p = Pattern.compile("^.*iconosquare\\.com/([a-zA-Z0-9\\-_.]{3,}).*$");
+        p = Pattern.compile("^.*iconosquare\\.com/user/([a-zA-Z0-9\\-_.]{3,}).*$");
         m = p.matcher(url.toExternalForm());
         if (m.matches()) {
-            return new URL("http://iconosquare.com/" + m.group(1));
+            return new URL("http://iconosquare.com/user/" + m.group(1));
         }
         p = Pattern.compile("^.*statigr\\.am/([a-zA-Z0-9\\-_.]{3,}).*$");
         m = p.matcher(url.toExternalForm());
         if (m.matches()) {
-            return new URL("http://iconosquare.com/" + m.group(1));
+            return new URL("http://iconosquare.com/user/" + m.group(1));
         }
         throw new MalformedURLException("Expected username in URL (instagram.com/username and not " + url);
     }
