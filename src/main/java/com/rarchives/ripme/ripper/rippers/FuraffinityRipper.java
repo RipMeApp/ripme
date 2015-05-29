@@ -1,5 +1,7 @@
 package com.rarchives.ripme.ripper.rippers;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -10,10 +12,13 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.rarchives.ripme.utils.Utils;
 import org.jsoup.Connection.Method;
 import org.jsoup.Connection.Response;
+import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.safety.Whitelist;
 import org.jsoup.select.Elements;
 
 import com.rarchives.ripme.ripper.AbstractHTMLRipper;
@@ -48,7 +53,10 @@ public class FuraffinityRipper extends AbstractHTMLRipper {
     public String getHost() {
         return "furaffinity";
     }
-
+    @Override
+    public boolean hasDescriptionSupport() {
+        return true;
+    }
     @Override
     public Document getFirstPage() throws IOException {
         if (cookies == null || cookies.size() == 0) {
@@ -110,7 +118,99 @@ public class FuraffinityRipper extends AbstractHTMLRipper {
         }
         return urls;
     }
+    @Override
+    public List<String> getDescriptionsFromPage(Document page) {
+        List<String> urls = new ArrayList<String>();
+        Elements urlElements = page.select("b[id^=sid_]");
+        for (Element e : urlElements) {
+            urls.add(urlBase + e.select("a").first().attr("href"));
+            logger.debug("Desc2 " + urlBase + e.select("a").first().attr("href"));
+        }
+        return urls;
+    }
+    @Override
+    public int descSleepTime() {
+        return 400;
+    }
+    public String getDescription(String page) {
+        try {
+            // Fetch the image page
+            Response resp = Http.url(page)
+                    .referrer(this.url)
+                    .cookies(cookies)
+                    .response();
+            cookies.putAll(resp.cookies());
 
+            // Try to find the description
+            Elements els = resp.parse().select("td[class=alt1][width=\"70%\"]");
+            if (els.size() == 0) {
+                logger.debug("No description at " + page);
+                throw new IOException("No description found");
+            }
+            logger.debug("Description found!");
+            Document documentz = resp.parse();
+            Element ele = documentz.select("td[class=alt1][width=\"70%\"]").get(0); // This is where the description is.
+            // Would break completely if FurAffinity changed site layout.
+            documentz.outputSettings(new Document.OutputSettings().prettyPrint(false));
+            ele.select("br").append("\\n");
+            ele.select("p").prepend("\\n\\n");
+            logger.debug("Returning description at " + page);
+            String tempPage = Jsoup.clean(ele.html().replaceAll("\\\\n", System.getProperty("line.separator")), "", Whitelist.none(), new Document.OutputSettings().prettyPrint(false));
+            Element title = documentz.select("td[class=\"cat\"][valign=\"top\"] > b").get(0);
+            String tempText = title.text();
+            return tempText + "\n" + tempPage; // Overridden saveText takes first line and makes it the file name.
+        } catch (IOException ioe) {
+            logger.info("Failed to get description " + page + " : '" + ioe.getMessage() + "'");
+            return null;
+        }
+    }
+    @Override
+    public boolean saveText(URL url, String subdirectory, String text, int index) {
+       //TODO Make this better please?
+       try {
+            stopCheck();
+        } catch (IOException e) {
+            return false;
+        }
+        String newText = "";
+        String saveAs = "";
+        File saveFileAs;
+        saveAs = text.split("\n")[0];
+        for (int i = 1;i < text.split("\n").length; i++) {
+             newText = newText.replace("\\","").replace("/","").replace("~","") + "\n" + text.split("\n")[i];
+        }
+        try {
+            if (!subdirectory.equals("")) {
+                subdirectory = File.separator + subdirectory;
+            }
+            int o = url.toString().lastIndexOf('/')-1;
+            String test = url.toString().substring(url.toString().lastIndexOf('/',o)+1);
+            test = test.replace("/",""); // This is probably not the best way to do this.
+            test = test.replace("\\",""); // CLOSE ENOUGH!
+            saveFileAs = new File(
+                    workingDir.getCanonicalPath()
+                            + subdirectory
+                            + File.separator
+                            + getPrefix(index)
+                            + saveAs
+                            + " "
+                            + test
+                            + ".txt");
+            // Write the file
+            FileOutputStream out = (new FileOutputStream(saveFileAs));
+            out.write(text.getBytes());
+            out.close();
+        } catch (IOException e) {
+            logger.error("[!] Error creating save file path for description '" + url + "':", e);
+            return false;
+        }
+        logger.debug("Downloading " + url + "'s description to " + saveFileAs);
+        if (!saveFileAs.getParentFile().exists()) {
+            logger.info("[+] Creating directory: " + Utils.removeCWD(saveFileAs.getParent()));
+            saveFileAs.getParentFile().mkdirs();
+        }
+        return true;
+    }
     @Override
     public void downloadURL(URL url, int index) {
         furaffinityThreadPool.addThread(new FuraffinityDocumentThread(url));
