@@ -1,7 +1,6 @@
 package com.rarchives.ripme.ripper.rippers;
 
 
-import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 import com.rarchives.ripme.ripper.AlbumRipper;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
@@ -12,7 +11,6 @@ import org.jsoup.select.Elements;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -56,8 +54,10 @@ public class NewsfilterRipper extends AlbumRipper {
                 .execute();
 
         Document doc = resp.parse();
-        Element gallery  = doc.getElementById("thegalmain");
-        Elements piclinks = gallery.getElementsByAttributeValue("itemprop","contentURL");
+        //Element gallery  = doc.getElementById("thegalmain");
+        //Elements piclinks = gallery.getElementsByAttributeValue("itemprop","contentURL");
+        Pattern pat = Pattern.compile(gid+"/\\d+");
+        Elements piclinks = doc.getElementsByAttributeValueMatching("href", pat);
         for (Element picelem : piclinks) {
             String picurl = "http://newsfilter.org"+picelem.attr("href");
             logger.info("Getting to picture page: "+picurl);
@@ -68,9 +68,7 @@ public class NewsfilterRipper extends AlbumRipper {
                     .method(Connection.Method.GET)
                     .execute();
             Document picdoc = resp.parse();
-            String dlurl = picdoc.getElementsByClass("downloadimagebutton")
-                    .first()
-                    .attr("href");
+            String dlurl = picdoc.getElementsByAttributeValue("itemprop","contentURL").first().attr("src");
             addURLToDownload(new URL(dlurl));
         }
         waitForThreads();
