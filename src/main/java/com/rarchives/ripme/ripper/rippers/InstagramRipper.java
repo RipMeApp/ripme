@@ -164,6 +164,8 @@ public class InstagramRipper extends AbstractJSONRipper {
             } else {
                 continue;
             }
+            imageURL = imageURL.replaceAll("scontent.cdninstagram.com/hphotos-", "igcdn-photos-d-a.akamaihd.net/hphotos-ak-");
+            imageURL = imageURL.replaceAll("s640x640/", "");
             imageURLs.add(imageURL);
             if (isThisATest()) {
                 break;
