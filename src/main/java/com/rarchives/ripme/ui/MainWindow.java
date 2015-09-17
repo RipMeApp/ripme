@@ -112,8 +112,8 @@ public class MainWindow implements Runnable, RipStatusHandler {
     // Queue
     private static JButton optionQueue;
     private static JPanel queuePanel;
-    private static JList<String> queueList;
-    private static DefaultListModel<String> queueListModel;
+    private static JList queueList;
+    private static DefaultListModel queueListModel;
     private static JScrollPane queueListScroll;
 
     // Configuration
@@ -128,7 +128,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
     private static JButton configSaveDirButton;
     private static JTextField configRetriesText;
     private static JCheckBox configAutoupdateCheckbox;
-    private static JComboBox<String> configLogLevelCombobox;
+    private static JComboBox configLogLevelCombobox;
     private static JCheckBox configPlaySound;
     private static JCheckBox configSaveOrderCheckbox;
     private static JCheckBox configShowPopup;
@@ -393,8 +393,8 @@ public class MainWindow implements Runnable, RipStatusHandler {
         queuePanel.setBorder(emptyBorder);
         queuePanel.setVisible(false);
         queuePanel.setPreferredSize(new Dimension(300, 250));
-        queueListModel  = new DefaultListModel<String>();
-        queueList       = new JList<String>(queueListModel);
+        queueListModel  = new DefaultListModel();
+        queueList       = new JList(queueListModel);
         queueList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         queueListScroll = new JScrollPane(queueList,
                 JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
@@ -432,7 +432,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
         configAutoupdateCheckbox = new JCheckBox("Auto-update?", Utils.getConfigBoolean("auto.update", true));
         configAutoupdateCheckbox.setHorizontalAlignment(JCheckBox.RIGHT);
         configAutoupdateCheckbox.setHorizontalTextPosition(JCheckBox.LEFT);
-        configLogLevelCombobox = new JComboBox<String>(new String[] {"Log level: Error", "Log level: Warn", "Log level: Info", "Log level: Debug"});
+        configLogLevelCombobox = new JComboBox(new String[] {"Log level: Error", "Log level: Warn", "Log level: Info", "Log level: Debug"});
         configLogLevelCombobox.setSelectedItem(Utils.getConfigString("log.level", "Log level: Debug"));
         setLogLevel(configLogLevelCombobox.getSelectedItem().toString());
         configPlaySound = new JCheckBox("Sound when rip completes", Utils.getConfigBoolean("play.sound", false));
@@ -668,7 +668,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
         configLogLevelCombobox.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent arg0) {
-                String level = ((JComboBox<?>) arg0.getSource()).getSelectedItem().toString();
+                String level = ((JComboBox) arg0.getSource()).getSelectedItem().toString();
                 setLogLevel(level);
             }
         });
