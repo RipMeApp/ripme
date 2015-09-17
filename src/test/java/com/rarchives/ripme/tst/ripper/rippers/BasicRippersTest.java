@@ -60,6 +60,8 @@ public class BasicRippersTest extends RippersTest {
     public void testEightmusesAlbum() throws IOException {
         EightmusesRipper ripper = new EightmusesRipper(new URL("http://www.8muses.com/index/category/jab-hotassneighbor7"));
         testRipper(ripper);
+        ripper = new EightmusesRipper(new URL("https://www.8muses.com/album/jab-comics/a-model-life"));
+        testRipper(ripper);
     }
 
     public void testVineboxAlbum() throws IOException {

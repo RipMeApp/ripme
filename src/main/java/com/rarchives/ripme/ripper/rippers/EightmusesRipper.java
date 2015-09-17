@@ -107,18 +107,30 @@ public class EightmusesRipper extends AbstractHTMLRipper {
         }
         else {
             // Page contains images
-            for (Element thumb : page.select("img")) {
+            for (Element thumb : page.select("div.item .holder img")) {
+                if (super.isStopped()) break;
                 // Find thumbnail image source
                 String image = null;
                 if (thumb.hasAttr("data-cfsrc")) {
                     image = thumb.attr("data-cfsrc");
                 }
-                else if (thumb.hasAttr("src")) {
-                    image = thumb.attr("src");
-                }
                 else {
-                    logger.warn("Thumb does not have data-cfsrc or src: " + thumb);
-                    continue;
+                    String parentHref = thumb.parent().attr("href");
+                    if (parentHref.equals("")) continue;
+                    if (parentHref.startsWith("/")) {
+                        parentHref = "https://www.8muses.com" + parentHref;
+                    }
+                    try {
+                        logger.info("Retrieving full-size image location from " + parentHref);
+                        Thread.sleep(1000);
+                        image = getFullSizeImage(parentHref);
+                    } catch (IOException e) {
+                        logger.error("Failed to get full-size image from " + parentHref);
+                        continue;
+                    } catch (InterruptedException e) {
+                        logger.error("Interrupted while getting full-size image from " + parentHref);
+                        continue;
+                    }
                 }
                 if (!image.contains("8muses.com")) {
                     // Not hosted on 8mues.
@@ -135,9 +147,15 @@ public class EightmusesRipper extends AbstractHTMLRipper {
                 }
                 image = image.replaceAll(" ", "%20");
                 imageURLs.add(image);
+                if (isThisATest()) break;
             }
         }
         return imageURLs;
+    }
+
+    private String getFullSizeImage(String imageUrl) throws IOException {
+        Document doc = new Http(imageUrl).get();
+        return doc.select("#image").first().attr("src");
     }
 
     @Override
