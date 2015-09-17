@@ -139,7 +139,7 @@ public class ImagebamRipper extends AbstractHTMLRipper {
             try {
                 Document doc = Http.url(url).get();
                 // Find image
-                Elements images = doc.select("td > img");
+                Elements images = doc.select(".image-container img");
                 if (images.size() == 0) {
                     logger.warn("Image not found at " + this.url);
                     return;
