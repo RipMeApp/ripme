@@ -119,6 +119,14 @@ public class Utils {
         config.clearProperty(key);
         config.addProperty(key, list);
     }
+    public static void setConfigList(String key, Enumeration<Object> enumeration) {
+        config.clearProperty(key);
+        List<Object> list = new ArrayList<Object>();
+        while (enumeration.hasMoreElements()) {
+            list.add(enumeration.nextElement());
+        }
+        config.addProperty(key, list);
+    }
 
     public static void saveConfig() {
         try {

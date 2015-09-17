@@ -154,6 +154,7 @@ public class EightmusesRipper extends AbstractHTMLRipper {
     }
 
     private String getFullSizeImage(String imageUrl) throws IOException {
+        sendUpdate(STATUS.LOADING_RESOURCE, imageUrl);
         Document doc = new Http(imageUrl).get();
         return doc.select("#image").first().attr("src");
     }
