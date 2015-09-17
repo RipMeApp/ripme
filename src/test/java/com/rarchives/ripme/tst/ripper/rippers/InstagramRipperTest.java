@@ -27,7 +27,7 @@ public class InstagramRipperTest extends RippersTest {
 
     public void testInstagramAlbums() throws IOException {
         List<URL> contentURLs = new ArrayList<URL>();
-        contentURLs.add(new URL("http://instagram.com/tayloralesia/"));
+        contentURLs.add(new URL("http://instagram.com/anacheri"));
         for (URL url : contentURLs) {
             InstagramRipper ripper = new InstagramRipper(url);
             testRipper(ripper);

@@ -167,14 +167,14 @@ public class ImgurRipper extends AlbumRipper {
                             .get();
 
         // Try to use embedded JSON to retrieve images
-        Pattern p = Pattern.compile("^.*Imgur\\.Album\\.getInstance\\((.*)\\);.*$", Pattern.DOTALL);
+        Pattern p = Pattern.compile("^.*Imgur\\.Album\\.getInstance\\((.*?)\\);.*$", Pattern.DOTALL);
         Matcher m = p.matcher(doc.body().html());
         if (m.matches()) {
             try {
                 JSONObject json = new JSONObject(m.group(1));
                 JSONObject jsonAlbum = json.getJSONObject("album");
                 ImgurAlbum imgurAlbum = new ImgurAlbum(url, jsonAlbum.getString("title_clean"));
-                JSONArray images = json.getJSONObject("images").getJSONArray("items");
+                JSONArray images = json.getJSONObject("images").getJSONArray("images");
                 int imagesLength = images.length();
                 for (int i = 0; i < imagesLength; i++) {
                     JSONObject image = images.getJSONObject(i);
@@ -193,19 +193,20 @@ public class ImgurRipper extends AlbumRipper {
                 logger.debug("Error while parsing JSON at " + url + ", continuing", e);
             }
         }
-        p = Pattern.compile("^.*= new ImgurShare\\((.*)\\);.*$", Pattern.DOTALL);
+        p = Pattern.compile("^.*widgetFactory.mergeConfig\\('gallery', (.*?)\\);.*$", Pattern.DOTALL);
         m = p.matcher(doc.body().html());
         if (m.matches()) {
             try {
                 ImgurAlbum imgurAlbum = new ImgurAlbum(url);
                 JSONObject json = new JSONObject(m.group(1));
-                JSONArray images = json.getJSONArray("hashes");
+                JSONArray images = json.getJSONObject("image")
+                                       .getJSONObject("album_images")
+                                       .getJSONArray("images");
                 int imagesLength = images.length();
                 for (int i = 0; i < imagesLength; i++) {
                     JSONObject image = images.getJSONObject(i);
                     URL imageURL = new URL(
-                            "http:" + json.getString("cdnUrl")
-                                    + "/"
+                            "http://i.imgur.com/"
                                     + image.getString("hash")
                                     + image.getString("ext"));
                     ImgurImage imgurImage = new ImgurImage(imageURL);
