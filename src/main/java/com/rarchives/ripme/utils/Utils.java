@@ -152,7 +152,7 @@ public class Utils {
      *      saveAs in relation to the CWD
      */
     public static String removeCWD(File saveAs) {
-        String prettySaveAs = saveAs.toString(); 
+        String prettySaveAs = saveAs.toString();
         try {
             prettySaveAs = saveAs.getCanonicalPath();
             String cwd = new File(".").getCanonicalPath() + File.separator;
@@ -164,7 +164,7 @@ public class Utils {
         }
         return prettySaveAs;
     }
-    
+
     public static String stripURLParameter(String url, String parameter) {
         int paramIndex = url.indexOf("?" + parameter);
         boolean wasFirstParam = true;
@@ -172,7 +172,7 @@ public class Utils {
             wasFirstParam = false;
             paramIndex = url.indexOf("&" + parameter);
         }
-        
+
         if(paramIndex > 0) {
             int nextParam = url.indexOf("&", paramIndex+1);
             if(nextParam != -1) {
@@ -183,7 +183,7 @@ public class Utils {
                 url = url.substring(0, paramIndex);
             }
         }
-        
+
         return url;
     }
 
@@ -271,7 +271,7 @@ public class Utils {
         }
         return classes;
     }
-    
+
     public static final int SHORTENED_PATH_LENGTH = 12;
     public static String shortenPath(String path) {
         return shortenPath(new File(path));
@@ -285,7 +285,7 @@ public class Utils {
                 + "..."
                 + path.substring(path.length() - SHORTENED_PATH_LENGTH);
     }
-    
+
     public static String filesystemSafe(String text) {
         text = text.replaceAll("[^a-zA-Z0-9.-]", "_")
                    .replaceAll("__", "_")
@@ -295,7 +295,7 @@ public class Utils {
         }
         return text;
     }
-    
+
     public static String bytesToHumanReadable(int bytes) {
         float fbytes = (float) bytes;
         String[] mags = new String[] {"", "k", "m", "g", "t"};
