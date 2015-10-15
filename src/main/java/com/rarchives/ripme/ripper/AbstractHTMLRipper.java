@@ -15,9 +15,11 @@ import com.rarchives.ripme.utils.Utils;
 /**
  * Simplified ripper, designed for ripping from sites by parsing HTML.
  */
+
 public abstract class AbstractHTMLRipper extends AlbumRipper {
+public class Tamindirmp3 extends AbstractHTMLRipper {
 	
-    public AbstractHTMLRipper(URL url) throws IOException {
+    public Tamindirmp3(URL url) throws IOException {
         super(url);
     }
 
@@ -39,6 +41,47 @@ public abstract class AbstractHTMLRipper extends AlbumRipper {
 
     public boolean keepSortOrder() {
         return true;
+    }
+    @Override
+    public String getHost() {
+        return "Tamindirmp3";
+    }
+    
+    @Override
+    public String getDomain() {
+        return "server28.tamdinle.com";
+    }
+    
+ @Override
+    public String getGID(URL url) throws MalformedURLException {
+        Pattern p = Pattern.compile("^https?://server28.tamdinle\\.com/files/([files-zA-Z0-9]+).*$");
+        Matcher m = p.matcher(url.toExternalForm());
+        if (m.matches()) {
+            // Return the text contained between () in the regex
+            return m.group(1);
+        }
+        throw new MalformedURLException("Expected server28.tamindir.com URL format: " +
+                        "server28.tamdinle.com/files/ - got " + url + " instead");
+    }
+
+ @Override
+    public Document getFirstPage() throws IOException {
+        // "url" is an instance field of the superclass
+        return Http.url(url).get();
+    }
+    
+      @Override
+    public List<String> getURLsFromPage(Document doc) {
+        List<String> result = new ArrayList<String>();
+        for (Element el : doc.select("img")) {
+            result.add(el.attr("src"));
+        }
+        return result
+    }
+    
+     @Override
+    public void downloadURL(URL url, int index) {
+        addURLToDownload(url, getPrefix(index));
     }
 
     @Override
