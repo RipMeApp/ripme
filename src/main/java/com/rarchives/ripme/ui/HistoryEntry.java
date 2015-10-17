@@ -6,13 +6,13 @@ import org.json.JSONObject;
 
 public class HistoryEntry {
 
-    public String url          = "",
-                  title        = "",
-                  dir          = "";
-    public int    count        = 0;
-    public Date   startDate    = new Date(),
-                  modifiedDate = new Date();
-    boolean       selected     = false;
+    public String  url          = "",
+                   title        = "",
+                   dir          = "";
+    public int     count        = 0;
+    public Date    startDate    = new Date(),
+                   modifiedDate = new Date();
+    public boolean selected     = false;
 
     public HistoryEntry() {
     }
