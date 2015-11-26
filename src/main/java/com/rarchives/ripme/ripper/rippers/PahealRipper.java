@@ -1,9 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package com.rarchives.ripme.ripper.rippers;
 
 import com.rarchives.ripme.ripper.AbstractHTMLRipper;
@@ -92,7 +86,7 @@ public class PahealRipper extends AbstractHTMLRipper{
 	@Override
 	public String getGID(URL url) throws MalformedURLException {
 		if(gidPattern==null)
-			gidPattern=Pattern.compile("^https?://(www\\.)?rule34\\.paheal\\.net/post/list/([a-zA-Z0-9$_.+!*'(),-]+)(/.*)?(#.*)?$");
+			gidPattern=Pattern.compile("^https?://(www\\.)?rule34\\.paheal\\.net/post/list/([a-zA-Z0-9$_.+!*'(),%-]+)(/.*)?(#.*)?$");
 		
 		Matcher m = gidPattern.matcher(url.toExternalForm());
 		if(m.matches())
