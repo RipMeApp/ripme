@@ -2,8 +2,12 @@ package com.rarchives.ripme.ripper.rippers;
 
 import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 import com.rarchives.ripme.utils.Http;
+import com.rarchives.ripme.utils.Utils;
+import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -25,7 +29,7 @@ public class PahealRipper extends AbstractHTMLRipper{
 	private static Map<String,String> cookies=null;
 	private static Pattern gidPattern=null;
 
-	public static Map<String, String> getCookies() {
+	private static Map<String, String> getCookies() {
 		if(cookies==null){
 			cookies=new HashMap<String, String>(1);
 			cookies.put("ui-tnc-agreed","true");
@@ -49,7 +53,7 @@ public class PahealRipper extends AbstractHTMLRipper{
 
 	@Override
 	public Document getFirstPage() throws IOException {
-		return Http.url("http://rule34.paheal.net/post/list/"+getGID(url)+"/1").cookies(getCookies()).get();
+		return Http.url("http://rule34.paheal.net/post/list/"+getTerm(url)+"/1").cookies(getCookies()).get();
 	}
 
 	@Override
@@ -68,29 +72,49 @@ public class PahealRipper extends AbstractHTMLRipper{
 		List<String> res=new ArrayList<String>(elements.size());
 		
 		for(Element e:elements)
-			res.add(e.attr("href"));
+			res.add(e.absUrl("href"));
 		
 		return res;
 	}
 
 	@Override
 	public void downloadURL(URL url, int index) {
-		String file=url.getFile();
 		try {
-			addURLToDownload(new URL(url.getProtocol(),url.getHost(),url.getPort(),file.substring(0, Math.min(128,file.lastIndexOf('.')))+file.substring(file.lastIndexOf('.'))));
-		} catch (MalformedURLException ex) {
+			String name=url.getPath();
+			String ext=".png";
+			
+			name=name.substring(name.lastIndexOf('/')+1);
+			if(name.indexOf('.')>=0){
+				ext=name.substring(name.lastIndexOf('.'));
+				name=name.substring(0,name.length()-ext.length());
+			}
+			
+			addURLToDownload(url,new File(workingDir.getCanonicalPath()+File.separator+Utils.filesystemSafe(new URI(name).getPath())+ext));
+		} catch (IOException ex) {
+			Logger.getLogger(PahealRipper.class.getName()).log(Level.SEVERE, null, ex);
+		} catch (URISyntaxException ex) {
 			Logger.getLogger(PahealRipper.class.getName()).log(Level.SEVERE, null, ex);
 		}
+	}
+	
+	private String getTerm(URL url) throws MalformedURLException{
+		if(gidPattern==null)
+			gidPattern=Pattern.compile("^https?://(www\\.)?rule34\\.paheal\\.net/post/list/([a-zA-Z0-9$_.+!*'(),%-]+)(/.*)?(#.*)?$");
+
+		Matcher m = gidPattern.matcher(url.toExternalForm());
+		if(m.matches())
+			return m.group(2);
+		
+		throw new MalformedURLException("Expected paheal.net URL format: rule34.paheal.net/post/list/searchterm - got "+url+" instead");
 	}
 
 	@Override
 	public String getGID(URL url) throws MalformedURLException {
-		if(gidPattern==null)
-			gidPattern=Pattern.compile("^https?://(www\\.)?rule34\\.paheal\\.net/post/list/([a-zA-Z0-9$_.+!*'(),%-]+)(/.*)?(#.*)?$");
-		
-		Matcher m = gidPattern.matcher(url.toExternalForm());
-		if(m.matches())
-			return m.group(2);
+		try {
+			return Utils.filesystemSafe(new URI(getTerm(url)).getPath());
+		} catch (URISyntaxException ex) {
+			Logger.getLogger(PahealRipper.class.getName()).log(Level.SEVERE, null, ex);
+		}
 		
 		throw new MalformedURLException("Expected paheal.net URL format: rule34.paheal.net/post/list/searchterm - got "+url+" instead");
 	}

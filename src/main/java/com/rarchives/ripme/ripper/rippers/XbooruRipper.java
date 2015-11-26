@@ -6,9 +6,13 @@ import com.rarchives.ripme.utils.Http;
 import com.rarchives.ripme.utils.Utils;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.jsoup.nodes.Document;
@@ -19,7 +23,7 @@ import org.jsoup.nodes.Element;
  * @author
  */
 public class XbooruRipper extends AbstractHTMLRipper{
-	private Pattern gidPattern=null;
+	private static Pattern gidPattern=null;
 
 	public XbooruRipper(URL url) throws IOException {
 		super(url);
@@ -36,7 +40,7 @@ public class XbooruRipper extends AbstractHTMLRipper{
 	}
 	
 	private String getPage(int num) throws MalformedURLException{
-		return "http://xbooru.com/index.php?page=dapi&s=post&q=index&pid="+num+"&tags="+getGID(url);
+		return "http://xbooru.com/index.php?page=dapi&s=post&q=index&pid="+num+"&tags="+getTerm(url);
 	}
 
 	@Override
@@ -59,7 +63,7 @@ public class XbooruRipper extends AbstractHTMLRipper{
 	public List<String> getURLsFromPage(Document page) {
 		List<String> res=new ArrayList<String>(100);
 		for(Element e:page.getElementsByTag("post"))
-			res.add(e.attr("file_url")+"#"+e.attr("id"));
+			res.add(e.absUrl("file_url")+"#"+e.attr("id"));
 		return res;
 	}
 
@@ -67,17 +71,27 @@ public class XbooruRipper extends AbstractHTMLRipper{
 	public void downloadURL(URL url, int index) {
 		addURLToDownload(url,Utils.getConfigBoolean("download.save_order",true)?url.getRef()+"-":"");
 	}
-
-	@Override
-	public String getGID(URL url) throws MalformedURLException {
+	
+	private String getTerm(URL url) throws MalformedURLException{
 		if(gidPattern==null)
 			gidPattern=Pattern.compile("^https?://(www\\.)?xbooru\\.com/(index.php)?.*([?&]tags=([a-zA-Z0-9$_.+!*'(),%-]+))(\\&|(#.*)?$)");
-		
+
 		Matcher m = gidPattern.matcher(url.toExternalForm());
 		if(m.matches())
 			return m.group(4);
 		
-		throw new MalformedURLException("Expected xbooru.com URL format: xbooru.com - got "+url+" instead");
+		throw new MalformedURLException("Expected xbooru.com URL format: xbooru.com/index.php?tags=searchterm - got "+url+" instead");
+	}
+
+	@Override
+	public String getGID(URL url) throws MalformedURLException {
+		try {
+			return Utils.filesystemSafe(new URI(getTerm(url)).getPath());
+		} catch (URISyntaxException ex) {
+			Logger.getLogger(PahealRipper.class.getName()).log(Level.SEVERE, null, ex);
+		}
+		
+		throw new MalformedURLException("Expected xbooru.com URL format: xbooru.com/index.php?tags=searchterm - got "+url+" instead");
 	}
 	
 }
