@@ -11,6 +11,7 @@ import java.util.regex.Pattern;
 
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
 import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 import com.rarchives.ripme.ripper.rippers.ripperhelpers.ChanSite;
@@ -61,6 +62,20 @@ public class ChanRipper extends AbstractHTMLRipper {
     }
 
     @Override
+    public String getAlbumTitle(URL url) throws MalformedURLException {
+        try {
+            // Attempt to use album title as GID
+            Document doc = getFirstPage();
+            String subject = doc.select(".post.op > .postinfo > .subject").first().text();
+            return getHost() + "_" + getGID(url) + "_" + subject;
+        } catch (Exception e) {
+            // Fall back to default album naming convention
+            logger.warn("Failed to get album title from " + url, e);
+        }
+        return super.getAlbumTitle(url);
+    }
+
+    @Override
     public boolean canRip(URL url) {
         for (ChanSite _chanSite : explicit_domains) {
             if (_chanSite.domains.contains(url.getHost())) {
@@ -72,13 +87,14 @@ public class ChanRipper extends AbstractHTMLRipper {
     }
 
     /**
-     * For example the achrives are all known. (Check 4chan-x)
+     * For example the archives are all known. (Check 4chan-x)
      * Should be based on the software the specific chan uses.
      * FoolFuuka uses the same (url) layout as 4chan
      * */
     @Override
     public String getGID(URL url) throws MalformedURLException {
-        Pattern p; Matcher m;
+        Pattern p;
+        Matcher m;
 
         String u = url.toExternalForm();
         if (u.contains("/thread/") || u.contains("/res/")) {
