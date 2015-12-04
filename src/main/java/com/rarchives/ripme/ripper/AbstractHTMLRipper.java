@@ -56,6 +56,9 @@ public abstract class AbstractHTMLRipper extends AlbumRipper {
     public String getDescription(String page) throws IOException {
     	throw new IOException("getDescription not implemented"); // Do I do this or make an abstract function?
     }
+    public int descSleepTime() {
+        return 0;
+    }
     @Override
     public void rip() throws IOException {
         int index = 0;
@@ -89,12 +92,14 @@ public abstract class AbstractHTMLRipper extends AlbumRipper {
                 logger.debug("Fetching description(s) from " + doc.location());
             	List<String> textURLs = getDescriptionsFromPage(doc);
             	if (textURLs.size() > 0) {
+                    logger.debug("Found description link(s) from " + doc.location());
             		for (String textURL : textURLs) {
             			if (isStopped()) {
             				break;
             			}
             			textindex += 1;
-            			logger.debug("Getting decription from " + textURL);
+            			logger.debug("Getting description from " + textURL);
+                        sleep(descSleepTime());
             			String tempDesc = getDescription(textURL);
             			if (tempDesc != null) {
             			    logger.debug("Got description: " + tempDesc);
@@ -125,6 +130,7 @@ public abstract class AbstractHTMLRipper extends AlbumRipper {
         waitForThreads();
     }
     public boolean saveText(URL url, String subdirectory, String text, int index) {
+        // Not the best for some cases, like FurAffinity. Overridden there.
         try {
             stopCheck();
         } catch (IOException e) {
@@ -141,7 +147,7 @@ public abstract class AbstractHTMLRipper extends AlbumRipper {
             if (!subdirectory.equals("")) { // Not sure about this part
                 subdirectory = File.separator + subdirectory;
             }
-            // TODO Get prefix working again, probably requires reworking a lot of stuff!
+            // TODO Get prefix working again, probably requires reworking a lot of stuff! (Might be fixed now)
             saveFileAs = new File(
                     workingDir.getCanonicalPath()
                     + subdirectory
