@@ -23,7 +23,7 @@ public class ChanRipper extends AbstractHTMLRipper {
         new ChanSite(Arrays.asList("archive.moe"),        Arrays.asList("data.archive.moe")),
         new ChanSite(Arrays.asList("4archive.org"),       Arrays.asList("imgur.com")),
         new ChanSite(Arrays.asList("archive.4plebs.org"), Arrays.asList("img.4plebs.org")),
-        new ChanSite(Arrays.asList("fgts.jp"),            Arrays.asList("dat.fgts.jp"))
+        new ChanSite(Arrays.asList("fgts.jp"),            Arrays.asList("dat.fgtsi.org"))
         );
     public static List<String> url_piece_blacklist = Arrays.asList(
         "=http",
