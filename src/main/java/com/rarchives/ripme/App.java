@@ -94,6 +94,10 @@ public class App {
             System.err.println("\nCannot specify '-d' and '-D' simultaneously");
             System.exit(-1);
         }
+        if(cl.hasOption('l')) {
+            // change the default rips directory
+            Utils.setConfigString("rips.directory", cl.getOptionValue('l'));
+        }
         if (cl.hasOption('u')) {
             // User provided URL, rip it.
             try {
@@ -130,6 +134,7 @@ public class App {
         opts.addOption("d", "saveorder",   false, "Save the order of images in album");
         opts.addOption("D", "nosaveorder", false, "Don't save order of images");
         opts.addOption("4", "skip404",   false, "Don't retry after a 404 (not found) error");
+        opts.addOption("l", "ripsdirectory", true, "Rips Directory (Default: ./rips)");
         return opts;
     }
 
