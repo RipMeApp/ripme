@@ -95,10 +95,11 @@ public class FuraffinityRipper extends AbstractHTMLRipper {
     public Document getNextPage(Document doc) throws IOException {
         // Find next page
         Elements nextPageUrl = doc.select("td[align=right] form");
-        String nextUrl = urlBase+nextPageUrl.first().attr("action");
         if (nextPageUrl.size() == 0) {
             throw new IOException("No more pages");
         }
+        String nextUrl = urlBase + nextPageUrl.first().attr("action");
+
         sleep(500);
         Document nextPage = Http.url(nextUrl).cookies(cookies).get();
 
@@ -156,7 +157,11 @@ public class FuraffinityRipper extends AbstractHTMLRipper {
             ele.select("p").prepend("\\n\\n");
             logger.debug("Returning description at " + page);
             String tempPage = Jsoup.clean(ele.html().replaceAll("\\\\n", System.getProperty("line.separator")), "", Whitelist.none(), new Document.OutputSettings().prettyPrint(false));
-            Element title = documentz.select("td[class=\"cat\"][valign=\"top\"] > b").get(0);
+            Elements titles = documentz.select("td[class=\"cat\"][valign=\"top\"] > b");
+            if (titles.size() == 0) {
+            	throw new IOException("No title found");
+            }
+            Element title = titles.get(0);
             String tempText = title.text();
             return tempText + "\n" + tempPage; // Overridden saveText takes first line and makes it the file name.
         } catch (IOException ioe) {
