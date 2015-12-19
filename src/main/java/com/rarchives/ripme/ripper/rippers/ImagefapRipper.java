@@ -129,6 +129,7 @@ public class ImagefapRipper extends AbstractHTMLRipper {
             image = image.replaceAll(
                     "http://x.*.fap.to/images/thumb/",
                     "http://fap.to/images/full/");
+            image = image.replaceAll("w[0-9]{1,}-h[0-9]{1,}/", "");
             imageURLs.add(image);
             if (isThisATest()) {
                 break;
