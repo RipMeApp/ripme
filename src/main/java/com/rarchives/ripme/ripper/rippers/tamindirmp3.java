@@ -52,7 +52,7 @@ public class tamindirmp3 extends AbstractHTMLRipper {
         for (Element el : doc.select("mp3")) {
             music.add(el.attr("src"));
         }
-        return music
+        return music;
     }
     @Override
     public void downloadURL(URL url, int index) {
