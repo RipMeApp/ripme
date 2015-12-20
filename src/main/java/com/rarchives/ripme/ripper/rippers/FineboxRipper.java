@@ -50,7 +50,7 @@ public class FineboxRipper extends AlbumRipper {
             } catch (HttpStatusException e) {
                 logger.debug("Hit end of pages at page " + page, e);
                 break;
-            }            
+            }
             Elements videos = doc.select("video");
             for (Element element : videos) {
                 String videourl = element.select("source").attr("src");
@@ -62,7 +62,7 @@ public class FineboxRipper extends AlbumRipper {
                    hasPagesLeft = false;
                    break;
                 }
-            }            
+            }
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {

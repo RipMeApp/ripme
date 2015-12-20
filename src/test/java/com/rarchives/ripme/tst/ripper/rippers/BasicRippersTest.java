@@ -6,10 +6,8 @@ import java.net.URL;
 import com.rarchives.ripme.ripper.AbstractRipper;
 import com.rarchives.ripme.ripper.rippers.DeviantartRipper;
 import com.rarchives.ripme.ripper.rippers.EightmusesRipper;
-import com.rarchives.ripme.ripper.rippers.FineboxRipper;
 import com.rarchives.ripme.ripper.rippers.FivehundredpxRipper;
 import com.rarchives.ripme.ripper.rippers.FuraffinityRipper;
-import com.rarchives.ripme.ripper.rippers.FuskatorRipper;
 import com.rarchives.ripme.ripper.rippers.GifyoRipper;
 import com.rarchives.ripme.ripper.rippers.GirlsOfDesireRipper;
 import com.rarchives.ripme.ripper.rippers.HentaifoundryRipper;
@@ -22,8 +20,6 @@ import com.rarchives.ripme.ripper.rippers.MotherlessRipper;
 import com.rarchives.ripme.ripper.rippers.NfsfwRipper;
 import com.rarchives.ripme.ripper.rippers.PhotobucketRipper;
 import com.rarchives.ripme.ripper.rippers.PornhubRipper;
-import com.rarchives.ripme.ripper.rippers.RedditRipper;
-import com.rarchives.ripme.ripper.rippers.SankakuComplexRipper;
 import com.rarchives.ripme.ripper.rippers.ShesFreakyRipper;
 import com.rarchives.ripme.ripper.rippers.TapasticRipper;
 import com.rarchives.ripme.ripper.rippers.TeenplanetRipper;
@@ -58,15 +54,21 @@ public class BasicRippersTest extends RippersTest {
         testRipper(ripper);
     }
 
+    /*
     public void testVineboxAlbum() throws IOException {
         FineboxRipper ripper = new FineboxRipper(new URL("http://vinebox.co/u/wi57hMjc2Ka"));
         testRipper(ripper);
     }
+    */
+
+    /*
     public void testFineboxAlbum() throws IOException {
         FineboxRipper ripper = new FineboxRipper(new URL("http://finebox.co/u/wi57hMjc2Ka"));
         testRipper(ripper);
     }
+    */
 
+    /*
     public void testRedditSubredditRip() throws IOException {
         RedditRipper ripper = new RedditRipper(new URL("http://www.reddit.com/r/nsfw_oc"));
         testRipper(ripper);
@@ -92,6 +94,7 @@ public class BasicRippersTest extends RippersTest {
         TumblrRipper ripper = new TumblrRipper(new URL("http://sadbaffoon.tumblr.com/post/132045920789/what-a-hoe"));
         testRipper(ripper);
     }
+    */
 
     public void testTwitterUserRip() throws IOException {
         TwitterRipper ripper = new TwitterRipper(new URL("https://twitter.com/danngamber01/media"));
@@ -119,10 +122,12 @@ public class BasicRippersTest extends RippersTest {
         testRipper(ripper);
     }
 
+    /*
     public void testFuskatorAlbum() throws IOException {
         FuskatorRipper ripper = new FuskatorRipper(new URL("http://fuskator.com/full/emJa1U6cqbi/index.html"));
         testRipper(ripper);
     }
+    */
 
     public void testGifyoAlbum() throws IOException {
         GifyoRipper ripper = new GifyoRipper(new URL("http://gifyo.com/PieSecrets/"));
@@ -214,6 +219,7 @@ public class BasicRippersTest extends RippersTest {
         testRipper(ripper);
     }
 
+    /*
     public void testSankakuChanRip() throws IOException {
         AbstractRipper ripper = new SankakuComplexRipper(new URL("https://chan.sankakucomplex.com/?tags=cleavage"));
         testRipper(ripper);
@@ -222,6 +228,7 @@ public class BasicRippersTest extends RippersTest {
         AbstractRipper ripper = new SankakuComplexRipper(new URL("https://idol.sankakucomplex.com/?tags=meme_%28me%21me%21me%21%29_%28cosplay%29"));
         testRipper(ripper);
     }
+    */
 
     public void testShesFreakyRip() throws IOException {
         AbstractRipper ripper = new ShesFreakyRipper(new URL("http://www.shesfreaky.com/gallery/nicee-snow-bunny-579NbPjUcYa.html"));
