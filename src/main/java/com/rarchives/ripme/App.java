@@ -9,7 +9,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import javax.swing.SwingUtilities;
-import javax.swing.DefaultListModel;
 
 import org.apache.commons.cli.BasicParser;
 import org.apache.commons.cli.CommandLine;
@@ -19,21 +18,21 @@ import org.apache.commons.cli.ParseException;
 import org.apache.log4j.Logger;
 
 import com.rarchives.ripme.ripper.AbstractRipper;
-import com.rarchives.ripme.ui.MainWindow;
 import com.rarchives.ripme.ui.History;
 import com.rarchives.ripme.ui.HistoryEntry;
+import com.rarchives.ripme.ui.MainWindow;
 import com.rarchives.ripme.ui.UpdateUtils;
-import com.rarchives.ripme.utils.Utils;
 import com.rarchives.ripme.utils.RipUtils;
+import com.rarchives.ripme.utils.Utils;
 
 /**
- *
+ * Entry point to application.
+ * Decides to display UI or to run silently via command-line.
  */
 public class App {
 
     public static Logger logger;
     private static final History HISTORY = new History();
-    private static DefaultListModel queueListModel;
 
     public static void main(String[] args) throws MalformedURLException {
         Utils.configureLogger();

@@ -110,7 +110,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
                            historyButtonRerip;
 
     // Queue
-    private static JButton optionQueue;
+    public static JButton optionQueue;
     private static JPanel queuePanel;
     private static JList queueList;
     private static DefaultListModel queueListModel;
@@ -396,6 +396,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
         queueListModel  = new DefaultListModel();
         queueList       = new JList(queueListModel);
         queueList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+        queueList.addMouseListener(new QueueMenuMouseListener());
         queueListScroll = new JScrollPane(queueList,
                 JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
                 JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
