@@ -225,7 +225,7 @@ public class TumblrRipper extends AlbumRipper {
             return this.subdomain + "_post_" + this.postNumber;
         }
         // Subdomain-level URL
-        p = Pattern.compile(DOMAIN_REGEX + ".*$");
+        p = Pattern.compile(DOMAIN_REGEX + "/?$");
         m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             this.albumType = ALBUM_TYPE.SUBDOMAIN;
