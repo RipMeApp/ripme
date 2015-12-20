@@ -49,7 +49,7 @@ public class ShesFreakyRipper extends AbstractHTMLRipper {
     @Override
     public List<String> getURLsFromPage(Document doc) {
         List<String> imageURLs = new ArrayList<String>();
-        for (Element thumb : doc.select("a.highslide")) {
+        for (Element thumb : doc.select("a[data-lightbox=\"gallery\"]")) {
             String image = thumb.attr("href");
             imageURLs.add(image);
         }

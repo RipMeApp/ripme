@@ -3,7 +3,6 @@ package com.rarchives.ripme.ripper.rippers.video;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLDecoder;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -12,7 +11,6 @@ import org.json.JSONObject;
 import org.jsoup.nodes.Document;
 
 import com.rarchives.ripme.ripper.VideoRipper;
-import com.rarchives.ripme.utils.AES;
 import com.rarchives.ripme.utils.Http;
 
 public class PornhubRipper extends VideoRipper {
@@ -58,29 +56,29 @@ public class PornhubRipper extends VideoRipper {
     public void rip() throws IOException {
         logger.info("    Retrieving " + this.url.toExternalForm());
         Document doc = Http.url(this.url).get();
-        Pattern p = Pattern.compile("^.*'flashvars' : (.*});.*$", Pattern.DOTALL);
-        Matcher m = p.matcher(doc.body().html());
+        String html = doc.body().html();
+        Pattern p = Pattern.compile("^.*flashvars_[0-9]+ = (.+});.*$", Pattern.DOTALL);
+        Matcher m = p.matcher(html);
         if (m.matches()) {
-            String title = null,
-                   encryptedUrl = null;
+            String title = null, vidUrl = null;
             try {
                 JSONObject json = new JSONObject(m.group(1));
 
                 title = json.getString("video_title");
                 title = title.replaceAll("\\+", " ");
 
-                encryptedUrl = null;
+                vidUrl = null;
                 for (String quality : new String[] {"quality_1080p", "quality_720p", "quality_480p", "quality_240p"}) {
-                    if (json.has(quality)) {
-                        encryptedUrl = json.getString(quality);
+                	Pattern pv = Pattern.compile("^.*var player_" + quality + " = '([^']*)'.*$", Pattern.DOTALL);
+                	Matcher mv = pv.matcher(html);
+                	if (mv.matches()) {
+                        vidUrl = mv.group(1);
                         break;
                     }
                 }
-                if (encryptedUrl == null) {
+                if (vidUrl == null) {
                     throw new IOException("Unable to find encrypted video URL at " + this.url);
                 }
-                encryptedUrl = URLDecoder.decode(encryptedUrl, "UTF-8");
-                String vidUrl = AES.decrypt(encryptedUrl, title, 256);
                 addURLToDownload(new URL(vidUrl), HOST + "_" + getGID(this.url));
             } catch (JSONException e) {
                 logger.error("Error while parsing JSON at " + url, e);

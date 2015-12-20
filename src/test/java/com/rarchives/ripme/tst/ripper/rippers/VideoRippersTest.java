@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.rarchives.ripme.ripper.VideoRipper;
-import com.rarchives.ripme.ripper.rippers.video.BeegRipper;
 import com.rarchives.ripme.ripper.rippers.video.PornhubRipper;
 import com.rarchives.ripme.ripper.rippers.video.VineRipper;
 import com.rarchives.ripme.ripper.rippers.video.XvideosRipper;
@@ -73,12 +72,4 @@ public class VideoRippersTest extends RippersTest {
         }
     }
 
-    public void testBeegRipper() throws IOException {
-        List<URL> contentURLs = new ArrayList<URL>();
-        contentURLs.add(new URL("http://beeg.com/4554321"));
-        for (URL url : contentURLs) {
-            BeegRipper ripper = new BeegRipper(url);
-            videoTestHelper(ripper);
-        }
-    }
 }

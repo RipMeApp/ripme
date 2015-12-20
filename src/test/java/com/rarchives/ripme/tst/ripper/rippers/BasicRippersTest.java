@@ -8,20 +8,15 @@ import com.rarchives.ripme.ripper.rippers.DeviantartRipper;
 import com.rarchives.ripme.ripper.rippers.EightmusesRipper;
 import com.rarchives.ripme.ripper.rippers.FineboxRipper;
 import com.rarchives.ripme.ripper.rippers.FivehundredpxRipper;
-import com.rarchives.ripme.ripper.rippers.FlickrRipper;
 import com.rarchives.ripme.ripper.rippers.FuraffinityRipper;
 import com.rarchives.ripme.ripper.rippers.FuskatorRipper;
 import com.rarchives.ripme.ripper.rippers.GifyoRipper;
 import com.rarchives.ripme.ripper.rippers.GirlsOfDesireRipper;
-import com.rarchives.ripme.ripper.rippers.GonewildRipper;
 import com.rarchives.ripme.ripper.rippers.HentaifoundryRipper;
 import com.rarchives.ripme.ripper.rippers.ImagearnRipper;
 import com.rarchives.ripme.ripper.rippers.ImagebamRipper;
-import com.rarchives.ripme.ripper.rippers.ImagestashRipper;
 import com.rarchives.ripme.ripper.rippers.ImagevenueRipper;
 import com.rarchives.ripme.ripper.rippers.ImgboxRipper;
-import com.rarchives.ripme.ripper.rippers.IrarchivesRipper;
-import com.rarchives.ripme.ripper.rippers.MinusRipper;
 import com.rarchives.ripme.ripper.rippers.ModelmayhemRipper;
 import com.rarchives.ripme.ripper.rippers.MotherlessRipper;
 import com.rarchives.ripme.ripper.rippers.NfsfwRipper;
@@ -29,7 +24,6 @@ import com.rarchives.ripme.ripper.rippers.PhotobucketRipper;
 import com.rarchives.ripme.ripper.rippers.PornhubRipper;
 import com.rarchives.ripme.ripper.rippers.RedditRipper;
 import com.rarchives.ripme.ripper.rippers.SankakuComplexRipper;
-import com.rarchives.ripme.ripper.rippers.SeeniveRipper;
 import com.rarchives.ripme.ripper.rippers.ShesFreakyRipper;
 import com.rarchives.ripme.ripper.rippers.TapasticRipper;
 import com.rarchives.ripme.ripper.rippers.TeenplanetRipper;
@@ -85,11 +79,6 @@ public class BasicRippersTest extends RippersTest {
         RedditRipper ripper = new RedditRipper(new URL("http://www.reddit.com/r/UnrealGirls/comments/1ziuhl/in_class_veronique_popa/"));
         testRipper(ripper);
     }
-    
-    public void testSeeniveAlbum() throws IOException {
-        SeeniveRipper ripper = new SeeniveRipper(new URL("http://seenive.com/u/946491170220040192"));
-        testRipper(ripper);
-    }
 
     public void testTumblrFullRip() throws IOException {
         TumblrRipper ripper = new TumblrRipper(new URL("http://wrouinr.tumblr.com/archive"));
@@ -100,7 +89,7 @@ public class BasicRippersTest extends RippersTest {
         testRipper(ripper);
     }
     public void testTumblrPostRip() throws IOException {
-        TumblrRipper ripper = new TumblrRipper(new URL("http://genekellyclarkson.tumblr.com/post/86100752527/lucyannebrooks-rachaelboden-friends-goodtimes-bed-boobs"));
+        TumblrRipper ripper = new TumblrRipper(new URL("http://sadbaffoon.tumblr.com/post/132045920789/what-a-hoe"));
         testRipper(ripper);
     }
 
@@ -109,7 +98,7 @@ public class BasicRippersTest extends RippersTest {
         testRipper(ripper);
     }
     public void testTwitterSearchRip() throws IOException {
-        TwitterRipper ripper = new TwitterRipper(new URL("https://twitter.com/search?q=from%3Apurrbunny%20filter%3Aimages&src=typd"));
+        TwitterRipper ripper = new TwitterRipper(new URL("https://twitter.com/search?q=from%3ADaisyfairymfc%20filter%3Aimages&src=typd"));
         testRipper(ripper);
     }
     
@@ -118,10 +107,12 @@ public class BasicRippersTest extends RippersTest {
         testRipper(ripper);
     }
 
+    /*
     public void testFlickrAlbum() throws IOException {
         FlickrRipper ripper = new FlickrRipper(new URL("https://www.flickr.com/photos/leavingallbehind/sets/72157621895942720/"));
         testRipper(ripper);
     }
+    */
 
     public void testFuraffinityAlbum() throws IOException {
         FuraffinityRipper ripper = new FuraffinityRipper(new URL("https://www.furaffinity.net/gallery/mustardgas/"));
@@ -143,11 +134,6 @@ public class BasicRippersTest extends RippersTest {
         testRipper(ripper);
     }
 
-    public void testGonewildAlbums() throws IOException {
-        GonewildRipper ripper = new GonewildRipper(new URL("http://gonewild.com/user/amle69"));
-        testRipper(ripper);
-    }
-
     public void testHentaifoundryRip() throws IOException {
         HentaifoundryRipper ripper = new HentaifoundryRipper(new URL("http://www.hentai-foundry.com/pictures/user/personalami"));
         testRipper(ripper);
@@ -163,10 +149,12 @@ public class BasicRippersTest extends RippersTest {
         testRipper(ripper);
     }
 
+    /*
     public void testImagestashRip() throws IOException {
         AbstractRipper ripper = new ImagestashRipper(new URL("https://imagestash.org/tag/everydayuncensor"));
         testRipper(ripper);
     }
+    */
 
     public void testImagevenueRip() throws IOException {
         AbstractRipper ripper = new ImagevenueRipper(new URL("http://img120.imagevenue.com/galshow.php?gal=gallery_1373818527696_191lo"));
@@ -178,11 +166,7 @@ public class BasicRippersTest extends RippersTest {
         testRipper(ripper);
     }
 
-    public void testIrarchivesRip() throws IOException {
-        AbstractRipper ripper = new IrarchivesRipper(new URL("http://i.rarchives.com/?url=user%3Agingerpuss"));
-        testRipper(ripper);
-    }
-
+    /*
     public void testMinusUserRip() throws IOException {
         AbstractRipper ripper = new MinusRipper(new URL("http://vampyr3.minus.com/"));
         testRipper(ripper);
@@ -201,6 +185,7 @@ public class BasicRippersTest extends RippersTest {
         AbstractRipper ripper = new MinusRipper(new URL("http://minus.com/mw7ztQ6xzP7ae"));
         testRipper(ripper);
     }
+    */
 
     public void testModelmayhemRip() throws IOException {
         AbstractRipper ripper = new ModelmayhemRipper(new URL("http://www.modelmayhem.com/portfolio/520206/viewall"));
@@ -230,7 +215,7 @@ public class BasicRippersTest extends RippersTest {
     }
 
     public void testSankakuChanRip() throws IOException {
-        AbstractRipper ripper = new SankakuComplexRipper(new URL("https://chan.sankakucomplex.com/?tags=1girl"));
+        AbstractRipper ripper = new SankakuComplexRipper(new URL("https://chan.sankakucomplex.com/?tags=cleavage"));
         testRipper(ripper);
     }
     public void testSankakuIdolRip() throws IOException {

@@ -122,7 +122,7 @@ public class PornhubRipper extends AlbumRipper {
     }
 
     public boolean canRip(URL url) {
-        return url.getHost().endsWith(DOMAIN);
+        return url.getHost().endsWith(DOMAIN) && url.getPath().startsWith("/album");
     }
 
     /**

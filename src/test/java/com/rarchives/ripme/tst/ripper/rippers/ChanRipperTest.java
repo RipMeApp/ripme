@@ -48,10 +48,10 @@ public class ChanRipperTest extends RippersTest {
     public void testChanRipper() throws IOException {
         List<URL> contentURLs = new ArrayList<URL>();
         // URLs that should return more than 1 image
-        contentURLs.add(new URL("http://desuchan.net/v/res/7034.html"));
-        contentURLs.add(new URL("http://boards.420chan.org/ana/res/75984.php"));
-        contentURLs.add(new URL("http://archive.4plebs.org/s4s/thread/3005257/"));
-        contentURLs.add(new URL("http://drawchan.net/dc/dw/res/114910.html"));
+        //contentURLs.add(new URL("http://desuchan.net/v/res/7034.html"));
+        //contentURLs.add(new URL("http://boards.420chan.org/ana/res/75984.php"));
+        //contentURLs.add(new URL("http://archive.4plebs.org/s4s/thread/3005257/"));
+        //contentURLs.add(new URL("http://drawchan.net/dc/dw/res/114910.html"));
 
         // Most *chans have volatile threads & can't be trusted for integration testing.
 
