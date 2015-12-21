@@ -159,6 +159,39 @@ public class ImgurRipper extends AlbumRipper {
         }
     }
 
+    public static ImgurAlbum getImgurSeries(URL url) throws IOException {
+    	Pattern p = Pattern.compile("^.*imgur\\.com/([a-zA-Z0-9,]*).*$");
+    	Matcher m = p.matcher(url.toExternalForm());
+    	ImgurAlbum album = new ImgurAlbum(url);
+    	if (m.matches()) {
+    		String[] imageIds = m.group(1).split(",");
+    		for (String imageId : imageIds) {
+    			// TODO: Fetch image with ID imageId
+    			logger.debug("Fetching image info for ID " + imageId);;
+    			try {
+					JSONObject json = Http.url("https://api.imgur.com/2/image/" + imageId + ".json").getJSON();
+					if (!json.has("image")) {
+						continue;
+					}
+					JSONObject image = json.getJSONObject("image");
+					if (!image.has("links")) {
+						continue;
+					}
+					JSONObject links = image.getJSONObject("links");
+					if (!links.has("original")) {
+						continue;
+					}
+					String original = links.getString("original");
+					ImgurImage theImage = new ImgurImage(new URL(original));
+					album.addImage(theImage);
+    			} catch (Exception e) {
+    				logger.error("Got exception while fetching imgur ID " + imageId, e);
+    			}
+    		}
+    	}
+    	return album;
+    }
+
     public static ImgurAlbum getImgurAlbum(URL url) throws IOException {
         logger.info("    Retrieving " + url.toExternalForm());
         Document doc = Jsoup.connect(url.toExternalForm())
@@ -362,7 +395,7 @@ public class ImgurRipper extends AlbumRipper {
 
     @Override
     public String getGID(URL url) throws MalformedURLException {
-        Pattern p = Pattern.compile("^https?://(m\\.)?imgur\\.com/a/([a-zA-Z0-9]{5,8}).*$");
+        Pattern p = Pattern.compile("^https?://(www\\.|m\\.)?imgur\\.com/a/([a-zA-Z0-9]{5,8}).*$");
         Matcher m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             // Imgur album
@@ -371,7 +404,7 @@ public class ImgurRipper extends AlbumRipper {
             this.url = new URL("http://imgur.com/a/" + gid);
             return gid;
         }
-        p = Pattern.compile("^https?://(m\\.)?imgur\\.com/gallery/([a-zA-Z0-9]{5,8}).*$");
+        p = Pattern.compile("^https?://(www\\.|m\\.)?imgur\\.com/gallery/([a-zA-Z0-9]{5,8}).*$");
         m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             // Imgur gallery
@@ -405,7 +438,7 @@ public class ImgurRipper extends AlbumRipper {
             albumType = ALBUM_TYPE.USER_ALBUM;
             return m.group(1) + "-" + m.group(2);
         }
-        p = Pattern.compile("^https?://(www\\.)?imgur\\.com/r/([a-zA-Z0-9\\-_]{3,})(/top|/new)?(/all|/year|/month|/week)?/?$");
+        p = Pattern.compile("^https?://(www\\.|m\\.)?imgur\\.com/r/([a-zA-Z0-9\\-_]{3,})(/top|/new)?(/all|/year|/month|/week)?/?$");
         m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             // Imgur subreddit aggregator
@@ -418,7 +451,7 @@ public class ImgurRipper extends AlbumRipper {
             }
             return album;
         }
-        p = Pattern.compile("^https?://(i\\.)?imgur\\.com/([a-zA-Z0-9,]{5,}).*$");
+        p = Pattern.compile("^https?://(i\\.|www\\.|m\\.)?imgur\\.com/([a-zA-Z0-9,]{5,}).*$");
         m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             // Series of imgur images

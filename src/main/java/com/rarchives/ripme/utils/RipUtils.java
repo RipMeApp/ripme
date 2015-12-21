@@ -44,6 +44,19 @@ public class RipUtils {
             }
             return result;
         }
+        else if (url.getHost().endsWith("imgur.com") && url.toExternalForm().contains(",")) {
+        	// Imgur image series.
+            try {
+                logger.debug("Fetching imgur series at " + url);
+                ImgurAlbum imgurAlbum = ImgurRipper.getImgurSeries(url);
+                for (ImgurImage imgurImage : imgurAlbum.images) {
+                    logger.debug("Got imgur image: " + imgurImage.url);
+                    result.add(imgurImage.url);
+                }
+            } catch (IOException e) {
+                logger.error("[!] Exception while loading album " + url, e);
+            }
+        }
         else if (url.getHost().endsWith("gfycat.com")) {
             try {
                 logger.debug("Fetching gfycat page " + url);
