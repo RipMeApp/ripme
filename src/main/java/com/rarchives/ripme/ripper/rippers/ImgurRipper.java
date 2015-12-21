@@ -73,6 +73,7 @@ public class ImgurRipper extends AlbumRipper {
         if (u.indexOf('#') >= 0) {
             u = u.substring(0,  u.indexOf('#'));
         }
+        u = u.replace("imgur.com/gallery/", "imgur.com/a/");
         u = u.replace("https?://m\\.imgur\\.com", "http://imgur.com");
         u = u.replace("https?://i\\.imgur\\.com", "http://imgur.com");
         return new URL(u);
@@ -365,6 +366,15 @@ public class ImgurRipper extends AlbumRipper {
         Matcher m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             // Imgur album
+            albumType = ALBUM_TYPE.ALBUM;
+            String gid = m.group(m.groupCount());
+            this.url = new URL("http://imgur.com/a/" + gid);
+            return gid;
+        }
+        p = Pattern.compile("^https?://(m\\.)?imgur\\.com/gallery/([a-zA-Z0-9]{5,8}).*$");
+        m = p.matcher(url.toExternalForm());
+        if (m.matches()) {
+            // Imgur gallery
             albumType = ALBUM_TYPE.ALBUM;
             String gid = m.group(m.groupCount());
             this.url = new URL("http://imgur.com/a/" + gid);

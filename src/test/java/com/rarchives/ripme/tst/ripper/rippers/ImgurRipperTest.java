@@ -38,9 +38,10 @@ public class ImgurRipperTest extends RippersTest {
         contentURLs.add(new URL("http://imgur.com/a/WxG6f/layout/vertical#0"));
         contentURLs.add(new URL("http://imgur.com/a/WxG6f/layout/horizontal#0"));
         contentURLs.add(new URL("http://imgur.com/a/WxG6f/layout/grid#0"));
+        contentURLs.add(new URL("http://imgur.com/gallery/FmP2o")); // Gallery URL
         // Sometimes hangs up
         //contentURLs.add(new URL("http://imgur.com/r/nsfw_oc/top/all"));
-        contentURLs.add(new URL("http://imgur.com/a/bXQpH"));
+        contentURLs.add(new URL("http://imgur.com/a/bXQpH")); // Album with titles/descriptions
         for (URL url : contentURLs) {
             ImgurRipper ripper = new ImgurRipper(url);
             testRipper(ripper);
