@@ -88,7 +88,7 @@ public abstract class AbstractHTMLRipper extends AlbumRipper {
                     break;
                 }
             }
-            if (hasDescriptionSupport()) {
+            if (hasDescriptionSupport() && Utils.getConfigBoolean("descriptions.save", false)) {
                 logger.debug("Fetching description(s) from " + doc.location());
             	List<String> textURLs = getDescriptionsFromPage(doc);
             	if (textURLs.size() > 0) {
