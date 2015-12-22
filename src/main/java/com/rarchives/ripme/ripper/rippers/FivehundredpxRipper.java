@@ -12,6 +12,8 @@ import java.util.regex.Pattern;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.jsoup.nodes.Document;
+import org.jsoup.select.Elements;
 
 import com.rarchives.ripme.ripper.AbstractJSONRipper;
 import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
@@ -184,21 +186,44 @@ public class FivehundredpxRipper extends AbstractJSONRipper {
         JSONArray photos = json.getJSONArray("photos");
         for (int i = 0; i < photos.length(); i++) {
             JSONObject photo = photos.getJSONObject(i);
-            String imageURL = photo.getString("image_url");
-            imageURL = imageURL.replaceAll("/4\\.", "/5.");
-            // See if there's larger images
-            for (String imageSize : new String[] { "2048" } ) {
-                String fsURL = imageURL.replaceAll("/5\\.", "/" + imageSize + ".");
-                sleep(10);
-                if (urlExists(fsURL)) {
-                    logger.info("Found larger image at " + fsURL);
-                    imageURL = fsURL;
-                    break;
-                }
+            String imageURL = null;
+            String rawUrl = "https://500px.com" + photo.getString("url");
+            Document doc;
+            Elements metas = new Elements();
+            try {
+            	logger.debug("Loading " + rawUrl);
+            	super.retrievingSource(rawUrl);
+            	doc = Http.url(rawUrl).get();
+				metas = doc.select("meta[property=\"twitter:image:src\"]");
             }
-            imageURLs.add(imageURL);
-            if (isThisATest()) {
-                break;
+            catch (IOException e) {
+            	logger.error("Error fetching full-size image from " + rawUrl, e);
+            }
+            if (metas.size() > 0) {
+            	imageURL = metas.first().attr("content");
+            }
+            else {
+				imageURL = photo.getString("image_url");
+				imageURL = imageURL.replaceAll("/4\\.", "/5.");
+				// See if there's larger images
+				for (String imageSize : new String[] { "2048" } ) {
+					String fsURL = imageURL.replaceAll("/5\\.", "/" + imageSize + ".");
+					sleep(10);
+					if (urlExists(fsURL)) {
+						logger.info("Found larger image at " + fsURL);
+						imageURL = fsURL;
+						break;
+					}
+				}
+            }
+            if (imageURL == null) {
+            	logger.error("Failed to find image for photo " + photo.toString());
+            }
+            else {
+				imageURLs.add(imageURL);
+				if (isThisATest()) {
+					break;
+				}
             }
         }
         return imageURLs;

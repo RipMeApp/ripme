@@ -176,7 +176,7 @@ public abstract class AbstractRipper
      * @param url
      *      URL being retrieved
      */
-    public void retrievingSource(URL url) {
+    public void retrievingSource(String url) {
         RipStatusMessage msg = new RipStatusMessage(STATUS.LOADING_RESOURCE, url);
         observer.update(this,  msg);
     }
