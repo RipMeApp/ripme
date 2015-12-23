@@ -185,24 +185,29 @@ public class FivehundredpxRipper extends AbstractJSONRipper {
         List<String> imageURLs = new ArrayList<String>();
         JSONArray photos = json.getJSONArray("photos");
         for (int i = 0; i < photos.length(); i++) {
+        	if (super.isStopped()) {
+        		break;
+        	}
             JSONObject photo = photos.getJSONObject(i);
             String imageURL = null;
             String rawUrl = "https://500px.com" + photo.getString("url");
             Document doc;
-            Elements metas = new Elements();
+            Elements images = new Elements();
             try {
             	logger.debug("Loading " + rawUrl);
             	super.retrievingSource(rawUrl);
             	doc = Http.url(rawUrl).get();
-				metas = doc.select("meta[property=\"twitter:image:src\"]");
+            	images = doc.select("div#preload img");
             }
             catch (IOException e) {
             	logger.error("Error fetching full-size image from " + rawUrl, e);
             }
-            if (metas.size() > 0) {
-            	imageURL = metas.first().attr("content");
+            if (images.size() > 0) {
+            	imageURL = images.first().attr("src");
+            	logger.debug("Found full-size non-watermarked image: " + imageURL);
             }
             else {
+            	logger.debug("Falling back to image_url from API response");
 				imageURL = photo.getString("image_url");
 				imageURL = imageURL.replaceAll("/4\\.", "/5.");
 				// See if there's larger images
