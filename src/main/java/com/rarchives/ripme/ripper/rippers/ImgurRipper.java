@@ -212,11 +212,15 @@ public class ImgurRipper extends AlbumRipper {
                 int imagesLength = images.length();
                 for (int i = 0; i < imagesLength; i++) {
                     JSONObject image = images.getJSONObject(i);
+                    String ext = image.getString("ext");
+                    if (ext.equals(".gif") && Utils.getConfigBoolean("prefer.mp4", false)) {
+                    	ext = ".mp4";
+                    }
                     URL imageURL = new URL(
                             // CDN url is provided elsewhere in the document
                             "http://i.imgur.com/"
                                     + image.get("hash")
-                                    + image.get("ext"));
+                                    + ext);
                     ImgurImage imgurImage =  new ImgurImage(imageURL,
                             image.getString("title"),
                             image.getString("description"));
@@ -239,12 +243,16 @@ public class ImgurRipper extends AlbumRipper {
                 int imagesLength = images.length();
                 for (int i = 0; i < imagesLength; i++) {
                     JSONObject image = images.getJSONObject(i);
+                    String ext = image.getString("ext");
+                    if (ext.equals(".gif") && Utils.getConfigBoolean("prefer.mp4", false)) {
+                    	ext = ".mp4";
+                    }
                     URL imageURL = new URL(
                             "http://i.imgur.com/"
                                     + image.getString("hash")
-                                    + image.getString("ext"));
+                                    + ext);
                     ImgurImage imgurImage = new ImgurImage(imageURL);
-                    imgurImage.extension = image.getString("ext");
+                    imgurImage.extension = ext;
                     imgurAlbum.addImage(imgurImage);
                 }
                 return imgurAlbum;
@@ -279,6 +287,9 @@ public class ImgurRipper extends AlbumRipper {
                 // Unable to find image in this div
                 logger.error("[!] Unable to find image in div: " + thumb.toString());
                 continue;
+            }
+            if (image.endsWith(".gif") && Utils.getConfigBoolean("prefer.mp4", false)) {
+            	image = image.replace(".gif", ".mp4");
             }
             ImgurImage imgurImage = new ImgurImage(new URL(image));
             imgurAlbum.addImage(imgurImage);

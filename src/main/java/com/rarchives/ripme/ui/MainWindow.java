@@ -137,6 +137,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
     private static JCheckBox configSaveAlbumTitles;
     private static JCheckBox configClipboardAutorip;
     private static JCheckBox configSaveDescriptions;
+    private static JCheckBox configPreferMp4;
 
     private static TrayIcon trayIcon;
     private static MenuItem trayMenuMain;
@@ -210,6 +211,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
         Utils.setConfigBoolean("album_titles.save", configSaveAlbumTitles.isSelected());
         Utils.setConfigBoolean("clipboard.autorip", configClipboardAutorip.isSelected());
         Utils.setConfigBoolean("descriptions.save", configSaveDescriptions.isSelected());
+        Utils.setConfigBoolean("prefer.mp4", configPreferMp4.isSelected());
         saveHistory();
         Utils.saveConfig();
     }
@@ -462,6 +464,9 @@ public class MainWindow implements Runnable, RipStatusHandler {
         configSaveDescriptions = new JCheckBox("Save descriptions", Utils.getConfigBoolean("descriptions.save", true));
         configSaveDescriptions.setHorizontalAlignment(JCheckBox.RIGHT);
         configSaveDescriptions.setHorizontalTextPosition(JCheckBox.LEFT);
+        configPreferMp4 = new JCheckBox("Prefer MP4 over GIF", Utils.getConfigBoolean("prefer.mp4", false));
+        configPreferMp4.setHorizontalAlignment(JCheckBox.RIGHT);
+        configPreferMp4.setHorizontalTextPosition(JCheckBox.LEFT);
         configSaveDirLabel = new JLabel();
         try {
             String workingDir = (Utils.shortenPath(Utils.getWorkingDirectory()));
@@ -489,6 +494,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
         gbc.gridy = 8; gbc.gridx = 0; configurationPanel.add(configClipboardAutorip, gbc);
                        gbc.gridx = 1; configurationPanel.add(configSaveAlbumTitles, gbc);
         gbc.gridy = 9; gbc.gridx = 0; configurationPanel.add(configSaveDescriptions, gbc);
+                       gbc.gridx = 1; configurationPanel.add(configPreferMp4, gbc);
         gbc.gridy =10; gbc.gridx = 0; configurationPanel.add(configSaveDirLabel, gbc);
                        gbc.gridx = 1; configurationPanel.add(configSaveDirButton, gbc);
 
@@ -747,6 +753,13 @@ public class MainWindow implements Runnable, RipStatusHandler {
             @Override
             public void actionPerformed(ActionEvent arg0) {
                 Utils.setConfigBoolean("descriptions.save", configSaveDescriptions.isSelected());
+                Utils.configureLogger();
+            }
+        });
+        configPreferMp4.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent arg0) {
+                Utils.setConfigBoolean("prefer.mp4", configPreferMp4.isSelected());
                 Utils.configureLogger();
             }
         });
