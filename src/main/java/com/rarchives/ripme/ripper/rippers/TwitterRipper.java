@@ -184,7 +184,7 @@ public class TwitterRipper extends AlbumRipper {
                 media = (JSONObject) medias.get(i);
                 url = media.getString("media_url");
                 if (url.contains(".twimg.com/")) {
-                    url += ":large";
+                    url += ":orig";
                     addURLToDownload(new URL(url));
                     return true;
                 }
