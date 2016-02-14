@@ -147,7 +147,9 @@ public class App {
                 if (!history.contains(url.toExternalForm())) {
                     history.add(url.toExternalForm());
                     Utils.setConfigList("download.history", Arrays.asList(history.toArray()));
-                    Utils.saveConfig();
+                    if(!cl.hasOption("n")) {
+                        Utils.saveConfig();
+                    }
                 }
             } catch (MalformedURLException e) {
                 logger.error("[!] Given URL is not valid. Expected URL format is http://domain.com/...");
@@ -171,6 +173,7 @@ public class App {
         opts.addOption("D", "nosaveorder", false, "Don't save order of images");
         opts.addOption("4", "skip404",   false, "Don't retry after a 404 (not found) error");
         opts.addOption("l", "ripsdirectory", true, "Rips Directory (Default: ./rips)");
+        opts.addOption("n", "no-prop-file", false, "Do not create properties file.");
         return opts;
     }
 
