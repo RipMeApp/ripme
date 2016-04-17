@@ -21,6 +21,8 @@ import com.rarchives.ripme.ripper.rippers.ImgurRipper.ImgurAlbum;
 import com.rarchives.ripme.ripper.rippers.ImgurRipper.ImgurImage;
 import com.rarchives.ripme.ripper.rippers.VidbleRipper;
 import com.rarchives.ripme.ripper.rippers.video.GfycatRipper;
+import com.rarchives.ripme.ripper.rippers.EroShareRipper;
+
 
 public class RipUtils {
     private static final Logger logger = Logger.getLogger(RipUtils.class);
@@ -69,13 +71,23 @@ public class RipUtils {
             }
             return result;
         }
-        else if (url.toExternalForm().contains("vidble.com/album/")) {
+        else if (url.toExternalForm().contains("vidble.com/album/") || url.toExternalForm().contains("vidble.com/show/")) {
             try {
                 logger.info("Getting vidble album " + url);
                 result.addAll(VidbleRipper.getURLsFromPage(url));
             } catch (IOException e) {
                 // Do nothing
                 logger.warn("Exception while retrieving vidble page:", e);
+            }
+            return result;
+        }
+        else if (url.toExternalForm().contains("eroshare.com")) {
+            try {
+                logger.info("Getting eroshare album " + url);
+                result.addAll(EroShareRipper.getURLs(url));
+            } catch (IOException e) {
+                // Do nothing
+                logger.warn("Exception while retrieving eroshare page:", e);
             }
             return result;
         }
