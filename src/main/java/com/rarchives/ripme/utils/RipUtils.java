@@ -106,6 +106,10 @@ public class RipUtils {
                         result.add(new URL(el.attr("content")));
                         return result;
                     }
+                    else if (el.attr("name").equals("twitter:image")) {
+                        result.add(new URL(el.attr("content")));
+                        return result;
+                    }
                 }
             } catch (IOException ex) {
                 logger.error("[!] Error", ex);
