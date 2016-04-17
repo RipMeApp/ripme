@@ -98,6 +98,40 @@ public class FivehundredpxRipper extends AbstractJSONRipper {
             return username + "_faves";
         }
 
+        // http://500px.com/tsyganov/galleries
+        p = Pattern.compile("^.*500px.com/([a-zA-Z0-9\\-_]+)/galleries/?$");
+        m = p.matcher(url.toExternalForm());
+        if (m.matches()) {
+            String username = m.group(1);
+            String userID;
+            try {
+                userID = getUserID(username);
+            } catch (IOException e) {
+                throw new MalformedURLException("Unable to get User ID from username (" + username + ")");
+            }
+            baseURL += "/users/" + userID + "/galleries"
+                     + "?rpp=100";
+            return username + "_galleries";
+        }
+
+        // https://500px.com/getesmart86/galleries/olga
+        p = Pattern.compile("^.*500px.com/([a-zA-Z0-9\\-_]+)/galleries/([a-zA-Z0-9\\-_]+)/?$");
+        m = p.matcher(url.toExternalForm());
+        if (m.matches()) {
+            String username = m.group(1);
+            String subgallery = m.group(2);
+            String userID;
+            try {
+                userID = getUserID(username);
+            } catch (IOException e) {
+                throw new MalformedURLException("Unable to get User ID from username (" + username + ")");
+            }
+            baseURL += "/users/" + userID + "/galleries/" + subgallery + "/items"
+                     + "?rpp=100"
+                     + "&image_size=5";
+            return username + "_galleries_" + subgallery;
+        }
+
         // http://500px.com/tsyganov (photos)
         p = Pattern.compile("^.*500px.com/([a-zA-Z0-9\\-_]+)/?$");
         m = p.matcher(url.toExternalForm());
@@ -117,12 +151,52 @@ public class FivehundredpxRipper extends AbstractJSONRipper {
                 + " Got: " + url);
     }
 
+    /** Convert username to UserID. */
+    private String getUserID(String username) throws IOException {
+        logger.info("Fetching user ID for " + username);
+        JSONObject json = new Http("https://api.500px.com/v1/" +
+                    "users/show" + 
+                    "?username=" + username +
+                    "&consumer_key=" + CONSUMER_KEY)
+                .getJSON();
+        return Long.toString(json.getJSONObject("user").getLong("id"));
+    }
+
     @Override
     public JSONObject getFirstPage() throws IOException {
         URL apiURL = new URL(baseURL + "&consumer_key=" + CONSUMER_KEY);
         logger.debug("apiURL: " + apiURL);
         JSONObject json = Http.url(apiURL).getJSON();
-        if (baseURL.contains("/blogs?")) {
+
+        if (baseURL.contains("/galleries?")) {
+            // We're in the root /galleries folder, need to get all images from all galleries.
+            JSONObject result = new JSONObject();
+            result.put("photos", new JSONArray());
+            // Iterate over every gallery
+            JSONArray jsonGalleries = json.getJSONArray("galleries");
+            for (int i = 0; i < jsonGalleries.length(); i++) {
+                if (i > 0) {
+                    sleep(500);
+                }
+                JSONObject jsonGallery = jsonGalleries.getJSONObject(i);
+                long galleryID = jsonGallery.getLong("id");
+                String userID = Long.toString(jsonGallery.getLong("user_id"));
+                String blogURL = "https://api.500px.com/v1/users/" + userID + "/galleries/" + galleryID + "/items"
+                     + "?rpp=100"
+                     + "&image_size=5"
+                     + "&consumer_key=" + CONSUMER_KEY;
+                logger.info("Loading " + blogURL);
+                sendUpdate(STATUS.LOADING_RESOURCE, "Gallery ID " + galleryID + " for userID " + userID);
+                JSONObject thisJSON = Http.url(blogURL).getJSON();
+                JSONArray thisPhotos = thisJSON.getJSONArray("photos");
+                // Iterate over every image in this story
+                for (int j = 0; j < thisPhotos.length(); j++) {
+                    result.getJSONArray("photos").put(thisPhotos.getJSONObject(j));
+                }
+            }
+            return result;
+        }
+        else if (baseURL.contains("/blogs?")) {
             // List of stories to return
             JSONObject result = new JSONObject();
             result.put("photos", new JSONArray());
