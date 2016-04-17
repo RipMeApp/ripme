@@ -79,10 +79,22 @@ public class RipUtils {
             }
             return result;
         }
+        
+        Pattern p = Pattern.compile("https?://i.reddituploads.com/([a-zA-Z0-9]+)\\?.*");
+        Matcher m = p.matcher(url.toExternalForm());
+        if (m.matches()) {
+            System.out.println("URL: " + url.toExternalForm());
+            String u = url.toExternalForm().replaceAll("&amp;", "&");
+            try {
+                result.add(new URL(u));
+            } catch (MalformedURLException e) {
+            }
+            return result;
+        }
 
         // Direct link to image
-        Pattern p = Pattern.compile("(https?://[a-zA-Z0-9\\-\\.]+\\.[a-zA-Z]{2,3}(/\\S*)\\.(jpg|jpeg|gif|png|mp4)(\\?.*)?)");
-        Matcher m = p.matcher(url.toExternalForm());
+        p = Pattern.compile("(https?://[a-zA-Z0-9\\-\\.]+\\.[a-zA-Z]{2,3}(/\\S*)\\.(jpg|jpeg|gif|png|mp4)(\\?.*)?)");
+        m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             try {
                 URL singleURL = new URL(m.group(1));

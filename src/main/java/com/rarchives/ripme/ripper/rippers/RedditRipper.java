@@ -1,5 +1,6 @@
 package com.rarchives.ripme.ripper.rippers;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -188,7 +189,18 @@ public class RedditRipper extends AlbumRipper {
 
         List<URL> urls = RipUtils.getFilesFromURL(originalURL);
         if (urls.size() == 1) {
-            addURLToDownload(urls.get(0), id + "-", "", theUrl, null);
+            String url = urls.get(0).toExternalForm();
+            Pattern p = Pattern.compile("https?://i.reddituploads.com/([a-zA-Z0-9]+)\\?.*");
+            Matcher m = p.matcher(url);
+            if (m.matches()) {
+                // It's from reddituploads. Assume .jpg extension.
+                String savePath = this.workingDir + File.separator;
+                savePath += id + "-" + m.group(1) + ".jpg";
+                addURLToDownload(urls.get(0), new File(savePath));
+            }
+            else {
+                addURLToDownload(urls.get(0), id + "-", "", theUrl, null);
+            }
         } else if (urls.size() > 1) {
             for (int i = 0; i < urls.size(); i++) {
                 String prefix = id + "-";

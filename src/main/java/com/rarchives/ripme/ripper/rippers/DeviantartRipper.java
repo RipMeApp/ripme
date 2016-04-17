@@ -62,11 +62,15 @@ public class DeviantartRipper extends AbstractHTMLRipper {
             u += "gallery/?";
         }
 
-        String subdir = "/";
-        if (u.contains("catpath=scraps")) {
-            subdir = "scraps";
+        Pattern p = Pattern.compile("^https?://([a-zA-Z0-9\\-]{1,})\\.deviantart\\.com/favou?rites/([0-9]+)/*?$");
+        Matcher m = p.matcher(url.toExternalForm());
+        if (!m.matches()) {
+            String subdir = "/";
+            if (u.contains("catpath=scraps")) {
+                subdir = "scraps";
+            }
+            u = u.replaceAll("\\?.*", "?catpath=" + subdir);
         }
-        u = u.replaceAll("\\?.*", "?catpath=" + subdir);
         return new URL(u);
     }
 
@@ -88,6 +92,11 @@ public class DeviantartRipper extends AbstractHTMLRipper {
         if (m.matches()) {
             // Subgallery
             return m.group(1) + "_" + m.group(2);
+        }
+        p = Pattern.compile("^https?://([a-zA-Z0-9\\-]{1,})\\.deviantart\\.com/favou?rites/([0-9]+)/.*?$");
+        m = p.matcher(url.toExternalForm());
+        if (m.matches()) {
+            return m.group(1) + "_faves_" + m.group(2);
         }
         p = Pattern.compile("^https?://([a-zA-Z0-9\\-]{1,})\\.deviantart\\.com/favou?rites/?$");
         m = p.matcher(url.toExternalForm());
