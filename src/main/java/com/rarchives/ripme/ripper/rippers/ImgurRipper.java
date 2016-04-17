@@ -160,41 +160,45 @@ public class ImgurRipper extends AlbumRipper {
     }
 
     public static ImgurAlbum getImgurSeries(URL url) throws IOException {
-    	Pattern p = Pattern.compile("^.*imgur\\.com/([a-zA-Z0-9,]*).*$");
-    	Matcher m = p.matcher(url.toExternalForm());
-    	ImgurAlbum album = new ImgurAlbum(url);
-    	if (m.matches()) {
-    		String[] imageIds = m.group(1).split(",");
-    		for (String imageId : imageIds) {
-    			// TODO: Fetch image with ID imageId
-    			logger.debug("Fetching image info for ID " + imageId);;
-    			try {
-					JSONObject json = Http.url("https://api.imgur.com/2/image/" + imageId + ".json").getJSON();
-					if (!json.has("image")) {
-						continue;
-					}
-					JSONObject image = json.getJSONObject("image");
-					if (!image.has("links")) {
-						continue;
-					}
-					JSONObject links = image.getJSONObject("links");
-					if (!links.has("original")) {
-						continue;
-					}
-					String original = links.getString("original");
-					ImgurImage theImage = new ImgurImage(new URL(original));
-					album.addImage(theImage);
-    			} catch (Exception e) {
-    				logger.error("Got exception while fetching imgur ID " + imageId, e);
-    			}
-    		}
-    	}
-    	return album;
+        Pattern p = Pattern.compile("^.*imgur\\.com/([a-zA-Z0-9,]*).*$");
+        Matcher m = p.matcher(url.toExternalForm());
+        ImgurAlbum album = new ImgurAlbum(url);
+        if (m.matches()) {
+            String[] imageIds = m.group(1).split(",");
+            for (String imageId : imageIds) {
+                // TODO: Fetch image with ID imageId
+                logger.debug("Fetching image info for ID " + imageId);;
+                try {
+                    JSONObject json = Http.url("https://api.imgur.com/2/image/" + imageId + ".json").getJSON();
+                    if (!json.has("image")) {
+                        continue;
+                    }
+                    JSONObject image = json.getJSONObject("image");
+                    if (!image.has("links")) {
+                        continue;
+                    }
+                    JSONObject links = image.getJSONObject("links");
+                    if (!links.has("original")) {
+                        continue;
+                    }
+                    String original = links.getString("original");
+                    ImgurImage theImage = new ImgurImage(new URL(original));
+                    album.addImage(theImage);
+                } catch (Exception e) {
+                    logger.error("Got exception while fetching imgur ID " + imageId, e);
+                }
+            }
+        }
+        return album;
     }
 
     public static ImgurAlbum getImgurAlbum(URL url) throws IOException {
-        logger.info("    Retrieving " + url.toExternalForm());
-        Document doc = Jsoup.connect(url.toExternalForm())
+        String strUrl = url.toExternalForm();
+        if (!strUrl.contains(",")) {
+            strUrl += "/all";
+        }
+        logger.info("    Retrieving " + strUrl);
+        Document doc = Jsoup.connect(strUrl)
                             .userAgent(USER_AGENT)
                             .timeout(10 * 1000)
                             .maxBodySize(0)
@@ -214,7 +218,7 @@ public class ImgurRipper extends AlbumRipper {
                     JSONObject image = images.getJSONObject(i);
                     String ext = image.getString("ext");
                     if (ext.equals(".gif") && Utils.getConfigBoolean("prefer.mp4", false)) {
-                    	ext = ".mp4";
+                        ext = ".mp4";
                     }
                     URL imageURL = new URL(
                             // CDN url is provided elsewhere in the document
@@ -228,7 +232,7 @@ public class ImgurRipper extends AlbumRipper {
                 }
                 return imgurAlbum;
             } catch (JSONException e) {
-                logger.debug("Error while parsing JSON at " + url + ", continuing", e);
+                logger.debug("Error while parsing JSON at " + strUrl + ", continuing", e);
             }
         }
         p = Pattern.compile("^.*widgetFactory.mergeConfig\\('gallery', (.*?)\\);.*$", Pattern.DOTALL);
@@ -245,7 +249,7 @@ public class ImgurRipper extends AlbumRipper {
                     JSONObject image = images.getJSONObject(i);
                     String ext = image.getString("ext");
                     if (ext.equals(".gif") && Utils.getConfigBoolean("prefer.mp4", false)) {
-                    	ext = ".mp4";
+                        ext = ".mp4";
                     }
                     URL imageURL = new URL(
                             "http://i.imgur.com/"
@@ -289,7 +293,7 @@ public class ImgurRipper extends AlbumRipper {
                 continue;
             }
             if (image.endsWith(".gif") && Utils.getConfigBoolean("prefer.mp4", false)) {
-            	image = image.replace(".gif", ".mp4");
+                image = image.replace(".gif", ".mp4");
             }
             ImgurImage imgurImage = new ImgurImage(new URL(image));
             imgurAlbum.addImage(imgurImage);

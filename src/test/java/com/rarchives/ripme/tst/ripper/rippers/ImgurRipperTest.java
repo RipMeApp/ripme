@@ -5,7 +5,13 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.log4j.ConsoleAppender;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+
 import com.rarchives.ripme.ripper.rippers.ImgurRipper;
+import com.rarchives.ripme.ripper.rippers.ImgurRipper.ImgurAlbum;
+import com.rarchives.ripme.utils.Utils;
 
 public class ImgurRipperTest extends RippersTest {
 
@@ -49,4 +55,19 @@ public class ImgurRipperTest extends RippersTest {
         }
     }
 
+
+    public void testImgurAlbumWithMoreThan20Pictures() throws IOException {
+        ImgurAlbum album = ImgurRipper.getImgurAlbum(new URL("http://imgur.com/a/HUMsq"));
+        assertTrue("Failed to find 20 files from " + album.url.toExternalForm() + ", only got " + album.images.size(), album.images.size() >= 20);
+    }
+
+    public void testImgurAlbumWithMoreThan100Pictures() throws IOException {
+        ImgurAlbum album = ImgurRipper.getImgurAlbum(new URL("http://imgur.com/a/zXZBU"));
+        assertTrue("Failed to find 100 files from " + album.url.toExternalForm() + ", only got " + album.images.size(), album.images.size() >= 100);
+    }
+
+    public void testImgurAlbumWithMoreThan1000Pictures() throws IOException {
+        ImgurAlbum album = ImgurRipper.getImgurAlbum(new URL("http://imgur.com/a/vsuh5"));
+        assertTrue("Failed to find 1000 files from " + album.url.toExternalForm() + ", only got " + album.images.size(), album.images.size() >= 1000);
+    }
 }
