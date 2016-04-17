@@ -9,6 +9,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import com.rarchives.ripme.ripper.AbstractHTMLRipper;
@@ -56,17 +57,18 @@ public class VidbleRipper extends AbstractHTMLRipper {
 
     private static List<String> getURLsFromPageStatic(Document doc) {
         List<String> imageURLs = new ArrayList<String>();
-        Elements els = doc.select("#ContentPlaceHolder1_thumbs");
-        String thumbs = els.first().attr("value");
-        for (String thumb : thumbs.split(",")) {
-            if (thumb.trim().equals("") || thumb.contains("reddit.com")) {
-                continue;
+        Elements els = doc.select("#ContentPlaceHolder1_divContent");
+        Elements imgs = els.select("img");
+        for (Element img : imgs) {
+            String src = img.absUrl("src");
+            src = src.replaceAll("_[a-zA-Z]{3,5}", "");
+            
+            if (!src.equals("")) {
+                imageURLs.add(src);
             }
-            thumb = thumb.replaceAll("_[a-zA-Z]{3,5}", "");
-            imageURLs.add("http://vidble.com/" + thumb);
         }
         return imageURLs;
-    }
+   }
 
     @Override
     public void downloadURL(URL url, int index) {
