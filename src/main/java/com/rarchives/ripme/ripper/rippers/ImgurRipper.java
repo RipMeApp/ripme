@@ -225,9 +225,16 @@ public class ImgurRipper extends AlbumRipper {
                             "http://i.imgur.com/"
                                     + image.get("hash")
                                     + ext);
+                    String title = null, description = null;
+                    if (image.has("title") && !image.isNull("title")) {
+                        title = image.getString("title");
+                    }
+                    if (image.has("description") && !image.isNull("description")) {
+                        description = image.getString("description");
+                    }
                     ImgurImage imgurImage =  new ImgurImage(imageURL,
-                            image.getString("title"),
-                            image.getString("description"));
+                            title,
+                            description);
                     imgurAlbum.addImage(imgurImage);
                 }
                 return imgurAlbum;
