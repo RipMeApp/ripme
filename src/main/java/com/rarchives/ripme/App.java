@@ -3,6 +3,10 @@ package com.rarchives.ripme;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.FileNotFoundException;
+
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
@@ -138,26 +142,54 @@ public class App {
             // change the default rips directory
             Utils.setConfigString("rips.directory", cl.getOptionValue('l'));
         }
-        if (cl.hasOption('u')) {
-            // User provided URL, rip it.
+
+        if (cl.hasOption('f')) {
+
+            String filename     = cl.getOptionValue('f');
+
             try {
-                URL url = new URL(cl.getOptionValue('u').trim());
-                rip(url);
-                List<String> history = Utils.getConfigList("download.history");
-                if (!history.contains(url.toExternalForm())) {
-                    history.add(url.toExternalForm());
-                    Utils.setConfigList("download.history", Arrays.asList(history.toArray()));
-                    if(!cl.hasOption("n")) {
-                        Utils.saveConfig();
-                    }
+
+                String url;
+
+                BufferedReader br   = new BufferedReader(new FileReader(filename));
+                while((url = br.readLine()) != null) {
+                    // loop through each url in the file and proces each url individually.
+                    ripURL(url.trim(), cl.hasOption("n"));
                 }
-            } catch (MalformedURLException e) {
-                logger.error("[!] Given URL is not valid. Expected URL format is http://domain.com/...");
-                System.exit(-1);
-            } catch (Exception e) {
-                logger.error("[!] Error while ripping URL " + cl.getOptionValue('u'), e);
-                System.exit(-1);
+
+            } catch (FileNotFoundException fne) {
+                logger.error("[!] File containing list of URLs not found. Cannot continue.");
+            } catch (IOException ioe) {
+                logger.error("[!] Failed reading file containing list of URLs. Cannot continue.");
             }
+
+        }
+
+        if (cl.hasOption('u')) {
+            String url = cl.getOptionValue('u').trim();
+            ripURL(url, cl.hasOption("n"));
+        }
+    }
+
+    // this function will attempt to rip the provided url
+    public static void ripURL(String targetURL, boolean saveConfig) {
+        try {
+            URL url = new URL(targetURL);
+            rip(url);
+            List<String> history = Utils.getConfigList("download.history");
+            if (!history.contains(url.toExternalForm())) {
+                history.add(url.toExternalForm());
+                Utils.setConfigList("download.history", Arrays.asList(history.toArray()));
+                if(saveConfig) {
+                    Utils.saveConfig();
+                }
+            }
+        } catch (MalformedURLException e) {
+            logger.error("[!] Given URL is not valid. Expected URL format is http://domain.com/...");
+            // System.exit(-1);
+        } catch (Exception e) {
+            logger.error("[!] Error while ripping URL " + targetURL, e);
+            // System.exit(-1);
         }
     }
 
@@ -174,6 +206,7 @@ public class App {
         opts.addOption("4", "skip404",   false, "Don't retry after a 404 (not found) error");
         opts.addOption("l", "ripsdirectory", true, "Rips Directory (Default: ./rips)");
         opts.addOption("n", "no-prop-file", false, "Do not create properties file.");
+        opts.addOption("f", "urls-file", true, "Rip URLs from a file.");
         return opts;
     }
 
