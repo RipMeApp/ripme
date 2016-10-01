@@ -10,6 +10,8 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static com.rarchives.ripme.App.logger;
+
 public class ClipboardUtils {
     private static AutoripThread autoripThread = new AutoripThread();
     
@@ -33,6 +35,9 @@ public class ClipboardUtils {
                     .getDefaultToolkit()
                     .getSystemClipboard()
                     .getData(DataFlavor.stringFlavor);
+        } catch (IllegalStateException e) {
+            e.printStackTrace();
+            logger.error("Caught and recovered from IllegalStateException: " + e.getMessage());
         } catch (HeadlessException e) {
             e.printStackTrace();
         } catch (UnsupportedFlavorException e) {
