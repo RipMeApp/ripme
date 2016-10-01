@@ -6,10 +6,12 @@ import java.awt.Container;
 import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.Frame;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Image;
 import java.awt.MenuItem;
+import java.awt.Point;
 import java.awt.PopupMenu;
 import java.awt.SystemTray;
 import java.awt.TrayIcon;
@@ -138,6 +140,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
     private static JCheckBox configClipboardAutorip;
     private static JCheckBox configSaveDescriptions;
     private static JCheckBox configPreferMp4;
+    private static JCheckBox configWindowPosition;
 
     private static TrayIcon trayIcon;
     private static MenuItem trayMenuMain;
@@ -158,7 +161,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
         createUI(mainFrame.getContentPane());
         loadHistory();
         setupHandlers();
-        
+
         Thread shutdownThread = new Thread() {
             @Override
             public void run() {
@@ -191,7 +194,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
     
     public void run() {
         pack();
-        mainFrame.setLocationRelativeTo(null);
+        restoreWindowPosition(mainFrame);
         mainFrame.setVisible(true);
     }
     
@@ -212,6 +215,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
         Utils.setConfigBoolean("clipboard.autorip", configClipboardAutorip.isSelected());
         Utils.setConfigBoolean("descriptions.save", configSaveDescriptions.isSelected());
         Utils.setConfigBoolean("prefer.mp4", configPreferMp4.isSelected());
+        saveWindowPosition(mainFrame);
         saveHistory();
         Utils.saveConfig();
     }
@@ -467,6 +471,9 @@ public class MainWindow implements Runnable, RipStatusHandler {
         configPreferMp4 = new JCheckBox("Prefer MP4 over GIF", Utils.getConfigBoolean("prefer.mp4", false));
         configPreferMp4.setHorizontalAlignment(JCheckBox.RIGHT);
         configPreferMp4.setHorizontalTextPosition(JCheckBox.LEFT);
+        configWindowPosition = new JCheckBox("Restore window position", Utils.getConfigBoolean("window.position", true));
+        configWindowPosition.setHorizontalAlignment(JCheckBox.RIGHT);
+        configWindowPosition.setHorizontalTextPosition(JCheckBox.LEFT);
         configSaveDirLabel = new JLabel();
         try {
             String workingDir = (Utils.shortenPath(Utils.getWorkingDirectory()));
@@ -495,8 +502,9 @@ public class MainWindow implements Runnable, RipStatusHandler {
                        gbc.gridx = 1; configurationPanel.add(configSaveAlbumTitles, gbc);
         gbc.gridy = 9; gbc.gridx = 0; configurationPanel.add(configSaveDescriptions, gbc);
                        gbc.gridx = 1; configurationPanel.add(configPreferMp4, gbc);
-        gbc.gridy =10; gbc.gridx = 0; configurationPanel.add(configSaveDirLabel, gbc);
-                       gbc.gridx = 1; configurationPanel.add(configSaveDirButton, gbc);
+        gbc.gridy = 10; gbc.gridx = 0; configurationPanel.add(configWindowPosition, gbc);
+        gbc.gridy = 11; gbc.gridx = 0; configurationPanel.add(configSaveDirLabel, gbc);
+                        gbc.gridx = 1; configurationPanel.add(configSaveDirButton, gbc);
 
         gbc.gridy = 0; pane.add(ripPanel, gbc);
         gbc.gridy = 1; pane.add(statusPanel, gbc);
@@ -763,6 +771,13 @@ public class MainWindow implements Runnable, RipStatusHandler {
                 Utils.configureLogger();
             }
         });
+        configWindowPosition.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent arg0) {
+                Utils.setConfigBoolean("window.position", configWindowPosition.isSelected());
+                Utils.configureLogger();
+            }
+        });
         queueListModel.addListDataListener(new ListDataListener() {
             @Override
             public void intervalAdded(ListDataEvent arg0) {
@@ -781,7 +796,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
             public void intervalRemoved(ListDataEvent arg0) { }
         });
     }
-    
+
     private void setLogLevel(String level) {
         Level newLevel = Level.ERROR;
         level = level.substring(level.lastIndexOf(' ') + 1);
@@ -1244,5 +1259,64 @@ public class MainWindow implements Runnable, RipStatusHandler {
     public static void ripAlbumStatic(String url) {
         ripTextfield.setText(url.trim());
         ripButton.doClick();
+    }
+
+    public static void enableWindowPositioning() {
+        Utils.setConfigBoolean("window.position", true);
+    }
+
+    public static void disableWindowPositioning() {
+        Utils.setConfigBoolean("window.position", false);
+    }
+
+    public static boolean isWindowPositioningEnabled() {
+        boolean isEnabled = Utils.getConfigBoolean("window.position", true);
+        return isEnabled;
+    }
+
+    public static void saveWindowPosition(Frame frame) {
+        if (!isWindowPositioningEnabled()) {
+            return;
+        }
+        Point point;
+        try {
+            point = frame.getLocationOnScreen();
+        } catch (Exception e) {
+            e.printStackTrace();
+            try {
+                point = frame.getLocation();
+            } catch (Exception e2) {
+                e2.printStackTrace();
+                return;
+            }
+        }
+        int x = (int)point.getX();
+        int y = (int)point.getY();
+        int w = frame.getWidth();
+        int h = frame.getHeight();
+        Utils.setConfigInteger("window.x", x);
+        Utils.setConfigInteger("window.y", y);
+        Utils.setConfigInteger("window.w", w);
+        Utils.setConfigInteger("window.h", h);
+        logger.debug("Restored window position (x=" + x + ", y=" + y + ", w=" + w + ", h=" + h);
+    }
+
+    public static void restoreWindowPosition(Frame frame) {
+        if (!isWindowPositioningEnabled()) {
+            return;
+        }
+        try {
+            int x = Utils.getConfigInteger("window.x", -1);
+            int y = Utils.getConfigInteger("window.y", -1);
+            int w = Utils.getConfigInteger("window.w", -1);
+            int h = Utils.getConfigInteger("window.h", -1);
+            if (x < 0 || y < 0 || w < 0 || h < 0) {
+                logger.debug("UNUSUAL: One or more of: x, y, w, or h was still less than 0 after reading config");
+                return;
+            }
+            frame.setBounds(x, y, w, h);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

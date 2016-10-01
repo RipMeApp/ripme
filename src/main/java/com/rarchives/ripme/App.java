@@ -38,7 +38,7 @@ public class App {
         Utils.configureLogger();
         System.setProperty("apple.laf.useScreenMenuBar", "true");
         System.setProperty("com.apple.mrj.application.apple.menu.about.name", "RipMe");
-        logger  = Logger.getLogger(App.class);
+        logger = Logger.getLogger(App.class);
         logger.info("Initialized ripme v" + UpdateUtils.getThisJarVersion());
 
         if (args.length > 0) {
