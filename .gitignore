@@ -8,3 +8,5 @@ ripme.jar.update
 ripme.jar
 rip.properties
 history.json
+.idea
+*.iml
