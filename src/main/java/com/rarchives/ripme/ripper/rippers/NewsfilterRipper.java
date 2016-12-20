@@ -1,18 +1,18 @@
 package com.rarchives.ripme.ripper.rippers;
 
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import com.rarchives.ripme.ripper.AlbumRipper;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import com.rarchives.ripme.ripper.AlbumRipper;
 
 public class NewsfilterRipper extends AlbumRipper {
     private static final String HOST = "newsfilter";
@@ -33,7 +33,7 @@ public class NewsfilterRipper extends AlbumRipper {
     public URL sanitizeURL(URL url) throws MalformedURLException {
         String u = url.toExternalForm();
         if (u.indexOf('#') >= 0) {
-            u = u.substring(0,  u.indexOf('#'));
+            u = u.substring(0, u.indexOf('#'));
         }
         u = u.replace("https?://m\\.newsfilter\\.org", "http://newsfilter.org");
         return new URL(u);
@@ -41,39 +41,28 @@ public class NewsfilterRipper extends AlbumRipper {
 
     @Override
     public void rip() throws IOException {
-        String gid = getGID(this.url),
-                theurl = "http://newsfilter.org/gallery/" + gid;
-
-        Connection.Response resp = null;
+        String gid = getGID(this.url);
+        String theurl = "http://newsfilter.org/gallery/" + gid;
         logger.info("Loading " + theurl);
-        resp = Jsoup.connect(theurl)
-                .timeout(5000)
-                .referrer("")
-                .userAgent(USER_AGENT)
-                .method(Connection.Method.GET)
-                .execute();
 
+        Connection.Response resp = Jsoup.connect(theurl)
+            .timeout(5000)
+            .referrer("")
+            .userAgent(USER_AGENT)
+            .method(Connection.Method.GET)
+            .execute();
         Document doc = resp.parse();
-        //Element gallery  = doc.getElementById("thegalmain");
-        //Elements piclinks = gallery.getElementsByAttributeValue("itemprop","contentURL");
-        Pattern pat = Pattern.compile(gid+"/\\d+");
-        Elements piclinks = doc.getElementsByAttributeValueMatching("href", pat);
-        for (Element picelem : piclinks) {
-            String picurl = "http://newsfilter.org"+picelem.attr("href");
-            logger.info("Getting to picture page: "+picurl);
-            resp = Jsoup.connect(picurl)
-                    .timeout(5000)
-                    .referrer(theurl)
-                    .userAgent(USER_AGENT)
-                    .method(Connection.Method.GET)
-                    .execute();
-            Document picdoc = resp.parse();
-            String dlurl = picdoc.getElementsByAttributeValue("itemprop","contentURL").first().attr("src");
-            addURLToDownload(new URL(dlurl));
+
+        Elements thumbnails = doc.select("#galleryImages .inner-block img");
+        for (Element thumb : thumbnails) {
+            String thumbUrl = thumb.attr("src");
+            String picUrl = thumbUrl.replace("thumbs/", "");
+            addURLToDownload(new URL(picUrl));
         }
+
         waitForThreads();
     }
-    
+
     @Override
     public String getHost() {
         return HOST;
@@ -86,9 +75,8 @@ public class NewsfilterRipper extends AlbumRipper {
         if (m.matches()) {
             return m.group(2);
         }
-        throw new MalformedURLException("Expected newsfilter gallery format: "
-                                        + "http://newsfilter.org/gallery/galleryid"
-                                        + " Got: " + url);
+        throw new MalformedURLException(
+            "Expected newsfilter gallery format: http://newsfilter.org/gallery/galleryid" +
+            " Got: " + url);
     }
-
 }

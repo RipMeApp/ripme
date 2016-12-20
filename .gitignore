@@ -13,3 +13,4 @@ history.json
 .settings/
 .classpath
 *.txt
+bin/
