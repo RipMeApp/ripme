@@ -81,9 +81,9 @@ import com.rarchives.ripme.utils.Utils;
 public class MainWindow implements Runnable, RipStatusHandler {
 
     private static final Logger logger = Logger.getLogger(MainWindow.class);
-    
+
     private boolean isRipping = false; // Flag to indicate if we're ripping something
-    
+
     private static JFrame mainFrame;
     private static JTextField ripTextfield;
     private static JButton ripButton,
@@ -149,7 +149,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
     private static CheckboxMenuItem trayMenuAutorip;
 
     private static Image mainIcon;
-    
+
     private static AbstractRipper ripper;
 
     public MainWindow() {
@@ -178,7 +178,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
         ClipboardUtils.setClipboardAutoRip(autoripEnabled);
         trayMenuAutorip.setState(autoripEnabled);
     }
-    
+
     public void upgradeProgram() {
         if (!configurationPanel.isVisible()) {
             optionConfiguration.doClick();
@@ -191,13 +191,13 @@ public class MainWindow implements Runnable, RipStatusHandler {
         };
         new Thread(r).start();
     }
-    
+
     public void run() {
         pack();
         restoreWindowPosition(mainFrame);
         mainFrame.setVisible(true);
     }
-    
+
     public void shutdownCleanup() {
         Utils.setConfigBoolean("file.overwrite", configOverwriteCheckbox.isSelected());
         Utils.setConfigInteger("threads.size", Integer.parseInt(configThreadsText.getText()));
@@ -223,17 +223,17 @@ public class MainWindow implements Runnable, RipStatusHandler {
     private void status(String text) {
         statusWithColor(text, Color.BLACK);
     }
-    
+
     private void error(String text) {
         statusWithColor(text, Color.RED);
     }
-    
+
     private void statusWithColor(String text, Color color) {
         statusLabel.setForeground(color);
         statusLabel.setText(text);
         pack();
     }
-    
+
     private void pack() {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
@@ -251,7 +251,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
         gbc.fill = GridBagConstraints.BOTH;
         gbc.weightx = 2; gbc.ipadx = 2; gbc.gridx = 0;
         gbc.weighty = 2; gbc.ipady = 2; gbc.gridy = 0;
-        
+
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (Exception e) {
@@ -515,7 +515,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
         gbc.gridy = 5; pane.add(queuePanel, gbc);
         gbc.gridy = 5; pane.add(configurationPanel, gbc);
     }
-    
+
     private void setupHandlers() {
         ripButton.addActionListener(new RipButtonHandler());
         ripTextfield.addActionListener(new RipButtonHandler());
@@ -645,7 +645,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
                 saveHistory();
             }
         });
-        
+
         // Re-rip all history
         historyButtonRerip.addActionListener(new ActionListener() {
             @Override
@@ -659,14 +659,14 @@ public class MainWindow implements Runnable, RipStatusHandler {
                 }
                 int added = 0;
                 for (HistoryEntry entry : HISTORY.toList()) {
-                    if (entry.selected) { 
+                    if (entry.selected) {
                         added++;
                         queueListModel.addElement(entry.url);
                     }
                 }
                 if (added == 0) {
                     JOptionPane.showMessageDialog(null,
-                                                  "No history entries have been 'Checked'\n" + 
+                                                  "No history entries have been 'Checked'\n" +
                                                   "Check an entry by clicking the checkbox to the right of the URL or Right-click a URL to check/uncheck all items",
                                                   "RipMe Error",
                                                   JOptionPane.ERROR_MESSAGE);
@@ -938,11 +938,11 @@ public class MainWindow implements Runnable, RipStatusHandler {
             e.printStackTrace();
         }
     }
-    
+
     private void toggleTrayClick() {
         if (mainFrame.getExtendedState() == JFrame.ICONIFIED
                 || !mainFrame.isActive()
-                || !mainFrame.isVisible()) { 
+                || !mainFrame.isVisible()) {
             mainFrame.setVisible(true);
             mainFrame.setAlwaysOnTop(true);
             mainFrame.setAlwaysOnTop(false);
@@ -953,7 +953,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
             trayMenuMain.setLabel("Show");
         }
     }
-    
+
     private void appendLog(final String text, final Color color) {
         SimpleAttributeSet sas = new SimpleAttributeSet();
         StyleConstants.setForeground(sas, color);
@@ -978,7 +978,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
                 logger.error("Failed to load history from file " + historyFile, e);
                 JOptionPane.showMessageDialog(null,
                         "RipMe failed to load the history file at " + historyFile.getAbsolutePath() + "\n\n" +
-                        "Error: " + e.getMessage() + "\n\n" + 
+                        "Error: " + e.getMessage() + "\n\n" +
                         "Closing RipMe will automatically overwrite the contents of this file,\n" +
                         "so you may want to back the file up before closing RipMe!",
                         "RipMe - history load failure",
@@ -1124,7 +1124,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
             }
         }
     }
-    
+
     private class StatusEvent implements Runnable {
         private final AbstractRipper ripper;
         private final RipStatusMessage msg;
@@ -1138,7 +1138,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
             handleEvent(this);
         }
     }
-    
+
     private synchronized void handleEvent(StatusEvent evt) {
         if (ripper.isStopped()) {
             return;
@@ -1168,7 +1168,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
         case DOWNLOAD_WARN:
             appendLog((String) msg.getObject(), Color.ORANGE);
             break;
-        
+
         case RIP_ERRORED:
             if (logger.isEnabledFor(Level.ERROR)) {
                 appendLog((String) msg.getObject(), Color.RED);
@@ -1245,17 +1245,17 @@ public class MainWindow implements Runnable, RipStatusHandler {
         StatusEvent event = new StatusEvent(ripper, message);
         SwingUtilities.invokeLater(event);
     }
-    
+
     /** Simple TextPane that allows horizontal scrolling. */
     class JTextPaneNoWrap extends JTextPane {
         private static final long serialVersionUID = 1L;
-        
+
         @Override
         public boolean getScrollableTracksViewportWidth() {
             return false;
         }
     }
-    
+
     public static void ripAlbumStatic(String url) {
         ripTextfield.setText(url.trim());
         ripButton.doClick();
@@ -1298,11 +1298,12 @@ public class MainWindow implements Runnable, RipStatusHandler {
         Utils.setConfigInteger("window.y", y);
         Utils.setConfigInteger("window.w", w);
         Utils.setConfigInteger("window.h", h);
-        logger.debug("Restored window position (x=" + x + ", y=" + y + ", w=" + w + ", h=" + h);
+        logger.debug("Saved window position (x=" + x + ", y=" + y + ", w=" + w + ", h=" + h + ")");
     }
 
     public static void restoreWindowPosition(Frame frame) {
         if (!isWindowPositioningEnabled()) {
+            mainFrame.setLocationRelativeTo(null); // default to middle of screen
             return;
         }
         try {
@@ -1310,8 +1311,9 @@ public class MainWindow implements Runnable, RipStatusHandler {
             int y = Utils.getConfigInteger("window.y", -1);
             int w = Utils.getConfigInteger("window.w", -1);
             int h = Utils.getConfigInteger("window.h", -1);
-            if (x < 0 || y < 0 || w < 0 || h < 0) {
+            if (x < 0 || y < 0 || w <= 0 || h <= 0) {
                 logger.debug("UNUSUAL: One or more of: x, y, w, or h was still less than 0 after reading config");
+                mainFrame.setLocationRelativeTo(null); // default to middle of screen
                 return;
             }
             frame.setBounds(x, y, w, h);
