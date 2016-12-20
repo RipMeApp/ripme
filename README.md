@@ -53,6 +53,15 @@ mvn clean compile assembly:single
 
 This will include all dependencies in the JAR.
 
+Running Tests
+-------------
+
+After building you can run tests by running the following:
+
+```bash
+mvn test
+```
+
 Dependencies
 ------------
 * junit-3.8.1
