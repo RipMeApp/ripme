@@ -18,24 +18,24 @@ import com.rarchives.ripme.ripper.rippers.ripperhelpers.ChanSite;
 import com.rarchives.ripme.utils.Http;
 
 public class ChanRipper extends AbstractHTMLRipper {
-    
     public static List<ChanSite> explicit_domains = Arrays.asList(
-        new ChanSite(Arrays.asList("boards.4chan.org"),   Arrays.asList("4cdn.org")),
+        new ChanSite(Arrays.asList("boards.4chan.org"),   Arrays.asList("4cdn.org", "is.4chan.org")),
         new ChanSite(Arrays.asList("archive.moe"),        Arrays.asList("data.archive.moe")),
         new ChanSite(Arrays.asList("4archive.org"),       Arrays.asList("imgur.com")),
         new ChanSite(Arrays.asList("archive.4plebs.org"), Arrays.asList("img.4plebs.org")),
         new ChanSite(Arrays.asList("fgts.jp"),            Arrays.asList("dat.fgtsi.org"))
         );
+
     public static List<String> url_piece_blacklist = Arrays.asList(
         "=http",
         "http://imgops.com/",
         "iqdb.org",
         "saucenao.com"
         );
-    
+
     public ChanSite chanSite;
     public Boolean generalChanSite = true;
-    
+
     public ChanRipper(URL url) throws IOException {
         super(url);
         for (ChanSite _chanSite : explicit_domains) {
@@ -133,7 +133,7 @@ public class ChanRipper extends AbstractHTMLRipper {
             if (url.contains(blacklist_item)) {
                 logger.debug("Skipping link that contains '"+blacklist_item+"': " + url);
                 return true;
-            }            
+            }
         }
         return false;
     }
@@ -142,7 +142,7 @@ public class ChanRipper extends AbstractHTMLRipper {
         List<String> imageURLs = new ArrayList<String>();
         Pattern p; Matcher m;
         for (Element link : page.select("a")) {
-            if (!link.hasAttr("href")) { 
+            if (!link.hasAttr("href")) {
                 continue;
             }
             String href = link.attr("href").trim();
@@ -154,10 +154,10 @@ public class ChanRipper extends AbstractHTMLRipper {
             Boolean self_hosted = false;
             if (!generalChanSite) {
                 for (String cdnDomain : chanSite.cdnDomains) {
-                    if (href.contains(cdnDomain)){                    
+                    if (href.contains(cdnDomain)){
                         self_hosted = true;
-                    }            
-                }   
+                    }
+                }
             }
 
             if (self_hosted || generalChanSite){
@@ -182,7 +182,7 @@ public class ChanRipper extends AbstractHTMLRipper {
                 }
             } else {
                 //TODO also grab imgur/flickr albums (And all other supported rippers) Maybe add a setting?
-            }            
+            }
 
             if (isStopped()) {
                 break;
@@ -194,5 +194,5 @@ public class ChanRipper extends AbstractHTMLRipper {
     @Override
     public void downloadURL(URL url, int index) {
         addURLToDownload(url, getPrefix(index), "", this.url.toString(), null);
-    } 
+    }
 }
