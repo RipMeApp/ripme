@@ -21,9 +21,9 @@ import com.rarchives.ripme.utils.Utils;
 public class UpdateUtils {
 
     private static final Logger logger = Logger.getLogger(UpdateUtils.class);
-    private static final String DEFAULT_VERSION = "1.2.13";
-    private static final String updateJsonURL = "http://rarchives.com/ripme.json";
-    private static final String updateJarURL = "http://rarchives.com/ripme.jar";
+    private static final String DEFAULT_VERSION = "1.3.0";
+    private static final String updateJsonURL = "https://cdn.rawgit.com/4pr0n/ripme/master/ripme.json";
+    private static final String updateJarURL = "https://github.com/4pr0n/ripme/releases/download/" + DEFAULT_VERSION + "/ripme.jar";
     private static final String mainFileName = "ripme.jar";
     private static final String updateFileName = "ripme.jar.update";
 
@@ -35,10 +35,10 @@ public class UpdateUtils {
         }
         return thisVersion;
     }
-    
+
     public static void updateProgram(JLabel configUpdateLabel) {
         configUpdateLabel.setText("Checking for update...");
-        
+
         Document doc = null;
         try {
             logger.debug("Retrieving " + UpdateUtils.updateJsonURL);
@@ -103,7 +103,7 @@ public class UpdateUtils {
             logger.debug("Running latest version: " + UpdateUtils.getThisJarVersion());
         }
     }
-    
+
     private static boolean isNewerVersion(String latestVersion) {
         int[] oldVersions = versionStringToInt(getThisJarVersion());
         int[] newVersions = versionStringToInt(latestVersion);
@@ -130,7 +130,7 @@ public class UpdateUtils {
         // Assume any additional changes to the version text means a new version
         return !(latestVersion.equals(getThisJarVersion()));
     }
-    
+
     private static int[] versionStringToInt(String version) {
         String strippedVersion = version.split("-")[0];
         String[] strVersions = strippedVersion.split("\\.");
@@ -206,5 +206,5 @@ public class UpdateUtils {
         logger.info("Exiting older version, should execute update script (" + batchFile + ") during exit");
         System.exit(0);
     }
-    
+
 }
