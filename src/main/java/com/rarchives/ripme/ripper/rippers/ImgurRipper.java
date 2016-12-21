@@ -71,7 +71,7 @@ public class ImgurRipper extends AlbumRipper {
     public URL sanitizeURL(URL url) throws MalformedURLException {
         String u = url.toExternalForm();
         if (u.indexOf('#') >= 0) {
-            u = u.substring(0,  u.indexOf('#'));
+            u = u.substring(0, u.indexOf('#'));
         }
         u = u.replace("imgur.com/gallery/", "imgur.com/a/");
         u = u.replace("https?://m\\.imgur\\.com", "http://imgur.com");
@@ -451,7 +451,7 @@ public class ImgurRipper extends AlbumRipper {
         Pattern p = null;
         Matcher m = null;
 
-        p = Pattern.compile("^https?://(www\\.|m\\.)?imgur\\.com/(a|gallery)/([a-zA-Z0-9]{5,8}).*$");
+        p = Pattern.compile("^https?://(www\\.|m\\.)?imgur\\.com/(a|gallery)/([a-zA-Z0-9]{5,}).*$");
         m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             // Imgur album or gallery
@@ -485,7 +485,7 @@ public class ImgurRipper extends AlbumRipper {
             albumType = ALBUM_TYPE.USER_ALBUM;
             return m.group(1) + "-" + m.group(2);
         }
-        p = Pattern.compile("^https?://(www\\.|m\\.)?imgur\\.com/r/([a-zA-Z0-9\\-_]{3,})(/top|/new)?(/all|/year|/month|/week)?/?$");
+        p = Pattern.compile("^https?://(www\\.|m\\.)?imgur\\.com/r/([a-zA-Z0-9\\-_]{3,})(/top|/new)?(/all|/year|/month|/week|/day)?/?$");
         m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             // Imgur subreddit aggregator
@@ -497,6 +497,16 @@ public class ImgurRipper extends AlbumRipper {
                 }
             }
             return album;
+        }
+        p = Pattern.compile("^https?://(i\\.|www\\.|m\\.)?imgur\\.com/r/(\\w+)/([a-zA-Z0-9,]{5,}).*$");
+        m = p.matcher(url.toExternalForm());
+        if (m.matches()) {
+            // Imgur subreddit album or image (treat as album)
+            albumType = ALBUM_TYPE.ALBUM;
+            String subreddit = m.group(m.groupCount() - 1);
+            String gid = m.group(m.groupCount());
+            this.url = new URL("http://imgur.com/r/" + subreddit + "/" + gid);
+            return "r_" + subreddit + "_" + gid;
         }
         p = Pattern.compile("^https?://(i\\.|www\\.|m\\.)?imgur\\.com/([a-zA-Z0-9,]{5,}).*$");
         m = p.matcher(url.toExternalForm());
