@@ -52,7 +52,7 @@ public class ImgurRipper extends AlbumRipper {
      */
     @Override
     public boolean allowDuplicates() {
-        return true;
+        return albumType == ALBUM_TYPE.USER;
     }
 
     public boolean canRip(URL url) {
@@ -87,13 +87,44 @@ public class ImgurRipper extends AlbumRipper {
                 if (albumDoc == null) {
                     albumDoc = Http.url(url).get();
                 }
-                String title = albumDoc.title();
-                if (!title.contains(" - Imgur")
-                        || title.contains("'s albums")) {
-                    throw new IOException("No title found");
+
+                Elements elems = null;
+
+                /*
+                // TODO: Add config option for including username in album title.
+                // It's possible a lot of users would not be interested in that info.
+                String user = null;
+                elems = albumDoc.select(".post-account");
+                if (elems.size() > 0) {
+                    Element postAccount = elems.get(0);
+                    if (postAccount != null) {
+                        user = postAccount.text();
+                    }
                 }
-                title = title.replaceAll(" - Imgur.*", "");
-                return "imgur_" + gid + " (" + title + ")";
+                */
+
+                String title = null;
+                elems = albumDoc.select(".post-title");
+                if (elems.size() > 0) {
+                    Element postTitle = elems.get(0);
+                    if (postTitle != null) {
+                        title = postTitle.text();
+                    }
+                }
+
+                String albumTitle = "imgur_";
+                /*
+                // TODO: Add config option (see above)
+                if (user != null) {
+                    albumTitle += "user_" + user;
+                }
+                */
+                albumTitle += gid;
+                if (title != null) {
+                    albumTitle += " (" + title + ")";
+                }
+
+                return albumTitle;
             } catch (IOException e) {
                 // Fall back to default album naming convention
             }
@@ -417,19 +448,13 @@ public class ImgurRipper extends AlbumRipper {
 
     @Override
     public String getGID(URL url) throws MalformedURLException {
-        Pattern p = Pattern.compile("^https?://(www\\.|m\\.)?imgur\\.com/a/([a-zA-Z0-9]{5,8}).*$");
-        Matcher m = p.matcher(url.toExternalForm());
-        if (m.matches()) {
-            // Imgur album
-            albumType = ALBUM_TYPE.ALBUM;
-            String gid = m.group(m.groupCount());
-            this.url = new URL("http://imgur.com/a/" + gid);
-            return gid;
-        }
-        p = Pattern.compile("^https?://(www\\.|m\\.)?imgur\\.com/gallery/([a-zA-Z0-9]{5,8}).*$");
+        Pattern p = null;
+        Matcher m = null;
+
+        p = Pattern.compile("^https?://(www\\.|m\\.)?imgur\\.com/(a|gallery)/([a-zA-Z0-9]{5,8}).*$");
         m = p.matcher(url.toExternalForm());
         if (m.matches()) {
-            // Imgur gallery
+            // Imgur album or gallery
             albumType = ALBUM_TYPE.ALBUM;
             String gid = m.group(m.groupCount());
             this.url = new URL("http://imgur.com/a/" + gid);
@@ -444,7 +469,7 @@ public class ImgurRipper extends AlbumRipper {
                 throw new MalformedURLException("Cannot rip the www.imgur.com homepage");
             }
             albumType = ALBUM_TYPE.USER;
-            return gid;
+            return "user_" + gid;
         }
         p = Pattern.compile("^https?://([a-zA-Z0-9\\-]{3,})\\.imgur\\.com/all.*$");
         m = p.matcher(url.toExternalForm());
