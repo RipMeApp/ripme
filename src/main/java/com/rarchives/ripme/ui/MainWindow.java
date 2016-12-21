@@ -3,6 +3,7 @@ package com.rarchives.ripme.ui;
 import java.awt.CheckboxMenuItem;
 import java.awt.Color;
 import java.awt.Container;
+import java.awt.Cursor;
 import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -478,6 +479,8 @@ public class MainWindow implements Runnable, RipStatusHandler {
         try {
             String workingDir = (Utils.shortenPath(Utils.getWorkingDirectory()));
             configSaveDirLabel.setText(workingDir);
+            configSaveDirLabel.setForeground(Color.BLUE);
+            configSaveDirLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
         } catch (Exception e) { }
         configSaveDirLabel.setToolTipText(configSaveDirLabel.getText());
         configSaveDirLabel.setHorizontalAlignment(JLabel.RIGHT);
@@ -693,7 +696,16 @@ public class MainWindow implements Runnable, RipStatusHandler {
                 setLogLevel(level);
             }
         });
-
+        configSaveDirLabel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                File file = new File(Utils.getWorkingDirectory().toString());
+                Desktop desktop = Desktop.getDesktop();
+                try {
+                    desktop.open(file);
+                } catch (Exception e1) { }
+            }
+        });
         configSaveDirButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent arg0) {
