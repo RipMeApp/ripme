@@ -21,11 +21,14 @@ import com.rarchives.ripme.utils.Utils;
 public class UpdateUtils {
 
     private static final Logger logger = Logger.getLogger(UpdateUtils.class);
-    private static final String DEFAULT_VERSION = "1.3.0";
+    private static final String DEFAULT_VERSION = "1.3.1";
     private static final String updateJsonURL = "https://cdn.rawgit.com/4pr0n/ripme/master/ripme.json";
-    private static final String updateJarURL = "https://github.com/4pr0n/ripme/releases/download/" + DEFAULT_VERSION + "/ripme.jar";
     private static final String mainFileName = "ripme.jar";
     private static final String updateFileName = "ripme.jar.update";
+
+    public static String getUpdateJarURL(String latestVersion) {
+        return "https://github.com/4pr0n/ripme/releases/download/" + latestVersion + "/ripme.jar";
+    }
 
     public static String getThisJarVersion() {
         String thisVersion = UpdateUtils.class.getPackage().getImplementationVersion();
@@ -86,7 +89,7 @@ public class UpdateUtils {
             configUpdateLabel.setText("<html><font color=\"green\">Downloading new version...</font></html>");
             logger.info("New version found, downloading...");
             try {
-                UpdateUtils.downloadJarAndLaunch(updateJarURL);
+                UpdateUtils.downloadJarAndLaunch(getUpdateJarURL(latestVersion));
             } catch (IOException e) {
             JOptionPane.showMessageDialog(null,
                     "Error while updating: " + e.getMessage(),
