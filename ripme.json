@@ -1,6 +1,8 @@
 {
-  "latestVersion" : "1.3.2",
+  "latestVersion" : "1.3.4",
   "changeList" : [
+    "1.3.4: (Version bump to update cdn.)",
+    "1.3.3: (Version bump to update cdn.)",
     "1.3.2: Really fix update mechanism.",
     "1.3.1: Fix update mechanism. Improved Imgur. Some improvements.",
     "1.3.0: Fix Instagram, Tumblr, xHamster, 4chan, 8muses. Some new features.",
