@@ -21,8 +21,8 @@ import com.rarchives.ripme.utils.Utils;
 public class UpdateUtils {
 
     private static final Logger logger = Logger.getLogger(UpdateUtils.class);
-    private static final String DEFAULT_VERSION = "1.3.1";
-    private static final String updateJsonURL = "https://cdn.rawgit.com/4pr0n/ripme/master/ripme.json";
+    private static final String DEFAULT_VERSION = "1.3.2";
+    private static final String updateJsonURL = "https://cdn.rawgit.com/4pr0n/ripme/" + DEFAULT_VERSION + "/ripme.json";
     private static final String mainFileName = "ripme.jar";
     private static final String updateFileName = "ripme.jar.update";
 
@@ -34,7 +34,7 @@ public class UpdateUtils {
         String thisVersion = UpdateUtils.class.getPackage().getImplementationVersion();
         if (thisVersion == null) {
             // Version is null if we're not running from the JAR
-            thisVersion = DEFAULT_VERSION; ; // Super-high version number
+            thisVersion = DEFAULT_VERSION; // Super-high version number
         }
         return thisVersion;
     }
