@@ -1,8 +1,9 @@
 {
-  "latestVersion" : "1.3.7",
+  "latestVersion" : "1.3.8",
   "changeList" : [
+    "1.3.8: Attempt to fix updates by switching to raw.githubusercontent.com instead of rawgit.com.",
     "1.3.7: (Version bump to confirm updates now work correctly.)",
-    "1.3.6: Attempt to fix updates by switching update source to the raw file in master on GitHub (rawgit.com was problematic).",
+    "1.3.6: Attempt to fix updates by switching update source to the raw file in master on GitHub.",
     "1.3.5: (Version bump to confirm updates now work correctly.)",
     "1.3.4: (Version bump to update cdn.)",
     "1.3.3: (Version bump to update cdn.)",
