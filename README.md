@@ -11,6 +11,8 @@ Album ripper for various websites. Runs on your computer. Requires Java 1.6
 
 Download `ripme.jar` from the [latest release](https://github.com/4pr0n/ripme/releases).
 
+**Note: If you're currently using version 1.2.x or 1.3.x, you will not automatically get updates to the newest versions. We recommend downloading the latest version from the link above.**
+
 For information about running the `.jar` file, see [the How To Run wiki](https://github.com/4pr0n/ripme/wiki/How-To-Run-RipMe).
 
 ## [Changelog](https://github.com/4pr0n/ripme/blob/1.3.0/ripme.json) (ripme.json)
