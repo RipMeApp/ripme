@@ -185,7 +185,7 @@ public class MyhentaicomicsRipper extends AbstractHTMLRipper {
         url_string = url_string.replace("%20", "_");
         url_string = url_string.replace("%27", "");
         url_string = url_string.replace("%28", "_");
-        url_string = url_string.replace("%29", "_")
+        url_string = url_string.replace("%29", "_");
         url_string = url_string.replace("%2C", "_");
         if (isTag == true) {
             logger.info("Downloading from a tag or search");
