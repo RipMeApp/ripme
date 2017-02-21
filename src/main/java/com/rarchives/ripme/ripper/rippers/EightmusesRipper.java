@@ -54,7 +54,8 @@ public class EightmusesRipper extends AbstractHTMLRipper {
             // Attempt to use album title as GID
             Element titleElement = getFirstPage().select("meta[name=description]").first();
             String title = titleElement.attr("content");
-            title = title.substring(title.lastIndexOf('/') + 1);
+            title = title.replace("A huge collection of free porn comics for adults. Read", "");
+            title = title.replace("online for free at 8muses.com", "");
             return getHost() + "_" + title.trim();
         } catch (IOException e) {
             // Fall back to default album naming convention
@@ -122,13 +123,9 @@ public class EightmusesRipper extends AbstractHTMLRipper {
                     }
                     try {
                         logger.info("Retrieving full-size image location from " + parentHref);
-                        Thread.sleep(1000);
                         image = getFullSizeImage(parentHref);
                     } catch (IOException e) {
                         logger.error("Failed to get full-size image from " + parentHref);
-                        continue;
-                    } catch (InterruptedException e) {
-                        logger.error("Interrupted while getting full-size image from " + parentHref);
                         continue;
                     }
                 }
