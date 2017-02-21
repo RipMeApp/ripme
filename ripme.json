@@ -1,5 +1,5 @@
 {
-  "latestVersion" : "1.4.1",
+  "latestVersion" : "1.4.2",
   "changeList" : [
     "1.4.2: Added nhentai ripper.",
     "1.4.1: Fixed Imgbox: correctly downloads full-size images.",
