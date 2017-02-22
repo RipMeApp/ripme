@@ -390,70 +390,73 @@ public class Utils {
         }
         return result;
     }
-    
+
     /**
-	 * Parses an URL query
-	 * 
-	 * @param query
-	 *          The query part of an URL
-	 * @return The map of all query parameters
-	 */
-	public static Map<String,String> parseUrlQuery(String query) {
-		Map<String,String> res = new HashMap<String, String>();
-		
-		if (query.equals(""))
-			return res;
-		
-		String[] parts = query.split("&");
-		int pos;
-		
-		try {
-			for (String part : parts) {
-				if ((pos = part.indexOf('=')) >= 0)
-					res.put(URLDecoder.decode(part.substring(0, pos), "UTF-8"),
-							URLDecoder.decode(part.substring(pos + 1), "UTF-8"));
-				else
-					res.put(URLDecoder.decode(part, "UTF-8"), "");
-			}
-		} catch (UnsupportedEncodingException e) {
-			// Shouldn't happen since UTF-8 is required to be supported
-			throw new RuntimeException(e);
-		}
-		
-		return res;
-	}
-	
-	/**
-	 * Parses an URL query and returns the requested parameter's value
-	 * 
-	 * @param query
-	 *          The query part of an URL
-	 * @param key
-	 *          The key whose value is requested
-	 * @return The associated value or null if key wasn't found
-	 */
-	public static String parseUrlQuery(String query, String key) {
-		if (query.equals(""))
-			return null;
-		
-		String[] parts = query.split("&");
-		int pos;
-		
-		try {
-			for (String part : parts) {
-				if ((pos = part.indexOf('=')) >= 0) {
-					if (URLDecoder.decode(part.substring(0, pos), "UTF-8").equals(key))
-						return URLDecoder.decode(part.substring(pos + 1), "UTF-8");
-					
-				} else if (URLDecoder.decode(part, "UTF-8").equals(key)) {
-					return "";
-				}
-			}
-		} catch (UnsupportedEncodingException e) {
-			// Shouldn't happen since UTF-8 is required to be supported
-			throw new RuntimeException(e);
-		}
-		
-		return null;
-	}
+     * Parses an URL query
+     * 
+     * @param query
+     *          The query part of an URL
+     * @return The map of all query parameters
+     */
+    public static Map<String,String> parseUrlQuery(String query) {
+        Map<String,String> res = new HashMap<String, String>();
+
+        if (query.equals("")){
+            return res;
+        }
+
+        String[] parts = query.split("&");
+        int pos;
+
+        try {
+            for (String part : parts) {
+                if ((pos = part.indexOf('=')) >= 0){
+                    res.put(URLDecoder.decode(part.substring(0, pos), "UTF-8"), URLDecoder.decode(part.substring(pos + 1), "UTF-8"));
+                }else{
+                    res.put(URLDecoder.decode(part, "UTF-8"), "");
+                }
+            }
+        } catch (UnsupportedEncodingException e) {
+            // Shouldn't happen since UTF-8 is required to be supported
+            throw new RuntimeException(e);
+        }
+
+        return res;
+    }
+
+    /**
+     * Parses an URL query and returns the requested parameter's value
+     * 
+     * @param query
+     *          The query part of an URL
+     * @param key
+     *          The key whose value is requested
+     * @return The associated value or null if key wasn't found
+     */
+    public static String parseUrlQuery(String query, String key) {
+        if (query.equals("")){
+            return null;
+        }
+
+        String[] parts = query.split("&");
+        int pos;
+
+        try {
+            for (String part : parts) {
+                if ((pos = part.indexOf('=')) >= 0) {
+                    if (URLDecoder.decode(part.substring(0, pos), "UTF-8").equals(key)){
+                        return URLDecoder.decode(part.substring(pos + 1), "UTF-8");
+                    }
+
+                } else if (URLDecoder.decode(part, "UTF-8").equals(key)) {
+                    return "";
+                }
+            }
+        } catch (UnsupportedEncodingException e) {
+            // Shouldn't happen since UTF-8 is required to be supported
+            throw new RuntimeException(e);
+        }
+
+        return null;
+    }
 }
