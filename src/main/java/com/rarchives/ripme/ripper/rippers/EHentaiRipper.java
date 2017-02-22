@@ -38,7 +38,7 @@ public class EHentaiRipper extends AbstractHTMLRipper {
 
     // Current HTML document
     private Document albumDoc = null;
-    
+
     private static final Map<String,String> cookies = new HashMap<String,String>();
     static {
         cookies.put("nw", "1");
@@ -53,10 +53,10 @@ public class EHentaiRipper extends AbstractHTMLRipper {
     public String getHost() {
         return "e-hentai";
     }
-    
+
     @Override
     public String getDomain() {
-        return "g.e-hentai.org";
+        return "e-hentai.org";
     }
 
     public String getAlbumTitle(URL url) throws MalformedURLException {
@@ -79,18 +79,18 @@ public class EHentaiRipper extends AbstractHTMLRipper {
         Pattern p;
         Matcher m;
 
-        p = Pattern.compile("^.*g\\.e-hentai\\.org/g/([0-9]+)/([a-fA-F0-9]+)/$");
+        p = Pattern.compile("^https?://e-hentai\\.org/g/([0-9]+)/([a-fA-F0-9]+)/$");
         m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             return m.group(1) + "-" + m.group(2);
         }
 
         throw new MalformedURLException(
-                "Expected g.e-hentai.org gallery format: "
-                        + "http://g.e-hentai.org/g/####/####/"
+                "Expected e-hentai.org gallery format: "
+                        + "http://e-hentai.org/g/####/####/"
                         + " Got: " + url);
     }
-    
+
     /**
      * Attempts to get page, checks for IP ban, waits.
      * @param url
@@ -185,7 +185,7 @@ public class EHentaiRipper extends AbstractHTMLRipper {
 
     /**
      * Helper class to find and download images found on "image" pages
-     * 
+     *
      * Handles case when site has IP-banned the user.
      */
     private class EHentaiImageThread extends Thread {
@@ -204,7 +204,7 @@ public class EHentaiRipper extends AbstractHTMLRipper {
         public void run() {
             fetchImage();
         }
-        
+
         private void fetchImage() {
             try {
                 Document doc = getPageWithRetries(this.url);
