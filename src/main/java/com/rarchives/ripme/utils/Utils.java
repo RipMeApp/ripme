@@ -3,13 +3,16 @@ package com.rarchives.ripme.utils;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Constructor;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
@@ -386,5 +389,74 @@ public class Utils {
             i = fullText.indexOf(start, j + finish.length());
         }
         return result;
+    }
+
+    /**
+     * Parses an URL query
+     * 
+     * @param query
+     *          The query part of an URL
+     * @return The map of all query parameters
+     */
+    public static Map<String,String> parseUrlQuery(String query) {
+        Map<String,String> res = new HashMap<String, String>();
+
+        if (query.equals("")){
+            return res;
+        }
+
+        String[] parts = query.split("&");
+        int pos;
+
+        try {
+            for (String part : parts) {
+                if ((pos = part.indexOf('=')) >= 0){
+                    res.put(URLDecoder.decode(part.substring(0, pos), "UTF-8"), URLDecoder.decode(part.substring(pos + 1), "UTF-8"));
+                }else{
+                    res.put(URLDecoder.decode(part, "UTF-8"), "");
+                }
+            }
+        } catch (UnsupportedEncodingException e) {
+            // Shouldn't happen since UTF-8 is required to be supported
+            throw new RuntimeException(e);
+        }
+
+        return res;
+    }
+
+    /**
+     * Parses an URL query and returns the requested parameter's value
+     * 
+     * @param query
+     *          The query part of an URL
+     * @param key
+     *          The key whose value is requested
+     * @return The associated value or null if key wasn't found
+     */
+    public static String parseUrlQuery(String query, String key) {
+        if (query.equals("")){
+            return null;
+        }
+
+        String[] parts = query.split("&");
+        int pos;
+
+        try {
+            for (String part : parts) {
+                if ((pos = part.indexOf('=')) >= 0) {
+                    if (URLDecoder.decode(part.substring(0, pos), "UTF-8").equals(key)){
+                        return URLDecoder.decode(part.substring(pos + 1), "UTF-8");
+                    }
+
+                } else if (URLDecoder.decode(part, "UTF-8").equals(key)) {
+                    return "";
+                }
+            }
+        } catch (UnsupportedEncodingException e) {
+            // Shouldn't happen since UTF-8 is required to be supported
+            throw new RuntimeException(e);
+        }
+
+        return null;
     }
 }
