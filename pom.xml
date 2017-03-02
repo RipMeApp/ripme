@@ -4,7 +4,7 @@
   <groupId>com.rarchives.ripme</groupId>
   <artifactId>ripme</artifactId>
   <packaging>jar</packaging>
-  <version>1.4.3</version>
+  <version>1.4.4</version>
   <name>ripme</name>
   <url>http://rip.rarchives.com</url>
   <properties>
