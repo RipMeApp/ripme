@@ -22,7 +22,7 @@ public class CheveretoRipper extends AbstractHTMLRipper {
     super(url);
     }
 
-    public static List<String> explicit_domains_1 = Arrays.asList("hushpix.com");
+    public static List<String> explicit_domains_1 = Arrays.asList("hushpix.com", "tag-fox.com");
         @Override
         public String getHost() {
             String host = url.toExternalForm().split("/")[2];
@@ -39,7 +39,7 @@ public class CheveretoRipper extends AbstractHTMLRipper {
         public boolean canRip(URL url) {
             String url_name = url.toExternalForm();
             if (explicit_domains_1.contains(url_name.split("/")[2]) == true) {
-                Pattern pa = Pattern.compile("(?:https?://)?(?:www\\.)?[a-z1-9]*\\.[a-z1-9]*/album/([a-zA-Z1-9]*)/?$");
+                Pattern pa = Pattern.compile("(?:https?://)?(?:www\\.)?[a-z1-9-]*\\.[a-z1-9]*/album/([a-zA-Z1-9]*)/?$");
                 Matcher ma = pa.matcher(url.toExternalForm());
                 if (ma.matches()) {
                     return true;
@@ -50,7 +50,7 @@ public class CheveretoRipper extends AbstractHTMLRipper {
 
         @Override
         public String getGID(URL url) throws MalformedURLException {
-            Pattern p = Pattern.compile("(?:https?://)?(?:www\\.)?[a-z1-9]*\\.[a-z1-9]*/album/([a-zA-Z1-9]*)/?$");
+            Pattern p = Pattern.compile("(?:https?://)?(?:www\\.)?[a-z1-9-]*\\.[a-z1-9]*/album/([a-zA-Z1-9]*)/?$");
             Matcher m = p.matcher(url.toExternalForm());
             if (m.matches()) {
                 return m.group(1);
