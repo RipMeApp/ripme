@@ -78,7 +78,6 @@ public class CheveretoRipper extends AbstractHTMLRipper {
                 // Some times this returns a empty string
                 // This for stops that
                 if (nextPage == "") {
-                    logger.info("Got empty string for nextpage")
                     return null;
                 }
                 else {
