@@ -22,7 +22,7 @@ public class CheveretoRipper extends AbstractHTMLRipper {
     super(url);
     }
 
-    public static List<String> explicit_domains_1 = Arrays.asList("www.ezphotoshare.com", "hushpix.com");
+    public static List<String> explicit_domains_1 = Arrays.asList("hushpix.com");
         @Override
         public String getHost() {
             String host = url.toExternalForm().split("/")[2];
