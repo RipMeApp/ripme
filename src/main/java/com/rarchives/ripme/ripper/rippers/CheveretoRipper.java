@@ -66,6 +66,27 @@ public class CheveretoRipper extends AbstractHTMLRipper {
         }
 
         @Override
+        public Document getNextPage(Document doc) throws IOException {
+            // Find next page
+            String nextUrl = "";
+            // We use comic-nav-next to the find the next page
+            Element elem = doc.select("li.pagination-next > a").first();
+                if (elem == null) {
+                    throw new IOException("No more pages");
+                }
+                String nextPage = elem.attr("href");
+                // Some times this returns a empty string
+                // This for stops that
+                if (nextPage == "") {
+                    logger.info("Got empty string for nextpage")
+                    return null;
+                }
+                else {
+                    return Http.url(nextPage).get();
+                }
+            }
+
+        @Override
         public List<String> getURLsFromPage(Document doc) {
             List<String> result = new ArrayList<String>();
                 for (Element el : doc.select("a.image-container > img")) {
