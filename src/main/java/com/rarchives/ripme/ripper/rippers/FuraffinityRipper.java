@@ -65,7 +65,7 @@ public class FuraffinityRipper extends AbstractHTMLRipper {
 
         return Http.url(url).cookies(cookies).get();
     }
-    
+
     private void login() throws IOException {
         String user = new String(Base64.decode("cmlwbWU="));
         String pass = new String(Base64.decode("cmlwbWVwYXNzd29yZA=="));
@@ -113,7 +113,7 @@ public class FuraffinityRipper extends AbstractHTMLRipper {
     @Override
     public List<String> getURLsFromPage(Document page) {
         List<String> urls = new ArrayList<String>();
-        Elements urlElements = page.select("b[id^=sid_]");
+        Elements urlElements = page.select("figure.t-image > b > u > a");
         for (Element e : urlElements) {
             urls.add(urlBase + e.select("a").first().attr("href"));
         }
