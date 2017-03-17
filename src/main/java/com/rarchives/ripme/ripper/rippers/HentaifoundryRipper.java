@@ -64,7 +64,7 @@ public class HentaifoundryRipper extends AbstractHTMLRipper {
         cookies.putAll(resp.cookies());
         return resp.parse();
     }
-    
+
     @Override
     public Document getNextPage(Document doc) throws IOException {
         if (doc.select("li.next.hidden").size() > 0) {
@@ -94,16 +94,18 @@ public class HentaifoundryRipper extends AbstractHTMLRipper {
                 logger.info("Couldn't find user & image ID in " + thumb.attr("href"));
                 continue;
             }
+            String[] titleSplit = thumb.attr("herf").split("/");
+            String title = titleSplit[titleSplit.length -1];
             String user = imgMatcher.group(1),
                 imageId = imgMatcher.group(2);
             String image = "http://pictures.hentai-foundry.com//";
             image += user.toLowerCase().charAt(0);
-            image += "/" + user + "/" + imageId + ".jpg";
+            image += "/" + user + "/" + imageId + "/" + user + "-" + imageId + title + ".png";
             imageURLs.add(image);
         }
         return imageURLs;
     }
-    
+
     @Override
     public void downloadURL(URL url, int index) {
         addURLToDownload(url, getPrefix(index));
