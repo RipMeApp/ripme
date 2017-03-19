@@ -122,7 +122,7 @@ public class FuraffinityRipper extends AbstractHTMLRipper {
     @Override
     public List<String> getDescriptionsFromPage(Document page) {
         List<String> urls = new ArrayList<String>();
-        Elements urlElements = page.select("b[id^=sid_]");
+        Elements urlElements = page.select("figure.t-image > b > u > a");
         for (Element e : urlElements) {
             urls.add(urlBase + e.select("a").first().attr("href"));
             logger.debug("Desc2 " + urlBase + e.select("a").first().attr("href"));
