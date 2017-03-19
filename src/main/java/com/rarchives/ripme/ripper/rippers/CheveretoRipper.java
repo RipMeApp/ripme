@@ -49,6 +49,22 @@ public class CheveretoRipper extends AbstractHTMLRipper {
         }
 
         @Override
+        public String getAlbumTitle(URL url) throws MalformedURLException {
+            try {
+                // Attempt to use album title as GID
+                Element titleElement = getFirstPage().select("meta[property=og:title]").first();
+                String title = titleElement.attr("content");
+                title = title.substring(title.lastIndexOf('/') + 1);
+                return getHost() + "_" + title.trim();
+            } catch (IOException e) {
+                // Fall back to default album naming convention
+                logger.info("Unable to find title at " + url);
+            }
+            return super.getAlbumTitle(url);
+        }
+
+
+        @Override
         public String getGID(URL url) throws MalformedURLException {
             Pattern p = Pattern.compile("(?:https?://)?(?:www\\.)?[a-z1-9-]*\\.[a-z1-9]*/album/([a-zA-Z1-9]*)/?$");
             Matcher m = p.matcher(url.toExternalForm());
