@@ -157,7 +157,7 @@ public class FuraffinityRipper extends AbstractHTMLRipper {
             ele.select("p").prepend("\\n\\n");
             logger.debug("Returning description at " + page);
             String tempPage = Jsoup.clean(ele.html().replaceAll("\\\\n", System.getProperty("line.separator")), "", Whitelist.none(), new Document.OutputSettings().prettyPrint(false));
-            Elements titles = documentz.select("td[class=\"cat\"][valign=\"top\"] > b");
+            Elements titles = documentz.select("meta[property=og:title]");
             if (titles.size() == 0) {
             	throw new IOException("No title found");
             }
