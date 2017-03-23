@@ -94,7 +94,7 @@ public class HentaifoundryRipper extends AbstractHTMLRipper {
                 logger.info("Couldn't find user & image ID in " + thumb.attr("href"));
                 continue;
             }
-            String[] titleSplit = thumb.attr("herf").split("/");
+            String[] titleSplit = thumb.attr("href").split("/");
             String title = titleSplit[titleSplit.length -1];
             String user = imgMatcher.group(1),
                 imageId = imgMatcher.group(2);
