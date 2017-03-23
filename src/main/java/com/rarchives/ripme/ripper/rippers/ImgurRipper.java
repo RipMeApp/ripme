@@ -28,7 +28,7 @@ public class ImgurRipper extends AlbumRipper {
                                 HOST   = "imgur";
 
     private final int SLEEP_BETWEEN_ALBUMS;
-    
+
     private Document albumDoc;
 
     static enum ALBUM_TYPE {
@@ -104,12 +104,10 @@ public class ImgurRipper extends AlbumRipper {
                 */
 
                 String title = null;
-                elems = albumDoc.select(".post-title");
-                if (elems.size() > 0) {
-                    Element postTitle = elems.get(0);
-                    if (postTitle != null) {
-                        title = postTitle.text();
-                    }
+                logger.info("Trying to get album title");
+                elems = albumDoc.select("meta[property=og:title]");
+                if (elems!=null) {
+                    title = elems.attr("content");
                 }
 
                 String albumTitle = "imgur_";
@@ -138,18 +136,25 @@ public class ImgurRipper extends AlbumRipper {
         case ALBUM:
             // Fall-through
         case USER_ALBUM:
+            logger.info("Album type is USER_ALBUM");
+            // Don't call getAlbumTitle(this.url) with this
+            // as it seems to cause the album to be downloaded to a subdir.
             ripAlbum(this.url);
             break;
         case SERIES_OF_IMAGES:
+            logger.info("Album type is SERIES_OF_IMAGES");
             ripAlbum(this.url);
             break;
         case USER:
+            logger.info("Album type is USER");
             ripUserAccount(url);
             break;
         case SUBREDDIT:
+            logger.info("Album type is SUBREDDIT");
             ripSubreddit(url);
             break;
         case USER_IMAGES:
+            logger.info("Album type is USER_IMAGES");
             ripUserImages(url);
             break;
         }
@@ -338,7 +343,7 @@ public class ImgurRipper extends AlbumRipper {
         }
         return imgurAlbum;
     }
-    
+
     /**
      * Rips all albums in an imgur user's account.
      * @param url
@@ -366,7 +371,7 @@ public class ImgurRipper extends AlbumRipper {
             }
         }
     }
-    
+
     private void ripUserImages(URL url) throws IOException {
         int page = 0; int imagesFound = 0; int imagesTotal = 0;
         String jsonUrl = url.toExternalForm().replace("/all", "/ajax/images");
@@ -404,7 +409,7 @@ public class ImgurRipper extends AlbumRipper {
             }
         }
     }
-    
+
     private void ripSubreddit(URL url) throws IOException {
         int page = 0;
         while (true) {
