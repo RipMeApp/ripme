@@ -250,11 +250,17 @@ public class FuraffinityRipper extends AbstractHTMLRipper {
                 logger.info("Found URL " + link);
                 String[] fileNameSplit = link.split("/");
                 String fileName = fileNameSplit[fileNameSplit.length -1];
+                fileName = fileName.replaceAll("[0-9]*\\.", "");
+                String[] fileExtSplit = link.split("\\.");
+                String fileExt = fileExtSplit[fileExtSplit.length -1];
+                fileName = fileName.replaceAll(fileExt, "");
                 File saveAS;
                 saveAS = new File(
                     workingDir.getCanonicalPath()
                             + File.separator
-                            + fileName);
+                            + fileName
+                            + "."
+                            + fileExt);
                 fileName = fileName.replace("[0-9]*\\.", "");
                 addURLToDownload(new URL(link),saveAS,"",cookies);
             } catch (IOException e) {
