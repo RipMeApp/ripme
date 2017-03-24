@@ -255,13 +255,13 @@ public class FuraffinityRipper extends AbstractHTMLRipper {
                 String fileExt = fileExtSplit[fileExtSplit.length -1];
                 fileName = fileName.replaceAll(fileExt, "");
                 File saveAS;
+                fileName = fileName.replace("[0-9]*\\.", "");
                 saveAS = new File(
                     workingDir.getCanonicalPath()
                             + File.separator
                             + fileName
                             + "."
                             + fileExt);
-                fileName = fileName.replace("[0-9]*\\.", "");
                 addURLToDownload(new URL(link),saveAS,"",cookies);
             } catch (IOException e) {
                 logger.error("[!] Exception while loading/parsing " + this.url, e);
