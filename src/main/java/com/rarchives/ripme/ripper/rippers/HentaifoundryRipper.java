@@ -67,7 +67,7 @@ public class HentaifoundryRipper extends AbstractHTMLRipper {
 
     @Override
     public Document getNextPage(Document doc) throws IOException {
-        if (doc.select("li.next.hidden").size() > 0) {
+        if (doc.select("li.next.hidden").size() != 0) {
             // Last page
             throw new IOException("No more pages");
         }
@@ -94,14 +94,33 @@ public class HentaifoundryRipper extends AbstractHTMLRipper {
                 logger.info("Couldn't find user & image ID in " + thumb.attr("href"));
                 continue;
             }
-            String[] titleSplit = thumb.attr("href").split("/");
-            String title = titleSplit[titleSplit.length -1];
-            String user = imgMatcher.group(1),
-                imageId = imgMatcher.group(2);
-            String image = "http://pictures.hentai-foundry.com//";
-            image += user.toLowerCase().charAt(0);
-            image += "/" + user + "/" + imageId + "/" + user + "-" + imageId + title + ".png";
-            imageURLs.add(image);
+            Document imagePage;
+            try {
+                Response resp = Http.url("http://www.hentai-foundry.com/").response();
+                cookies = resp.cookies();
+                resp = Http.url("http://www.hentai-foundry.com/?enterAgree=1&size=1500")
+                           .referrer("http://www.hentai-foundry.com/")
+                           .cookies(cookies)
+                           .response();
+                cookies.putAll(resp.cookies());
+
+                logger.info("grabbing " + "http://www.hentai-foundry.com" + thumb.attr("href"));
+                imagePage = Http.url("http://www.hentai-foundry.com" + thumb.attr("href")).cookies(cookies).get();
+            }
+
+            catch (IOException e) {
+                logger.debug(e.getMessage());
+                logger.debug("Warning: imagePage is null!");
+                imagePage = null;
+            }
+            // String[] titleSplit = thumb.attr("href").split("/");
+            // String title = titleSplit[titleSplit.length -1];
+            // String user = imgMatcher.group(1),
+            //     imageId = imgMatcher.group(2);
+            // String image = "http://pictures.hentai-foundry.com//";
+            // image += user.toLowerCase().charAt(0);
+            // image += "/" + user + "/" + imageId + "/" + user + "-" + imageId + title + ".png";
+            imageURLs.add("http:" + imagePage.select("div.boxbody > center > img").attr("src"));
         }
         return imageURLs;
     }
