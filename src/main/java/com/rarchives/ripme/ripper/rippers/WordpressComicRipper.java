@@ -69,13 +69,13 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
                 return "totempole666.com" + "_" + "The_cummoner";
             }
 
-            Pattern buttsmithyPat = Pattern.compile("https?://buttsmithy.com/archives/comic/([a-zA-Z0-9_-])/?$");
+            Pattern buttsmithyPat = Pattern.compile("https?://buttsmithy.com/archives/comic/([a-zA-Z0-9_-]*)/?$");
             Matcher buttsmithyMat = buttsmithyPat.matcher(url.toExternalForm());
             if (buttsmithyMat.matches()) {
-                return "totempole666.com" + "_" + "Alfie";
+                return "buttsmithy.com" + "_" + "Alfie";
             }
 
-            Pattern theMonsterUnderTheBedPat = Pattern.compile("https?://themonsterunderthebed.net/?comic=([a-zA-Z0-9_-])/?$");
+            Pattern theMonsterUnderTheBedPat = Pattern.compile("https?://themonsterunderthebed.net/?comic=([a-zA-Z0-9_-]*)/?$");
             Matcher theMonsterUnderTheBedMat = theMonsterUnderTheBedPat.matcher(url.toExternalForm());
             if (theMonsterUnderTheBedMat.matches()) {
                 return "themonsterunderthebed.net_TheMonsterUnderTheBed";
