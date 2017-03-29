@@ -22,7 +22,7 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
     super(url);
     }
 
-    public static List<String> explicit_domains = Arrays.asList("www.totempole666.com");
+    public static List<String> explicit_domains = Arrays.asList("www.totempole666.com", "buttsmithy.com");
         @Override
         public String getHost() {
             String host = url.toExternalForm().split("/")[2];
@@ -39,11 +39,18 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
         public boolean canRip(URL url) {
             String url_name = url.toExternalForm();
             if (explicit_domains.contains(url_name.split("/")[2]) == true) {
-                Pattern totempole666Pat = Pattern.compile("https?://www\\.totempole666.com\\/comic/([a-zA-Z0-9_-]*)/?$");
+                Pattern totempole666Pat = Pattern.compile("https?://www\\.totempole666.com/comic/([a-zA-Z0-9_-]*)/?$");
                 Matcher totempole666Mat = totempole666Pat.matcher(url.toExternalForm());
                 if (totempole666Mat.matches()) {
                     return true;
                 }
+
+                Pattern buttsmithyPat = Pattern.compile("https?://buttsmithy.com/archives/comic/([a-zA-Z0-9_-]*)/?$");
+                Matcher buttsmithyMat = buttsmithyPat.matcher(url.toExternalForm());
+                if (buttsmithyMat.matches()) {
+                    return true;
+                }
+
             }
             return false;
         }
@@ -53,7 +60,13 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
             Pattern totempole666Pat = Pattern.compile("(?:https?://)?(?:www\\.)?totempole666.com\\/comic/([a-zA-Z0-9_-]*)/?$");
             Matcher totempole666Mat = totempole666Pat.matcher(url.toExternalForm());
             if (totempole666Mat.matches()) {
-                return getHost() + "_" + "The_cummoner";
+                return "totempole666.com" + "_" + "The_cummoner";
+            }
+
+            Pattern buttsmithyPat = Pattern.compile("https?://buttsmithy.com/archives/comic/([a-zA-Z0-9_-])/?$");
+            Matcher buttsmithyMat = buttsmithyPat.matcher(url.toExternalForm());
+            if (buttsmithyMat.matches()) {
+                return "totempole666.com" + "_" + "Alfie";
             }
             return super.getAlbumTitle(url);
         }
@@ -66,8 +79,7 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
             if (explicit_domains.contains(url_name.split("/")[2]) == true) {
                 return "";
             }
-            throw new MalformedURLException("Expected chevereto URL format: " +
-                            "site.domain/album/albumName or site.domain/username/albums- got " + url + " instead");
+            throw new MalformedURLException("You should never see this error message");
         }
 
         @Override
@@ -81,7 +93,7 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
             // Find next page
             String nextPage = "";
             Element elem = null;
-            if (explicit_domains.contains("www.totempole666.com") == true) {
+            if (explicit_domains.contains("www.totempole666.com") == true || explicit_domains.contains("buttsmithy.com") == true) {
                 elem = doc.select("a.comic-nav-next").first();
                 if (elem == null) {
                     throw new IOException("No more pages");
@@ -99,8 +111,7 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
         @Override
         public List<String> getURLsFromPage(Document doc) {
             List<String> result = new ArrayList<String>();
-            if (explicit_domains.contains("www.totempole666.com") == true) {
-                logger.info("The domain is www.totempole666.com");
+            if (explicit_domains.contains("www.totempole666.com") == true || explicit_domains.contains("buttsmithy.com") == true) {
                 Element elem = doc.select("div.comic-table > div#comic > a > img").first();
                 // If doc is the last page in the comic then elem.attr("src") returns null
                 // because there is no link <a> to the next page
