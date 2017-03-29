@@ -33,12 +33,12 @@ public class JagodibujaRipper extends AbstractHTMLRipper {
 
         @Override
         public String getGID(URL url) throws MalformedURLException {
-            Pattern p = Pattern.compile("^https?://www.jagodibuja.com/webcomic-living-with-hipstergirl-and-gamergirl-english/([a-zA-Z0-9_\\-]*)/?");
+            Pattern p = Pattern.compile("^https?://www.jagodibuja.com/webcomic-living-with-hipstergirl-and-gamergirl-english/?");
             Matcher m = p.matcher(url.toExternalForm());
             if (m.matches()) {
                 return "living-with-hipstergirl-and-gamergirl";
             }
-            throw new MalformedURLException("Expected jagodibuja.com gallery formats hwww.jagodibuja.com/webcomic-living-with-hipstergirl-and-gamergirl-english/COMIC/ got " + url + " instead");
+            throw new MalformedURLException("Expected jagodibuja.com gallery formats hwww.jagodibuja.com/webcomic-living-with-hipstergirl-and-gamergirl-english/ got " + url + " instead");
         }
 
         @Override
@@ -47,29 +47,38 @@ public class JagodibujaRipper extends AbstractHTMLRipper {
             return Http.url(url).get();
         }
 
-        @Override
-        public Document getNextPage(Document doc) throws IOException {
-            // Find next page
-            String nextPage = "";
-            Element elem = null;
-            elem = doc.select("div.entry-attachment > div.attachment > a").first();
-                if (elem == null) {
-                    throw new IOException("No more pages");
-                }
-                nextPage = elem.attr("href");
-                if (nextPage == "") {
-                    throw new IOException("No more pages");
-                }
-                else {
-                    return Http.url(nextPage).get();
-                }
-            }
+        // @Override
+        // public Document getNextPage(Document doc) throws IOException {
+        //     // Find next page
+        //     String nextPage = "";
+        //     Element elem = null;
+        //     elem = doc.select("div.entry-attachment > div.attachment > a").first();
+        //         if (elem == null) {
+        //             throw new IOException("No more pages");
+        //         }
+        //         nextPage = elem.attr("href");
+        //         if (nextPage == "") {
+        //             throw new IOException("No more pages");
+        //         }
+        //         else {
+        //             return Http.url(nextPage).get();
+        //         }
+        //     }
 
         @Override
         public List<String> getURLsFromPage(Document doc) {
             List<String> result = new ArrayList<String>();
-                Element elem = doc.select("span.full-size-link > a").first();
-                result.add(elem.attr("href"));
+            for (Element comicPageUrl : doc.select("div.gallery-icon > a")) {
+                try {
+                    sleep(500)
+                    Document comicPage = Http.url(comicPageUrl.attr("href")).get();
+                    Element elem = comicPage.select("span.full-size-link > a").first();
+                    result.add(elem.attr("href"));
+                }
+                catch(IOException e) {
+                    logger.info("Error loading " + comicPageUrl);
+                }
+            }
             return result;
         }
 
