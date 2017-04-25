@@ -74,7 +74,14 @@ public class JagodibujaRipper extends AbstractHTMLRipper {
                     Document comicPage = Http.url(comicPageUrl.attr("href")).get();
                     Element elem = comicPage.select("span.full-size-link > a").first();
                     logger.info("Got link " + elem.attr("href"));
-                    result.add(elem.attr("href"));
+                    try {
+                        addURLToDownload(new URL(elem.attr("href")), "");
+                        }
+                    catch(MalformedURLException e) {
+                            logger.warn("Malformed URL");
+                            e.printStackTrace();
+                    }
+                    // result.add(elem.attr("href"));
                 }
                 catch(IOException e) {
                     logger.info("Error loading " + comicPageUrl);
