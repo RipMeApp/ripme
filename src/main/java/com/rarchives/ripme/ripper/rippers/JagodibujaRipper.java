@@ -33,12 +33,12 @@ public class JagodibujaRipper extends AbstractHTMLRipper {
 
         @Override
         public String getGID(URL url) throws MalformedURLException {
-            Pattern p = Pattern.compile("^https?://www.jagodibuja.com/webcomic-living-with-hipstergirl-and-gamergirl-english/?");
+            Pattern p = Pattern.compile("^https?://www.jagodibuja.com/([a-zA-Z0-9_-]*)/?");
             Matcher m = p.matcher(url.toExternalForm());
             if (m.matches()) {
-                return "living-with-hipstergirl-and-gamergirl";
+                return m.group(1);
             }
-            throw new MalformedURLException("Expected jagodibuja.com gallery formats hwww.jagodibuja.com/webcomic-living-with-hipstergirl-and-gamergirl-english/ got " + url + " instead");
+            throw new MalformedURLException("Expected jagodibuja.com gallery formats hwww.jagodibuja.com/Comic name/ got " + url + " instead");
         }
 
         @Override
@@ -46,24 +46,6 @@ public class JagodibujaRipper extends AbstractHTMLRipper {
             // "url" is an instance field of the superclass
             return Http.url(url).get();
         }
-
-        // @Override
-        // public Document getNextPage(Document doc) throws IOException {
-        //     // Find next page
-        //     String nextPage = "";
-        //     Element elem = null;
-        //     elem = doc.select("div.entry-attachment > div.attachment > a").first();
-        //         if (elem == null) {
-        //             throw new IOException("No more pages");
-        //         }
-        //         nextPage = elem.attr("href");
-        //         if (nextPage == "") {
-        //             throw new IOException("No more pages");
-        //         }
-        //         else {
-        //             return Http.url(nextPage).get();
-        //         }
-        //     }
 
         @Override
         public List<String> getURLsFromPage(Document doc) {
@@ -81,7 +63,7 @@ public class JagodibujaRipper extends AbstractHTMLRipper {
                             logger.warn("Malformed URL");
                             e.printStackTrace();
                     }
-                    // result.add(elem.attr("href"));
+                    result.add(elem.attr("href"));
                 }
                 catch(IOException e) {
                     logger.info("Error loading " + comicPageUrl);
@@ -92,8 +74,8 @@ public class JagodibujaRipper extends AbstractHTMLRipper {
 
         @Override
         public void downloadURL(URL url, int index) {
-            sleep(500);
-            addURLToDownload(url, getPrefix(index));
+            // sleep(500);
+            // addURLToDownload(url, getPrefix(index));
         }
 
 
