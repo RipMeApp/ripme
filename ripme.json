@@ -1,6 +1,11 @@
 {
-  "latestVersion" : "1.4.2",
+  "latestVersion" : "1.4.7",
   "changeList" : [
+    "1.4.7: Fixed NewsFilter, XHamster; added TheChiveRipper",
+    "1.4.6: Eroshare: get album names; Imgur: improve grabbing album name.",
+    "1.4.5: SinnerComics: Added work around for naming bug",
+    "1.4.4: Added SinnerComics, MyHentaiComics rippers; improve E621 ripper.",
+    "1.4.3: Add missing subdomain for 4chan; fix ehentai, 8muses; add zizki ripper.",
     "1.4.2: Added nhentai ripper.",
     "1.4.1: Fixed Imgbox: correctly downloads full-size images.",
     "1.4.0: Fixed update mechanism. Some improvements to Imgur, etc.",

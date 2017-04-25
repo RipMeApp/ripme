@@ -24,7 +24,7 @@ For information about running the `.jar` file, see [the How To Run wiki](https:/
 * Quickly downloads all images in an online album (see supported sites below)
 * Easily re-rip albums to fetch new content
 
-## Supported sites:
+## [List of Supported Sites](https://github.com/4pr0n/ripme/wiki/Supported-Sites)
 
 * imgur
 * twitter
@@ -44,11 +44,9 @@ For information about running the `.jar` file, see [the How To Run wiki](https:/
 * xhamster
 * (more)
 
-### [Full updated list](https://github.com/4pr0n/ripme/issues/8)
-
 ## Not Supported?
 
-Request support for more sites by adding a comment to [this Github issue](https://github.com/4pr0n/ripme/issues/8).
+Request support for more sites by adding a comment to [this Github issue](https://github.com/4pr0n/ripme/issues/502).
 
 If you're a developer, you can add your own by following the wiki guide
 [How To Create A Ripper for HTML Websites](https://github.com/4pr0n/ripme/wiki/How-To-Create-A-Ripper-for-HTML-websites).

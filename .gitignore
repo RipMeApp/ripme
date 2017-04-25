@@ -12,3 +12,6 @@ history.json
 *.iml
 .settings/
 .classpath
+*.txt
+bin/
+.vscode/
