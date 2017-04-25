@@ -76,6 +76,14 @@ public class HentaifoundryRipper extends AbstractHTMLRipper {
         Element first = els.first();
         String nextURL = first.attr("href");
         nextURL = "http://www.hentai-foundry.com" + nextURL;
+        Response resp = Http.url("http://www.hentai-foundry.com/").response();
+        cookies = resp.cookies();
+        resp = Http.url("http://www.hentai-foundry.com/?enterAgree=1&size=1500")
+                   .referrer("http://www.hentai-foundry.com/")
+                   .cookies(cookies)
+                   .response();
+        // The only cookie that seems to matter in getting around the age wall is the phpsession cookie
+        cookies.putAll(resp.cookies());
         return Http.url(nextURL)
                    .referrer(url)
                    .cookies(cookies)
@@ -114,7 +122,13 @@ public class HentaifoundryRipper extends AbstractHTMLRipper {
                 logger.debug("Warning: imagePage is null!");
                 imagePage = null;
             }
-            imageURLs.add("http:" + imagePage.select("div.boxbody img.center").attr("src"));
+            // This is here for when the image is resized to a thumbnail because ripme doesn't report a screensize
+            if (imagePage.select("div.boxbody > img.center").attr("src").contains("thumbs.") == true) {
+                imageURLs.add("http:" + imagePage.select("div.boxbody > img.center").attr("onclick").replace("this.src=", "").replace("'", "").replace("; $(#resize_message).hide();", ""));
+            }
+            else {
+                imageURLs.add("http:" + imagePage.select("div.boxbody > img.center").attr("src"));
+            }
         }
         return imageURLs;
     }
