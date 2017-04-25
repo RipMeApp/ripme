@@ -70,9 +70,10 @@ public class JagodibujaRipper extends AbstractHTMLRipper {
             List<String> result = new ArrayList<String>();
             for (Element comicPageUrl : doc.select("div.gallery-icon > a")) {
                 try {
-                    sleep(500)
+                    sleep(500);
                     Document comicPage = Http.url(comicPageUrl.attr("href")).get();
                     Element elem = comicPage.select("span.full-size-link > a").first();
+                    logger.info("Got link " + elem.attr("href"));
                     result.add(elem.attr("href"));
                 }
                 catch(IOException e) {
