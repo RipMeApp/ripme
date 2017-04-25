@@ -55,6 +55,7 @@ public class HentaifoundryRipper extends AbstractHTMLRipper {
                    .referrer("http://www.hentai-foundry.com/")
                    .cookies(cookies)
                    .response();
+        // The only cookie that seems to matter in getting around the age wall is the phpsession cookie
         cookies.putAll(resp.cookies());
         sleep(500);
         resp = Http.url(url)
@@ -67,7 +68,7 @@ public class HentaifoundryRipper extends AbstractHTMLRipper {
 
     @Override
     public Document getNextPage(Document doc) throws IOException {
-        if (doc.select("li.next.hidden").size() != 0) {
+        if (doc.select("li.next").size() != 0) {
             // Last page
             throw new IOException("No more pages");
         }
@@ -85,7 +86,7 @@ public class HentaifoundryRipper extends AbstractHTMLRipper {
     public List<String> getURLsFromPage(Document doc) {
         List<String> imageURLs = new ArrayList<String>();
         Pattern imgRegex = Pattern.compile(".*/user/([a-zA-Z0-9\\-_]+)/(\\d+)/.*");
-        for (Element thumb : doc.select("td > a:first-child")) {
+        for (Element thumb : doc.select("div.thumb_square > a.thumbLink")) {
             if (isStopped()) {
                 break;
             }
@@ -113,14 +114,7 @@ public class HentaifoundryRipper extends AbstractHTMLRipper {
                 logger.debug("Warning: imagePage is null!");
                 imagePage = null;
             }
-            // String[] titleSplit = thumb.attr("href").split("/");
-            // String title = titleSplit[titleSplit.length -1];
-            // String user = imgMatcher.group(1),
-            //     imageId = imgMatcher.group(2);
-            // String image = "http://pictures.hentai-foundry.com//";
-            // image += user.toLowerCase().charAt(0);
-            // image += "/" + user + "/" + imageId + "/" + user + "-" + imageId + title + ".png";
-            imageURLs.add("http:" + imagePage.select("div.boxbody > center > img").attr("src"));
+            imageURLs.add("http:" + imagePage.select("div.boxbody img.center").attr("src"));
         }
         return imageURLs;
     }
