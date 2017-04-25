@@ -68,7 +68,7 @@ public class HentaifoundryRipper extends AbstractHTMLRipper {
 
     @Override
     public Document getNextPage(Document doc) throws IOException {
-        if (doc.select("li.next").size() != 0) {
+        if (doc.select("li.next.hidden").size() != 0) {
             // Last page
             throw new IOException("No more pages");
         }
@@ -76,14 +76,6 @@ public class HentaifoundryRipper extends AbstractHTMLRipper {
         Element first = els.first();
         String nextURL = first.attr("href");
         nextURL = "http://www.hentai-foundry.com" + nextURL;
-        Response resp = Http.url("http://www.hentai-foundry.com/").response();
-        cookies = resp.cookies();
-        resp = Http.url("http://www.hentai-foundry.com/?enterAgree=1&size=1500")
-                   .referrer("http://www.hentai-foundry.com/")
-                   .cookies(cookies)
-                   .response();
-        // The only cookie that seems to matter in getting around the age wall is the phpsession cookie
-        cookies.putAll(resp.cookies());
         return Http.url(nextURL)
                    .referrer(url)
                    .cookies(cookies)
