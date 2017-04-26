@@ -180,9 +180,9 @@ public class DeviantartRipper extends AbstractHTMLRipper {
     @Override
     public List<String> getDescriptionsFromPage(Document page) {
         List<String> textURLs = new ArrayList<String>();
-
         // Iterate over all thumbnails
-        for (Element thumb : page.select("div.zones-container a.thumb")) {
+        for (Element thumb : page.select("div.zones-container span.thumb")) {
+            logger.info(thumb.attr("href"));
             if (isStopped()) {
                 break;
             }
@@ -191,6 +191,7 @@ public class DeviantartRipper extends AbstractHTMLRipper {
                 continue; // a.thumbs to other albums are invisible
             }
             textURLs.add(thumb.attr("href"));
+
         }
         return textURLs;
     }
