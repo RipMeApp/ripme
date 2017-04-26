@@ -125,7 +125,7 @@ public class DeviantartRipper extends AbstractHTMLRipper {
         List<String> imageURLs = new ArrayList<String>();
 
         // Iterate over all thumbnails
-        for (Element thumb : page.select("div.zones-container a.thumb")) {
+        for (Element thumb : page.select("div.zones-container span.thumb")) {
             if (isStopped()) {
                 break;
             }
@@ -133,15 +133,33 @@ public class DeviantartRipper extends AbstractHTMLRipper {
             if (img.attr("transparent").equals("false")) {
                 continue; // a.thumbs to other albums are invisible
             }
-
             // Get full-sized image via helper methods
             String fullSize = null;
-            try {
-                fullSize = thumbToFull(img.attr("src"), true);
-            } catch (Exception e) {
-                logger.info("Attempting to get full size image from " + thumb.attr("href"));
-                fullSize = smallToFull(img.attr("src"), thumb.attr("href"));
-            }
+			if (!thumb.attr("data-super-full-img").isEmpty()) {
+				fullSize = thumb.attr("data-super-full-img");
+			} else {
+				String spanUrl = thumb.attr("href");
+				// id = spanUrl.substring(spanUrl.lastIndexOf('-') + 1)
+				Elements js = page.select("script[type=\"text/javascript\"]");
+				for (Element tag : js) {
+					if (tag.html().contains("window.__pageload")) {
+                        String script = tag.html();
+                        script = script.substring(script.indexOf("window.__pageload"));
+                        script = script.substring(script.indexOf(spanUrl.substring(spanUrl.lastIndexOf('-') + 1)));
+                        script = script.substring(script.indexOf("},\"src\":\"") + 9,script.indexOf("\",\"type\""));						// first },"src":"url" after id
+                        fullSize = script.replace("\\/","/");
+                        break;
+					}
+				}
+				if (fullSize == null) {
+					try {
+						fullSize = thumbToFull(img.attr("src"), true);
+					} catch (Exception e) {
+						logger.info("Attempting to get full size image from " + thumb.attr("href"));
+						fullSize = smallToFull(img.attr("src"), thumb.attr("href"));
+					}
+				}
+			}
             if (fullSize == null) {
                 continue;
             }
