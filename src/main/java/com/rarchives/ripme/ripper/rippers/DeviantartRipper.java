@@ -201,14 +201,15 @@ public class DeviantartRipper extends AbstractHTMLRipper {
         if (isThisATest()) {
             return null;
         }
-        Elements nextButtons = page.select("li.next > a");
+        Elements nextButtons = page.select("link[rel=\"next\"]");
         if (nextButtons.size() == 0) {
-            throw new IOException("No next page found");
+            if (page.select("link[rel=\"prev\"]").size() == 0) {
+                throw new IOException("No next page found");
+            } else {
+                throw new IOException("Hit end of pages");
+            }
         }
         Element a = nextButtons.first();
-        if (a.hasClass("disabled")) {
-            throw new IOException("Hit end of pages");
-        }
         String nextPage = a.attr("href");
         if (nextPage.startsWith("/")) {
             nextPage = "http://" + this.url.getHost() + nextPage;
@@ -306,7 +307,7 @@ public class DeviantartRipper extends AbstractHTMLRipper {
             if (fullSize == null) {
                 return new String[] {Jsoup.clean(ele.html().replaceAll("\\\\n", System.getProperty("line.separator")), "", Whitelist.none(), new Document.OutputSettings().prettyPrint(false))};
             }
-            fullSize = fullSize.substring(0,fullSize.lastIndexOf("."));
+            fullSize = fullSize.substring(0, fullSize.lastIndexOf("."));
             return new String[] {Jsoup.clean(ele.html().replaceAll("\\\\n", System.getProperty("line.separator")), "", Whitelist.none(), new Document.OutputSettings().prettyPrint(false)),fullSize};
             // TODO Make this not make a newline if someone just types \n into the description.
         } catch (IOException ioe) {
