@@ -53,7 +53,7 @@ public abstract class AbstractHTMLRipper extends AlbumRipper {
     public boolean hasDescriptionSupport() {
 		return false;
     }
-    public String getDescription(String page) throws IOException {
+    public String[] getDescription(String url,Document page) throws IOException {
     	throw new IOException("getDescription not implemented"); // Do I do this or make an abstract function?
     }
     public int descSleepTime() {
@@ -95,15 +95,16 @@ public abstract class AbstractHTMLRipper extends AlbumRipper {
                     logger.debug("Found description link(s) from " + doc.location());
             		for (String textURL : textURLs) {
             			if (isStopped()) {
+
             				break;
             			}
             			textindex += 1;
             			logger.debug("Getting description from " + textURL);
                         sleep(descSleepTime());
-            			String tempDesc = getDescription(textURL);
+            			String[] tempDesc = getDescription(textURL,doc);
             			if (tempDesc != null) {
-            			    logger.debug("Got description: " + tempDesc);
-            				saveText(new URL(textURL), "", tempDesc, textindex);
+            			    logger.debug("Got description from " + textURL);
+            				saveText(new URL(textURL), "", tempDesc[0], textindex,tempDesc[1]);
             			}
             		}
             	}
@@ -130,18 +131,21 @@ public abstract class AbstractHTMLRipper extends AlbumRipper {
         waitForThreads();
     }
     public boolean saveText(URL url, String subdirectory, String text, int index) {
-        // Not the best for some cases, like FurAffinity. Overridden there.
-        try {
-            stopCheck();
-        } catch (IOException e) {
-            return false;
-        }
         String saveAs = url.toExternalForm();
         saveAs = saveAs.substring(saveAs.lastIndexOf('/')+1);
         if (saveAs.indexOf('?') >= 0) { saveAs = saveAs.substring(0, saveAs.indexOf('?')); }
         if (saveAs.indexOf('#') >= 0) { saveAs = saveAs.substring(0, saveAs.indexOf('#')); }
         if (saveAs.indexOf('&') >= 0) { saveAs = saveAs.substring(0, saveAs.indexOf('&')); }
         if (saveAs.indexOf(':') >= 0) { saveAs = saveAs.substring(0, saveAs.indexOf(':')); }
+        return saveText(url,subdirectory,text,index,saveAs);
+    }
+    public boolean saveText(URL url, String subdirectory, String text, int index, String fileName) {
+        // Not the best for some cases, like FurAffinity. Overridden there.
+        try {
+            stopCheck();
+        } catch (IOException e) {
+            return false;
+        }
         File saveFileAs;
         try {
             if (!subdirectory.equals("")) { // Not sure about this part
@@ -153,7 +157,7 @@ public abstract class AbstractHTMLRipper extends AlbumRipper {
                     + subdirectory
                     + File.separator
                     + getPrefix(index)
-                    + saveAs
+                    + fileName
                     + ".txt");
             // Write the file
             FileOutputStream out = (new FileOutputStream(saveFileAs));

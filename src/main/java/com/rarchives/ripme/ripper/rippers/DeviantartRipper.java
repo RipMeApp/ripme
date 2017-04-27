@@ -119,7 +119,19 @@ public class DeviantartRipper extends AbstractHTMLRipper {
                    .cookies(cookies)
                    .get();
     }
-
+    public String jsonToImage(Document page,String id) {
+        Elements js = page.select("script[type=\"text/javascript\"]");
+        for (Element tag : js) {
+            if (tag.html().contains("window.__pageload")) {
+                String script = tag.html();
+                script = script.substring(script.indexOf("window.__pageload"));
+                script = script.substring(script.indexOf(id));
+                script = script.substring(script.indexOf("},\"src\":\"") + 9,script.indexOf("\",\"type\""));						// first },"src":"url" after id
+                return script.replace("\\/","/");
+            }
+        }
+        return null;
+    }
     @Override
     public List<String> getURLsFromPage(Document page) {
         List<String> imageURLs = new ArrayList<String>();
@@ -139,18 +151,7 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 				fullSize = thumb.attr("data-super-full-img");
 			} else {
 				String spanUrl = thumb.attr("href");
-				// id = spanUrl.substring(spanUrl.lastIndexOf('-') + 1)
-				Elements js = page.select("script[type=\"text/javascript\"]");
-				for (Element tag : js) {
-					if (tag.html().contains("window.__pageload")) {
-                        String script = tag.html();
-                        script = script.substring(script.indexOf("window.__pageload"));
-                        script = script.substring(script.indexOf(spanUrl.substring(spanUrl.lastIndexOf('-') + 1)));
-                        script = script.substring(script.indexOf("},\"src\":\"") + 9,script.indexOf("\",\"type\""));						// first },"src":"url" after id
-                        fullSize = script.replace("\\/","/");
-                        break;
-					}
-				}
+				fullSize = jsonToImage(page,spanUrl.substring(spanUrl.lastIndexOf('-') + 1));
 				if (fullSize == null) {
 					try {
 						fullSize = thumbToFull(img.attr("src"), true);
@@ -263,17 +264,18 @@ public class DeviantartRipper extends AbstractHTMLRipper {
      * Attempts to download description for image.
      * Comes in handy when people put entire stories in their description.
      * If no description was found, returns null.
-     * @param page The page the description will be retrieved from
-     * @return The description
+     * @param url The URL the description will be retrieved from
+     * @param page The gallery page the URL was found on
+     * @return A String[] with first object being the description, and the second object being image file name if found.
      */
     @Override
-    public String getDescription(String page) {
+    public String[] getDescription(String url,Document page) {
         if (isThisATest()) {
             return null;
         }
         try {
             // Fetch the image page
-            Response resp = Http.url(page)
+            Response resp = Http.url(url)
                                 .referrer(this.url)
                                 .cookies(cookies)
                                 .response();
@@ -289,7 +291,23 @@ public class DeviantartRipper extends AbstractHTMLRipper {
             documentz.outputSettings(new Document.OutputSettings().prettyPrint(false));
             ele.select("br").append("\\n");
             ele.select("p").prepend("\\n\\n");
-            return Jsoup.clean(ele.html().replaceAll("\\\\n", System.getProperty("line.separator")), "", Whitelist.none(), new Document.OutputSettings().prettyPrint(false));
+            String fullSize = null;
+            Element thumb = page.select("div.zones-container span.thumb[href=\"" + url + "\"]").get(0);
+            if (!thumb.attr("data-super-full-img").isEmpty()) {
+                fullSize = thumb.attr("data-super-full-img");
+                String[] split = fullSize.split("/");
+                fullSize = split[split.length - 1];
+            } else {
+                String spanUrl = thumb.attr("href");
+                fullSize = jsonToImage(page,spanUrl.substring(spanUrl.lastIndexOf('-') + 1));
+                String[] split = fullSize.split("/");
+                fullSize = split[split.length - 1];
+            }
+            if (fullSize == null) {
+                return new String[] {Jsoup.clean(ele.html().replaceAll("\\\\n", System.getProperty("line.separator")), "", Whitelist.none(), new Document.OutputSettings().prettyPrint(false))};
+            }
+            fullSize = fullSize.substring(0,fullSize.lastIndexOf("."));
+            return new String[] {Jsoup.clean(ele.html().replaceAll("\\\\n", System.getProperty("line.separator")), "", Whitelist.none(), new Document.OutputSettings().prettyPrint(false)),fullSize};
             // TODO Make this not make a newline if someone just types \n into the description.
         } catch (IOException ioe) {
                 logger.info("Failed to get description " + page + " : '" + ioe.getMessage() + "'");
