@@ -55,6 +55,7 @@ public class HentaifoundryRipper extends AbstractHTMLRipper {
                    .referrer("http://www.hentai-foundry.com/")
                    .cookies(cookies)
                    .response();
+        // The only cookie that seems to matter in getting around the age wall is the phpsession cookie
         cookies.putAll(resp.cookies());
         sleep(500);
         resp = Http.url(url)
@@ -64,10 +65,10 @@ public class HentaifoundryRipper extends AbstractHTMLRipper {
         cookies.putAll(resp.cookies());
         return resp.parse();
     }
-    
+
     @Override
     public Document getNextPage(Document doc) throws IOException {
-        if (doc.select("li.next.hidden").size() > 0) {
+        if (doc.select("li.next.hidden").size() != 0) {
             // Last page
             throw new IOException("No more pages");
         }
@@ -85,7 +86,7 @@ public class HentaifoundryRipper extends AbstractHTMLRipper {
     public List<String> getURLsFromPage(Document doc) {
         List<String> imageURLs = new ArrayList<String>();
         Pattern imgRegex = Pattern.compile(".*/user/([a-zA-Z0-9\\-_]+)/(\\d+)/.*");
-        for (Element thumb : doc.select("td > a:first-child")) {
+        for (Element thumb : doc.select("div.thumb_square > a.thumbLink")) {
             if (isStopped()) {
                 break;
             }
@@ -94,16 +95,36 @@ public class HentaifoundryRipper extends AbstractHTMLRipper {
                 logger.info("Couldn't find user & image ID in " + thumb.attr("href"));
                 continue;
             }
-            String user = imgMatcher.group(1),
-                imageId = imgMatcher.group(2);
-            String image = "http://pictures.hentai-foundry.com//";
-            image += user.toLowerCase().charAt(0);
-            image += "/" + user + "/" + imageId + ".jpg";
-            imageURLs.add(image);
+            Document imagePage;
+            try {
+                Response resp = Http.url("http://www.hentai-foundry.com/").response();
+                cookies = resp.cookies();
+                resp = Http.url("http://www.hentai-foundry.com/?enterAgree=1&size=1500")
+                           .referrer("http://www.hentai-foundry.com/")
+                           .cookies(cookies)
+                           .response();
+                cookies.putAll(resp.cookies());
+
+                logger.info("grabbing " + "http://www.hentai-foundry.com" + thumb.attr("href"));
+                imagePage = Http.url("http://www.hentai-foundry.com" + thumb.attr("href")).cookies(cookies).get();
+            }
+
+            catch (IOException e) {
+                logger.debug(e.getMessage());
+                logger.debug("Warning: imagePage is null!");
+                imagePage = null;
+            }
+            // This is here for when the image is resized to a thumbnail because ripme doesn't report a screensize
+            if (imagePage.select("div.boxbody > img.center").attr("src").contains("thumbs.") == true) {
+                imageURLs.add("http:" + imagePage.select("div.boxbody > img.center").attr("onclick").replace("this.src=", "").replace("'", "").replace("; $(#resize_message).hide();", ""));
+            }
+            else {
+                imageURLs.add("http:" + imagePage.select("div.boxbody > img.center").attr("src"));
+            }
         }
         return imageURLs;
     }
-    
+
     @Override
     public void downloadURL(URL url, int index) {
         addURLToDownload(url, getPrefix(index));
