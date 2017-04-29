@@ -57,7 +57,7 @@ public abstract class AbstractHTMLRipper extends AlbumRipper {
     	throw new IOException("getDescription not implemented"); // Do I do this or make an abstract function?
     }
     public int descSleepTime() {
-        return 0;
+        return 100;
     }
     @Override
     public void rip() throws IOException {
@@ -95,17 +95,27 @@ public abstract class AbstractHTMLRipper extends AlbumRipper {
                     logger.debug("Found description link(s) from " + doc.location());
             		for (String textURL : textURLs) {
             			if (isStopped()) {
-
             				break;
             			}
             			textindex += 1;
             			logger.debug("Getting description from " + textURL);
-                        sleep(descSleepTime());
-            			String[] tempDesc = getDescription(textURL,doc);
-            			if (tempDesc != null) {
-            			    logger.debug("Got description from " + textURL);
-            				saveText(new URL(textURL), "", tempDesc[0], textindex,tempDesc[1]);
-            			}
+                        String[] tempDesc = getDescription(textURL,doc);
+                        if (tempDesc != null) {
+                            if (Utils.getConfigBoolean("file.overwrite", false) || !(new File(
+                                    workingDir.getCanonicalPath()
+                                            + ""
+                                            + File.separator
+                                            + getPrefix(index)
+                                            + (tempDesc.length > 1 ? tempDesc[1] : fileNameFromURL(new URL(textURL)))
+                                            + ".txt").exists())) {
+                                logger.debug("Got description from " + textURL);
+                                saveText(new URL(textURL), "", tempDesc[0], textindex, (tempDesc.length > 1 ? tempDesc[1] : fileNameFromURL(new URL(textURL))));
+                                sleep(descSleepTime());
+                            } else {
+                                logger.debug("Description from " + textURL + " already exists.");
+                            }
+                        }
+
             		}
             	}
             }
@@ -130,13 +140,17 @@ public abstract class AbstractHTMLRipper extends AlbumRipper {
         }
         waitForThreads();
     }
-    public boolean saveText(URL url, String subdirectory, String text, int index) {
+    public String fileNameFromURL(URL url) {
         String saveAs = url.toExternalForm();
         saveAs = saveAs.substring(saveAs.lastIndexOf('/')+1);
         if (saveAs.indexOf('?') >= 0) { saveAs = saveAs.substring(0, saveAs.indexOf('?')); }
         if (saveAs.indexOf('#') >= 0) { saveAs = saveAs.substring(0, saveAs.indexOf('#')); }
         if (saveAs.indexOf('&') >= 0) { saveAs = saveAs.substring(0, saveAs.indexOf('&')); }
         if (saveAs.indexOf(':') >= 0) { saveAs = saveAs.substring(0, saveAs.indexOf(':')); }
+        return saveAs;
+    }
+    public boolean saveText(URL url, String subdirectory, String text, int index) {
+        String saveAs = fileNameFromURL(url);
         return saveText(url,subdirectory,text,index,saveAs);
     }
     public boolean saveText(URL url, String subdirectory, String text, int index, String fileName) {
