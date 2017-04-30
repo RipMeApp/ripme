@@ -363,7 +363,7 @@ public class DeviantartRipper extends AbstractHTMLRipper {
             if (els.size() > 0) {
                 // Full-size image
                 String downloadLink = els.get(0).attr("href");
-                logger.info("Found download page: " + downloadLink);
+                logger.info("Found download button link: " + downloadLink);
                 HttpURLConnection con = (HttpURLConnection) new URL(downloadLink).openConnection();
                 con.setRequestProperty("Referer",this.url.toString());
                 String cookieString = "";
@@ -376,10 +376,11 @@ public class DeviantartRipper extends AbstractHTMLRipper {
                 con.setInstanceFollowRedirects(true);
                 con.connect();
                 int code = con.getResponseCode();
-                String location = con.getHeaderField("Location");
+                String location = con.getURL().toString();
                 con.disconnect();
                 if (location.contains("//orig")) {
                     fsimage = location;
+                    logger.info("Found image download: " + location);
                 }
             }
             if (fsimage != null) {
