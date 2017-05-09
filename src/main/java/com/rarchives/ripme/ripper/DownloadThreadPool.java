@@ -19,7 +19,7 @@ public class DownloadThreadPool {
     public DownloadThreadPool() {
         initialize("Main");
     }
-    
+
     public DownloadThreadPool(String threadPoolName) {
         initialize(threadPoolName);
     }

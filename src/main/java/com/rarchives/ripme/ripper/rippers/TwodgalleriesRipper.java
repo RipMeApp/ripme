@@ -36,7 +36,7 @@ public class TwodgalleriesRipper extends AbstractHTMLRipper {
     public String getDomain() {
         return "2dgalleries.com";
     }
-    
+
     @Override
     public String getGID(URL url) throws MalformedURLException {
         Pattern p; Matcher m;
@@ -108,7 +108,7 @@ public class TwodgalleriesRipper extends AbstractHTMLRipper {
     public void downloadURL(URL url, int index) {
         addURLToDownload(url, getPrefix(index));
     }
-    
+
     private void login() throws IOException {
         Response resp = Http.url(this.url).response();
         cookies = resp.cookies();

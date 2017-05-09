@@ -69,12 +69,12 @@ public class ImagearnRipper extends AbstractHTMLRipper {
         }
         throw new IOException("Failed to find gallery at URL " + url);
     }
-    
+
     @Override
     public Document getFirstPage() throws IOException {
         return Http.url(url).get();
     }
-    
+
     @Override
     public List<String> getURLsFromPage(Document doc) {
         List<String> imageURLs = new ArrayList<String>();
@@ -85,7 +85,7 @@ public class ImagearnRipper extends AbstractHTMLRipper {
         }
         return imageURLs;
     }
-    
+
     @Override
     public void downloadURL(URL url, int index) {
         addURLToDownload(url, getPrefix(index));

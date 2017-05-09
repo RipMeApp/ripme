@@ -11,11 +11,8 @@ import java.util.regex.Pattern;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
 
 import com.rarchives.ripme.ripper.AbstractJSONRipper;
-import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
 import com.rarchives.ripme.utils.Http;
 
 public class InstagramRipper extends AbstractJSONRipper {
@@ -60,7 +57,7 @@ public class InstagramRipper extends AbstractJSONRipper {
 
         throw new MalformedURLException("Expected username in URL (instagram.com/username and not " + url);
     }
-    
+
     private String getUserID(URL url) throws IOException {
 
         Pattern p = Pattern.compile("^https?://instagram\\.com/([^/]+)");
@@ -71,7 +68,7 @@ public class InstagramRipper extends AbstractJSONRipper {
 
         throw new IOException("Unable to find userID at " + this.url);
     }
-    
+
     @Override
     public JSONObject getFirstPage() throws IOException {
         userID = getUserID(url);
@@ -111,7 +108,7 @@ public class InstagramRipper extends AbstractJSONRipper {
             throw new IOException("No more images found");
         }
     }
-    
+
     @Override
     public List<String> getURLsFromJSON(JSONObject json) {
         List<String> imageURLs = new ArrayList<String>();
@@ -142,7 +139,7 @@ public class InstagramRipper extends AbstractJSONRipper {
         }
         return imageURLs;
     }
-    
+
     @Override
     public void downloadURL(URL url, int index) {
         addURLToDownload(url);

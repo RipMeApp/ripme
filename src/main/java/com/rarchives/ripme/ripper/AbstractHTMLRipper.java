@@ -16,7 +16,7 @@ import com.rarchives.ripme.utils.Utils;
  * Simplified ripper, designed for ripping from sites by parsing HTML.
  */
 public abstract class AbstractHTMLRipper extends AlbumRipper {
-	
+
     public AbstractHTMLRipper(URL url) throws IOException {
         super(url);
     }
@@ -45,7 +45,7 @@ public abstract class AbstractHTMLRipper extends AlbumRipper {
     public boolean canRip(URL url) {
         return url.getHost().endsWith(getDomain());
     }
-    
+
     @Override
     public URL sanitizeURL(URL url) throws MalformedURLException {
         return url;
@@ -66,7 +66,7 @@ public abstract class AbstractHTMLRipper extends AlbumRipper {
         logger.info("Retrieving " + this.url);
         sendUpdate(STATUS.LOADING_RESOURCE, this.url.toExternalForm());
         Document doc = getFirstPage();
-        
+
         while (doc != null) {
             List<String> imageURLs = getURLsFromPage(doc);
             // Remove all but 1 image
@@ -79,7 +79,7 @@ public abstract class AbstractHTMLRipper extends AlbumRipper {
             if (imageURLs.size() == 0) {
                 throw new IOException("No images found at " + doc.location());
             }
-            
+
             for (String imageURL : imageURLs) {
                 index += 1;
                 logger.debug("Found image url #" + index + ": " + imageURL);

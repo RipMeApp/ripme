@@ -138,9 +138,9 @@ public class MediacrushRipper extends AbstractJSONRipper {
     }
 
     /**
-     * Iterates over list if "file" objects and returns the preferred 
+     * Iterates over list if "file" objects and returns the preferred
      * image format.
-     * @param subfiles Array of "files" (JSONObjects) which contain 
+     * @param subfiles Array of "files" (JSONObjects) which contain
      * @return Preferred media format.
      */
     private String getPreferredUrl(JSONArray subfiles) {

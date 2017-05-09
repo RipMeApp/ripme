@@ -58,7 +58,7 @@ public class ImagebamRipper extends AbstractHTMLRipper {
                         + "http://www.imagebam.com/gallery/galleryid"
                         + " Got: " + url);
     }
-    
+
     @Override
     public Document getFirstPage() throws IOException {
         if (albumDoc == null) {
@@ -66,7 +66,7 @@ public class ImagebamRipper extends AbstractHTMLRipper {
         }
         return albumDoc;
     }
-    
+
     @Override
     public Document getNextPage(Document doc) throws IOException {
         // Find next page
@@ -78,7 +78,7 @@ public class ImagebamRipper extends AbstractHTMLRipper {
         sleep(500);
         return Http.url(nextUrl).get();
     }
-    
+
     @Override
     public List<String> getURLsFromPage(Document doc) {
         List<String> imageURLs = new ArrayList<String>();
@@ -117,7 +117,7 @@ public class ImagebamRipper extends AbstractHTMLRipper {
 
     /**
      * Helper class to find and download images found on "image" pages
-     * 
+     *
      * Handles case when site has IP-banned the user.
      */
     private class ImagebamImageThread extends Thread {
@@ -134,7 +134,7 @@ public class ImagebamRipper extends AbstractHTMLRipper {
         public void run() {
             fetchImage();
         }
-        
+
         private void fetchImage() {
             try {
                 Document doc = Http.url(url).get();

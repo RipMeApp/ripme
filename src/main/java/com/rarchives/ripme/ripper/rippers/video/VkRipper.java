@@ -30,7 +30,7 @@ public class VkRipper extends VideoRipper {
         Matcher m = p.matcher(url.toExternalForm());
         return m.matches();
     }
-    
+
     @Override
     public URL sanitizeURL(URL url) throws MalformedURLException {
         return url;
@@ -57,7 +57,7 @@ public class VkRipper extends VideoRipper {
         addURLToDownload(new URL(videoURL), HOST + "_" + getGID(this.url));
         waitForThreads();
     }
-    
+
     public static String getVideoURLAtPage(String url) throws IOException {
         Document doc = Http.url(url)
                            .userAgent(USER_AGENT)

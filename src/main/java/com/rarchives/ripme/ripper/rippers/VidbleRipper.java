@@ -29,7 +29,7 @@ public class VidbleRipper extends AbstractHTMLRipper {
     public String getDomain() {
         return "vidble.com";
     }
-    
+
     @Override
     public String getGID(URL url) throws MalformedURLException {
         Pattern p; Matcher m;
@@ -62,7 +62,7 @@ public class VidbleRipper extends AbstractHTMLRipper {
         for (Element img : imgs) {
             String src = img.absUrl("src");
             src = src.replaceAll("_[a-zA-Z]{3,5}", "");
-            
+
             if (!src.equals("")) {
                 imageURLs.add(src);
             }

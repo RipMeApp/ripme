@@ -393,7 +393,7 @@ public class Utils {
 
     /**
      * Parses an URL query
-     * 
+     *
      * @param query
      *          The query part of an URL
      * @return The map of all query parameters
@@ -426,7 +426,7 @@ public class Utils {
 
     /**
      * Parses an URL query and returns the requested parameter's value
-     * 
+     *
      * @param query
      *          The query part of an URL
      * @param key

@@ -155,7 +155,7 @@ public class FivehundredpxRipper extends AbstractJSONRipper {
     private String getUserID(String username) throws IOException {
         logger.info("Fetching user ID for " + username);
         JSONObject json = new Http("https://api.500px.com/v1/" +
-                    "users/show" + 
+                    "users/show" +
                     "?username=" + username +
                     "&consumer_key=" + CONSUMER_KEY)
                 .getJSON();
@@ -307,7 +307,7 @@ public class FivehundredpxRipper extends AbstractJSONRipper {
         }
         return imageURLs;
     }
-    
+
     private boolean urlExists(String url) {
         try {
             HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();

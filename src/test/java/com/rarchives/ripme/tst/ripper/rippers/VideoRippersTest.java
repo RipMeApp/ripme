@@ -12,7 +12,7 @@ import com.rarchives.ripme.ripper.rippers.video.XvideosRipper;
 import com.rarchives.ripme.ripper.rippers.video.YoupornRipper;
 
 public class VideoRippersTest extends RippersTest {
-    
+
     /**
      * Helper method for testing a video ripper
      * @param ripper The video ripper
@@ -44,7 +44,7 @@ public class VideoRippersTest extends RippersTest {
             videoTestHelper(ripper);
         }
     }
-    
+
     public void testPornhubRipper() throws IOException {
         List<URL> contentURLs = new ArrayList<URL>();
         contentURLs.add(new URL("http://www.pornhub.com/view_video.php?viewkey=993166542"));

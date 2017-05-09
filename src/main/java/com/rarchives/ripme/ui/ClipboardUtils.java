@@ -14,7 +14,7 @@ import static com.rarchives.ripme.App.logger;
 
 public class ClipboardUtils {
     private static AutoripThread autoripThread = new AutoripThread();
-    
+
     public static void setClipboardAutoRip(boolean enabled) {
         if (enabled) {
             autoripThread.kill();
@@ -44,7 +44,7 @@ public class ClipboardUtils {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
-        } 
+        }
         return null;
     }
 }
@@ -61,15 +61,15 @@ class AutoripThread extends Thread {
                 String clipboard = ClipboardUtils.getClipboardString();
                 if (clipboard != null) {
                     Pattern p = Pattern.compile(
-                            "\\b(((ht|f)tp(s?)\\:\\/\\/|~\\/|\\/)|www.)" + 
-                            "(\\w+:\\w+@)?(([-\\w]+\\.)+(com|org|net|gov" + 
-                            "|mil|biz|info|mobi|name|aero|jobs|museum" + 
-                            "|travel|[a-z]{2}))(:[\\d]{1,5})?" + 
-                            "(((\\/([-\\w~!$+|.,=]|%[a-f\\d]{2})+)+|\\/)+|\\?|#)?" + 
-                            "((\\?([-\\w~!$+|.,*:]|%[a-f\\d{2}])+=?" + 
-                            "([-\\w~!$+|.,*:=]|%[a-f\\d]{2})*)" + 
-                            "(&(?:[-\\w~!$+|.,*:]|%[a-f\\d{2}])+=?" + 
-                            "([-\\w~!$+|.,*:=]|%[a-f\\d]{2})*)*)*" + 
+                            "\\b(((ht|f)tp(s?)\\:\\/\\/|~\\/|\\/)|www.)" +
+                            "(\\w+:\\w+@)?(([-\\w]+\\.)+(com|org|net|gov" +
+                            "|mil|biz|info|mobi|name|aero|jobs|museum" +
+                            "|travel|[a-z]{2}))(:[\\d]{1,5})?" +
+                            "(((\\/([-\\w~!$+|.,=]|%[a-f\\d]{2})+)+|\\/)+|\\?|#)?" +
+                            "((\\?([-\\w~!$+|.,*:]|%[a-f\\d{2}])+=?" +
+                            "([-\\w~!$+|.,*:=]|%[a-f\\d]{2})*)" +
+                            "(&(?:[-\\w~!$+|.,*:]|%[a-f\\d{2}])+=?" +
+                            "([-\\w~!$+|.,*:=]|%[a-f\\d]{2})*)*)*" +
                             "(#([-\\w~!$+|.,*:=]|%[a-f\\d]{2})*)?\\b");
                     Matcher m = p.matcher(clipboard);
                     while (m.find()) {
@@ -87,7 +87,7 @@ class AutoripThread extends Thread {
             e.printStackTrace();
         }
     }
-    
+
     public void kill() {
         isRunning = false;
     }

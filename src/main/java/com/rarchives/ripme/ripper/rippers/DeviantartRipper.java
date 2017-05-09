@@ -239,7 +239,7 @@ public class DeviantartRipper extends AbstractHTMLRipper {
         }
         return result.toString();
     }
-    
+
     /**
      * Attempts to download description for image.
      * Comes in handy when people put entire stories in their description.
@@ -277,7 +277,7 @@ public class DeviantartRipper extends AbstractHTMLRipper {
                 return null;
         }
     }
-   
+
     /**
      * If largest resolution for image at 'thumb' is found, starts downloading
      * and returns null.

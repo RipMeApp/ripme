@@ -72,5 +72,5 @@ public class Base64 {
             buffer[index++]= (byte)(((c2 << 6) | c3) & mask);
         }
         return buffer;
-    } 
+    }
 }

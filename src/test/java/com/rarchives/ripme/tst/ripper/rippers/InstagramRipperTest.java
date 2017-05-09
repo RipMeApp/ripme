@@ -10,7 +10,7 @@ import java.util.Map;
 import com.rarchives.ripme.ripper.rippers.InstagramRipper;
 
 public class InstagramRipperTest extends RippersTest {
-    
+
     public void testInstagramGID() throws IOException {
         Map<URL, String> testURLs = new HashMap<URL, String>();
         testURLs.put(new URL("http://instagram.com/Test_User"), "Test_User");
