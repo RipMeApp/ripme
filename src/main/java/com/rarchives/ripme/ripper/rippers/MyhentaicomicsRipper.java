@@ -157,12 +157,28 @@ public class MyhentaicomicsRipper extends AbstractHTMLRipper {
                         if (b == false) {
                             // We replace thumbs with resizes so we can the full sized images
                             imageSource = imageSource.replace("thumbs", "resizes");
-                            result.add("http://myhentaicomics.com/" + imageSource);
+                            String url_string = "http://myhentaicomics.com/" + imageSource;
+                            url_string = url_string.replace("%20", "_");
+                            url_string = url_string.replace("%27", "");
+                            url_string = url_string.replace("%28", "_");
+                            url_string = url_string.replace("%29", "_");
+                            url_string = url_string.replace("%2C", "_");
+                            if (isTag == true) {
+                                logger.info("Downloading from a tag or search");
+                                try {
+                                    addURLToDownload(new URL("http://myhentaicomics.com/" + imageSource), "", url_string.split("/")[6]);
+                                }
+                                catch(MalformedURLException e) {
+                                    logger.warn("Malformed URL");
+                                    e.printStackTrace();
+                                }
+                                result.add("http://myhentaicomics.com/" + imageSource);
+                            }
+                        }
                     }
                 }
-                }
-
             }
+        return result;
         }
         else {
         for (Element el : doc.select("img")) {
@@ -181,19 +197,7 @@ public class MyhentaicomicsRipper extends AbstractHTMLRipper {
 
     @Override
     public void downloadURL(URL url, int index) {
-        String url_string = url.toExternalForm();
-        url_string = url_string.replace("%20", "_");
-        url_string = url_string.replace("%27", "");
-        url_string = url_string.replace("%28", "_");
-        url_string = url_string.replace("%29", "_");
-        url_string = url_string.replace("%2C", "_");
-        if (isTag == true) {
-            logger.info("Downloading from a tag or search");
-            addURLToDownload(url, getPrefix(index), url_string.split("/")[6]);
-        }
-        else {
-            addURLToDownload(url, getPrefix(index));
-        }
+        addURLToDownload(url, getPrefix(index));
     }
 
 
