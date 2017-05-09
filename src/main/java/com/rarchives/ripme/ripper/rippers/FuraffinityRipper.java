@@ -65,7 +65,7 @@ public class FuraffinityRipper extends AbstractHTMLRipper {
 
         return Http.url(url).cookies(cookies).get();
     }
-    
+
     private void login() throws IOException {
         String user = new String(Base64.decode("cmlwbWU="));
         String pass = new String(Base64.decode("cmlwbWVwYXNzd29yZA=="));
@@ -113,7 +113,7 @@ public class FuraffinityRipper extends AbstractHTMLRipper {
     @Override
     public List<String> getURLsFromPage(Document page) {
         List<String> urls = new ArrayList<String>();
-        Elements urlElements = page.select("b[id^=sid_]");
+        Elements urlElements = page.select("figure.t-image > b > u > a");
         for (Element e : urlElements) {
             urls.add(urlBase + e.select("a").first().attr("href"));
         }
@@ -122,7 +122,7 @@ public class FuraffinityRipper extends AbstractHTMLRipper {
     @Override
     public List<String> getDescriptionsFromPage(Document page) {
         List<String> urls = new ArrayList<String>();
-        Elements urlElements = page.select("b[id^=sid_]");
+        Elements urlElements = page.select("figure.t-image > b > u > a");
         for (Element e : urlElements) {
             urls.add(urlBase + e.select("a").first().attr("href"));
             logger.debug("Desc2 " + urlBase + e.select("a").first().attr("href"));
@@ -157,12 +157,8 @@ public class FuraffinityRipper extends AbstractHTMLRipper {
             ele.select("p").prepend("\\n\\n");
             logger.debug("Returning description at " + page);
             String tempPage = Jsoup.clean(ele.html().replaceAll("\\\\n", System.getProperty("line.separator")), "", Whitelist.none(), new Document.OutputSettings().prettyPrint(false));
-            Elements titles = documentz.select("td[class=\"cat\"][valign=\"top\"] > b");
-            if (titles.size() == 0) {
-            	throw new IOException("No title found");
-            }
-            Element title = titles.get(0);
-            String tempText = title.text();
+            String title = documentz.select("meta[property=og:title]").attr("content");
+            String tempText = title;
             return tempText + "\n" + tempPage; // Overridden saveText takes first line and makes it the file name.
         } catch (IOException ioe) {
             logger.info("Failed to get description " + page + " : '" + ioe.getMessage() + "'");
@@ -196,10 +192,7 @@ public class FuraffinityRipper extends AbstractHTMLRipper {
                     workingDir.getCanonicalPath()
                             + subdirectory
                             + File.separator
-                            + getPrefix(index)
                             + saveAs
-                            + " "
-                            + test
                             + ".txt");
             // Write the file
             FileOutputStream out = (new FileOutputStream(saveFileAs));
@@ -255,7 +248,21 @@ public class FuraffinityRipper extends AbstractHTMLRipper {
             	}
                 String link = "http:" + donwloadLink.first().attr("href");
                 logger.info("Found URL " + link);
-                addURLToDownload(new URL(link),"","",url.toExternalForm(),cookies);
+                String[] fileNameSplit = link.split("/");
+                String fileName = fileNameSplit[fileNameSplit.length -1];
+                fileName = fileName.replaceAll("[0-9]*\\.", "");
+                String[] fileExtSplit = link.split("\\.");
+                String fileExt = fileExtSplit[fileExtSplit.length -1];
+                fileName = fileName.replaceAll(fileExt, "");
+                File saveAS;
+                fileName = fileName.replace("[0-9]*\\.", "");
+                saveAS = new File(
+                    workingDir.getCanonicalPath()
+                            + File.separator
+                            + fileName
+                            + "."
+                            + fileExt);
+                addURLToDownload(new URL(link),saveAS,"",cookies);
             } catch (IOException e) {
                 logger.error("[!] Exception while loading/parsing " + this.url, e);
         	}
