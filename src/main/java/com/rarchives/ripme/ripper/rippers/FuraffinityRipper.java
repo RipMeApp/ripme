@@ -177,6 +177,7 @@ public class FuraffinityRipper extends AbstractHTMLRipper {
         String saveAs = "";
         File saveFileAs;
         saveAs = text.split("\n")[0];
+        saveAs = saveAs.replaceAll("^(\\S+)\\s+by\\s+(.*)$", "$2_$1");
         for (int i = 1;i < text.split("\n").length; i++) {
              newText = newText.replace("\\","").replace("/","").replace("~","") + "\n" + text.split("\n")[i];
         }
