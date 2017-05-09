@@ -38,6 +38,7 @@ public class RipStatusMessage {
         return object;
     }
 
+    @Override
     public String toString() {
         return status.value + ": " + object.toString();
     }

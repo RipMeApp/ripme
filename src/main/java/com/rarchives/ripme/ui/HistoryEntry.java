@@ -47,6 +47,7 @@ public class HistoryEntry {
         return json;
     }
 
+    @Override
     public String toString() {
         return this.url;
     }

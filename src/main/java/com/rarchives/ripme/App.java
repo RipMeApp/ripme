@@ -216,7 +216,7 @@ public class App {
             CommandLine cl = parser.parse(getOptions(), args, false);
             return cl;
         } catch (ParseException e) {
-            logger.error("[!] Error while parsing command-line arguments: " + args, e);
+            logger.error("[!] Error while parsing command-line arguments: " + Arrays.toString(args), e);
             System.exit(-1);
             return null;
         }
