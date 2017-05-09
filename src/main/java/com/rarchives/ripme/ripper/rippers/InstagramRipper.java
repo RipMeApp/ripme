@@ -62,7 +62,7 @@ public class InstagramRipper extends AbstractJSONRipper {
 
         Pattern p = Pattern.compile("^https?://instagram\\.com/([^/]+)");
         Matcher m = p.matcher(url.toExternalForm());
-        if(m.matches()) {
+        if (m.matches()) {
             return m.group(1);
         }
 
@@ -92,7 +92,7 @@ public class InstagramRipper extends AbstractJSONRipper {
             throw new IOException("No additional pages found");
         }
 
-        if(nextPageAvailable) {
+        if (nextPageAvailable) {
             JSONArray items         = json.getJSONArray("items");
             JSONObject last_item    = items.getJSONObject(items.length() - 1);
             String nextMaxID        = last_item.getString("id");

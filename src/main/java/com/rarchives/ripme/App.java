@@ -171,7 +171,7 @@ public class App {
             if (!history.contains(url.toExternalForm())) {
                 history.add(url.toExternalForm());
                 Utils.setConfigList("download.history", Arrays.asList(history.toArray()));
-                if(saveConfig) {
+                if (saveConfig) {
                     Utils.saveConfig();
                 }
             }

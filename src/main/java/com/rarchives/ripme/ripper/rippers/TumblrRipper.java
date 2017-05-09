@@ -194,9 +194,9 @@ public class TumblrRipper extends AlbumRipper {
                     try {
                         fileURL = new URL(photo.getJSONObject("original_size").getString("url"));
                         m = p.matcher(fileURL.toString());
-                        if(m.matches()) {
+                        if (m.matches()) {
                             addURLToDownload(fileURL);
-                        } else{
+                        } else {
                             URL redirectedURL = Http.url(fileURL).ignoreContentType().response().url();
                             addURLToDownload(redirectedURL);
                         }
