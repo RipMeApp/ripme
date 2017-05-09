@@ -709,6 +709,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
         configSaveDirButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent arg0) {
+                UIManager.put("FileChooser.useSystemExtensionHiding", false);
                 JFileChooser jfc = new JFileChooser(Utils.getWorkingDirectory());
                 jfc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
                 int returnVal = jfc.showDialog(null, "select directory");
