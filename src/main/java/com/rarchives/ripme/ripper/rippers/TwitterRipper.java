@@ -21,7 +21,7 @@ import com.rarchives.ripme.utils.Utils;
 public class TwitterRipper extends AlbumRipper {
 
     private static final String DOMAIN = "twitter.com",
-                                HOST   = "twitter";
+            HOST = "twitter";
 
     private static final int MAX_REQUESTS = Utils.getConfigInteger("twitter.max_requests", 10);
     private static final int WAIT_TIME = 2000;
@@ -34,9 +34,10 @@ public class TwitterRipper extends AlbumRipper {
         ACCOUNT,
         SEARCH
     }
+
     private ALBUM_TYPE albumType;
     private String searchText, accountName;
-    
+
     public TwitterRipper(URL url) throws IOException {
         super(url);
         authKey = Utils.getConfigString("twitter.auth", null);
@@ -69,15 +70,15 @@ public class TwitterRipper extends AlbumRipper {
         }
         throw new MalformedURLException("Expected username or search string in url: " + url);
     }
-    
+
     private void getAccessToken() throws IOException {
         Document doc = Http.url("https://api.twitter.com/oauth2/token")
-                           .ignoreContentType()
-                           .header("Authorization", "Basic " + authKey)
-                           .header("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8")
-                           .header("User-agent", "ripe and zipe")
-                           .data("grant_type", "client_credentials")
-                           .post();
+                .ignoreContentType()
+                .header("Authorization", "Basic " + authKey)
+                .header("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8")
+                .header("User-agent", "ripe and zipe")
+                .data("grant_type", "client_credentials")
+                .post();
         String body = doc.body().html().replaceAll("&quot;", "\"");
         try {
             JSONObject json = new JSONObject(body);
@@ -88,20 +89,20 @@ public class TwitterRipper extends AlbumRipper {
             throw new IOException("Failure while parsing JSON: " + body, e);
         }
     }
-    
+
     private void checkRateLimits(String resource, String api) throws IOException {
         Document doc = Http.url("https://api.twitter.com/1.1/application/rate_limit_status.json?resources=" + resource)
-                            .ignoreContentType()
-                            .header("Authorization", "Bearer " + accessToken)
-                            .header("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8")
-                            .header("User-agent", "ripe and zipe")
-                            .get();
+                .ignoreContentType()
+                .header("Authorization", "Bearer " + accessToken)
+                .header("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8")
+                .header("User-agent", "ripe and zipe")
+                .get();
         String body = doc.body().html().replaceAll("&quot;", "\"");
         try {
             JSONObject json = new JSONObject(body);
             JSONObject stats = json.getJSONObject("resources")
-                                   .getJSONObject(resource)
-                                   .getJSONObject(api);
+                    .getJSONObject(resource)
+                    .getJSONObject(api);
             int remaining = stats.getInt("remaining");
             logger.info("    Twitter " + resource + " calls remaining: " + remaining);
             if (remaining < 20) {
@@ -113,42 +114,42 @@ public class TwitterRipper extends AlbumRipper {
             throw new IOException("Error while parsing JSON: " + body, e);
         }
     }
-    
+
     private String getApiURL(Long maxID) {
         StringBuilder req = new StringBuilder();
         switch (albumType) {
-        case ACCOUNT:
-            req.append("https://api.twitter.com/1.1/statuses/user_timeline.json")
-               .append("?screen_name=" + this.accountName)
-               .append("&include_entities=true")
-               .append("&exclude_replies=true")
-               .append("&trim_user=true")
-               .append("&include_rts=false")
-               .append("&count=" + 200);
-            break;
-        case SEARCH:
-            req.append("https://api.twitter.com/1.1/search/tweets.json")
-               .append("?q=" + this.searchText)
-               .append("&include_entities=true")
-               .append("&result_type=recent")
-               .append("&count=100");
-            break;
+            case ACCOUNT:
+                req.append("https://api.twitter.com/1.1/statuses/user_timeline.json")
+                        .append("?screen_name=" + this.accountName)
+                        .append("&include_entities=true")
+                        .append("&exclude_replies=true")
+                        .append("&trim_user=true")
+                        .append("&include_rts=false")
+                        .append("&count=" + 200);
+                break;
+            case SEARCH:
+                req.append("https://api.twitter.com/1.1/search/tweets.json")
+                        .append("?q=" + this.searchText)
+                        .append("&include_entities=true")
+                        .append("&result_type=recent")
+                        .append("&count=100");
+                break;
         }
         if (maxID > 0) {
             req.append("&max_id=" + Long.toString(maxID));
         }
         return req.toString();
     }
-    
+
     private List<JSONObject> getTweets(String url) throws IOException {
         List<JSONObject> tweets = new ArrayList<JSONObject>();
         logger.info("    Retrieving " + url);
         Document doc = Http.url(url)
-                           .ignoreContentType()
-                           .header("Authorization", "Bearer " + accessToken)
-                           .header("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8")
-                           .header("User-agent", "ripe and zipe")
-                           .get();
+                .ignoreContentType()
+                .header("Authorization", "Bearer " + accessToken)
+                .header("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8")
+                .header("User-agent", "ripe and zipe")
+                .get();
         String body = doc.body().html().replaceAll("&quot;", "\"");
         Object jsonObj = new JSONTokener(body).nextValue();
         JSONArray statuses;
@@ -168,47 +169,47 @@ public class TwitterRipper extends AlbumRipper {
         return tweets;
     }
 
-    private boolean parseTweet(JSONObject tweet) throws MalformedURLException {
-        if (!tweet.has("entities")) {
+    private int parseTweet(JSONObject tweet) throws MalformedURLException {
+        int parsedCount = 0;
+        if (!tweet.has("extended_entities")) {
             logger.error("XXX Tweet doesn't have entitites");
-            return false;
+            return 0;
         }
 
-        JSONObject entities = tweet.getJSONObject("entities");
+        JSONObject entities = tweet.getJSONObject("extended_entities");
 
         if (entities.has("media")) {
             JSONArray medias = entities.getJSONArray("media");
             String url;
             JSONObject media;
+
             for (int i = 0; i < medias.length(); i++) {
                 media = (JSONObject) medias.get(i);
                 url = media.getString("media_url");
-                if (url.contains(".twimg.com/")) {
-                    url += ":orig";
-                    addURLToDownload(new URL(url));
-                    return true;
-                }
-                else {
-                    logger.debug("Unexpected media_url: " + url);
+                if (media.getString("type").equals("video")) {
+                    JSONArray variants = media.getJSONObject("video_info").getJSONArray("variants");
+                    for (int j = 0; j < medias.length(); j++) {
+                        JSONObject variant = (JSONObject) variants.get(i);
+                        if (variant.has("bitrate") && variant.getInt("bitrate") == 832000) {
+                            addURLToDownload(new URL(variant.getString("url")));
+                            parsedCount++;
+                            break;
+                        }
+                    }
+                } else if (media.getString("type").equals("photo")) {
+                    if (url.contains(".twimg.com/")) {
+                        url += ":orig";
+                        addURLToDownload(new URL(url));
+                        parsedCount++;
+                    } else {
+                        logger.debug("Unexpected media_url: " + url);
+                    }
                 }
             }
         }
 
-        /*
-        if (entities.has("urls")) {
-            JSONArray urls = entities.getJSONArray("urls");
-            JSONObject url;
-            for (int i = 0; i < urls.length(); i++) {
-                url = (JSONObject) urls.get(i);
-                if (url.get("expanded_url") != null) {
-                    handleTweetedURL(url.getString("url"));
-                } else {
-                    handleTweetedURL(url.getString("expanded_url"));
-                }
-            }
-        }
-        */
-        return false;
+
+        return parsedCount;
     }
 
     @Override
@@ -216,12 +217,12 @@ public class TwitterRipper extends AlbumRipper {
         getAccessToken();
 
         switch (albumType) {
-        case ACCOUNT:
-            checkRateLimits("statuses", "/statuses/user_timeline");
-            break;
-        case SEARCH:
-            checkRateLimits("search", "/search/tweets");
-            break;
+            case ACCOUNT:
+                checkRateLimits("statuses", "/statuses/user_timeline");
+                break;
+            case SEARCH:
+                checkRateLimits("search", "/search/tweets");
+                break;
         }
 
         Long lastMaxID = 0L;
@@ -233,31 +234,29 @@ public class TwitterRipper extends AlbumRipper {
                 break;
             }
             logger.debug("Twitter response #" + (i + 1) + " Tweets:\n" + tweets);
-            if (tweets.size() == 1 && 
+            if (tweets.size() == 1 &&
                     lastMaxID.equals(tweets.get(0).getString("id_str"))
-                ) {
+                    ) {
                 logger.info("   No more tweet found.");
                 break;
             }
 
             for (JSONObject tweet : tweets) {
                 lastMaxID = tweet.getLong("id");
-                if (parseTweet(tweet)) {
-                    parsedCount++;
-                }
-                if (isStopped() || (isThisATest() && parsedCount > 0) ) {
+                parsedCount += parseTweet(tweet);
+
+                if (isStopped() || (isThisATest() && parsedCount > 0)) {
                     break;
                 }
             }
 
-            if (isStopped() || (isThisATest() && parsedCount > 0) ) {
+            if (isStopped() || (isThisATest() && parsedCount > 0)) {
                 break;
             }
 
             try {
                 Thread.sleep(WAIT_TIME);
-            }
-            catch (InterruptedException e) {
+            } catch (InterruptedException e) {
                 logger.error("[!] Interrupted while waiting to load more results", e);
                 break;
             }
@@ -274,27 +273,27 @@ public class TwitterRipper extends AlbumRipper {
     @Override
     public String getGID(URL url) throws MalformedURLException {
         switch (albumType) {
-        case ACCOUNT:
-            return "account_" + accountName;
-        case SEARCH:
-            StringBuilder gid = new StringBuilder();
-            for (int i = 0; i < searchText.length(); i++) {
-                char c = searchText.charAt(i);
-                // Ignore URL-encoded chars
-                if (c == '%') {
-                    gid.append('_');
-                    i += 2;
-                    continue;
-                // Ignore non-alphanumeric chars
-                } else if (
-                        (c >= 'a' && c <= 'z')
-                     || (c >= 'A' && c <= 'Z') 
-                     || (c >= '0' && c <= '9') 
-                        ) {
-                    gid.append(c);
+            case ACCOUNT:
+                return "account_" + accountName;
+            case SEARCH:
+                StringBuilder gid = new StringBuilder();
+                for (int i = 0; i < searchText.length(); i++) {
+                    char c = searchText.charAt(i);
+                    // Ignore URL-encoded chars
+                    if (c == '%') {
+                        gid.append('_');
+                        i += 2;
+                        continue;
+                        // Ignore non-alphanumeric chars
+                    } else if (
+                            (c >= 'a' && c <= 'z')
+                                    || (c >= 'A' && c <= 'Z')
+                                    || (c >= '0' && c <= '9')
+                            ) {
+                        gid.append(c);
+                    }
                 }
-            }
-            return "search_" + gid.toString();
+                return "search_" + gid.toString();
         }
         throw new MalformedURLException("Could not decide type of URL (search/account): " + url);
     }
