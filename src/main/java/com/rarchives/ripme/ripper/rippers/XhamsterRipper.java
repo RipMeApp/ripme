@@ -45,6 +45,7 @@ public class XhamsterRipper extends AlbumRipper {
                     continue;
                 }
                 String image = thumb.attr("src");
+                // replace thumbnail urls with the urls to the full sized images
                 image = image.replaceAll(
                         "https://upt.xhcdn\\.",
                         "http://up.xhamster.");
@@ -52,6 +53,11 @@ public class XhamsterRipper extends AlbumRipper {
                 image = image.replaceAll(
                         "_160\\.",
                         "_1000.");
+                // Xhamster has shitty cert management and uses the wrong cert for their ep.xhamster Domain
+                // so we change all https requests to http
+                image = image.replaceAll(
+                            "https://",
+                            "http://");
                 index += 1;
                 String prefix = "";
                 if (Utils.getConfigBoolean("download.save_order", true)) {
