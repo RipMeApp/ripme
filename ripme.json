@@ -1,6 +1,7 @@
 {
-  "latestVersion" : "1.4.10",
+  "latestVersion" : "1.4.11",
   "changeList" : [
+    "1.4.11: Instagram: fixed cropped images issue.",
     "1.4.10: Add WordPressComicRipper (various sites supported)",
     "1.4.9: Fixed HentaiFoundry ripper",
     "1.4.8: Added Jagodibuja comics ripper",
