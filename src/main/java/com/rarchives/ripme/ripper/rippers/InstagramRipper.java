@@ -128,6 +128,12 @@ public class InstagramRipper extends AbstractJSONRipper {
             }
             imageURL = imageURL.replaceAll("scontent.cdninstagram.com/hphotos-", "igcdn-photos-d-a.akamaihd.net/hphotos-ak-");
             imageURL = imageURL.replaceAll("s640x640/", "");
+
+            // it appears ig now allows higher resolution images to be uploaded but are artifically cropping the images to
+            // 1080x1080 to preserve legacy support. the cropping string below isnt present on ig website and removing it
+            // displays the uncropped image.
+            imageURL = imageURL.replaceAll("c0.114.1080.1080/", "");
+
             imageURL = imageURL.replaceAll("\\?ig_cache_key.+$", "");
             imageURLs.add(imageURL);
             if (isThisATest()) {
