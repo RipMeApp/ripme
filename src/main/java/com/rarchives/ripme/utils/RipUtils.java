@@ -164,18 +164,6 @@ public class RipUtils {
         if (url == null) url = urlFromSiteDirectoryName(dir, "vinebox", "http://finebox.co/u/", "");
         if (url == null) url = urlFromSiteDirectoryName(dir, "imgbox", "http://imgbox.com/g/", "");
         if (url == null) url = urlFromSiteDirectoryName(dir, "modelmayhem", "http://www.modelmayhem.com/", "");
-        /*
-        if (url == null) url = urlFromSiteDirectoryName(dir, "", "", "");
-        if (url == null) url = urlFromSiteDirectoryName(dir, "", "", "");
-        if (url == null) url = urlFromSiteDirectoryName(dir, "", "", "");
-        if (url == null) url = urlFromSiteDirectoryName(dir, "", "", "");
-        if (url == null) url = urlFromSiteDirectoryName(dir, "", "", "");
-        if (url == null) url = urlFromSiteDirectoryName(dir, "", "", "");
-        if (url == null) url = urlFromSiteDirectoryName(dir, "", "", "");
-        if (url == null) url = urlFromSiteDirectoryName(dir, "", "", "");
-        if (url == null) url = urlFromSiteDirectoryName(dir, "", "", "");
-        if (url == null) url = urlFromSiteDirectoryName(dir, "", "", "");
-        */
         //if (url == null) url = urlFromSiteDirectoryName(dir, "8muses",      "http://www.8muses.com/index/category/", "");
         return url;
     }
@@ -247,9 +235,8 @@ public class RipUtils {
         List<String> fields = Arrays.asList(dir.split("_"));
         String album = fields.get(1);
         String url = "http://";
-        if ( (fields.contains("top") || fields.contains("new"))
-          && (fields.contains("year") || fields.contains("month") || fields.contains("week") || fields.contains("all"))
-           ) {
+        if ((fields.contains("top") || fields.contains("new"))
+                && (fields.contains("year") || fields.contains("month") || fields.contains("week") || fields.contains("all"))) {
             // Subreddit
             fields.remove(0); // "imgur"
             String sub = "";

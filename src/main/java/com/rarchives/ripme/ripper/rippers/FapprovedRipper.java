@@ -59,8 +59,8 @@ public class FapprovedRipper extends AbstractHTMLRipper {
 
     @Override
     public Document getNextPage(Document doc) throws IOException {
-        if ( (doc.select("div.pagination li.next.disabled").size() != 0)
-          || (doc.select("div.pagination").size() == 0) ) {
+        if ((doc.select("div.pagination li.next.disabled").size() != 0)
+            || (doc.select("div.pagination").size() == 0)) {
             throw new IOException("No more pages found");
         }
         sleep(1000);
@@ -93,7 +93,7 @@ public class FapprovedRipper extends AbstractHTMLRipper {
         }
         return imageURLs;
     }
-    
+
     @Override
     public void downloadURL(URL url, int index) {
         addURLToDownload(url, getPrefix(index));
