@@ -30,7 +30,7 @@ public abstract class AbstractHTMLRipper extends AlbumRipper {
     }
     public abstract List<String> getURLsFromPage(Document page);
     public List<String> getDescriptionsFromPage(Document doc) throws IOException {
-    	throw new IOException("getDescriptionsFromPage not implemented"); // Do I do this or make an abstract function?
+        throw new IOException("getDescriptionsFromPage not implemented"); // Do I do this or make an abstract function?
     }
     public abstract void downloadURL(URL url, int index);
     public DownloadThreadPool getThreadPool() {
@@ -51,10 +51,10 @@ public abstract class AbstractHTMLRipper extends AlbumRipper {
         return url;
     }
     public boolean hasDescriptionSupport() {
-		return false;
+        return false;
     }
     public String getDescription(String page) throws IOException {
-    	throw new IOException("getDescription not implemented"); // Do I do this or make an abstract function?
+        throw new IOException("getDescription not implemented"); // Do I do this or make an abstract function?
     }
     public int descSleepTime() {
         return 0;
@@ -90,23 +90,23 @@ public abstract class AbstractHTMLRipper extends AlbumRipper {
             }
             if (hasDescriptionSupport() && Utils.getConfigBoolean("descriptions.save", false)) {
                 logger.debug("Fetching description(s) from " + doc.location());
-            	List<String> textURLs = getDescriptionsFromPage(doc);
-            	if (textURLs.size() > 0) {
+                List<String> textURLs = getDescriptionsFromPage(doc);
+                if (textURLs.size() > 0) {
                     logger.debug("Found description link(s) from " + doc.location());
-            		for (String textURL : textURLs) {
-            			if (isStopped()) {
-            				break;
-            			}
-            			textindex += 1;
-            			logger.debug("Getting description from " + textURL);
+                    for (String textURL : textURLs) {
+                        if (isStopped()) {
+                            break;
+                        }
+                        textindex += 1;
+                        logger.debug("Getting description from " + textURL);
                         sleep(descSleepTime());
-            			String tempDesc = getDescription(textURL);
-            			if (tempDesc != null) {
-            			    logger.debug("Got description: " + tempDesc);
-            				saveText(new URL(textURL), "", tempDesc, textindex);
-            			}
-            		}
-            	}
+                        String tempDesc = getDescription(textURL);
+                        if (tempDesc != null) {
+                            logger.debug("Got description: " + tempDesc);
+                            saveText(new URL(textURL), "", tempDesc, textindex);
+                        }
+                    }
+                }
             }
 
             if (isStopped() || isThisATest()) {

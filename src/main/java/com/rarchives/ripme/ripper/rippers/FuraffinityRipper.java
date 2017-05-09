@@ -246,7 +246,7 @@ public class FuraffinityRipper extends AbstractHTMLRipper {
                 if (donwloadLink.size() == 0) {
                     logger.warn("Could not download " + this.url);
                     return;
-            	}
+                }
                 String link = "http:" + donwloadLink.first().attr("href");
                 logger.info("Found URL " + link);
                 String[] fileNameSplit = link.split("/");
@@ -266,7 +266,7 @@ public class FuraffinityRipper extends AbstractHTMLRipper {
                 addURLToDownload(new URL(link),saveAS,"",cookies);
             } catch (IOException e) {
                 logger.error("[!] Exception while loading/parsing " + this.url, e);
-        	}
+            }
         }
     }
 

@@ -195,7 +195,7 @@ public abstract class AbstractRipper
     public void retrievingSource(String url) {
         RipStatusMessage msg = new RipStatusMessage(STATUS.LOADING_RESOURCE, url);
         if (observer != null) {
-			observer.update(this,  msg);
+            observer.update(this, msg);
         }
     }
 

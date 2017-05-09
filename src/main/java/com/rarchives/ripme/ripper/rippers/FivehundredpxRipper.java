@@ -259,50 +259,50 @@ public class FivehundredpxRipper extends AbstractJSONRipper {
         List<String> imageURLs = new ArrayList<String>();
         JSONArray photos = json.getJSONArray("photos");
         for (int i = 0; i < photos.length(); i++) {
-        	if (super.isStopped()) {
-        		break;
-        	}
+            if (super.isStopped()) {
+                break;
+            }
             JSONObject photo = photos.getJSONObject(i);
             String imageURL = null;
             String rawUrl = "https://500px.com" + photo.getString("url");
             Document doc;
             Elements images = new Elements();
             try {
-            	logger.debug("Loading " + rawUrl);
-            	super.retrievingSource(rawUrl);
-            	doc = Http.url(rawUrl).get();
-            	images = doc.select("div#preload img");
+                logger.debug("Loading " + rawUrl);
+                super.retrievingSource(rawUrl);
+                doc = Http.url(rawUrl).get();
+                images = doc.select("div#preload img");
             }
             catch (IOException e) {
-            	logger.error("Error fetching full-size image from " + rawUrl, e);
+                logger.error("Error fetching full-size image from " + rawUrl, e);
             }
             if (images.size() > 0) {
-            	imageURL = images.first().attr("src");
-            	logger.debug("Found full-size non-watermarked image: " + imageURL);
+                imageURL = images.first().attr("src");
+                logger.debug("Found full-size non-watermarked image: " + imageURL);
             }
             else {
-            	logger.debug("Falling back to image_url from API response");
-				imageURL = photo.getString("image_url");
-				imageURL = imageURL.replaceAll("/4\\.", "/5.");
-				// See if there's larger images
-				for (String imageSize : new String[] { "2048" } ) {
-					String fsURL = imageURL.replaceAll("/5\\.", "/" + imageSize + ".");
-					sleep(10);
-					if (urlExists(fsURL)) {
-						logger.info("Found larger image at " + fsURL);
-						imageURL = fsURL;
-						break;
-					}
-				}
+                logger.debug("Falling back to image_url from API response");
+                imageURL = photo.getString("image_url");
+                imageURL = imageURL.replaceAll("/4\\.", "/5.");
+                // See if there's larger images
+                for (String imageSize : new String[] { "2048" } ) {
+                    String fsURL = imageURL.replaceAll("/5\\.", "/" + imageSize + ".");
+                    sleep(10);
+                    if (urlExists(fsURL)) {
+                        logger.info("Found larger image at " + fsURL);
+                        imageURL = fsURL;
+                        break;
+                    }
+                }
             }
             if (imageURL == null) {
-            	logger.error("Failed to find image for photo " + photo.toString());
+                logger.error("Failed to find image for photo " + photo.toString());
             }
             else {
-				imageURLs.add(imageURL);
-				if (isThisATest()) {
-					break;
-				}
+                imageURLs.add(imageURL);
+                if (isThisATest()) {
+                    break;
+                }
             }
         }
         return imageURLs;

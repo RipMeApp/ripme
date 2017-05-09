@@ -48,7 +48,7 @@ public class DeviantartRipper extends AbstractHTMLRipper {
     }
     @Override
     public boolean hasDescriptionSupport() {
-		return true;
+        return true;
     }
     @Override
     public URL sanitizeURL(URL url) throws MalformedURLException {
