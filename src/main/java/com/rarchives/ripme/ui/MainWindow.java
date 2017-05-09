@@ -279,13 +279,13 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         } catch (Exception e) { }
         JPanel ripPanel = new JPanel(new GridBagLayout());
         ripPanel.setBorder(emptyBorder);
-        
-        gbc.gridx = 0; gbc.fill = GridBagConstraints.HORIZONTAL; ripPanel.add(new JLabel("URL:", JLabel.RIGHT), gbc);
-        gbc.gridx = 1; gbc.fill = GridBagConstraints.HORIZONTAL; ripPanel.add(ripTextfield, gbc);
-        gbc.gridx = 2; gbc.fill = GridBagConstraints.HORIZONTAL; ripPanel.add(ripButton, gbc);
-        gbc.gridx = 3; gbc.fill = GridBagConstraints.HORIZONTAL; ripPanel.add(stopButton, gbc);
+
+        gbc.gridx = 0; ripPanel.add(new JLabel("URL:", JLabel.RIGHT), gbc);
+        gbc.gridx = 1; ripPanel.add(ripTextfield, gbc);
+        gbc.gridx = 2; ripPanel.add(ripButton, gbc);
+        gbc.gridx = 3; ripPanel.add(stopButton, gbc);
         gbc.fill = GridBagConstraints.BOTH;
-        
+
         statusLabel  = new JLabel("Inactive");
         statusLabel.setHorizontalAlignment(JLabel.CENTER);
         openButton = new JButton();
