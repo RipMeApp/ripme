@@ -17,7 +17,6 @@ import com.rarchives.ripme.ripper.rippers.ripperhelpers.ChanSite;
 import com.rarchives.ripme.utils.Http;
 import com.rarchives.ripme.utils.RipUtils;
 
-
 public class ChanRipper extends AbstractHTMLRipper {
     public static List<ChanSite> explicit_domains = Arrays.asList(
         new ChanSite(Arrays.asList("boards.4chan.org"),   Arrays.asList("4cdn.org", "is.4chan.org", "is2.4chan.org")),
@@ -93,7 +92,7 @@ public class ChanRipper extends AbstractHTMLRipper {
      * FoolFuuka uses the same (url) layout as 4chan
      *
      * @param url
-     * @return 
+     * @return
      *      The thread id in string form
      * @throws java.net.MalformedURLException */
     @Override
@@ -194,12 +193,11 @@ public class ChanRipper extends AbstractHTMLRipper {
                     continue;
                 }
 
-                List<URL> urls = RipUtils.getFilesFromURL(originalURL);                
-                //for (int i = 0; i < urls.size(); i++) {  
+                List<URL> urls = RipUtils.getFilesFromURL(originalURL);
                 for(URL imageurl : urls){
                     imageURLs.add(imageurl.toString());
-                }                
-            }            
+                }
+            }
 
             if (isStopped()) {
                 break;

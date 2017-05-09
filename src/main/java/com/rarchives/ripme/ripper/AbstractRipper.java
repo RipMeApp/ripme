@@ -22,13 +22,13 @@ import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
 import com.rarchives.ripme.utils.Utils;
 import java.lang.reflect.InvocationTargetException;
 
-public abstract class AbstractRipper 
+public abstract class AbstractRipper
                 extends Observable
                 implements RipperInterface, Runnable {
 
     protected static final Logger logger = Logger.getLogger(AbstractRipper.class);
 
-    public static final String USER_AGENT = 
+    public static final String USER_AGENT =
             "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:36.0) Gecko/20100101 Firefox/36.0";
 
     protected URL url;
@@ -60,7 +60,7 @@ public abstract class AbstractRipper
     /**
      * Ensures inheriting ripper can rip this URL, raises exception if not.
      * Otherwise initializes working directory and thread pool.
-     * 
+     *
      * @param url
      *      URL to rip.
      * @throws IOException
@@ -149,8 +149,7 @@ public abstract class AbstractRipper
         }
         return addURLToDownload(url, saveFileAs, referrer, cookies);
     }
-    
-    
+
     /**
      * Queues file to be downloaded and saved. With options.
      * @param url
@@ -267,10 +266,10 @@ public abstract class AbstractRipper
     public URL getURL() {
         return url;
     }
-    
+
     /**
      * @return
-     *      Path to the directory in which all files 
+     *      Path to the directory in which all files
      *      ripped via this ripper will be stored.
      */
     public File getWorkingDir() {
@@ -278,7 +277,7 @@ public abstract class AbstractRipper
     }
 
     public abstract void setWorkingDir(URL url) throws IOException;
-    
+
     public String getAlbumTitle(URL url) throws MalformedURLException {
         return getHost() + "_" + getGID(url);
     }
@@ -354,9 +353,9 @@ public abstract class AbstractRipper
         }
         observer.update(this, new RipStatusMessage(status, message));
     }
-    
+
     public abstract int getCompletionPercentage();
-    
+
     public abstract String getStatusText();
 
     /**
@@ -381,7 +380,7 @@ public abstract class AbstractRipper
             cleanup();
         }
     }
-    
+
     public void cleanup() {
         if (this.workingDir.list().length == 0) {
             // No files, delete the dir
@@ -392,7 +391,7 @@ public abstract class AbstractRipper
             }
         }
     }
-    
+
     public boolean sleep(int milliseconds) {
         try {
             logger.debug("Sleeping " + milliseconds + "ms");
