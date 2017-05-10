@@ -2,24 +2,15 @@ package com.rarchives.ripme.ripper.rippers;
 
 import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 import com.rarchives.ripme.utils.Http;
-import com.rarchives.ripme.utils.Utils;
-import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
 
 public class MyhentaicomicsRipper extends AbstractHTMLRipper {
     public static boolean isTag;
@@ -95,13 +86,13 @@ public class MyhentaicomicsRipper extends AbstractHTMLRipper {
         List<String> albumPagesList = new ArrayList<String>();
         int pageNumber = 1;
         albumPagesList.add("http://myhentaicomics.com/index.php/" + pageUrl.split("\\?")[0] + "?page=" + Integer.toString(pageNumber));
-            while(true) {
+            while (true) {
                 String urlToGet = "http://myhentaicomics.com/index.php/" + pageUrl.split("\\?")[0] + "?page=" + Integer.toString(pageNumber);
                 Document nextAlbumPage;
                 try {
                     logger.info("Grabbing " + urlToGet);
                     nextAlbumPage = Http.url(urlToGet).get();
-                } catch(IOException e){
+                } catch(IOException e) {
                     logger.warn("Failed to log link in Jsoup");
                     nextAlbumPage = null;
                     e.printStackTrace();
@@ -109,7 +100,7 @@ public class MyhentaicomicsRipper extends AbstractHTMLRipper {
                 Element elem = nextAlbumPage.select("a.ui-icon-right").first();
                 String nextPage = elem.attr("href");
                 pageNumber = pageNumber + 1;
-                if(nextPage == ""){
+                if (nextPage == "") {
                     logger.info("Got " + pageNumber + " pages");
                     break;
                 }
@@ -145,7 +136,7 @@ public class MyhentaicomicsRipper extends AbstractHTMLRipper {
                         else {
                             album_doc = Http.url(element).get();
                         }
-                    } catch(IOException e){
+                    } catch(IOException e) {
                         logger.warn("Failed to log link in Jsoup");
                         album_doc = null;
                         e.printStackTrace();

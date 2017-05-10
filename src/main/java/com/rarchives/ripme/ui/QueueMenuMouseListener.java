@@ -27,12 +27,12 @@ public class QueueMenuMouseListener extends MouseAdapter {
         removeSelected = new AbstractAction("Remove Selected") {
             @Override
             public void actionPerformed(ActionEvent ae) {
-				Object o = queueList.getSelectedValue();
-            	while (o != null) {
-            		queueListModel.removeElement(o);
-            		o = queueList.getSelectedValue();
-            	}
-            	updateUI();
+                Object o = queueList.getSelectedValue();
+                while (o != null) {
+                    queueListModel.removeElement(o);
+                    o = queueList.getSelectedValue();
+                }
+                updateUI();
             }
         };
         popup.add(removeSelected);
@@ -40,8 +40,8 @@ public class QueueMenuMouseListener extends MouseAdapter {
         clearQueue = new AbstractAction("Remove All") {
             @Override
             public void actionPerformed(ActionEvent ae) {
-            	queueListModel.removeAllElements();
-            	updateUI();
+                queueListModel.removeAllElements();
+                updateUI();
             }
         };
         popup.add(clearQueue);

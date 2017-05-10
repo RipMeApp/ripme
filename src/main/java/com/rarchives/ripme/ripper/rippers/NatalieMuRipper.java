@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -13,15 +12,14 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
 import com.rarchives.ripme.ripper.AbstractHTMLRipper;
-import com.rarchives.ripme.ripper.rippers.ripperhelpers.ChanSite;
 import com.rarchives.ripme.utils.Http;
 
 public class NatalieMuRipper extends AbstractHTMLRipper {
-    
+
     public int news_id = 0;
-    
+
     public NatalieMuRipper(URL url) throws IOException {
-        super(url);        
+        super(url);
     }
 
     @Override
@@ -37,12 +35,12 @@ public class NatalieMuRipper extends AbstractHTMLRipper {
     }
 
     @Override
-    public boolean canRip(URL url) {    
+    public boolean canRip(URL url) {
         //urls like:
         // http://cdn2.natalie.mu/music/gallery/show/news_id/xxxxxx/image_id/xxxxxx
         // http://cdn2.natalie.mu/music/news/140411
         return  url.toExternalForm().contains("natalie.mu")     // Most chans
-             && (url.toExternalForm().contains("/news_id/") 
+             && (url.toExternalForm().contains("/news_id/")
              || url.toExternalForm().contains("/news/")); // 4chan, archive.moe
     }
 
@@ -61,13 +59,13 @@ public class NatalieMuRipper extends AbstractHTMLRipper {
             m = p.matcher(u);
             if (m.find()) {
                 return m.group(1);
-            }           
+            }
         } else if (u.contains("/news/")) {
             p = Pattern.compile("/news/([0-9]+)/?");
             m = p.matcher(u);
             if (m.find()) {
                 return m.group(1);
-            }        
+            }
         }
 
         throw new MalformedURLException(
@@ -85,18 +83,18 @@ public class NatalieMuRipper extends AbstractHTMLRipper {
     public Document getFirstPage() throws IOException {
         return Http.url(this.url).get();
     }
-    
+
     @Override
     public List<String> getURLsFromPage(Document page) {
         List<String> imageURLs = new ArrayList<String>();
         Pattern p; Matcher m;
         //select all album thumbnails
         for (Element span : page.select(".NA_articleGallery span")) {
-            if (!span.hasAttr("style")) { 
+            if (!span.hasAttr("style")) {
                 continue;
             }
             String style = span.attr("style").trim();
-            
+
             p = Pattern.compile("background-image: url\\((.*list_thumb_inbox.*)\\);", Pattern.CASE_INSENSITIVE);
             m = p.matcher(style);
             if (m.find()) {
@@ -118,7 +116,7 @@ public class NatalieMuRipper extends AbstractHTMLRipper {
                 if (isThisATest()) {
                     break;
                 }
-            }                       
+            }
 
             if (isStopped()) {
                 break;
@@ -130,5 +128,5 @@ public class NatalieMuRipper extends AbstractHTMLRipper {
     @Override
     public void downloadURL(URL url, int index) {
         addURLToDownload(url, getPrefix(index), "", this.url.toString(), null);
-    } 
+    }
 }

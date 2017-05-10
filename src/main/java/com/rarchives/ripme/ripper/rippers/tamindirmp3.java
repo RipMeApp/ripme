@@ -39,13 +39,13 @@ public class tamindirmp3 extends AbstractHTMLRipper {
         throw new MalformedURLException("Expected tamindir.com URL format: " +
                         "tamindir.com/files/albumid - got " + url + "instead");
     }
-    
+
     @Override
     public Document getFirstPage() throws IOException {
         return Http.url(url).get();
-        
+
     }
-    
+
     @Override
     public List<String> getURLsFromPage(Document doc) {
         List<String> music = new ArrayList<String>();

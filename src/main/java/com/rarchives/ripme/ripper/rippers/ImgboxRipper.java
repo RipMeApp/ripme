@@ -39,7 +39,7 @@ public class ImgboxRipper extends AbstractHTMLRipper {
         throw new MalformedURLException("Expected imgbox.com URL format: " +
                         "imgbox.com/g/albumid - got " + url + "instead");
     }
-    
+
     @Override
     public Document getFirstPage() throws IOException {
         return Http.url(url).get();

@@ -69,7 +69,7 @@ public class GirlsOfDesireRipper extends AbstractHTMLRipper {
         }
         return albumDoc;
     }
-    
+
     @Override
     public List<String> getURLsFromPage(Document doc) {
         List<String> imageURLs = new ArrayList<String>();
@@ -83,7 +83,7 @@ public class GirlsOfDesireRipper extends AbstractHTMLRipper {
         }
         return imageURLs;
     }
-    
+
     @Override
     public void downloadURL(URL url, int index) {
         // Send referrer when downloading images

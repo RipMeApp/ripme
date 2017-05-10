@@ -93,7 +93,7 @@ public class ImagefapRipper extends AbstractHTMLRipper {
                         + "imagefap.com/pictures/####..."
                         + " Got: " + url);
     }
-    
+
     @Override
     public Document getFirstPage() throws IOException {
         if (albumDoc == null) {
@@ -101,7 +101,7 @@ public class ImagefapRipper extends AbstractHTMLRipper {
         }
         return albumDoc;
     }
-    
+
     @Override
     public Document getNextPage(Document doc) throws IOException {
         String nextURL = null;
@@ -117,7 +117,7 @@ public class ImagefapRipper extends AbstractHTMLRipper {
         sleep(1000);
         return Http.url(nextURL).get();
     }
-    
+
     @Override
     public List<String> getURLsFromPage(Document doc) {
         List<String> imageURLs = new ArrayList<String>();
@@ -137,7 +137,7 @@ public class ImagefapRipper extends AbstractHTMLRipper {
         }
         return imageURLs;
     }
-    
+
     @Override
     public void downloadURL(URL url, int index) {
         // Send referrer for image downloads

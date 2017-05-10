@@ -29,7 +29,7 @@ public class GfycatRipper extends VideoRipper {
     public boolean canRip(URL url) {
         return url.getHost().endsWith(HOST);
     }
-    
+
     @Override
     public URL sanitizeURL(URL url) throws MalformedURLException {
         return url;

@@ -80,7 +80,7 @@ public class PornhubRipper extends AlbumRipper {
     public void rip() throws IOException {
         int index = 0;
         String nextUrl = this.url.toExternalForm();
-        
+
         if (albumDoc == null) {
             logger.info("    Retrieving album page " + nextUrl);
             sendUpdate(STATUS.LOADING_RESOURCE, nextUrl);
@@ -127,7 +127,7 @@ public class PornhubRipper extends AlbumRipper {
 
     /**
      * Helper class to find and download images found on "image" pages
-     * 
+     *
      * Handles case when site has IP-banned the user.
      */
     private class PornhubImageThread extends Thread {
@@ -144,28 +144,28 @@ public class PornhubRipper extends AlbumRipper {
         public void run() {
             fetchImage();
         }
-        
+
         private void fetchImage() {
             try {
                 Document doc = Http.url(this.url)
                                    .referrer(this.url)
                                    .get();
-                
+
                 // Find image
                 Elements images = doc.select("#photoImageSection img");
                 Element image = images.first();
                 String imgsrc = image.attr("src");
                 logger.info("Found URL " + imgsrc + " via " + images.get(0));
-                
+
                 // Provide prefix and let the AbstractRipper "guess" the filename
                 String prefix = "";
                 if (Utils.getConfigBoolean("download.save_order", true)) {
                     prefix = String.format("%03d_", index);
                 }
-                
+
                 URL imgurl = new URL(url, imgsrc);
                 addURLToDownload(imgurl, prefix);
-                
+
             } catch (IOException e) {
                 logger.error("[!] Exception while loading/parsing " + this.url, e);
             }

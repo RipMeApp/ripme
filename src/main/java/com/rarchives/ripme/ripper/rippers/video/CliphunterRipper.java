@@ -33,7 +33,7 @@ public class CliphunterRipper extends VideoRipper {
         Matcher m = p.matcher(url.toExternalForm());
         return m.matches();
     }
-    
+
     @Override
     public URL sanitizeURL(URL url) throws MalformedURLException {
         return url;

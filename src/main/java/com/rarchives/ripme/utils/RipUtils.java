@@ -23,7 +23,6 @@ import com.rarchives.ripme.ripper.rippers.VidbleRipper;
 import com.rarchives.ripme.ripper.rippers.video.GfycatRipper;
 import com.rarchives.ripme.ripper.rippers.EroShareRipper;
 
-
 public class RipUtils {
     private static final Logger logger = Logger.getLogger(RipUtils.class);
 
@@ -32,7 +31,7 @@ public class RipUtils {
 
         logger.debug("Checking " + url);
         // Imgur album
-        if ((url.getHost().endsWith("imgur.com")) 
+        if ((url.getHost().endsWith("imgur.com"))
                 && url.toExternalForm().contains("imgur.com/a/")) {
             try {
                 logger.debug("Fetching imgur album at " + url);
@@ -47,7 +46,7 @@ public class RipUtils {
             return result;
         }
         else if (url.getHost().endsWith("imgur.com") && url.toExternalForm().contains(",")) {
-        	// Imgur image series.
+            // Imgur image series.
             try {
                 logger.debug("Fetching imgur series at " + url);
                 ImgurAlbum imgurAlbum = ImgurRipper.getImgurSeries(url);
@@ -91,7 +90,7 @@ public class RipUtils {
             }
             return result;
         }
-        
+
         Pattern p = Pattern.compile("https?://i.reddituploads.com/([a-zA-Z0-9]+)\\?.*");
         Matcher m = p.matcher(url.toExternalForm());
         if (m.matches()) {
@@ -117,9 +116,9 @@ public class RipUtils {
                 logger.error("[!] Not a valid URL: '" + url + "'", e);
             }
         }
-        
-        if (url.getHost().equals("imgur.com") || 
-                url.getHost().equals("m.imgur.com")){
+
+        if (url.getHost().equals("imgur.com") ||
+                url.getHost().equals("m.imgur.com")) {
             try {
                 // Fetch the page
                 Document doc = Jsoup.connect(url.toExternalForm())
@@ -138,13 +137,13 @@ public class RipUtils {
             } catch (IOException ex) {
                 logger.error("[!] Error", ex);
             }
-            
+
         }
-        
+
         logger.error("[!] Unable to rip URL: " + url);
         return result;
     }
-    
+
     public static Pattern getURLRegex() {
         return Pattern.compile("(https?://[a-zA-Z0-9\\-\\.]+\\.[a-zA-Z]{2,3}(/\\S*))");
     }
@@ -165,18 +164,6 @@ public class RipUtils {
         if (url == null) url = urlFromSiteDirectoryName(dir, "vinebox", "http://finebox.co/u/", "");
         if (url == null) url = urlFromSiteDirectoryName(dir, "imgbox", "http://imgbox.com/g/", "");
         if (url == null) url = urlFromSiteDirectoryName(dir, "modelmayhem", "http://www.modelmayhem.com/", "");
-        /*
-        if (url == null) url = urlFromSiteDirectoryName(dir, "", "", "");
-        if (url == null) url = urlFromSiteDirectoryName(dir, "", "", "");
-        if (url == null) url = urlFromSiteDirectoryName(dir, "", "", "");
-        if (url == null) url = urlFromSiteDirectoryName(dir, "", "", "");
-        if (url == null) url = urlFromSiteDirectoryName(dir, "", "", "");
-        if (url == null) url = urlFromSiteDirectoryName(dir, "", "", "");
-        if (url == null) url = urlFromSiteDirectoryName(dir, "", "", "");
-        if (url == null) url = urlFromSiteDirectoryName(dir, "", "", "");
-        if (url == null) url = urlFromSiteDirectoryName(dir, "", "", "");
-        if (url == null) url = urlFromSiteDirectoryName(dir, "", "", "");
-        */
         //if (url == null) url = urlFromSiteDirectoryName(dir, "8muses",      "http://www.8muses.com/index/category/", "");
         return url;
     }
@@ -248,9 +235,8 @@ public class RipUtils {
         List<String> fields = Arrays.asList(dir.split("_"));
         String album = fields.get(1);
         String url = "http://";
-        if ( (fields.contains("top") || fields.contains("new"))
-          && (fields.contains("year") || fields.contains("month") || fields.contains("week") || fields.contains("all"))
-           ) {
+        if ((fields.contains("top") || fields.contains("new"))
+                && (fields.contains("year") || fields.contains("month") || fields.contains("week") || fields.contains("all"))) {
             // Subreddit
             fields.remove(0); // "imgur"
             String sub = "";

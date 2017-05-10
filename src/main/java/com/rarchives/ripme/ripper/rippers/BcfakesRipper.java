@@ -46,12 +46,12 @@ public class BcfakesRipper extends AbstractHTMLRipper {
                         + "http://www.bcfakes.com/celebritylist/name"
                         + " Got: " + url);
     }
-    
+
     @Override
     public Document getFirstPage() throws IOException {
         return Http.url(url).get();
     }
-    
+
     @Override
     public Document getNextPage(Document doc) throws IOException {
         // Find next page
@@ -63,7 +63,7 @@ public class BcfakesRipper extends AbstractHTMLRipper {
         sleep(500);
         return Http.url(nextUrl).get();
     }
-    
+
     @Override
     public List<String> getURLsFromPage(Document doc) {
         List<String> imageURLs = new ArrayList<String>();

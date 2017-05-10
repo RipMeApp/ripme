@@ -26,13 +26,13 @@ public class RedditRipper extends AlbumRipper {
 
     private static final String HOST   = "reddit";
     private static final String DOMAIN = "reddit.com";
-    
+
     private static final String REDDIT_USER_AGENT = "RipMe:github/4pr0n/ripme:" + UpdateUtils.getThisJarVersion() + " (by /u/4_pr0n)";
 
     private static final int SLEEP_TIME = 2000;
 
     //private static final String USER_AGENT = "ripme by /u/4_pr0n github.com/4pr0n/ripme";
-    
+
     private long lastRequestTime = 0;
 
     @Override
@@ -68,9 +68,9 @@ public class RedditRipper extends AlbumRipper {
         }
         waitForThreads();
     }
-    
-    
-    
+
+
+
     private URL getAndParseAndReturnNext(URL url) throws IOException {
         JSONArray jsonArray = getJsonArrayFromURL(url), children;
         JSONObject json, data;
@@ -108,7 +108,7 @@ public class RedditRipper extends AlbumRipper {
         }
         return nextURL;
     }
-    
+
     private JSONArray getJsonArrayFromURL(URL url) throws IOException {
         // Wait 2 seconds before the next request
         long timeDiff = System.currentTimeMillis() - lastRequestTime;
@@ -132,7 +132,7 @@ public class RedditRipper extends AlbumRipper {
         JSONArray jsonArray = new JSONArray();
         if (jsonObj instanceof JSONObject) {
             jsonArray.put( (JSONObject) jsonObj);
-        } else if (jsonObj instanceof JSONArray){
+        } else if (jsonObj instanceof JSONArray) {
             jsonArray = (JSONArray) jsonObj;
         } else {
             logger.warn("[!] Unable to parse JSON: " + jsonString);

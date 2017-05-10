@@ -55,12 +55,12 @@ public class ImagevenueRipper extends AbstractHTMLRipper {
                         + "http://...imagevenue.com/galshow.php?gal=gallery_...."
                         + " Got: " + url);
     }
-    
+
     @Override
     public Document getFirstPage() throws IOException {
         return Http.url(url).get();
     }
-    
+
     public List<String> getURLsFromPage(Document doc) {
         List<String> imageURLs = new ArrayList<String>();
         for (Element thumb : doc.select("a[target=_blank]")) {
@@ -68,7 +68,7 @@ public class ImagevenueRipper extends AbstractHTMLRipper {
         }
         return imageURLs;
     }
-    
+
     public void downloadURL(URL url, int index) {
         ImagevenueImageThread t = new ImagevenueImageThread(url, index);
         imagevenueThreadPool.addThread(t);
@@ -76,7 +76,7 @@ public class ImagevenueRipper extends AbstractHTMLRipper {
 
     /**
      * Helper class to find and download images found on "image" pages
-     * 
+     *
      * Handles case when site has IP-banned the user.
      */
     private class ImagevenueImageThread extends Thread {
@@ -93,7 +93,7 @@ public class ImagevenueRipper extends AbstractHTMLRipper {
         public void run() {
             fetchImage();
         }
-        
+
         private void fetchImage() {
             try {
                 Document doc = Http.url(url)

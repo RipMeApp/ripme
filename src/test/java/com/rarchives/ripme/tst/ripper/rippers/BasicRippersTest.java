@@ -106,7 +106,7 @@ public class BasicRippersTest extends RippersTest {
         testRipper(ripper);
     }
     */
-    
+
     public void test500pxAlbum() throws IOException {
         FivehundredpxRipper ripper = new FivehundredpxRipper(new URL("https://marketplace.500px.com/alexander_hurman"));
         testRipper(ripper);
@@ -261,7 +261,7 @@ public class BasicRippersTest extends RippersTest {
         AbstractRipper ripper = new VineRipper(new URL("https://vine.co/u/954440445776334848"));
         testRipper(ripper);
     }
-    
+
     public void testVkSubalbumRip() throws IOException {
         VkRipper ripper = new VkRipper(new URL("http://vk.com/album45506334_0"));
         testRipper(ripper);
