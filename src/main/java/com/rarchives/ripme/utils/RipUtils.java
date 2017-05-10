@@ -46,7 +46,7 @@ public class RipUtils {
             return result;
         }
         else if (url.getHost().endsWith("imgur.com") && url.toExternalForm().contains(",")) {
-        	// Imgur image series.
+            // Imgur image series.
             try {
                 logger.debug("Fetching imgur series at " + url);
                 ImgurAlbum imgurAlbum = ImgurRipper.getImgurSeries(url);
