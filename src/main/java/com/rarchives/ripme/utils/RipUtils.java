@@ -118,7 +118,7 @@ public class RipUtils {
         }
 
         if (url.getHost().equals("imgur.com") ||
-                url.getHost().equals("m.imgur.com")){
+                url.getHost().equals("m.imgur.com")) {
             try {
                 // Fetch the page
                 Document doc = Jsoup.connect(url.toExternalForm())

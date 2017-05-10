@@ -251,7 +251,7 @@ public class Utils {
                 jarPath = URLDecoder.decode(jarPath, "UTF-8");
                 JarFile jarFile = new JarFile(jarPath);
                 Enumeration<JarEntry> entries = jarFile.entries();
-                while(entries.hasMoreElements()) {
+                while (entries.hasMoreElements()) {
                     JarEntry nextElement = entries.nextElement();
                     String entryName = nextElement.getName();
                     if (entryName.startsWith(relPath)

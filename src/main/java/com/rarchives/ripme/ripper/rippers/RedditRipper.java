@@ -132,7 +132,7 @@ public class RedditRipper extends AlbumRipper {
         JSONArray jsonArray = new JSONArray();
         if (jsonObj instanceof JSONObject) {
             jsonArray.put( (JSONObject) jsonObj);
-        } else if (jsonObj instanceof JSONArray){
+        } else if (jsonObj instanceof JSONArray) {
             jsonArray = (JSONArray) jsonObj;
         } else {
             logger.warn("[!] Unable to parse JSON: " + jsonString);

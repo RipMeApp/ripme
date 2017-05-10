@@ -146,7 +146,7 @@ public class App {
             try {
                 String url;
                 BufferedReader br = new BufferedReader(new FileReader(filename));
-                while((url = br.readLine()) != null) {
+                while ((url = br.readLine()) != null) {
                     // loop through each url in the file and proces each url individually.
                     ripURL(url.trim(), cl.hasOption("n"));
                 }
