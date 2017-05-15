@@ -49,7 +49,7 @@ public class DeviantartRipper extends AbstractHTMLRipper {
     }
     @Override
     public boolean hasDescriptionSupport() {
-		return true;
+        return true;
     }
     @Override
     public URL sanitizeURL(URL url) throws MalformedURLException {
@@ -132,7 +132,8 @@ public class DeviantartRipper extends AbstractHTMLRipper {
                         continue;
                     }
                     script = script.substring(script.indexOf(id));
-                    script = script.substring(script.indexOf("},\"src\":\"") + 9, script.indexOf("\",\"type\""));                        // first },"src":"url" after id
+                    // first },"src":"url" after id
+                    script = script.substring(script.indexOf("},\"src\":\"") + 9, script.indexOf("\",\"type\""));
                     return script.replace("\\/", "/");
                 } catch (StringIndexOutOfBoundsException e) {
                     logger.debug("Unable to get json link from " + page.location());
@@ -156,23 +157,23 @@ public class DeviantartRipper extends AbstractHTMLRipper {
             }
             // Get full-sized image via helper methods
             String fullSize = null;
-			if (thumb.attr("data-super-full-img").contains("//orig")) {
-				fullSize = thumb.attr("data-super-full-img");
-			} else {
-				String spanUrl = thumb.attr("href");
-				String fullSize1 = jsonToImage(page,spanUrl.substring(spanUrl.lastIndexOf('-') + 1));
-				if (fullSize1 == null || !fullSize1.contains("//orig")) {
+            if (thumb.attr("data-super-full-img").contains("//orig")) {
+                fullSize = thumb.attr("data-super-full-img");
+            } else {
+                String spanUrl = thumb.attr("href");
+                String fullSize1 = jsonToImage(page,spanUrl.substring(spanUrl.lastIndexOf('-') + 1));
+                if (fullSize1 == null || !fullSize1.contains("//orig")) {
                     fullSize = smallToFull(img.attr("src"), spanUrl);
-				}
-				if (fullSize == null && fullSize1 != null) {
+                }
+                if (fullSize == null && fullSize1 != null) {
                     fullSize = fullSize1;
                 }
-			}
+            }
             if (fullSize == null) {
-			    if (thumb.attr("data-super-full-img") != null) {
-			        fullSize = thumb.attr("data-super-full-img");
+                if (thumb.attr("data-super-full-img") != null) {
+                    fullSize = thumb.attr("data-super-full-img");
                 } else if (thumb.attr("data-super-img") != null) {
-			        fullSize = thumb.attr("data-super-img");
+                    fullSize = thumb.attr("data-super-img");
                 } else {
                     continue;
                 }
@@ -273,7 +274,7 @@ public class DeviantartRipper extends AbstractHTMLRipper {
         }
         return result.toString();
     }
-    
+
     /**
      * Attempts to download description for image.
      * Comes in handy when people put entire stories in their description.
@@ -329,7 +330,7 @@ public class DeviantartRipper extends AbstractHTMLRipper {
                 return null;
         }
     }
-   
+
     /**
      * If largest resolution for image at 'thumb' is found, starts downloading
      * and returns null.
