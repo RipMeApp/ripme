@@ -53,11 +53,11 @@ public abstract class AbstractHTMLRipper extends AlbumRipper {
     public boolean hasDescriptionSupport() {
         return false;
     }
-    public String getDescription(String page) throws IOException {
+    public String[] getDescription(String url,Document page) throws IOException {
         throw new IOException("getDescription not implemented"); // Do I do this or make an abstract function?
     }
     public int descSleepTime() {
-        return 0;
+        return 100;
     }
     @Override
     public void rip() throws IOException {
@@ -99,12 +99,23 @@ public abstract class AbstractHTMLRipper extends AlbumRipper {
                         }
                         textindex += 1;
                         logger.debug("Getting description from " + textURL);
-                        sleep(descSleepTime());
-                        String tempDesc = getDescription(textURL);
+                        String[] tempDesc = getDescription(textURL,doc);
                         if (tempDesc != null) {
-                            logger.debug("Got description: " + tempDesc);
-                            saveText(new URL(textURL), "", tempDesc, textindex);
+                            if (Utils.getConfigBoolean("file.overwrite", false) || !(new File(
+                                    workingDir.getCanonicalPath()
+                                            + ""
+                                            + File.separator
+                                            + getPrefix(index)
+                                            + (tempDesc.length > 1 ? tempDesc[1] : fileNameFromURL(new URL(textURL)))
+                                            + ".txt").exists())) {
+                                logger.debug("Got description from " + textURL);
+                                saveText(new URL(textURL), "", tempDesc[0], textindex, (tempDesc.length > 1 ? tempDesc[1] : fileNameFromURL(new URL(textURL))));
+                                sleep(descSleepTime());
+                            } else {
+                                logger.debug("Description from " + textURL + " already exists.");
+                            }
                         }
+
                     }
                 }
             }
@@ -129,19 +140,27 @@ public abstract class AbstractHTMLRipper extends AlbumRipper {
         }
         waitForThreads();
     }
+    public String fileNameFromURL(URL url) {
+        String saveAs = url.toExternalForm();
+        if (saveAs.substring(saveAs.length() - 1) == "/") { saveAs = saveAs.substring(0,saveAs.length() - 1) ;}
+        saveAs = saveAs.substring(saveAs.lastIndexOf('/')+1);
+        if (saveAs.indexOf('?') >= 0) { saveAs = saveAs.substring(0, saveAs.indexOf('?')); }
+        if (saveAs.indexOf('#') >= 0) { saveAs = saveAs.substring(0, saveAs.indexOf('#')); }
+        if (saveAs.indexOf('&') >= 0) { saveAs = saveAs.substring(0, saveAs.indexOf('&')); }
+        if (saveAs.indexOf(':') >= 0) { saveAs = saveAs.substring(0, saveAs.indexOf(':')); }
+        return saveAs;
+    }
     public boolean saveText(URL url, String subdirectory, String text, int index) {
+        String saveAs = fileNameFromURL(url);
+        return saveText(url,subdirectory,text,index,saveAs);
+    }
+    public boolean saveText(URL url, String subdirectory, String text, int index, String fileName) {
         // Not the best for some cases, like FurAffinity. Overridden there.
         try {
             stopCheck();
         } catch (IOException e) {
             return false;
         }
-        String saveAs = url.toExternalForm();
-        saveAs = saveAs.substring(saveAs.lastIndexOf('/')+1);
-        if (saveAs.indexOf('?') >= 0) { saveAs = saveAs.substring(0, saveAs.indexOf('?')); }
-        if (saveAs.indexOf('#') >= 0) { saveAs = saveAs.substring(0, saveAs.indexOf('#')); }
-        if (saveAs.indexOf('&') >= 0) { saveAs = saveAs.substring(0, saveAs.indexOf('&')); }
-        if (saveAs.indexOf(':') >= 0) { saveAs = saveAs.substring(0, saveAs.indexOf(':')); }
         File saveFileAs;
         try {
             if (!subdirectory.equals("")) { // Not sure about this part
@@ -153,7 +172,7 @@ public abstract class AbstractHTMLRipper extends AlbumRipper {
                     + subdirectory
                     + File.separator
                     + getPrefix(index)
-                    + saveAs
+                    + fileName
                     + ".txt");
             // Write the file
             FileOutputStream out = (new FileOutputStream(saveFileAs));

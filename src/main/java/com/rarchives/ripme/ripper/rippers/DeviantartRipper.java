@@ -1,6 +1,7 @@
 package com.rarchives.ripme.ripper.rippers;
 
 import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -114,18 +115,39 @@ public class DeviantartRipper extends AbstractHTMLRipper {
             cookies = loginToDeviantart();
         } catch (Exception e) {
             logger.warn("Failed to login: ", e);
+            cookies.put("agegate_state","1"); // Bypasses the age gate
         }
         return Http.url(this.url)
                    .cookies(cookies)
                    .get();
     }
-
+    public String jsonToImage(Document page,String id) {
+        Elements js = page.select("script[type=\"text/javascript\"]");
+        for (Element tag : js) {
+            if (tag.html().contains("window.__pageload")) {
+                try {
+                    String script = tag.html();
+                    script = script.substring(script.indexOf("window.__pageload"));
+                    if (script.indexOf(id) < 0) {
+                        continue;
+                    }
+                    script = script.substring(script.indexOf(id));
+                    // first },"src":"url" after id
+                    script = script.substring(script.indexOf("},\"src\":\"") + 9, script.indexOf("\",\"type\""));
+                    return script.replace("\\/", "/");
+                } catch (StringIndexOutOfBoundsException e) {
+                    logger.debug("Unable to get json link from " + page.location());
+                }
+            }
+        }
+        return null;
+    }
     @Override
     public List<String> getURLsFromPage(Document page) {
         List<String> imageURLs = new ArrayList<String>();
 
         // Iterate over all thumbnails
-        for (Element thumb : page.select("div.zones-container a.thumb")) {
+        for (Element thumb : page.select("div.zones-container span.thumb")) {
             if (isStopped()) {
                 break;
             }
@@ -133,17 +155,28 @@ public class DeviantartRipper extends AbstractHTMLRipper {
             if (img.attr("transparent").equals("false")) {
                 continue; // a.thumbs to other albums are invisible
             }
-
             // Get full-sized image via helper methods
             String fullSize = null;
-            try {
-                fullSize = thumbToFull(img.attr("src"), true);
-            } catch (Exception e) {
-                logger.info("Attempting to get full size image from " + thumb.attr("href"));
-                fullSize = smallToFull(img.attr("src"), thumb.attr("href"));
+            if (thumb.attr("data-super-full-img").contains("//orig")) {
+                fullSize = thumb.attr("data-super-full-img");
+            } else {
+                String spanUrl = thumb.attr("href");
+                String fullSize1 = jsonToImage(page,spanUrl.substring(spanUrl.lastIndexOf('-') + 1));
+                if (fullSize1 == null || !fullSize1.contains("//orig")) {
+                    fullSize = smallToFull(img.attr("src"), spanUrl);
+                }
+                if (fullSize == null && fullSize1 != null) {
+                    fullSize = fullSize1;
+                }
             }
             if (fullSize == null) {
-                continue;
+                if (thumb.attr("data-super-full-img") != null) {
+                    fullSize = thumb.attr("data-super-full-img");
+                } else if (thumb.attr("data-super-img") != null) {
+                    fullSize = thumb.attr("data-super-img");
+                } else {
+                    continue;
+                }
             }
             if (triedURLs.contains(fullSize)) {
                 logger.warn("Already tried to download " + fullSize);
@@ -162,9 +195,9 @@ public class DeviantartRipper extends AbstractHTMLRipper {
     @Override
     public List<String> getDescriptionsFromPage(Document page) {
         List<String> textURLs = new ArrayList<String>();
-
         // Iterate over all thumbnails
-        for (Element thumb : page.select("div.zones-container a.thumb")) {
+        for (Element thumb : page.select("div.zones-container span.thumb")) {
+            logger.info(thumb.attr("href"));
             if (isStopped()) {
                 break;
             }
@@ -173,6 +206,7 @@ public class DeviantartRipper extends AbstractHTMLRipper {
                 continue; // a.thumbs to other albums are invisible
             }
             textURLs.add(thumb.attr("href"));
+
         }
         return textURLs;
     }
@@ -181,14 +215,15 @@ public class DeviantartRipper extends AbstractHTMLRipper {
         if (isThisATest()) {
             return null;
         }
-        Elements nextButtons = page.select("li.next > a");
+        Elements nextButtons = page.select("link[rel=\"next\"]");
         if (nextButtons.size() == 0) {
-            throw new IOException("No next page found");
+            if (page.select("link[rel=\"prev\"]").size() == 0) {
+                throw new IOException("No next page found");
+            } else {
+                throw new IOException("Hit end of pages");
+            }
         }
         Element a = nextButtons.first();
-        if (a.hasClass("disabled")) {
-            throw new IOException("Hit end of pages");
-        }
         String nextPage = a.attr("href");
         if (nextPage.startsWith("/")) {
             nextPage = "http://" + this.url.getHost() + nextPage;
@@ -244,36 +279,54 @@ public class DeviantartRipper extends AbstractHTMLRipper {
      * Attempts to download description for image.
      * Comes in handy when people put entire stories in their description.
      * If no description was found, returns null.
-     * @param page The page the description will be retrieved from
-     * @return The description
+     * @param url The URL the description will be retrieved from
+     * @param page The gallery page the URL was found on
+     * @return A String[] with first object being the description, and the second object being image file name if found.
      */
     @Override
-    public String getDescription(String page) {
+    public String[] getDescription(String url,Document page) {
         if (isThisATest()) {
             return null;
         }
         try {
             // Fetch the image page
-            Response resp = Http.url(page)
+            Response resp = Http.url(url)
                                 .referrer(this.url)
                                 .cookies(cookies)
                                 .response();
             cookies.putAll(resp.cookies());
 
             // Try to find the description
-            Elements els = resp.parse().select("div[class=dev-description]");
-            if (els.size() == 0) {
+            Document documentz = resp.parse();
+            Element ele = documentz.select("div.dev-description").first();
+            if (ele == null) {
                 throw new IOException("No description found");
             }
-            Document documentz = resp.parse();
-            Element ele = documentz.select("div[class=dev-description]").get(0);
             documentz.outputSettings(new Document.OutputSettings().prettyPrint(false));
             ele.select("br").append("\\n");
             ele.select("p").prepend("\\n\\n");
-            return Jsoup.clean(ele.html().replaceAll("\\\\n", System.getProperty("line.separator")), "", Whitelist.none(), new Document.OutputSettings().prettyPrint(false));
+            String fullSize = null;
+            Element thumb = page.select("div.zones-container span.thumb[href=\"" + url + "\"]").get(0);
+            if (!thumb.attr("data-super-full-img").isEmpty()) {
+                fullSize = thumb.attr("data-super-full-img");
+                String[] split = fullSize.split("/");
+                fullSize = split[split.length - 1];
+            } else {
+                String spanUrl = thumb.attr("href");
+                fullSize = jsonToImage(page,spanUrl.substring(spanUrl.lastIndexOf('-') + 1));
+                if (fullSize != null) {
+                    String[] split = fullSize.split("/");
+                    fullSize = split[split.length - 1];
+                }
+            }
+            if (fullSize == null) {
+                return new String[] {Jsoup.clean(ele.html().replaceAll("\\\\n", System.getProperty("line.separator")), "", Whitelist.none(), new Document.OutputSettings().prettyPrint(false))};
+            }
+            fullSize = fullSize.substring(0, fullSize.lastIndexOf("."));
+            return new String[] {Jsoup.clean(ele.html().replaceAll("\\\\n", System.getProperty("line.separator")), "", Whitelist.none(), new Document.OutputSettings().prettyPrint(false)),fullSize};
             // TODO Make this not make a newline if someone just types \n into the description.
         } catch (IOException ioe) {
-                logger.info("Failed to get description " + page + " : '" + ioe.getMessage() + "'");
+                logger.info("Failed to get description at " + url + ": '" + ioe.getMessage() + "'");
                 return null;
         }
     }
@@ -294,23 +347,44 @@ public class DeviantartRipper extends AbstractHTMLRipper {
                                 .cookies(cookies)
                                 .response();
             cookies.putAll(resp.cookies());
-
-            // Try to find the download button
             Document doc = resp.parse();
-            Elements els = doc.select("a.dev-page-download");
-            if (els.size() > 0) {
-                // Full-size image
-                String fsimage = els.get(0).attr("href");
-                logger.info("Found download page: " + fsimage);
-                return fsimage;
-            }
-
+            Elements els = doc.select("img.dev-content-full");
+            String fsimage = null;
             // Get the largest resolution image on the page
-            els = doc.select("img.dev-content-full");
             if (els.size() > 0) {
                 // Large image
-                String fsimage = els.get(0).attr("src");
+                fsimage = els.get(0).attr("src");
                 logger.info("Found large-scale: " + fsimage);
+                if (fsimage.contains("//orig")) {
+                    return fsimage;
+                }
+            }
+            // Try to find the download button
+            els = doc.select("a.dev-page-download");
+            if (els.size() > 0) {
+                // Full-size image
+                String downloadLink = els.get(0).attr("href");
+                logger.info("Found download button link: " + downloadLink);
+                HttpURLConnection con = (HttpURLConnection) new URL(downloadLink).openConnection();
+                con.setRequestProperty("Referer",this.url.toString());
+                String cookieString = "";
+                for (Map.Entry<String, String> entry : cookies.entrySet()) {
+                    cookieString = cookieString + entry.getKey() + "=" + entry.getValue() + "; ";
+                }
+                cookieString = cookieString.substring(0,cookieString.length() - 1);
+                con.setRequestProperty("Cookie",cookieString);
+                con.setRequestProperty("User-Agent",this.USER_AGENT);
+                con.setInstanceFollowRedirects(true);
+                con.connect();
+                int code = con.getResponseCode();
+                String location = con.getURL().toString();
+                con.disconnect();
+                if (location.contains("//orig")) {
+                    fsimage = location;
+                    logger.info("Found image download: " + location);
+                }
+            }
+            if (fsimage != null) {
                 return fsimage;
             }
             throw new IOException("No download page found");
