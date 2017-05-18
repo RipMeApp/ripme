@@ -109,30 +109,55 @@ public class InstagramRipper extends AbstractJSONRipper {
         }
     }
 
+    private String getOriginalUrl(String imageURL) {
+        imageURL = imageURL.replaceAll("scontent.cdninstagram.com/hphotos-", "igcdn-photos-d-a.akamaihd.net/hphotos-ak-");
+        imageURL = imageURL.replaceAll("s640x640/", "");
+
+        // it appears ig now allows higher resolution images to be uploaded but are artifically cropping the images to
+        // 1080x1080 to preserve legacy support. the cropping string below isnt present on ig website and removing it
+        // displays the uncropped image.
+        imageURL = imageURL.replaceAll("c0.114.1080.1080/", "");
+
+        imageURL = imageURL.replaceAll("\\?ig_cache_key.+$", "");
+        return imageURL;
+    }
+    
+    private String getMedia(JSONObject data) {
+        String imageURL = "";
+        if (data.has("videos")) {
+            imageURL = data.getJSONObject("videos").getJSONObject("standard_resolution").getString("url");
+        } else if (data.has("images")) {
+           imageURL = data.getJSONObject("images").getJSONObject("standard_resolution").getString("url");
+        }
+        return imageURL;
+    }
+	
     @Override
     public List<String> getURLsFromJSON(JSONObject json) {
         List<String> imageURLs = new ArrayList<String>();
         JSONArray datas = json.getJSONArray("items");
         for (int i = 0; i < datas.length(); i++) {
             JSONObject data = (JSONObject) datas.get(i);
-            String imageURL;
-            if (data.has("videos")) {
-                imageURL = data.getJSONObject("videos").getJSONObject("standard_resolution").getString("url");
-            } else if (data.has("images")) {
-                imageURL = data.getJSONObject("images").getJSONObject("standard_resolution").getString("url");
+			
+            String dataType = data.getString("type");
+            if (dataType.equals("carousel")) {
+                JSONArray carouselMedias = data.getJSONArray("carousel_media");
+                for (int carouselIndex = 0; carouselIndex < carouselMedias.length(); carouselIndex++) {
+                    JSONObject carouselMedia = (JSONObject) carouselMedias.get(carouselIndex);
+                    String imageURL = getMedia(carouselMedia);
+                    if (!imageURL.equals("")) {
+                        imageURL = getOriginalUrl(imageURL);
+                        imageURLs.add(imageURL);
+                    }
+                }
             } else {
-                continue;
+                String imageURL = getMedia(data);
+                if (!imageURL.equals("")) {
+                    imageURL = getOriginalUrl(imageURL);
+                    imageURLs.add(imageURL);
+                }
             }
-            imageURL = imageURL.replaceAll("scontent.cdninstagram.com/hphotos-", "igcdn-photos-d-a.akamaihd.net/hphotos-ak-");
-            imageURL = imageURL.replaceAll("s640x640/", "");
 
-            // it appears ig now allows higher resolution images to be uploaded but are artifically cropping the images to
-            // 1080x1080 to preserve legacy support. the cropping string below isnt present on ig website and removing it
-            // displays the uncropped image.
-            imageURL = imageURL.replaceAll("c0.114.1080.1080/", "");
-
-            imageURL = imageURL.replaceAll("\\?ig_cache_key.+$", "");
-            imageURLs.add(imageURL);
             if (isThisATest()) {
                 break;
             }
