@@ -9,17 +9,10 @@ import java.net.URL;
  * Oh well, here's to encapsulation and abstraction! (raises glass)
  */
 public interface RipperInterface {
-
     void rip() throws IOException;
-
     boolean canRip(URL url);
-
     URL sanitizeURL(URL url) throws MalformedURLException;
-
     void setWorkingDir(URL url) throws IOException;
-
     String getHost();
-
     String getGID(URL url) throws MalformedURLException;
-
 }
