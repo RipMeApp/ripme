@@ -1,6 +1,7 @@
 {
-  "latestVersion" : "1.4.15",
+  "latestVersion" : "1.4.16",
   "changeList" : [
+    "1.4.16: Fix Eightmuses; Add Instagram album support",
     "1.4.15: Fixed DeviantArt Ripper",
     "1.4.14: Improvements to ChanRipper (rip external links), MyHentaiComics, and Twitter (video and albums)",
     "1.4.13: Fixed furaffinity ripper.",
