@@ -20,7 +20,6 @@ import com.rarchives.ripme.ui.RipStatusHandler;
 import com.rarchives.ripme.ui.RipStatusMessage;
 import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
 import com.rarchives.ripme.utils.Utils;
-import java.lang.reflect.InvocationTargetException;
 
 public abstract class AbstractRipper
                 extends Observable
@@ -294,31 +293,19 @@ public abstract class AbstractRipper
     public static AbstractRipper getRipper(URL url) throws Exception {
         for (Constructor<?> constructor : getRipperConstructors("com.rarchives.ripme.ripper.rippers")) {
             try {
-                AlbumRipper ripper = (AlbumRipper) constructor.newInstance(url);
+                AlbumRipper ripper = (AlbumRipper) constructor.newInstance(url); // by design: can throw ClassCastException
                 logger.debug("Found album ripper: " + ripper.getClass().getName());
                 return ripper;
-            } catch (InstantiationException e) {
-                // Incompatible rippers *will* throw exceptions during instantiation.
-            } catch (IllegalAccessException e) {
-                // Incompatible rippers *will* throw exceptions during instantiation.
-            } catch (IllegalArgumentException e) {
-                // Incompatible rippers *will* throw exceptions during instantiation.
-            } catch (InvocationTargetException e) {
+            } catch (Exception e) {
                 // Incompatible rippers *will* throw exceptions during instantiation.
             }
         }
         for (Constructor<?> constructor : getRipperConstructors("com.rarchives.ripme.ripper.rippers.video")) {
             try {
-                VideoRipper ripper = (VideoRipper) constructor.newInstance(url);
+                VideoRipper ripper = (VideoRipper) constructor.newInstance(url); // by design: can throw ClassCastException
                 logger.debug("Found video ripper: " + ripper.getClass().getName());
                 return ripper;
-            } catch (InstantiationException e) {
-                // Incompatible rippers *will* throw exceptions during instantiation.
-            } catch (IllegalAccessException e) {
-                // Incompatible rippers *will* throw exceptions during instantiation.
-            } catch (IllegalArgumentException e) {
-                // Incompatible rippers *will* throw exceptions during instantiation.
-            } catch (InvocationTargetException e) {
+            } catch (Exception e) {
                 // Incompatible rippers *will* throw exceptions during instantiation.
             }
         }
