@@ -11,6 +11,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+import java.util.Arrays;
 
 public class MyhentaicomicsRipper extends AbstractHTMLRipper {
     public static boolean isTag;
@@ -45,7 +47,7 @@ public class MyhentaicomicsRipper extends AbstractHTMLRipper {
             return ma.group(1);
         }
 
-        Pattern pat = Pattern.compile("^http://myhentaicomics.com/index.php/tag/([0-9]*)/?([a-zA-Z%0-9+\\?=:]*)?$");
+        Pattern pat = Pattern.compile("^https?://myhentaicomics.com/index.php/tag/([0-9]*)/?([a-zA-Z%0-9+\\?=:]*)?$");
         Matcher mat = pat.matcher(url.toExternalForm());
         if (mat.matches()) {
             isTag = true;
@@ -113,70 +115,133 @@ public class MyhentaicomicsRipper extends AbstractHTMLRipper {
             return albumPagesList;
         }
 
-
-    @Override
-    public List<String> getURLsFromPage(Document doc) {
-        List<String> result = new ArrayList<String>();
+    public List<String> getAlbumsFromPage(String url) {
         List<String> pagesToRip;
-        // Checks if this is a comic page or a page of albums
-        if (doc.toString().contains("class=\"g-item g-album\"")) {
-            for (Element elem : doc.select("li.g-album > a")) {
-                String link = elem.attr("href");
-                logger.info("Grabbing album " + link);
-                pagesToRip = getNextAlbumPage(link);
-                logger.info(pagesToRip);
-                for (String element : pagesToRip) {
-                    Document album_doc;
-                    try {
-                        logger.info("grabbing " + element + " with jsoup");
-                        boolean startsWithhttp = element.startsWith("http");
-                        if (startsWithhttp == false) {
-                            album_doc = Http.url("http://myhentaicomics.com/" + element).get();
-                        }
-                        else {
-                            album_doc = Http.url(element).get();
-                        }
-                    } catch(IOException e) {
-                        logger.warn("Failed to log link in Jsoup");
-                        album_doc = null;
-                        e.printStackTrace();
+        List<String> result = new ArrayList<String>();
+        logger.info("Running getAlbumsFromPage");
+        Document doc;
+        try {
+            doc = Http.url("http://myhentaicomics.com" + url).get();
+        } catch(IOException e){
+            logger.warn("Failed to log link in Jsoup");
+            doc = null;
+            e.printStackTrace();
+        }
+        // This for goes over every album on the page
+        for (Element elem : doc.select("li.g-album > a")) {
+            String link = elem.attr("href");
+            logger.info("Grabbing album " + link);
+            pagesToRip = getNextAlbumPage(link);
+            logger.info(pagesToRip);
+            for (String element : pagesToRip) {
+                Document album_doc;
+                try {
+                    logger.info("grabbing " + element + " with jsoup");
+                    boolean startsWithHttp = element.startsWith("http://");
+                    if (!startsWithHttp) {
+                        album_doc = Http.url("http://myhentaicomics.com/" + element).get();
                     }
-                    for (Element el :album_doc.select("img")) {
-                        String imageSource = el.attr("src");
-                        // This bool is here so we don't try and download the site logo
-                        boolean b = imageSource.startsWith("http");
-                        if (b == false) {
-                            // We replace thumbs with resizes so we can the full sized images
-                            imageSource = imageSource.replace("thumbs", "resizes");
-                            String url_string = "http://myhentaicomics.com/" + imageSource;
-                            url_string = url_string.replace("%20", "_");
-                            url_string = url_string.replace("%27", "");
-                            url_string = url_string.replace("%28", "_");
-                            url_string = url_string.replace("%29", "_");
-                            url_string = url_string.replace("%2C", "_");
-                            if (isTag == true) {
-                                logger.info("Downloading from a tag or search");
-                                try {
-                                    addURLToDownload(new URL("http://myhentaicomics.com/" + imageSource), "", url_string.split("/")[6]);
-                                }
-                                catch(MalformedURLException e) {
-                                    logger.warn("Malformed URL");
-                                    e.printStackTrace();
-                                }
+                    else {
+                        album_doc = Http.url(element).get();
+                    }
+                } catch(IOException e){
+                    logger.warn("Failed to log link in Jsoup");
+                    album_doc = null;
+                    e.printStackTrace();
+                }
+                for (Element el :album_doc.select("img")) {
+                    String imageSource = el.attr("src");
+                    // This bool is here so we don't try and download the site logo
+                    if (!imageSource.startsWith("http://")) {
+                        // We replace thumbs with resizes so we can the full sized images
+                        imageSource = imageSource.replace("thumbs", "resizes");
+                        String url_string = "http://myhentaicomics.com/" + imageSource;
+                        url_string = url_string.replace("%20", "_");
+                        url_string = url_string.replace("%27", "");
+                        url_string = url_string.replace("%28", "_");
+                        url_string = url_string.replace("%29", "_");
+                        url_string = url_string.replace("%2C", "_");
+                        if (isTag == true) {
+                            logger.info("Downloading from a tag or search");
+                            try {
+                                sleep(500);
                                 result.add("http://myhentaicomics.com/" + imageSource);
+                                addURLToDownload(new URL("http://myhentaicomics.com/" + imageSource), "", url_string.split("/")[6]);
+                            }
+                            catch(MalformedURLException e) {
+                                logger.warn("Malformed URL");
+                                e.printStackTrace();
                             }
                         }
                     }
                 }
             }
+        }
         return result;
+    }
+
+    public List<String> getListOfPages(Document doc) {
+        List<String> pages = new ArrayList<String>();
+        // Get the link from the last button
+        String nextPageUrl = doc.select("a.ui-icon-right").last().attr("href");
+        Pattern pat = Pattern.compile("\\/index\\.php\\/tag\\/[0-9]*\\/[a-zA-Z0-9_\\-\\:+]*\\?page=(\\d+)");
+        Matcher mat = pat.matcher(nextPageUrl);
+        if (mat.matches()) {
+            logger.debug("Getting pages from a tag");
+            String base_link = mat.group(0).replaceAll("\\?page=\\d+", "");
+            logger.debug("base_link is " + base_link);
+            int numOfPages = Integer.parseInt(mat.group(1));
+            for (int x = 1; x != numOfPages +1; x++) {
+                logger.debug("running loop");
+                String link = base_link + "?page=" + Integer.toString(x);
+                pages.add(link);
+            }
+        } else {
+            Pattern pa = Pattern.compile("\\/index\\.php\\/search\\?q=[a-zA-Z0-9_\\-\\:]*\\&page=(\\d+)");
+            Matcher ma = pa.matcher(nextPageUrl);
+            if (ma.matches()) {
+                logger.debug("Getting pages from a search");
+                String base_link = ma.group(0).replaceAll("page=\\d+", "");
+                logger.debug("base_link is " + base_link);
+                int numOfPages = Integer.parseInt(ma.group(1));
+                for (int x = 1; x != numOfPages +1; x++) {
+                    logger.debug("running loop");
+                    String link = base_link + "page=" + Integer.toString(x);
+                    logger.debug(link);
+                    pages.add(link);
+                }
+            }
+        }
+        return pages;
+    }
+
+    @Override
+    public List<String> getURLsFromPage(Document doc) {
+        List<String> result = new ArrayList<String>();
+        // Checks if this is a comic page or a page of albums
+        // If true the page is a page of albums
+        if (doc.toString().contains("class=\"g-item g-album\"")) {
+            // This if checks that there is more than 1 page
+            if (doc.select("a.ui-icon-right").last().attr("href") != "") {
+                // There is more than one page so we call getListOfPages
+                List<String> pagesToRip = getListOfPages(doc);
+                logger.debug("Pages to rip = " + pagesToRip);
+                for (String url : pagesToRip) {
+                    logger.debug("Getting albums from " + url);
+                    result = getAlbumsFromPage(url);
+                }
+            } else {
+                logger.debug("There is only one page on this page of albums");
+                // There is only 1 page so we call getAlbumsFromPage and pass it the page url
+                result = getAlbumsFromPage(doc.select("div.g-description > a").attr("href"));
+            }
+            return result;
         }
         else {
         for (Element el : doc.select("img")) {
             String imageSource = el.attr("src");
             // This bool is here so we don't try and download the site logo
-            boolean b = imageSource.startsWith("http");
-            if (b == false) {
+            if (!imageSource.startsWith("http://")) {
             // We replace thumbs with resizes so we can the full sized images
             imageSource = imageSource.replace("thumbs", "resizes");
             result.add("http://myhentaicomics.com/" + imageSource);
