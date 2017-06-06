@@ -49,7 +49,7 @@ public class InstagramRipper extends AbstractJSONRipper {
 
     @Override
     public URL sanitizeURL(URL url) throws MalformedURLException {
-        Pattern p = Pattern.compile("^.*instagram\\.com/([a-zA-Z0-9\\-_.]{3,}).*$");
+        Pattern p = Pattern.compile("^.*instagram\\.com/([a-zA-Z0-9\\-_.]+).*$");
         Matcher m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             return new URL("http://instagram.com/" + m.group(1));
