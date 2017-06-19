@@ -16,7 +16,7 @@ public class RipStatusComplete {
         this.dir = dir;
         this.count = count;
     }
-    
+
     public String getDir() {
         String result;
         try {

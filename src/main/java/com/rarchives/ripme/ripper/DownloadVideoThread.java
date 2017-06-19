@@ -135,7 +135,7 @@ public class DownloadVideoThread extends Thread {
         observer.downloadCompleted(url, saveAs);
         logger.info("[+] Saved " + url + " as " + this.prettySaveAs);
     }
-    
+
     private int getTotalBytes(URL url) throws IOException {
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestMethod("HEAD");

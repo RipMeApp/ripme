@@ -94,7 +94,7 @@ public class MyhentaicomicsRipper extends AbstractHTMLRipper {
                 try {
                     logger.info("Grabbing " + urlToGet);
                     nextAlbumPage = Http.url(urlToGet).get();
-                } catch(IOException e) {
+                } catch (IOException e) {
                     logger.warn("Failed to log link in Jsoup");
                     nextAlbumPage = null;
                     e.printStackTrace();
@@ -122,7 +122,7 @@ public class MyhentaicomicsRipper extends AbstractHTMLRipper {
         Document doc;
         try {
             doc = Http.url("http://myhentaicomics.com" + url).get();
-        } catch(IOException e){
+        } catch (IOException e) {
             logger.warn("Failed to log link in Jsoup");
             doc = null;
             e.printStackTrace();
@@ -144,7 +144,7 @@ public class MyhentaicomicsRipper extends AbstractHTMLRipper {
                     else {
                         album_doc = Http.url(element).get();
                     }
-                } catch(IOException e){
+                } catch (IOException e) {
                     logger.warn("Failed to log link in Jsoup");
                     album_doc = null;
                     e.printStackTrace();
@@ -168,7 +168,7 @@ public class MyhentaicomicsRipper extends AbstractHTMLRipper {
                                 result.add("http://myhentaicomics.com/" + imageSource);
                                 addURLToDownload(new URL("http://myhentaicomics.com/" + imageSource), "", url_string.split("/")[6]);
                             }
-                            catch(MalformedURLException e) {
+                            catch (MalformedURLException e) {
                                 logger.warn("Malformed URL");
                                 e.printStackTrace();
                             }

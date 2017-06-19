@@ -41,7 +41,7 @@ public class NfsfwRipper extends AlbumRipper {
     public URL sanitizeURL(URL url) throws MalformedURLException {
         return url;
     }
-    
+
     @Override
     public String getAlbumTitle(URL url) throws MalformedURLException {
         try {
@@ -185,7 +185,7 @@ public class NfsfwRipper extends AlbumRipper {
             }
         }
     }
-    
+
     private class Pair {
         public String first, second;
         public Pair(String first, String second) {

@@ -17,7 +17,7 @@ import com.rarchives.ripme.ripper.AbstractRipper;
 
 /**
  * Wrapper around the Jsoup connection methods.
- * 
+ *
  * Benefit is retry logic.
  */
 public class Http {
@@ -38,7 +38,7 @@ public class Http {
         this.url = url.toExternalForm();
         defaultSettings();
     }
-    
+
     public static Http url(String url) {
         return new Http(url);
     }

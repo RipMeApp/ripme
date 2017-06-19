@@ -34,7 +34,7 @@ public class TeenplanetRipper extends AlbumRipper {
     public URL sanitizeURL(URL url) throws MalformedURLException {
         return url;
     }
-    
+
     public String getAlbumTitle(URL url) throws MalformedURLException {
         try {
             // Attempt to use album title as GID

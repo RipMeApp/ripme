@@ -40,7 +40,7 @@ public abstract class AbstractJSONRipper extends AlbumRipper {
     public boolean canRip(URL url) {
         return url.getHost().endsWith(getDomain());
     }
-    
+
     @Override
     public URL sanitizeURL(URL url) throws MalformedURLException {
         return url;

@@ -31,7 +31,7 @@ public class AES {
         nBits = nBits / 8;
         byte[] data = Base64.decode(cipherText);
         byte[] k = Arrays.copyOf(key.getBytes(), nBits);
- 
+
         Cipher cipher = Cipher.getInstance("AES/CTR/NoPadding");
         SecretKey secretKey = generateSecretKey(k, nBits);
         byte[] nonceBytes = Arrays.copyOf(Arrays.copyOf(data, 8), nBits / 2);

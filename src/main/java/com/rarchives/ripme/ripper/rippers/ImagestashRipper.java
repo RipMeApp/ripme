@@ -43,7 +43,7 @@ public class ImagestashRipper extends AbstractJSONRipper {
                         + "imagestash.org/tag/tagname"
                         + " Got: " + url);
     }
-    
+
     @Override
     public JSONObject getFirstPage() throws IOException {
         String baseURL = "https://imagestash.org/images?tags="
@@ -51,7 +51,7 @@ public class ImagestashRipper extends AbstractJSONRipper {
                        + "&page=" + page;
         return Http.url(baseURL).getJSON();
     }
-    
+
     @Override
     public JSONObject getNextPage(JSONObject json) throws IOException {
         int count  = json.getInt("count"),
@@ -64,7 +64,7 @@ public class ImagestashRipper extends AbstractJSONRipper {
         page++;
         return getFirstPage();
     }
-    
+
     @Override
     public List<String> getURLsFromJSON(JSONObject json) {
         List<String> imageURLs = new ArrayList<String>();
@@ -79,7 +79,7 @@ public class ImagestashRipper extends AbstractJSONRipper {
         }
         return imageURLs;
     }
-    
+
     @Override
     public void downloadURL(URL url, int index) {
         addURLToDownload(url, getPrefix(index));

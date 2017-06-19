@@ -55,7 +55,7 @@ public class ModelmayhemRipper extends AlbumRipper {
                     .method(Method.GET)
                     .execute();
         cookies = resp.cookies();
-        
+
         resp = Jsoup.connect("http://www.modelmayhem.com/includes/js/auth.php")
                 .cookies(cookies)
                 .ignoreContentType(true)

@@ -160,7 +160,7 @@ public class VkRipper extends AlbumRipper {
         }
         waitForThreads();
     }
-    
+
     private Map<String,String> getPhotoIDsToURLs(String photoID) throws IOException {
         Map<String,String> photoIDsToURLs = new HashMap<String,String>();
         Map<String,String> postData = new HashMap<String,String>();

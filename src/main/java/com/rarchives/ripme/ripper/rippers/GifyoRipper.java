@@ -51,7 +51,7 @@ public class GifyoRipper extends AbstractHTMLRipper {
     public URL sanitizeURL(URL url) throws MalformedURLException {
         return new URL("http://gifyo.com/" + getGID(url) + "/");
     }
-    
+
     @Override
     public Document getFirstPage() throws IOException {
         Response resp = Http.url(this.url)
@@ -66,7 +66,7 @@ public class GifyoRipper extends AbstractHTMLRipper {
         }
         return doc;
     }
-    
+
     @Override
     public Document getNextPage(Document doc) throws IOException {
         page++;
@@ -89,7 +89,7 @@ public class GifyoRipper extends AbstractHTMLRipper {
         sleep(2000);
         return nextDoc;
     }
-    
+
     @Override
     public List<String> getURLsFromPage(Document doc) {
         List<String> imageURLs = new ArrayList<String>();
@@ -105,7 +105,7 @@ public class GifyoRipper extends AbstractHTMLRipper {
         logger.debug("Found " + imageURLs.size() + " images");
         return imageURLs;
     }
-    
+
     @Override
     public void downloadURL(URL url, int index) {
         addURLToDownload(url);

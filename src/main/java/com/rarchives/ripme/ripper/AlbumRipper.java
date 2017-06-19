@@ -92,7 +92,7 @@ public abstract class AlbumRipper extends AbstractRipper {
      * Uses filename from URL to decide filename.
      * @param url
      *      URL to download
-     * @return 
+     * @return
      *      True on success
      */
     public boolean addURLToDownload(URL url) {
@@ -139,7 +139,7 @@ public abstract class AlbumRipper extends AbstractRipper {
         itemsPending.remove(url);
         itemsCompleted.put(url, file);
         observer.update(this, new RipStatusMessage(STATUS.DOWNLOAD_WARN, url + " already saved as " + file.getAbsolutePath()));
-            
+
         checkIfComplete();
     }
 
@@ -160,8 +160,8 @@ public abstract class AlbumRipper extends AbstractRipper {
      * Sets directory to save all ripped files to.
      * @param url
      *      URL to define how the working directory should be saved.
-     * @throws 
-     *      IOException      
+     * @throws
+     *      IOException
      */
     @Override
     public void setWorkingDir(URL url) throws IOException {

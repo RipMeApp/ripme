@@ -8,7 +8,7 @@ import java.util.Map;
 import com.rarchives.ripme.ripper.rippers.ImagefapRipper;
 
 public class ImagefapRipperTest extends RippersTest {
-    
+
     public void testImagefapAlbums() throws IOException {
         Map<URL, String> testURLs = new HashMap<URL, String>();
         // Album with specific title

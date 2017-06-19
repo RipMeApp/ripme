@@ -109,20 +109,20 @@ public class CheebyRipper extends AbstractHTMLRipper {
         }
         return imageURLs;
     }
-    
+
     @Override
     public void rip() throws IOException {
         logger.info("Retrieving " + this.url);
         sendUpdate(STATUS.LOADING_RESOURCE, this.url.toExternalForm());
         Document doc = getFirstPage();
-        
+
         while (doc != null) {
             List<Image> images = getImagesFromPage(doc);
 
             if (images.size() == 0) {
                 throw new IOException("No images found at " + doc.location());
             }
-            
+
             for (Image image : images) {
                 if (isStopped()) {
                     break;
@@ -167,7 +167,7 @@ public class CheebyRipper extends AbstractHTMLRipper {
             }
         }
     }
-    
+
     private class Image {
         String url, prefix;
         int index;

@@ -45,7 +45,7 @@ public class PhotobucketRipper extends AlbumRipper {
             return url;
         }
     }
-    
+
     public String getAlbumTitle(URL url) throws MalformedURLException {
         try {
             // Attempt to use album title as GID
@@ -165,7 +165,7 @@ public class PhotobucketRipper extends AlbumRipper {
                 JSONObject object = objects.getJSONObject(i);
                 String image = object.getString("fullsizeUrl");
                 filesIndex += 1;
-                addURLToDownload(new URL(image), 
+                addURLToDownload(new URL(image),
                         "",
                         object.getString("location").replaceAll(" ", "_"),
                         albumDoc.location(),
@@ -179,7 +179,7 @@ public class PhotobucketRipper extends AlbumRipper {
             return new ArrayList<String>();
         }
     }
-    
+
     private List<String> getSubAlbums(String url, String currentAlbumPath) {
         List<String> result = new ArrayList<String>();
         String subdomain = url.substring(url.indexOf("://")+3);
@@ -193,7 +193,7 @@ public class PhotobucketRipper extends AlbumRipper {
             JSONObject json = Http.url(apiUrl).getJSON();
             JSONArray subalbums = json.getJSONObject("body").getJSONArray("subAlbums");
             for (int i = 0; i < subalbums.length(); i++) {
-                String suburl = 
+                String suburl =
                         "http://"
                         + subdomain
                         + ".photobucket.com"

@@ -46,7 +46,7 @@ public class EroShareRipper extends AbstractHTMLRipper {
     }
 
     @Override
-    public void downloadURL(URL url, int index){
+    public void downloadURL(URL url, int index) {
         addURLToDownload(url);
     }
     @Override
@@ -107,12 +107,12 @@ public class EroShareRipper extends AbstractHTMLRipper {
 
 
     @Override
-    public List<String> getURLsFromPage(Document doc){
+    public List<String> getURLsFromPage(Document doc) {
         List<String> URLs = new ArrayList<String>();
         //Pictures
         Elements imgs = doc.getElementsByTag("img");
-        for (Element img : imgs){
-            if (img.hasClass("album-image")){
+        for (Element img : imgs) {
+            if (img.hasClass("album-image")) {
                 String imageURL = img.attr("src");
                 imageURL = "https:" + imageURL;
                 URLs.add(imageURL);
@@ -120,8 +120,8 @@ public class EroShareRipper extends AbstractHTMLRipper {
         }
         //Videos
         Elements vids = doc.getElementsByTag("video");
-        for (Element vid : vids){
-            if (vid.hasClass("album-video")){
+        for (Element vid : vids) {
+            if (vid.hasClass("album-video")) {
                 Elements source = vid.getElementsByTag("source");
                 String videoURL = source.first().attr("src");
                 URLs.add(videoURL);
@@ -129,18 +129,18 @@ public class EroShareRipper extends AbstractHTMLRipper {
         }
         // Profile videos
         Elements links = doc.select("div.item-container > a.item");
-        for (Element link : links){
+        for (Element link : links) {
             Document video_page;
             try {
                 video_page = Http.url("https://eroshare.com" + link.attr("href")).get();
-            } catch(IOException e) {
+            } catch (IOException e) {
                 logger.warn("Failed to log link in Jsoup");
                 video_page = null;
                 e.printStackTrace();
             }
             Elements profile_vids = video_page.getElementsByTag("video");
-            for (Element vid : profile_vids){
-                if (vid.hasClass("album-video")){
+            for (Element vid : profile_vids) {
+                if (vid.hasClass("album-video")) {
                     Elements source = vid.getElementsByTag("source");
                     String videoURL = source.first().attr("src");
                     URLs.add(videoURL);
@@ -190,8 +190,8 @@ public class EroShareRipper extends AbstractHTMLRipper {
         List<URL> URLs = new ArrayList<URL>();
         //Pictures
         Elements imgs = doc.getElementsByTag("img");
-        for (Element img : imgs){
-            if (img.hasClass("album-image")){
+        for (Element img : imgs) {
+            if (img.hasClass("album-image")) {
                 String imageURL = img.attr("src");
                 imageURL = "https:" + imageURL;
                 URLs.add(new URL(imageURL));
@@ -199,8 +199,8 @@ public class EroShareRipper extends AbstractHTMLRipper {
         }
         //Videos
         Elements vids = doc.getElementsByTag("video");
-        for (Element vid : vids){
-            if (vid.hasClass("album-video")){
+        for (Element vid : vids) {
+            if (vid.hasClass("album-video")) {
                 Elements source = vid.getElementsByTag("source");
                 String videoURL = source.first().attr("src");
                 URLs.add(new URL(videoURL));

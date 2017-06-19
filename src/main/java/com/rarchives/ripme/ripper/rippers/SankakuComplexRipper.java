@@ -31,7 +31,7 @@ public class SankakuComplexRipper extends AbstractHTMLRipper {
     public String getHost() {
         return "sankakucomplex";
     }
-    
+
     @Override
     public String getDomain() {
         return "sankakucomplex.com";
@@ -52,7 +52,7 @@ public class SankakuComplexRipper extends AbstractHTMLRipper {
                         "idol.sankakucomplex.com?...&tags=something... - got " +
                         url + "instead");
     }
-    
+
     @Override
     public Document getFirstPage() throws IOException {
         if (albumDoc == null) {
@@ -62,7 +62,7 @@ public class SankakuComplexRipper extends AbstractHTMLRipper {
         }
         return albumDoc;
     }
-    
+
     @Override
     public List<String> getURLsFromPage(Document doc) {
         List<String> imageURLs = new ArrayList<String>();
@@ -78,7 +78,7 @@ public class SankakuComplexRipper extends AbstractHTMLRipper {
         }
         return imageURLs;
     }
-    
+
     @Override
     public void downloadURL(URL url, int index) {
         // Mock up the URL of the post page based on the post ID at the end of the URL.
@@ -91,7 +91,7 @@ public class SankakuComplexRipper extends AbstractHTMLRipper {
         Element pagination = doc.select("div.pagination").first();
         if (pagination.hasAttr("next-page-url")) {
             return Http.url(pagination.attr("abs:next-page-url")).cookies(cookies).get();
-        } else{
+        } else {
             return null;
         }
     }

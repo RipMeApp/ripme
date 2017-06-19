@@ -63,7 +63,7 @@ public class FlickrRipper extends AbstractHTMLRipper {
         }
         return new URL(sUrl);
     }
-    
+
     public String getAlbumTitle(URL url) throws MalformedURLException {
         if (!url.toExternalForm().contains("/sets/")) {
             return super.getAlbumTitle(url);
@@ -90,7 +90,7 @@ public class FlickrRipper extends AbstractHTMLRipper {
 
         // Root:  https://www.flickr.com/photos/115858035@N04/
         // Album: https://www.flickr.com/photos/115858035@N04/sets/72157644042355643/
-        
+
         final String domainRegex = "https?://[wm.]*flickr.com";
         final String userRegex = "[a-zA-Z0-9@]+";
         // Album
@@ -159,7 +159,7 @@ public class FlickrRipper extends AbstractHTMLRipper {
         }
         return Http.url(nextURL).get();
     }
-    
+
     @Override
     public List<String> getURLsFromPage(Document page) {
         List<String> imageURLs = new ArrayList<String>();
@@ -194,7 +194,7 @@ public class FlickrRipper extends AbstractHTMLRipper {
         }
         return imageURLs;
     }
-    
+
     @Override
     public void downloadURL(URL url, int index) {
         // Add image page to threadpool to grab the image & download it
@@ -267,7 +267,7 @@ public class FlickrRipper extends AbstractHTMLRipper {
                 logger.error("[!] Exception while loading/parsing " + this.url, e);
             }
         }
-        
+
         private Document getLargestImagePageDocument(URL url) throws IOException {
             // Get current page
             Document doc = Http.url(url).get();
