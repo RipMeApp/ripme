@@ -241,43 +241,6 @@ public class ImgurRipper extends AlbumRipper {
                             .get();
 
         // Try to use embedded JSON to retrieve images
-        Pattern p = Pattern.compile("^.*Imgur\\.Album\\.getInstance\\((.*?)\\);.*$", Pattern.DOTALL);
-        Matcher m = p.matcher(doc.body().html());
-        if (m.matches()) {
-            try {
-                JSONObject json = new JSONObject(m.group(1));
-                JSONObject jsonAlbum = json.getJSONObject("album");
-                ImgurAlbum imgurAlbum = new ImgurAlbum(url, jsonAlbum.getString("title_clean"));
-                JSONArray images = json.getJSONObject("images").getJSONArray("images");
-                int imagesLength = images.length();
-                for (int i = 0; i < imagesLength; i++) {
-                    JSONObject image = images.getJSONObject(i);
-                    String ext = image.getString("ext");
-                    if (ext.equals(".gif") && Utils.getConfigBoolean("prefer.mp4", false)) {
-                        ext = ".mp4";
-                    }
-                    URL imageURL = new URL(
-                            // CDN url is provided elsewhere in the document
-                            "http://i.imgur.com/"
-                                    + image.get("hash")
-                                    + ext);
-                    String title = null, description = null;
-                    if (image.has("title") && !image.isNull("title")) {
-                        title = image.getString("title");
-                    }
-                    if (image.has("description") && !image.isNull("description")) {
-                        description = image.getString("description");
-                    }
-                    ImgurImage imgurImage =  new ImgurImage(imageURL,
-                            title,
-                            description);
-                    imgurAlbum.addImage(imgurImage);
-                }
-                return imgurAlbum;
-            } catch (JSONException e) {
-                logger.debug("Error while parsing JSON at " + strUrl + ", continuing", e);
-            }
-        }
         p = Pattern.compile("^.*widgetFactory.mergeConfig\\('gallery', (.*?)\\);.*$", Pattern.DOTALL);
         m = p.matcher(doc.body().html());
         if (m.matches()) {
