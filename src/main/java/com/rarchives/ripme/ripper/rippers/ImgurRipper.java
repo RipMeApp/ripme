@@ -108,13 +108,25 @@ public class ImgurRipper extends AlbumRipper {
                 elems = albumDoc.select("meta[property=og:title]");
                 if (elems!=null) {
                     title = elems.attr("content");
-                    logger.debug("[*] Title is " + title);
+                    logger.debug("Title is " + title);
                 }
                 // This is here encase the album is unnamed, to prevent
                 // Imgur: The most awesome images on the Internet from being added onto the album name
                 if (title.contains("Imgur: The most awesome images on the Internet")) {
-                    logger.debug("[*] Album is untitled or imgur is return no title");
+                    logger.debug("Album is untitled or imgur is returning the default title");
+                    // We set the title to "" here because if it's found in the next few attempts it will be changed
+                    // but if it's nto found there will be no reason to set it later
                     title = "";
+                    logger.debug("Trying to use title tag to get title");
+                    elems = albumDoc.select("title");
+                    if (elems!=null) {
+                        if (elems.text().contains("Imgur: The most awesome images on the Internet")) {
+                            logger.debug("Was unable to get album title or album was untitled");
+                        }
+                        else {
+                            title = elems.text();
+                        }
+                    }
                 }
 
                 String albumTitle = "imgur_";
