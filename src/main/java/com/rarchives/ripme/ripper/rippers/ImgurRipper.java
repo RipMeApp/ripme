@@ -106,7 +106,7 @@ public class ImgurRipper extends AlbumRipper {
                 String title = null;
                 logger.info("Trying to get album title");
                 elems = albumDoc.select("meta[property=og:title]");
-                if (elems!=null) {
+                if (elems != null) {
                     title = elems.attr("content");
                     logger.debug("Title is " + title);
                 }
@@ -119,7 +119,7 @@ public class ImgurRipper extends AlbumRipper {
                     title = "";
                     logger.debug("Trying to use title tag to get title");
                     elems = albumDoc.select("title");
-                    if (elems!=null) {
+                    if (elems != null) {
                         if (elems.text().contains("Imgur: The most awesome images on the Internet")) {
                             logger.debug("Was unable to get album title or album was untitled");
                         }
