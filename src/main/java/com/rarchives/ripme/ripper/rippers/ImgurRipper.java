@@ -108,6 +108,13 @@ public class ImgurRipper extends AlbumRipper {
                 elems = albumDoc.select("meta[property=og:title]");
                 if (elems!=null) {
                     title = elems.attr("content");
+                    logger.debug("[*] Title is " + title);
+                }
+                // This is here encase the album is unnamed, to prevent
+                // Imgur: The most awesome images on the Internet from being added onto the album name
+                if (title.contains("Imgur: The most awesome images on the Internet")) {
+                    logger.debug("[*] Album is untitled or imgur is return no title");
+                    title = "";
                 }
 
                 String albumTitle = "imgur_";
@@ -119,7 +126,7 @@ public class ImgurRipper extends AlbumRipper {
                 */
                 albumTitle += gid;
                 if (title != null) {
-                    albumTitle += " (" + title + ")";
+                    albumTitle += "_" + title;
                 }
 
                 return albumTitle;
@@ -241,8 +248,8 @@ public class ImgurRipper extends AlbumRipper {
                             .get();
 
         // Try to use embedded JSON to retrieve images
-        p = Pattern.compile("^.*widgetFactory.mergeConfig\\('gallery', (.*?)\\);.*$", Pattern.DOTALL);
-        m = p.matcher(doc.body().html());
+        Pattern p = Pattern.compile("^.*widgetFactory.mergeConfig\\('gallery', (.*?)\\);.*$", Pattern.DOTALL);
+        Matcher m = p.matcher(doc.body().html());
         if (m.matches()) {
             try {
                 ImgurAlbum imgurAlbum = new ImgurAlbum(url);
