@@ -1,6 +1,7 @@
 {
-  "latestVersion" : "1.5.0",
+  "latestVersion" : "1.5.1",
   "changeList" : [
+    "1.5.1: Ensure update mechanism is working correctly.",
     "1.5.0: Change 'home' repo from 4pr0n/RipMe to RipMeApp/RipMe",
     "1.4.21: Added Chevereto ripper (hushpix.com, tag-fox.com)",
     "1.4.20: EroshareRipper can now rip user profiles",
