@@ -104,10 +104,30 @@ public class ImgurRipper extends AlbumRipper {
                 */
 
                 String title = null;
+                final String defaultTitle = "Imgur: The most awesome images on the Internet";
                 logger.info("Trying to get album title");
                 elems = albumDoc.select("meta[property=og:title]");
-                if (elems!=null) {
+                if (elems != null) {
                     title = elems.attr("content");
+                    logger.debug("Title is " + title);
+                }
+                // This is here encase the album is unnamed, to prevent
+                // Imgur: The most awesome images on the Internet from being added onto the album name
+                if (title.contains(defaultTitle)) {
+                    logger.debug("Album is untitled or imgur is returning the default title");
+                    // We set the title to "" here because if it's found in the next few attempts it will be changed
+                    // but if it's nto found there will be no reason to set it later
+                    title = "";
+                    logger.debug("Trying to use title tag to get title");
+                    elems = albumDoc.select("title");
+                    if (elems != null) {
+                        if (elems.text().contains(defaultTitle)) {
+                            logger.debug("Was unable to get album title or album was untitled");
+                        }
+                        else {
+                            title = elems.text();
+                        }
+                    }
                 }
 
                 String albumTitle = "imgur_";
@@ -119,7 +139,7 @@ public class ImgurRipper extends AlbumRipper {
                 */
                 albumTitle += gid;
                 if (title != null) {
-                    albumTitle += " (" + title + ")";
+                    albumTitle += "_" + title;
                 }
 
                 return albumTitle;
@@ -241,45 +261,8 @@ public class ImgurRipper extends AlbumRipper {
                             .get();
 
         // Try to use embedded JSON to retrieve images
-        Pattern p = Pattern.compile("^.*Imgur\\.Album\\.getInstance\\((.*?)\\);.*$", Pattern.DOTALL);
+        Pattern p = Pattern.compile("^.*widgetFactory.mergeConfig\\('gallery', (.*?)\\);.*$", Pattern.DOTALL);
         Matcher m = p.matcher(doc.body().html());
-        if (m.matches()) {
-            try {
-                JSONObject json = new JSONObject(m.group(1));
-                JSONObject jsonAlbum = json.getJSONObject("album");
-                ImgurAlbum imgurAlbum = new ImgurAlbum(url, jsonAlbum.getString("title_clean"));
-                JSONArray images = json.getJSONObject("images").getJSONArray("images");
-                int imagesLength = images.length();
-                for (int i = 0; i < imagesLength; i++) {
-                    JSONObject image = images.getJSONObject(i);
-                    String ext = image.getString("ext");
-                    if (ext.equals(".gif") && Utils.getConfigBoolean("prefer.mp4", false)) {
-                        ext = ".mp4";
-                    }
-                    URL imageURL = new URL(
-                            // CDN url is provided elsewhere in the document
-                            "http://i.imgur.com/"
-                                    + image.get("hash")
-                                    + ext);
-                    String title = null, description = null;
-                    if (image.has("title") && !image.isNull("title")) {
-                        title = image.getString("title");
-                    }
-                    if (image.has("description") && !image.isNull("description")) {
-                        description = image.getString("description");
-                    }
-                    ImgurImage imgurImage =  new ImgurImage(imageURL,
-                            title,
-                            description);
-                    imgurAlbum.addImage(imgurImage);
-                }
-                return imgurAlbum;
-            } catch (JSONException e) {
-                logger.debug("Error while parsing JSON at " + strUrl + ", continuing", e);
-            }
-        }
-        p = Pattern.compile("^.*widgetFactory.mergeConfig\\('gallery', (.*?)\\);.*$", Pattern.DOTALL);
-        m = p.matcher(doc.body().html());
         if (m.matches()) {
             try {
                 ImgurAlbum imgurAlbum = new ImgurAlbum(url);
