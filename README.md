@@ -48,7 +48,7 @@ For information about running the `.jar` file, see [the How To Run wiki](https:/
 
 Request support for more sites by adding a comment to [this Github issue](https://github.com/4pr0n/ripme/issues/502).
 
-If you're a developer, you can add your own by following the wiki guide
+If you're a developer, you can add your own Ripper by following the wiki guide
 [How To Create A Ripper for HTML Websites](https://github.com/ripmeapp/ripme/wiki/How-To-Create-A-Ripper-for-HTML-websites).
 
 # Compiling & Building

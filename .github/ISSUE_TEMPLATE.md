@@ -1,4 +1,7 @@
 <!--
+We've moved! If you are not already, please consider opening your issue at the following link:
+https://github.com/RipMeApp/ripme/issues/new
+
 If this is a bug, please fill out the information below.
 Please include any additional information that would help us fix the bug.
 If this is a feature request or other type of issue, provide whatever information you feel is appropriate.
