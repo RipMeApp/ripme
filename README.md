@@ -1,21 +1,21 @@
 # RipMe
 
 [![Build Status](https://travis-ci.org/4pr0n/ripme.svg?branch=master)](https://travis-ci.org/4pr0n/ripme)
-[![Join the chat at https://gitter.im/4pr0n-ripme/Lobby](https://badges.gitter.im/4pr0n-ripme/Lobby.svg)](https://gitter.im/4pr0n-ripme/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Join the chat at https://gitter.im/RipMeApp/Lobby](https://badges.gitter.im/RipMeApp/Lobby.svg)](https://gitter.im/RipMeApp/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 Album ripper for various websites. Runs on your computer. Requires Java 1.6
 
 ![Screenshot](http://i.imgur.com/kWzhsIu.png)
 
-## [Downloads](https://github.com/4pr0n/ripme/releases)
+## [Downloads](https://github.com/ripmeapp/ripme/releases)
 
-Download `ripme.jar` from the [latest release](https://github.com/4pr0n/ripme/releases).
+Download `ripme.jar` from the [latest release](https://github.com/ripmeapp/ripme/releases).
 
 **Note: If you're currently using version 1.2.x or 1.3.x, you will not automatically get updates to the newest versions. We recommend downloading the latest version from the link above.**
 
-For information about running the `.jar` file, see [the How To Run wiki](https://github.com/4pr0n/ripme/wiki/How-To-Run-RipMe).
+For information about running the `.jar` file, see [the How To Run wiki](https://github.com/ripmeapp/ripme/wiki/How-To-Run-RipMe).
 
-## [Changelog](https://github.com/4pr0n/ripme/blob/1.3.0/ripme.json) (ripme.json)
+## [Changelog](https://github.com/ripmeapp/ripme/blob/master/ripme.json) (ripme.json)
 
 ## [Website](http://rip.rarchives.com/)
 
@@ -24,7 +24,7 @@ For information about running the `.jar` file, see [the How To Run wiki](https:/
 * Quickly downloads all images in an online album (see supported sites below)
 * Easily re-rip albums to fetch new content
 
-## [List of Supported Sites](https://github.com/4pr0n/ripme/wiki/Supported-Sites)
+## [List of Supported Sites](https://github.com/ripmeapp/ripme/wiki/Supported-Sites)
 
 * imgur
 * twitter
@@ -49,7 +49,7 @@ For information about running the `.jar` file, see [the How To Run wiki](https:/
 Request support for more sites by adding a comment to [this Github issue](https://github.com/4pr0n/ripme/issues/502).
 
 If you're a developer, you can add your own by following the wiki guide
-[How To Create A Ripper for HTML Websites](https://github.com/4pr0n/ripme/wiki/How-To-Create-A-Ripper-for-HTML-websites).
+[How To Create A Ripper for HTML Websites](https://github.com/ripmeapp/ripme/wiki/How-To-Create-A-Ripper-for-HTML-websites).
 
 # Compiling & Building
 
