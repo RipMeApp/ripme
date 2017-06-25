@@ -23,6 +23,7 @@ import com.rarchives.ripme.utils.Http;
 public class EightmusesRipper extends AbstractHTMLRipper {
 
     private Document albumDoc = null;
+    private Boolean rippingSubAlbums = false;
     private Map<String,String> cookies = new HashMap<String,String>();
 
     public EightmusesRipper(URL url) throws IOException {
@@ -83,6 +84,7 @@ public class EightmusesRipper extends AbstractHTMLRipper {
         Pattern p = Pattern.compile("/comix/[a-zA-Z0-9\\-_/]*/\\d+");
         Matcher m = p.matcher(firstImageLink);
         if (!m.matches()) {
+            rippingSubAlbums = true;
             logger.info("Ripping subalbums");
             // Page contains subalbums (not images)
             Elements albumElements = page.select(".page-gallery > div > div > div.gallery > a.t-hover");
@@ -114,14 +116,18 @@ public class EightmusesRipper extends AbstractHTMLRipper {
                         albumTitle = albumTitle.replaceAll(" ", "_");
                         albumTitle = albumTitle.replaceAll("___", "_");
                         albumTitle = albumTitle.replaceAll("__", "_");
+                        // This is here to remove the trailing __ from folder names
+                        albumTitle = albumTitle.replaceAll("__", "");
                         logger.info("Found " + subalbumImages.size() + " images in subalbum");
-                        imageURLs.addAll(subalbumImages);
                         int x = 1;
+                        // Use the addURLToDownload here so we download each sub-album to its own folder
                         for (String image : subalbumImages) {
                             URL image_url = new URL(image);
                             addURLToDownload(image_url, Integer.toString(x) + "_", albumTitle, this.url.toExternalForm(), cookies);
                             x = x + 1;
                         }
+                        // This is a hackish workaround so ripme doesn't throw a "no images found at"
+                        imageURLs.add("http://");
                     } catch (IOException e) {
                         logger.warn("Error while loading subalbum " + subUrl, e);
                         continue;
@@ -173,7 +179,9 @@ public class EightmusesRipper extends AbstractHTMLRipper {
 
     @Override
     public void downloadURL(URL url, int index) {
-        addURLToDownload(url, getPrefix(index), "", this.url.toExternalForm(), cookies);
+        if (!rippingSubAlbums) {
+            addURLToDownload(url, getPrefix(index), "", this.url.toExternalForm(), cookies);
+        }
     }
 
     @Override
