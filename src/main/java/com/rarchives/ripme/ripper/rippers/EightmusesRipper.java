@@ -23,7 +23,6 @@ import com.rarchives.ripme.utils.Http;
 public class EightmusesRipper extends AbstractHTMLRipper {
 
     private Document albumDoc = null;
-    private Boolean rippingSubAlbums = false;
     private Map<String,String> cookies = new HashMap<String,String>();
 
     public EightmusesRipper(URL url) throws IOException {
@@ -84,7 +83,6 @@ public class EightmusesRipper extends AbstractHTMLRipper {
         Pattern p = Pattern.compile("/comix/[a-zA-Z0-9\\-_/]*/\\d+");
         Matcher m = p.matcher(firstImageLink);
         if (!m.matches()) {
-            rippingSubAlbums = true;
             logger.info("Ripping subalbums");
             // Page contains subalbums (not images)
             Elements albumElements = page.select(".page-gallery > div > div > div.gallery > a.t-hover");
@@ -127,7 +125,7 @@ public class EightmusesRipper extends AbstractHTMLRipper {
                             x = x + 1;
                         }
                         // This is a hackish workaround so ripme doesn't throw a "no images found at"
-                        imageURLs.add("http://");
+                        imageURLs.add("http://DONTDOWNLOAD");
                     } catch (IOException e) {
                         logger.warn("Error while loading subalbum " + subUrl, e);
                         continue;
@@ -179,7 +177,7 @@ public class EightmusesRipper extends AbstractHTMLRipper {
 
     @Override
     public void downloadURL(URL url, int index) {
-        if (!rippingSubAlbums) {
+        if (!url.equals("http://DONTDOWNLOAD")) {
             addURLToDownload(url, getPrefix(index), "", this.url.toExternalForm(), cookies);
         }
     }
