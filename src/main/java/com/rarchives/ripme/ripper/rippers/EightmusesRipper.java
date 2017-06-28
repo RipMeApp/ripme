@@ -24,6 +24,11 @@ public class EightmusesRipper extends AbstractHTMLRipper {
 
     private Document albumDoc = null;
     private Map<String,String> cookies = new HashMap<String,String>();
+    // TODO put up a wiki page on using maps to store titles
+    // the map for storing the title of each album when downloading sub albums
+    private Map<URL,String> urlTitles = new HashMap<URL,String>();
+
+    private Boolean rippingSubalbums = false;
 
     public EightmusesRipper(URL url) throws IOException {
         super(url);
@@ -117,15 +122,12 @@ public class EightmusesRipper extends AbstractHTMLRipper {
                         // This is here to remove the trailing __ from folder names
                         albumTitle = albumTitle.replaceAll("__", "");
                         logger.info("Found " + subalbumImages.size() + " images in subalbum");
-                        int x = 1;
-                        // Use the addURLToDownload here so we download each sub-album to its own folder
                         for (String image : subalbumImages) {
-                            URL image_url = new URL(image);
-                            addURLToDownload(image_url, Integer.toString(x) + "_", albumTitle, this.url.toExternalForm(), cookies);
-                            x = x + 1;
+                            URL imageUrl = new URL(image);
+                            urlTitles.put(imageUrl, albumTitle);
                         }
-                        // This is a hackish workaround so ripme doesn't throw a "no images found at"
-                        imageURLs.add("http://DONTDOWNLOAD");
+                        rippingSubalbums = true;
+                        imageURLs.addAll(subalbumImages);
                     } catch (IOException e) {
                         logger.warn("Error while loading subalbum " + subUrl, e);
                         continue;
@@ -177,7 +179,9 @@ public class EightmusesRipper extends AbstractHTMLRipper {
 
     @Override
     public void downloadURL(URL url, int index) {
-        if (!url.equals("http://DONTDOWNLOAD")) {
+        if (rippingSubalbums) {
+            addURLToDownload(url, getPrefix(index), urlTitles.get(url), this.url.toExternalForm(), cookies);
+        } else {
             addURLToDownload(url, getPrefix(index), "", this.url.toExternalForm(), cookies);
         }
     }
