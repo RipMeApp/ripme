@@ -276,7 +276,7 @@ public class BasicRippersTest extends RippersTest {
     }
 
     public void testXhamsterAlbums() throws IOException {
-        XhamsterRipper ripper = new XhamsterRipper(new URL("http://xhamster.com/photos/gallery/1462237/alyssa_gadson.html"));
+        XhamsterRipper ripper = new XhamsterRipper(new URL("https://xhamster.com/photos/gallery/volleyball-sluts-8305007"));
         testRipper(ripper);
     }
 }

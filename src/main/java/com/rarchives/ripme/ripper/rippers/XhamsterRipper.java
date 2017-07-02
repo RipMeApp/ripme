@@ -23,7 +23,7 @@ public class XhamsterRipper extends AlbumRipper {
 
     @Override
     public boolean canRip(URL url) {
-        Pattern p = Pattern.compile("^https?://[wmde.]*xhamster\\.com/photos/gallery/[0-9]+.*$");
+        Pattern p = Pattern.compile("^https?://[wmde.]*xhamster\\.com/photos/gallery/.*[0-9]+$");
         Matcher m = p.matcher(url.toExternalForm());
         return m.matches();
     }
@@ -87,14 +87,14 @@ public class XhamsterRipper extends AlbumRipper {
 
     @Override
     public String getGID(URL url) throws MalformedURLException {
-        Pattern p = Pattern.compile("^https?://([a-z0-9.]*?)xhamster\\.com/photos/gallery/([0-9]{1,})/.*\\.html");
+        Pattern p = Pattern.compile("^https?://[wmde.]*xhamster\\.com/photos/gallery/.*?(\\d{1,})$");
         Matcher m = p.matcher(url.toExternalForm());
         if (m.matches()) {
-            return m.group(2);
+            return m.group(1);
         }
         throw new MalformedURLException(
                 "Expected xhamster.com gallery formats: "
-                        + "xhamster.com/photos/gallery/#####/xxxxx..html"
+                        + "xhamster.com/photos/gallery/xxxxx-#####"
                         + " Got: " + url);
     }
 
