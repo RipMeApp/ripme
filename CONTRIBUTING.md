@@ -69,10 +69,10 @@ Some recommendations:
 
 * Above all, be consistent!
 * Spaces, not tabs.
-* We prefer "Egyptian brackets":
+* We prefer "Egyptian brackets" (in `if`, `for`, `while`, `switch`, etc.):
   * `if (...) {`
-  * `} else {`
   * `} else if (...) {`
+  * `} else {`
   * `}`
 * Constants in `UPPER_SNAKE_CASE`
 * Class names in `PascalCase` a.k.a. `UpperCamelCase`
