@@ -85,7 +85,7 @@ public class EightmusesRipper extends AbstractHTMLRipper {
         // get the first image link on the page and check if the last char in it is a number
         // if it is a number then we're ripping a comic if not it's a subalbum
         String firstImageLink = page.select(".page-gallery > div > div > div.gallery > a.t-hover").first().attr("href");
-        Pattern p = Pattern.compile("/comix/[a-zA-Z0-9\\-_/]*/\\d+");
+        Pattern p = Pattern.compile("/comix/([a-zA-Z0-9\\-_/]*/)?\\d+");
         Matcher m = p.matcher(firstImageLink);
         if (!m.matches()) {
             logger.info("Ripping subalbums");
