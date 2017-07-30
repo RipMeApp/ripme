@@ -62,6 +62,18 @@ public class EroShareRipper extends AbstractHTMLRipper {
         if (ma.matches()) {
             return true;
         }
+
+        Pattern p_eroshare = Pattern.compile("^https?://eroshare.com/([a-zA-Z0-9\\-_]+)/?$");
+        Matcher m_eroshare = p_eroshare.matcher(url.toExternalForm());
+        if (m_eroshare.matches()) {
+            return true;
+        }
+
+        Pattern p_eroshare_profile = Pattern.compile("^https?://eroshare.com/u/([a-zA-Z0-9\\-_]+)/?$");
+        Matcher m_eroshare_profile = p_eroshare_profile.matcher(url.toExternalForm());
+        if (m_eroshare_profile.matches()) {
+            return true;
+        }
         return false;
     }
 
@@ -155,7 +167,8 @@ public class EroShareRipper extends AbstractHTMLRipper {
 
     @Override
     public Document getFirstPage() throws IOException {
-        Response resp = Http.url(this.url)
+        String urlToDownload = this.url.toExternalForm();
+        Response resp = Http.url(urlToDownload.replace("eroshare.com", "spacescience.tech"))
                             .ignoreContentType()
                             .response();
 
@@ -170,6 +183,18 @@ public class EroShareRipper extends AbstractHTMLRipper {
         Matcher m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             return m.group(1);
+        }
+
+        Pattern p_eroshare = Pattern.compile("^https?://eroshare.com/([a-zA-Z0-9\\-_]+)/?$");
+        Matcher m_eroshare = p_eroshare.matcher(url.toExternalForm());
+        if (m_eroshare.matches()) {
+            return m_eroshare.group(1);
+        }
+
+        Pattern p_eroshare_profile = Pattern.compile("^https?://eroshare.com/u/([a-zA-Z0-9\\-_]+)/?$");
+        Matcher m_eroshare_profile = p_eroshare_profile.matcher(url.toExternalForm());
+        if (m_eroshare_profile.matches()) {
+            return m_eroshare_profile.group(1) + "_profile";
         }
 
         Pattern pa = Pattern.compile("^https?://spacescience.tech/u/([a-zA-Z0-9\\-_]+)/?$");
