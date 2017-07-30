@@ -51,13 +51,13 @@ public class EroShareRipper extends AbstractHTMLRipper {
     }
     @Override
     public boolean canRip(URL url) {
-        Pattern p = Pattern.compile("^https?://[w.]*eroshare.com/([a-zA-Z0-9\\-_]+)/?$");
+        Pattern p = Pattern.compile("^https?://spacescience.tech/([a-zA-Z0-9\\-_]+)/?$");
         Matcher m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             return true;
         }
 
-        Pattern pa = Pattern.compile("^https?://[w.]*eroshare.com/u/([a-zA-Z0-9\\-_]+)/?$");
+        Pattern pa = Pattern.compile("^https?://spacescience.tech/u/([a-zA-Z0-9\\-_]+)/?$");
         Matcher ma = pa.matcher(url.toExternalForm());
         if (ma.matches()) {
             return true;
@@ -66,7 +66,7 @@ public class EroShareRipper extends AbstractHTMLRipper {
     }
 
     public boolean is_profile(URL url) {
-        Pattern pa = Pattern.compile("^https?://[w.]*eroshare.com/u/([a-zA-Z0-9\\-_]+)/?$");
+        Pattern pa = Pattern.compile("^https?://spacescience.tech/u/([a-zA-Z0-9\\-_]+)/?$");
         Matcher ma = pa.matcher(url.toExternalForm());
         if (ma.matches()) {
             return true;
@@ -79,12 +79,14 @@ public class EroShareRipper extends AbstractHTMLRipper {
         // Find next page
         String nextUrl = "";
         Element elem = doc.select("li.next > a").first();
-        logger.info(elem);
+        if (elem == null) {
+            throw new IOException("No more pages");
+        }
             nextUrl = elem.attr("href");
             if (nextUrl == "") {
                 throw new IOException("No more pages");
             }
-            return Http.url("https://eroshare.com" + nextUrl).get();
+            return Http.url("spacescience.tech" + nextUrl).get();
         }
 
     @Override
@@ -124,7 +126,7 @@ public class EroShareRipper extends AbstractHTMLRipper {
             if (vid.hasClass("album-video")) {
                 Elements source = vid.getElementsByTag("source");
                 String videoURL = source.first().attr("src");
-                URLs.add(videoURL);
+                URLs.add("https:" + videoURL);
             }
         }
         // Profile videos
@@ -132,7 +134,7 @@ public class EroShareRipper extends AbstractHTMLRipper {
         for (Element link : links) {
             Document video_page;
             try {
-                video_page = Http.url("https://eroshare.com" + link.attr("href")).get();
+                video_page = Http.url("spacescience.tech" + link.attr("href")).get();
             } catch (IOException e) {
                 logger.warn("Failed to log link in Jsoup");
                 video_page = null;
@@ -143,7 +145,7 @@ public class EroShareRipper extends AbstractHTMLRipper {
                 if (vid.hasClass("album-video")) {
                     Elements source = vid.getElementsByTag("source");
                     String videoURL = source.first().attr("src");
-                    URLs.add(videoURL);
+                    URLs.add("https:" + videoURL);
                 }
             }
         }
@@ -164,19 +166,19 @@ public class EroShareRipper extends AbstractHTMLRipper {
 
     @Override
     public String getGID(URL url) throws MalformedURLException {
-        Pattern p = Pattern.compile("^https?://[w.]*eroshare.com/([a-zA-Z0-9\\-_]+)/?$");
+        Pattern p = Pattern.compile("^https?://spacescience.tech/([a-zA-Z0-9\\-_]+)/?$");
         Matcher m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             return m.group(1);
         }
 
-        Pattern pa = Pattern.compile("^https?://[w.]*eroshare.com/u/([a-zA-Z0-9\\-_]+)/?$");
+        Pattern pa = Pattern.compile("^https?://spacescience.tech/u/([a-zA-Z0-9\\-_]+)/?$");
         Matcher ma = pa.matcher(url.toExternalForm());
         if (ma.matches()) {
             return m.group(1) + "_profile";
         }
 
-        throw new MalformedURLException("eroshare album not found in " + url + ", expected https://eroshare.com/album");
+        throw new MalformedURLException("eroshare album not found in " + url + ", expected https://eroshare.com/album or spacescience.tech/album");
     }
 
     public static List<URL> getURLs(URL url) throws IOException{
@@ -203,11 +205,10 @@ public class EroShareRipper extends AbstractHTMLRipper {
             if (vid.hasClass("album-video")) {
                 Elements source = vid.getElementsByTag("source");
                 String videoURL = source.first().attr("src");
-                URLs.add(new URL(videoURL));
+                URLs.add(new URL("https:" + videoURL));
             }
         }
 
         return URLs;
     }
 }
-
