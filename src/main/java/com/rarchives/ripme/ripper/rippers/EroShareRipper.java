@@ -51,13 +51,13 @@ public class EroShareRipper extends AbstractHTMLRipper {
     }
     @Override
     public boolean canRip(URL url) {
-        Pattern p = Pattern.compile("^https?://spacescience.tech/([a-zA-Z0-9\\-_]+)/?$");
+        Pattern p = Pattern.compile("^https?://eroshae.com/([a-zA-Z0-9\\-_]+)/?$");
         Matcher m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             return true;
         }
 
-        Pattern pa = Pattern.compile("^https?://spacescience.tech/u/([a-zA-Z0-9\\-_]+)/?$");
+        Pattern pa = Pattern.compile("^https?://eroshae.com/u/([a-zA-Z0-9\\-_]+)/?$");
         Matcher ma = pa.matcher(url.toExternalForm());
         if (ma.matches()) {
             return true;
@@ -78,7 +78,7 @@ public class EroShareRipper extends AbstractHTMLRipper {
     }
 
     public boolean is_profile(URL url) {
-        Pattern pa = Pattern.compile("^https?://spacescience.tech/u/([a-zA-Z0-9\\-_]+)/?$");
+        Pattern pa = Pattern.compile("^https?://eroshae.com/u/([a-zA-Z0-9\\-_]+)/?$");
         Matcher ma = pa.matcher(url.toExternalForm());
         if (ma.matches()) {
             return true;
@@ -98,7 +98,7 @@ public class EroShareRipper extends AbstractHTMLRipper {
             if (nextUrl == "") {
                 throw new IOException("No more pages");
             }
-            return Http.url("spacescience.tech" + nextUrl).get();
+            return Http.url("eroshae.com" + nextUrl).get();
         }
 
     @Override
@@ -146,7 +146,7 @@ public class EroShareRipper extends AbstractHTMLRipper {
         for (Element link : links) {
             Document video_page;
             try {
-                video_page = Http.url("spacescience.tech" + link.attr("href")).get();
+                video_page = Http.url("eroshae.com" + link.attr("href")).get();
             } catch (IOException e) {
                 logger.warn("Failed to log link in Jsoup");
                 video_page = null;
@@ -168,7 +168,7 @@ public class EroShareRipper extends AbstractHTMLRipper {
     @Override
     public Document getFirstPage() throws IOException {
         String urlToDownload = this.url.toExternalForm();
-        Response resp = Http.url(urlToDownload.replace("eroshare.com", "spacescience.tech"))
+        Response resp = Http.url(urlToDownload.replace("eroshare.com", "eroshae.com"))
                             .ignoreContentType()
                             .response();
 
@@ -179,7 +179,7 @@ public class EroShareRipper extends AbstractHTMLRipper {
 
     @Override
     public String getGID(URL url) throws MalformedURLException {
-        Pattern p = Pattern.compile("^https?://spacescience.tech/([a-zA-Z0-9\\-_]+)/?$");
+        Pattern p = Pattern.compile("^https?://eroshae.com/([a-zA-Z0-9\\-_]+)/?$");
         Matcher m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             return m.group(1);
@@ -197,13 +197,13 @@ public class EroShareRipper extends AbstractHTMLRipper {
             return m_eroshare_profile.group(1) + "_profile";
         }
 
-        Pattern pa = Pattern.compile("^https?://spacescience.tech/u/([a-zA-Z0-9\\-_]+)/?$");
+        Pattern pa = Pattern.compile("^https?://eroshae.com/u/([a-zA-Z0-9\\-_]+)/?$");
         Matcher ma = pa.matcher(url.toExternalForm());
         if (ma.matches()) {
             return m.group(1) + "_profile";
         }
 
-        throw new MalformedURLException("eroshare album not found in " + url + ", expected https://eroshare.com/album or spacescience.tech/album");
+        throw new MalformedURLException("eroshare album not found in " + url + ", expected https://eroshare.com/album or eroshae.com/album");
     }
 
     public static List<URL> getURLs(URL url) throws IOException{
