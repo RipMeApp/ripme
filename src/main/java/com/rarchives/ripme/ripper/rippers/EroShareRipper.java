@@ -51,22 +51,34 @@ public class EroShareRipper extends AbstractHTMLRipper {
     }
     @Override
     public boolean canRip(URL url) {
-        Pattern p = Pattern.compile("^https?://[w.]*eroshare.com/([a-zA-Z0-9\\-_]+)/?$");
+        Pattern p = Pattern.compile("^https?://eroshae.com/([a-zA-Z0-9\\-_]+)/?$");
         Matcher m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             return true;
         }
 
-        Pattern pa = Pattern.compile("^https?://[w.]*eroshare.com/u/([a-zA-Z0-9\\-_]+)/?$");
+        Pattern pa = Pattern.compile("^https?://eroshae.com/u/([a-zA-Z0-9\\-_]+)/?$");
         Matcher ma = pa.matcher(url.toExternalForm());
         if (ma.matches()) {
+            return true;
+        }
+
+        Pattern p_eroshare = Pattern.compile("^https?://eroshare.com/([a-zA-Z0-9\\-_]+)/?$");
+        Matcher m_eroshare = p_eroshare.matcher(url.toExternalForm());
+        if (m_eroshare.matches()) {
+            return true;
+        }
+
+        Pattern p_eroshare_profile = Pattern.compile("^https?://eroshare.com/u/([a-zA-Z0-9\\-_]+)/?$");
+        Matcher m_eroshare_profile = p_eroshare_profile.matcher(url.toExternalForm());
+        if (m_eroshare_profile.matches()) {
             return true;
         }
         return false;
     }
 
     public boolean is_profile(URL url) {
-        Pattern pa = Pattern.compile("^https?://[w.]*eroshare.com/u/([a-zA-Z0-9\\-_]+)/?$");
+        Pattern pa = Pattern.compile("^https?://eroshae.com/u/([a-zA-Z0-9\\-_]+)/?$");
         Matcher ma = pa.matcher(url.toExternalForm());
         if (ma.matches()) {
             return true;
@@ -79,12 +91,14 @@ public class EroShareRipper extends AbstractHTMLRipper {
         // Find next page
         String nextUrl = "";
         Element elem = doc.select("li.next > a").first();
-        logger.info(elem);
+        if (elem == null) {
+            throw new IOException("No more pages");
+        }
             nextUrl = elem.attr("href");
             if (nextUrl == "") {
                 throw new IOException("No more pages");
             }
-            return Http.url("https://eroshare.com" + nextUrl).get();
+            return Http.url("eroshae.com" + nextUrl).get();
         }
 
     @Override
@@ -124,7 +138,7 @@ public class EroShareRipper extends AbstractHTMLRipper {
             if (vid.hasClass("album-video")) {
                 Elements source = vid.getElementsByTag("source");
                 String videoURL = source.first().attr("src");
-                URLs.add(videoURL);
+                URLs.add("https:" + videoURL);
             }
         }
         // Profile videos
@@ -132,7 +146,7 @@ public class EroShareRipper extends AbstractHTMLRipper {
         for (Element link : links) {
             Document video_page;
             try {
-                video_page = Http.url("https://eroshare.com" + link.attr("href")).get();
+                video_page = Http.url("eroshae.com" + link.attr("href")).get();
             } catch (IOException e) {
                 logger.warn("Failed to log link in Jsoup");
                 video_page = null;
@@ -143,7 +157,7 @@ public class EroShareRipper extends AbstractHTMLRipper {
                 if (vid.hasClass("album-video")) {
                     Elements source = vid.getElementsByTag("source");
                     String videoURL = source.first().attr("src");
-                    URLs.add(videoURL);
+                    URLs.add("https:" + videoURL);
                 }
             }
         }
@@ -153,7 +167,8 @@ public class EroShareRipper extends AbstractHTMLRipper {
 
     @Override
     public Document getFirstPage() throws IOException {
-        Response resp = Http.url(this.url)
+        String urlToDownload = this.url.toExternalForm();
+        Response resp = Http.url(urlToDownload.replace("eroshare.com", "eroshae.com"))
                             .ignoreContentType()
                             .response();
 
@@ -164,19 +179,31 @@ public class EroShareRipper extends AbstractHTMLRipper {
 
     @Override
     public String getGID(URL url) throws MalformedURLException {
-        Pattern p = Pattern.compile("^https?://[w.]*eroshare.com/([a-zA-Z0-9\\-_]+)/?$");
+        Pattern p = Pattern.compile("^https?://eroshae.com/([a-zA-Z0-9\\-_]+)/?$");
         Matcher m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             return m.group(1);
         }
 
-        Pattern pa = Pattern.compile("^https?://[w.]*eroshare.com/u/([a-zA-Z0-9\\-_]+)/?$");
+        Pattern p_eroshare = Pattern.compile("^https?://eroshare.com/([a-zA-Z0-9\\-_]+)/?$");
+        Matcher m_eroshare = p_eroshare.matcher(url.toExternalForm());
+        if (m_eroshare.matches()) {
+            return m_eroshare.group(1);
+        }
+
+        Pattern p_eroshare_profile = Pattern.compile("^https?://eroshare.com/u/([a-zA-Z0-9\\-_]+)/?$");
+        Matcher m_eroshare_profile = p_eroshare_profile.matcher(url.toExternalForm());
+        if (m_eroshare_profile.matches()) {
+            return m_eroshare_profile.group(1) + "_profile";
+        }
+
+        Pattern pa = Pattern.compile("^https?://eroshae.com/u/([a-zA-Z0-9\\-_]+)/?$");
         Matcher ma = pa.matcher(url.toExternalForm());
         if (ma.matches()) {
             return m.group(1) + "_profile";
         }
 
-        throw new MalformedURLException("eroshare album not found in " + url + ", expected https://eroshare.com/album");
+        throw new MalformedURLException("eroshare album not found in " + url + ", expected https://eroshare.com/album or eroshae.com/album");
     }
 
     public static List<URL> getURLs(URL url) throws IOException{
@@ -203,11 +230,10 @@ public class EroShareRipper extends AbstractHTMLRipper {
             if (vid.hasClass("album-video")) {
                 Elements source = vid.getElementsByTag("source");
                 String videoURL = source.first().attr("src");
-                URLs.add(new URL(videoURL));
+                URLs.add(new URL("https:" + videoURL));
             }
         }
 
         return URLs;
     }
 }
-
