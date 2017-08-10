@@ -63,13 +63,13 @@ public class EroShareRipper extends AbstractHTMLRipper {
             return true;
         }
 
-        Pattern p_eroshare = Pattern.compile("^https?://eroshare.com/([a-zA-Z0-9\\-_]+)/?$");
+        Pattern p_eroshare = Pattern.compile("^https?://(www[.])?eroshare.com/([a-zA-Z0-9\\-_]+)/?$");
         Matcher m_eroshare = p_eroshare.matcher(url.toExternalForm());
         if (m_eroshare.matches()) {
             return true;
         }
 
-        Pattern p_eroshare_profile = Pattern.compile("^https?://eroshare.com/u/([a-zA-Z0-9\\-_]+)/?$");
+        Pattern p_eroshare_profile = Pattern.compile("^https?://(www[.])?eroshare.com/u/([a-zA-Z0-9\\-_]+)/?$");
         Matcher m_eroshare_profile = p_eroshare_profile.matcher(url.toExternalForm());
         if (m_eroshare_profile.matches()) {
             return true;
