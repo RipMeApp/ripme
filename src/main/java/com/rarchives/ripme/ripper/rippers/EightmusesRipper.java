@@ -84,13 +84,13 @@ public class EightmusesRipper extends AbstractHTMLRipper {
         List<String> imageURLs = new ArrayList<String>();
         // get the first image link on the page and check if the last char in it is a number
         // if it is a number then we're ripping a comic if not it's a subalbum
-        String firstImageLink = page.select(".page-gallery > div > div > div.gallery > a.t-hover").first().attr("href");
+        String firstImageLink = page.select("div.gallery > a.t-hover").first().attr("href");
         Pattern p = Pattern.compile("/comix/([a-zA-Z0-9\\-_/]*/)?\\d+");
         Matcher m = p.matcher(firstImageLink);
         if (!m.matches()) {
             logger.info("Ripping subalbums");
             // Page contains subalbums (not images)
-            Elements albumElements = page.select(".page-gallery > div > div > div.gallery > a.t-hover");
+            Elements albumElements = page.select("div.gallery > a.t-hover");
             List<Element> albumsList = albumElements.subList(0, albumElements.size());
             Collections.reverse(albumsList);
             // Iterate over elements in reverse order
@@ -173,7 +173,7 @@ public class EightmusesRipper extends AbstractHTMLRipper {
         sendUpdate(STATUS.LOADING_RESOURCE, imageUrl);
         Document doc = new Http(imageUrl).get(); // Retrieve the webpage  of the image URL
         Element fullSizeImage = doc.select(".photo").first(); // Select the "photo" element from the page (there should only be 1)
-        String path = "https://cdn.ampproject.org/i/s/www.8muses.com/data/fu/small/" + fullSizeImage.children().select("#imageName").attr("value"); // Append the path to the fullsize image file to the standard prefix
+        String path = "https://cdn.ampproject.org/i/s/www.8muses.com/data/ufu/small/" + fullSizeImage.children().select("#imageName").attr("value"); // Append the path to the fullsize image file to the standard prefix
         return path;
     }
 
