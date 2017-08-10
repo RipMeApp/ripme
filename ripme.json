@@ -1,6 +1,7 @@
 {
-  "latestVersion" : "1.5.2",
+  "latestVersion" : "1.5.3",
   "changeList" : [
+    "1.5.3: Eroshare links redirect to Eroshae; add AerisdiesRipper",
     "1.5.2: Fix Imgur titles; fix xhamster (new URL format); fixed Instagram ripping cropped pictures",
     "1.5.1: Ensure update mechanism is working correctly.",
     "1.5.0: Change 'home' repo from 4pr0n/RipMe to RipMeApp/RipMe",
