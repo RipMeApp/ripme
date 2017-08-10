@@ -46,7 +46,7 @@ For information about running the `.jar` file, see [the How To Run wiki](https:/
 
 ## Not Supported?
 
-Request support for more sites by adding a comment to [this Github issue](https://github.com/4pr0n/ripme/issues/502).
+Request support for more sites by adding a comment to [this Github issue](https://github.com/RipMeApp/ripme/issues/38).
 
 If you're a developer, you can add your own Ripper by following the wiki guide
 [How To Create A Ripper for HTML Websites](https://github.com/ripmeapp/ripme/wiki/How-To-Create-A-Ripper-for-HTML-websites).
@@ -69,6 +69,10 @@ After building you can run tests by running the following:
 ```bash
 mvn test
 ```
+
+Please note that some tests may fail as sites change and our rippers become out of date.
+Start by building and testing a released version of RipMe
+and then ensure that any changes you make do not cause more tests to break.
 
 # Dependencies
 
