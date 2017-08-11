@@ -100,10 +100,10 @@ public class EightmusesRipper extends AbstractHTMLRipper {
                 if (subUrl != "") {
                     subUrl = subUrl.replaceAll("\\.\\./", "");
                     if (subUrl.startsWith("//")) {
-                        subUrl = "http:";
+                        subUrl = "https:";
                     }
                     else if (!subUrl.startsWith("http://")) {
-                        subUrl = "http://www.8muses.com" + subUrl;
+                        subUrl = "https://www.8muses.com" + subUrl;
                     }
                     try {
                         logger.info("Retrieving " + subUrl);
