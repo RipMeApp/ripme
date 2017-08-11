@@ -78,10 +78,15 @@ public class ImagearnRipper extends AbstractHTMLRipper {
     @Override
     public List<String> getURLsFromPage(Document doc) {
         List<String> imageURLs = new ArrayList<String>();
-        for (Element thumb : doc.select("img.border")) {
-            String image = thumb.attr("src");
-            image = image.replaceAll("thumbs[0-9]*\\.imagearn\\.com/", "img.imagearn.com/imags/");
-            imageURLs.add(image);
+        for (Element thumb : doc.select("div#gallery > div > a")) {
+            String imageURL = thumb.attr("href");
+            try {
+                Document imagedoc = new Http("http://imagearn.com/" + imageURL).get();
+                String image = imagedoc.select("a.thickbox").first().attr("href");
+                imageURLs.add(image);
+            } catch (IOException e) {
+                logger.warn("Was unable to download page: " + imageURL);
+            }
         }
         return imageURLs;
     }
