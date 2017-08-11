@@ -8,8 +8,8 @@ If this is a feature request or other type of issue, provide whatever informatio
 -->
 
 * Ripme version:
-* Java version (output of `java -version`):
-* Operating system:
+* Java version: <!-- (output of `java -version`) -->
+* Operating system: <!-- (if Windows, output of `ver` or `winver`) -->
 * Exact URL you were trying to rip when the problem occurred:
 * Please include any additional information about how to reproduce the problem:
 

@@ -8,7 +8,7 @@ To help us verify your change, please fill out the information below.
 # Category
 
 This change is exactly one of the following (please change `[ ]` to `[x]`) to indicate which:
-* [ ] a bug fix -- which issue? #...
+* [ ] a bug fix (Fix #...)
 * [ ] a new Ripper
 * [ ] a refactoring
 * [ ] a style change/fix
