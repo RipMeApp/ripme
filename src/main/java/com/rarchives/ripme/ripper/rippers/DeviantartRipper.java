@@ -31,6 +31,21 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 
     private static final int PAGE_SLEEP_TIME  = 3000,
                              IMAGE_SLEEP_TIME = 2000;
+    /* Examples:
+        http://a.deviantart.net/avatars/r/a/rautamiekka.gif?5
+        http://a.deviantart.net/avatars/b/b.jpg?1
+    */
+    private static final String AVATAR_PATH = "http://a.deviantart.net/avatars/";
+
+    /* Avatar file extension has differed, thus we'll have to use RegEx and _
+         construct the full address according to the length of the username:
+       The first letter is used for the first folder ({0}), _
+         the second letter for the second folder ({1}) plus a slash.
+           However, if the username is only 1 character long there's no second _
+             folder, in which case {1} is replaced with nothing.
+       In all cases {2} is replaced by the username plus the file extension.
+    */
+    private static final String AVATAR_PATH_TEMPLATE = "http://a.deviantart.net/avatars/{0}/{1}{2}";
 
     private Map<String,String> cookies = new HashMap<String,String>();
     private Set<String> triedURLs = new HashSet<String>();
