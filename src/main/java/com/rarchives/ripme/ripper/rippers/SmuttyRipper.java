@@ -84,7 +84,7 @@ public class SmuttyRipper extends AlbumRipper {
                     }
                 }
                 imageUrl = sb.toString();
-                addURLToDownload(new URL(imageUrl));
+                addURLToDownload(new URL("http:" + imageUrl));
             }
             if (doc.select("#next").size() == 0) {
                 break; // No more pages
