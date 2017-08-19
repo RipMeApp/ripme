@@ -39,15 +39,23 @@ public class App {
     private static final History HISTORY = new History();
 
     public static void main(String[] args) throws MalformedURLException {
-        Utils.configureLogger();
-        System.setProperty("apple.laf.useScreenMenuBar", "true");
-        System.setProperty("com.apple.mrj.application.apple.menu.about.name", "RipMe");
-        logger = Logger.getLogger(App.class);
-        logger.info("Initialized ripme v" + UpdateUtils.getThisJarVersion());
-
-        if (args.length > 0) {
+        CommandLine cl = getArgs(args);
+        if (args.length > 0 && cl.hasOption('v')) {
+            System.out.println(UpdateUtils.getThisJarVersion());
+            handleArguments(args);
+        } else if (args.length > 0) {
+            Utils.configureLogger();
+            System.setProperty("apple.laf.useScreenMenuBar", "true");
+            System.setProperty("com.apple.mrj.application.apple.menu.about.name", "RipMe");
+            logger = Logger.getLogger(App.class);
+            logger.info("Initialized ripme v" + UpdateUtils.getThisJarVersion());
             handleArguments(args);
         } else {
+            Utils.configureLogger();
+            System.setProperty("apple.laf.useScreenMenuBar", "true");
+            System.setProperty("com.apple.mrj.application.apple.menu.about.name", "RipMe");
+            logger = Logger.getLogger(App.class);
+            logger.info("Initialized ripme v" + UpdateUtils.getThisJarVersion());
             MainWindow mw = new MainWindow();
             SwingUtilities.invokeLater(mw);
         }
