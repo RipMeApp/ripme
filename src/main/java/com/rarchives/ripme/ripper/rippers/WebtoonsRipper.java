@@ -88,4 +88,16 @@ public class WebtoonsRipper extends AbstractHTMLRipper {
         cookies = resp.cookies();
         return Http.url(url).get();
     }
+
+    @Override
+    public Document getNextPage(Document doc) throws IOException {
+        // Find next page
+        String nextUrl = "";
+        Element elem = doc.select("a.pg_next").first();
+            nextUrl = elem.attr("href");
+            if (nextUrl == "") {
+                throw new IOException("No more pages");
+            }
+            return Http.url(nextUrl).get();
+        }
 }
