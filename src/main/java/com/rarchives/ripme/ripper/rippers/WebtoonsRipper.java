@@ -1,0 +1,91 @@
+package com.rarchives.ripme.ripper.rippers;
+
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import java.util.Map;
+import java.util.HashMap;
+import org.jsoup.Connection.Response;
+
+import com.rarchives.ripme.ripper.AbstractHTMLRipper;
+import com.rarchives.ripme.utils.Http;
+
+public class WebtoonsRipper extends AbstractHTMLRipper {
+    private Map<String,String> cookies = new HashMap<String,String>();
+
+    public WebtoonsRipper(URL url) throws IOException {
+        super(url);
+    }
+
+    @Override
+    public String getHost() {
+        return "webtoons";
+    }
+
+    @Override
+    public String getDomain() {
+        return "www.webtoons.com";
+    }
+
+    @Override
+    public boolean canRip(URL url) {
+        Pattern pat = Pattern.compile("https?://www\\.webtoons\\.com/[a-zA-Z]+/[a-zA-Z]+/([a-zA-Z0-9_-]*)/ep-\\d+/\\S*");
+        Matcher mat = pat.matcher(url.toExternalForm());
+        if (mat.matches()) {
+            return true;
+        }
+        return false;
+    }
+
+
+    @Override
+    public String getAlbumTitle(URL url) throws MalformedURLException {
+        Pattern pat = Pattern.compile("https?://www\\.webtoons\\.com/[a-zA-Z]+/[a-zA-Z]+/([a-zA-Z0-9_-]*)/ep-\\d+/\\S*");
+        Matcher mat = pat.matcher(url.toExternalForm());
+        if (mat.matches()) {
+            return mat.group(1);
+        }
+
+        return super.getAlbumTitle(url);
+    }
+
+    @Override
+    public String getGID(URL url) throws MalformedURLException {
+        Pattern pat = Pattern.compile("https?://www\\.webtoons\\.com/[a-zA-Z]+/[a-zA-Z]+/([a-zA-Z0-9_-]*)/ep-\\d+/\\S*");
+        Matcher mat = pat.matcher(url.toExternalForm());
+        if (mat.matches()) {
+            return mat.group(1);
+        }
+        throw new MalformedURLException("You should never see this error message");
+    }
+
+
+    @Override
+    public List<String> getURLsFromPage(Document doc) {
+        List<String> result = new ArrayList<String>();
+        for (Element elem : doc.select("div.viewer_img > img")) {
+            result.add(elem.attr("data-url"));
+        }
+        return result;
+    }
+
+    @Override
+    public void downloadURL(URL url, int index) {
+        addURLToDownload(url, getPrefix(index), "", this.url.toExternalForm(), cookies);
+    }
+
+    @Override
+    public Document getFirstPage() throws IOException {
+        Response resp = Http.url(url).response();
+        cookies = resp.cookies();
+        return Http.url(url).get();
+    }
+}
