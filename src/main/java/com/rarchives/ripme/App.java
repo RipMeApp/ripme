@@ -206,6 +206,7 @@ public class App {
         opts.addOption("l", "ripsdirectory", true, "Rips Directory (Default: ./rips)");
         opts.addOption("n", "no-prop-file", false, "Do not create properties file.");
         opts.addOption("f", "urls-file", true, "Rip URLs from a file.");
+        opts.addOption("v", "version", false, "Show current version");
         return opts;
     }
 
