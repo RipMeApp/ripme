@@ -40,16 +40,17 @@ public class App {
 
     public static void main(String[] args) throws MalformedURLException {
         CommandLine cl = getArgs(args);
-        if (args.length > 0 && cl.hasOption('v')) {
+        if (args.length > 0){
+          if (cl.hasOption('v')){
             System.out.println(UpdateUtils.getThisJarVersion());
-            handleArguments(args);
-        } else if (args.length > 0) {
+          } else {
             Utils.configureLogger();
             System.setProperty("apple.laf.useScreenMenuBar", "true");
             System.setProperty("com.apple.mrj.application.apple.menu.about.name", "RipMe");
             logger = Logger.getLogger(App.class);
             logger.info("Initialized ripme v" + UpdateUtils.getThisJarVersion());
-            handleArguments(args);
+          }
+          handleArguments(args);
         } else {
             Utils.configureLogger();
             System.setProperty("apple.laf.useScreenMenuBar", "true");
