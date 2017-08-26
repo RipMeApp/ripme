@@ -99,7 +99,7 @@ public class App {
         if (cl.hasOption('R')) {
             loadHistory();
             if (HISTORY.toList().size() == 0) {
-                System.err.println("There are no history entries to re-rip. Rip some albums first");
+                logger.error("There are no history entries to re-rip. Rip some albums first");
                 System.exit(-1);
             }
             int added = 0;
@@ -122,7 +122,7 @@ public class App {
                 }
             }
             if (added == 0) {
-                System.err.println("No history entries have been 'Checked'\n" +
+                logger.error("No history entries have been 'Checked'\n" +
                     "Check an entry by clicking the checkbox to the right of the URL or Right-click a URL to check/uncheck all items");
                 System.exit(-1);
             }
@@ -134,7 +134,7 @@ public class App {
             Utils.setConfigBoolean("download.save_order", false);
         }
         if ((cl.hasOption('d'))&&(cl.hasOption('D'))) {
-            System.err.println("\nCannot specify '-d' and '-D' simultaneously");
+            logger.error("\nCannot specify '-d' and '-D' simultaneously");
             System.exit(-1);
         }
         if (cl.hasOption('l')) {
@@ -222,7 +222,7 @@ public class App {
                 HISTORY.fromFile("history.json");
             } catch (IOException e) {
                 logger.error("Failed to load history from file " + historyFile, e);
-                System.out.println(
+                logger.error(
                         "RipMe failed to load the history file at " + historyFile.getAbsolutePath() + "\n\n" +
                         "Error: " + e.getMessage() + "\n\n" +
                         "Closing RipMe will automatically overwrite the contents of this file,\n" +
