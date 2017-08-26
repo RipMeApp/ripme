@@ -94,7 +94,7 @@ public class RipUtils {
         Pattern p = Pattern.compile("https?://i.reddituploads.com/([a-zA-Z0-9]+)\\?.*");
         Matcher m = p.matcher(url.toExternalForm());
         if (m.matches()) {
-            logger,info("URL: " + url.toExternalForm());
+            logger.info("URL: " + url.toExternalForm());
             String u = url.toExternalForm().replaceAll("&amp;", "&");
             try {
                 result.add(new URL(u));
