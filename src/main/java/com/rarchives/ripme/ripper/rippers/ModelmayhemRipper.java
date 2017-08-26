@@ -95,7 +95,7 @@ public class ModelmayhemRipper extends AlbumRipper {
         Document doc = resp.parse();
         String jsonText = doc.body().html();
         jsonText = jsonText.replace("&quot;",  "\"");
-        System.err.println(jsonText);
+        logger.debug(jsonText);
         JSONObject json = new JSONObject(jsonText);
         JSONArray pictures = json.getJSONArray("pictures");
         for (int i = 0; i < pictures.length(); i++) {
