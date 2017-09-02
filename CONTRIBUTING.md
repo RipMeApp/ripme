@@ -68,13 +68,14 @@ Good style is a tool for communicating your intent with other developers of the 
 Some recommendations:
 
 * Above all, be consistent!
-* Spaces, not tabs.
+* Spaces, not tabs. Indents should be 4 spaces.
 * We prefer "Egyptian brackets" (in `if`, `for`, `while`, `switch`, etc.):
   * `if (...) {`
   * `} else if (...) {`
   * `} else {`
   * `}`
-* Constants in `UPPER_SNAKE_CASE`
+* Note the spacing convention above for control flow constructs (a single space on the outside of each paren)
+* Constants in `UPPER_SNAKE_CASE` a.k.a. `CONST_CASE`
 * Class names in `PascalCase` a.k.a. `UpperCamelCase`
 * Variable names in `camelCase` a.k.a. `lowerCamelCase`
 * Do not use Hungarian notation
