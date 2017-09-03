@@ -99,11 +99,11 @@ public class DeviantartRipper extends AbstractHTMLRipper {
         Pattern p = Pattern.compile("^https?://([a-zA-Z0-9\\-]+)\\.deviantart\\.com(/gallery)?/?(\\?.*)?$");
         Matcher m = p.matcher(url.toExternalForm());
         if (m.matches()) {
-            // Scraps ?
+            // Check the link for specification for scraps
             if (url.toExternalForm().contains("catpath=scraps")) {
                 return m.group(1) + "_scraps";
-            }
-            else {
+            // No scraps specified
+            } else {
                 return m.group(1);
             }
         }
