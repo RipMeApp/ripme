@@ -32,6 +32,24 @@ public class DeviantartRipper extends AbstractHTMLRipper {
     private static final int PAGE_SLEEP_TIME  = 3000,
                              IMAGE_SLEEP_TIME = 2000;
 
+    private static final String REGEX_FAVS_FOLDER = "^https?://([a-zA-Z0-9\\-]+)\\.deviantart\\.com/favou?rites/([0-9]+)/(.*?)$";
+    
+    /* Examples:
+        http://a.deviantart.net/avatars/r/a/rautamiekka.gif?5
+        http://a.deviantart.net/avatars/b/b.jpg?1
+    */
+    private static final String AVATAR_PATH = "http://a.deviantart.net/avatars/";
+
+    /* Avatar file extension has differed, thus we'll have to use RegEx and _
+         construct the full address according to the length of the username:
+       The first letter is used for the first folder ({0}), _
+         the second letter for the second folder ({1}) plus a slash.
+           However, if the username is only 1 character long there's no second _
+             folder, in which case {1} is replaced with nothing.
+       In all cases {2} is replaced by the username plus the file extension.
+    */
+    private static final String AVATAR_PATH_TEMPLATE = "http://a.deviantart.net/avatars/{0}/{1}{2}";
+
     private Map<String,String> cookies = new HashMap<String,String>();
     private Set<String> triedURLs = new HashSet<String>();
 
@@ -63,7 +81,7 @@ public class DeviantartRipper extends AbstractHTMLRipper {
             u += "gallery/?";
         }
 
-        Pattern p = Pattern.compile("^https?://([a-zA-Z0-9\\-]{1,})\\.deviantart\\.com/favou?rites/([0-9]+)/*?$");
+        Pattern p = Pattern.compile(REGEX_FAVS_FOLDER);
         Matcher m = p.matcher(url.toExternalForm());
         if (!m.matches()) {
             String subdir = "/";
@@ -77,34 +95,41 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 
     @Override
     public String getGID(URL url) throws MalformedURLException {
+        // Gallery root
         Pattern p = Pattern.compile("^https?://([a-zA-Z0-9\\-]+)\\.deviantart\\.com(/gallery)?/?(\\?.*)?$");
         Matcher m = p.matcher(url.toExternalForm());
         if (m.matches()) {
-            // Root gallery
+            // Check the link for specification for scraps
             if (url.toExternalForm().contains("catpath=scraps")) {
                 return m.group(1) + "_scraps";
-            }
-            else {
+            // No scraps specified
+            } else {
                 return m.group(1);
             }
         }
-        p = Pattern.compile("^https?://([a-zA-Z0-9\\-]{1,})\\.deviantart\\.com/gallery/([0-9]{1,}).*$");
+
+        // Gallery folder
+        p = Pattern.compile("^https?://([a-zA-Z0-9\\-]+)\\.deviantart\\.com/gallery/([0-9]+).*$");
         m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             // Subgallery
             return m.group(1) + "_" + m.group(2);
         }
-        p = Pattern.compile("^https?://([a-zA-Z0-9\\-]{1,})\\.deviantart\\.com/favou?rites/([0-9]+)/.*?$");
+
+        // Faves with a folder
+        p = Pattern.compile(REGEX_FAVS_FOLDER);
         m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             return m.group(1) + "_faves_" + m.group(2);
         }
-        p = Pattern.compile("^https?://([a-zA-Z0-9\\-]{1,})\\.deviantart\\.com/favou?rites/?$");
+
+        // Faves, either featured section or everything
+        p = Pattern.compile("^https?://([a-zA-Z0-9\\-]+)\\.deviantart\\.com/favou?rites/?$");
         m = p.matcher(url.toExternalForm());
         if (m.matches()) {
-            // Subgallery
             return m.group(1) + "_faves";
         }
+
         throw new MalformedURLException("Expected URL format: http://username.deviantart.com/[/gallery/#####], got: " + url);
     }
 
