@@ -19,7 +19,7 @@ import com.rarchives.ripme.utils.Http;
 public class ViewcomicRipper extends AbstractHTMLRipper {
 
     public ViewcomicRipper(URL url) throws IOException {
-    super(url);
+        super(url);
     }
 
         @Override
@@ -81,6 +81,4 @@ public class ViewcomicRipper extends AbstractHTMLRipper {
         public void downloadURL(URL url, int index) {
             addURLToDownload(url, getPrefix(index));
         }
-
-
     }
