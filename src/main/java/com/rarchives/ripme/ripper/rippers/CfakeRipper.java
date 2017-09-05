@@ -90,6 +90,4 @@ public class CfakeRipper extends AbstractHTMLRipper {
         public void downloadURL(URL url, int index) {
             addURLToDownload(url, getPrefix(index));
         }
-
-
     }
