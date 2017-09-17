@@ -128,7 +128,9 @@ public class EroShareRipper extends AbstractHTMLRipper {
         for (Element img : imgs) {
             if (img.hasClass("album-image")) {
                 String imageURL = img.attr("src");
-                imageURL = "https:" + imageURL;
+                if (!imageURL.startsWith("http")) {
+                    imageURL = "https:" + imageURL;
+                }
                 URLs.add(imageURL);
             }
         }
@@ -138,7 +140,10 @@ public class EroShareRipper extends AbstractHTMLRipper {
             if (vid.hasClass("album-video")) {
                 Elements source = vid.getElementsByTag("source");
                 String videoURL = source.first().attr("src");
-                URLs.add("https:" + videoURL);
+                if (!videoURL.startsWith("http")) {
+                    videoURL = "https:" + videoURL;
+                }
+                URLs.add(videoURL);
             }
         }
         // Profile videos
@@ -157,7 +162,10 @@ public class EroShareRipper extends AbstractHTMLRipper {
                 if (vid.hasClass("album-video")) {
                     Elements source = vid.getElementsByTag("source");
                     String videoURL = source.first().attr("src");
-                    URLs.add("https:" + videoURL);
+                    if (!videoURL.startsWith("http")) {
+                        videoURL = "https:" + videoURL;
+                    }
+                    URLs.add(videoURL);
                 }
             }
         }
