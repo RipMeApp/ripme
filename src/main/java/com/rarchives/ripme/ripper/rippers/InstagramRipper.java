@@ -137,13 +137,14 @@ public class InstagramRipper extends AbstractJSONRipper {
 
     private String getMedia(JSONObject data) {
         String imageURL = "";
+		JSONObject mediaObject;
         if (data.has("videos")) {
-        	JSONObject videosObject = data.getJSONObject("videos");
+        	mediaObject = data.getJSONObject("videos");
 			if (!videosObject.isNull("standard_resolution")) {
         		imageURL = videosObject.getJSONObject("standard_resolution").getString("url");
         	}
         } else if (data.has("images")) {
-        	JSONObject imagesObject = data.getJSONObject("images");
+        	mediaObject = data.getJSONObject("images");
 			if (!imagesObject.isNull("standard_resolution")) {
         		imageURL = imagesObject.getJSONObject("standard_resolution").getString("url");
         	}
