@@ -152,7 +152,7 @@ public class ImagefapRipper extends AbstractHTMLRipper {
             Pattern p = Pattern.compile("^Porn pics of (.*) \\(Page 1\\)$");
             Matcher m = p.matcher(title);
             if (m.matches()) {
-                return getHost() + "_" + m.group(1);
+                return getHost() + "_" + m.group(1) + "_" + getGID(url);
             }
         } catch (IOException e) {
             // Fall back to default album naming convention
