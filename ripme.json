@@ -1,5 +1,5 @@
 {
-  "latestVersion" : "1.5.8",
+  "latestVersion" : "1.5.9",
   "changeList" : [
     "1.5.9: InstagramRipper now downloads full sized images; ImagefapRipper Now adds GID to folder name",
     "1.5.8: Fixed 8muses ripper",
