@@ -2,7 +2,6 @@
     "latestVersion": "1.5.10",
     "changeList": [
         "1.5.10: Added ripper for cfake.com; Fixed nhentai album naming",
-        "1.5.10: Added ripper for cfake.com; Fixed nhentai album naming",
         "1.5.9: InstagramRipper now downloads full sized images; ImagefapRipper Now adds GID to folder name",
         "1.5.8: Fixed 8muses ripper",
         "1.5.7: Added EromeRipper",
