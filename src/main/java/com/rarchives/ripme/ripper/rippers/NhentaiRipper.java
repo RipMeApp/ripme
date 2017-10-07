@@ -61,7 +61,7 @@ public class NhentaiRipper extends AbstractHTMLRipper {
         if (title == null) {
             return getAlbumTitle(url);
         }
-        return title;
+        return "nhentai" + title;
     }
 
     @Override
