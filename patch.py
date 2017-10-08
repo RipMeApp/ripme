@@ -7,13 +7,13 @@ import subprocess
 # - update version in a few places
 # - insert new line in ripme.json with message
 
-message = raw_input('message: ')
+message = input('message: ')
 
 with open('ripme.json') as dataFile:
     ripmeJson = json.load(dataFile)
 currentVersion = ripmeJson["latestVersion"]
 
-print 'Current version ' + currentVersion
+print ('Current version ' + currentVersion)
 
 versionFields = currentVersion.split('.')
 patchCur = int(versionFields[2])
@@ -22,7 +22,7 @@ majorMinor = versionFields[:2]
 majorMinor.append(str(patchNext))
 nextVersion = '.'.join(majorMinor)
 
-print 'Updating to ' + nextVersion
+print ('Updating to ' + nextVersion)
 
 substrExpr = 's/' + currentVersion + '/' + nextVersion + '/'
 subprocess.call(['sed', '-i', '-e', substrExpr, 'src/main/java/com/rarchives/ripme/ui/UpdateUtils.java'])
