@@ -1301,15 +1301,30 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         Utils.setConfigBoolean("window.position", false);
     }
 
+    public static boolean hasWindowPositionBug() {
+        String osName = System.getProperty("os.name");
+        if (osName != null) {
+            // Java on Windows has a bug where if we try to manually set the position of the Window,
+            // javaw.exe will not close itself down when the application is closed.
+            // Therefore, even if isWindowPositioningEnabled, if we are on Windows, we ignore it.
+            return osName.startsWith("Windows");
+        } else {
+            // If we're unsure, since we know there might be a bug,
+            // better be safe and report that the bug exists.
+            return true;
+        }
+    }
+
     public static boolean isWindowPositioningEnabled() {
         boolean isEnabled = Utils.getConfigBoolean("window.position", true);
-        return isEnabled;
+        return isEnabled && !hasWindowPositionBug();
     }
 
     public static void saveWindowPosition(Frame frame) {
         if (!isWindowPositioningEnabled()) {
             return;
         }
+
         Point point;
         try {
             point = frame.getLocationOnScreen();
@@ -1333,22 +1348,8 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         logger.debug("Saved window position (x=" + x + ", y=" + y + ", w=" + w + ", h=" + h + ")");
     }
 
-    public static boolean hasWindowPositionBug() {
-        String osName = System.getProperty("os.name");
-        if (osName != null) {
-            // Java on Windows has a bug where if we try to manually set the position of the Window,
-            // javaw.exe will not close itself down when the application is closed.
-            // Therefore, even if isWindowPositioningEnabled, if we are on Windows, we ignore it.
-            return osName.startsWith("Windows");
-        } else {
-            // If we're unsure, since we know there might be a bug,
-            // better be safe and report that the bug exists.
-            return true;
-        }
-    }
-
     public static void restoreWindowPosition(Frame frame) {
-        if (!isWindowPositioningEnabled() || hasWindowPositionBug()) {
+        if (!isWindowPositioningEnabled()) {
             mainFrame.setLocationRelativeTo(null); // default to middle of screen
             return;
         }
