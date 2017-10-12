@@ -247,7 +247,10 @@ public final class MainWindow implements Runnable, RipStatusHandler {
     }
 
     private void createUI(Container pane) {
-        setupTrayIcon();
+        //If creating the tray icon fails, ignore it.
+        try {
+            setupTrayIcon();
+        } catch (Exception e) { }
 
         EmptyBorder emptyBorder = new EmptyBorder(5, 5, 5, 5);
         GridBagConstraints gbc = new GridBagConstraints();
