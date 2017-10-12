@@ -39,6 +39,13 @@ public class App {
     private static final History HISTORY = new History();
 
     public static void main(String[] args) throws MalformedURLException {
+        CommandLine cl = getArgs(args);
+        if (args.length > 0 && cl.hasOption('v')){
+            System.out.println(UpdateUtils.getThisJarVersion());
+            System.exit(0);
+        }
+
+        //initialize logger
         Utils.configureLogger();
         System.setProperty("apple.laf.useScreenMenuBar", "true");
         System.setProperty("com.apple.mrj.application.apple.menu.about.name", "RipMe");
@@ -46,8 +53,10 @@ public class App {
         logger.info("Initialized ripme v" + UpdateUtils.getThisJarVersion());
 
         if (args.length > 0) {
+            // CLI Mode
             handleArguments(args);
         } else {
+            // GUI Mode
             MainWindow mw = new MainWindow();
             SwingUtilities.invokeLater(mw);
         }
@@ -198,6 +207,7 @@ public class App {
         opts.addOption("l", "ripsdirectory", true, "Rips Directory (Default: ./rips)");
         opts.addOption("n", "no-prop-file", false, "Do not create properties file.");
         opts.addOption("f", "urls-file", true, "Rip URLs from a file.");
+        opts.addOption("v", "version", false, "Show current version");
         return opts;
     }
 
