@@ -1,2 +1,2 @@
 @echo off
-powershell .\patch.ps1
+python patch.py
