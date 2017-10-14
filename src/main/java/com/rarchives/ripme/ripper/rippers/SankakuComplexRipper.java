@@ -69,25 +69,23 @@ public class SankakuComplexRipper extends AbstractHTMLRipper {
         // Image URLs are basically thumbnail URLs with a different domain, a simple
         // path replacement, and a ?xxxxxx post ID at the end (obtainable from the href)
         for (Element thumbSpan : doc.select("div.content > div > span.thumb > a")) {
-
             String postLink = thumbSpan.attr("href");
-            try {
-                // Get the page the full sized image is on
-                Document subPage = Http.url("https://chan.sankakucomplex.com" + postLink).get();
-                imageURLs.add("https:" + subPage.select("div[id=post-content] > a.sample > img").attr("src"));
-            } catch (IOException e) {
-                logger.warn("Error while loading page " + postLink, e);
-                continue;
-            }
-
+                try {
+                    // Get the page the full sized image is on
+                    Document subPage = Http.url("https://chan.sankakucomplex.com" + postLink).get();
+                    logger.info("Checking page " + "https://chan.sankakucomplex.com" + postLink);
+                    imageURLs.add("https:" + subPage.select("div[id=post-content] > a > img").attr("src"));
+                } catch (IOException e) {
+                    logger.warn("Error while loading page " + postLink, e);
+                    continue;
+                }
         }
         return imageURLs;
     }
 
     @Override
     public void downloadURL(URL url, int index) {
-        // Mock up the URL of the post page based on the post ID at the end of the URL.
-        sleep(10000);
+        sleep(8000);
         addURLToDownload(url, getPrefix(index));
     }
 
@@ -95,9 +93,14 @@ public class SankakuComplexRipper extends AbstractHTMLRipper {
     public Document getNextPage(Document doc) throws IOException {
         Element pagination = doc.select("div.pagination").first();
         if (pagination.hasAttr("next-page-url")) {
-            return Http.url(pagination.attr("abs:next-page-url")).cookies(cookies).get();
-        } else {
-            return null;
+            String nextPage = pagination.attr("abs:next-page-url");
+            // Only logged in users can see past page 25
+            // Trying to rip page 26 will throw a no images found error
+            if (nextPage.contains("page=26") == false) {
+                logger.info("Getting next page: " + pagination.attr("abs:next-page-url"));
+                return Http.url(pagination.attr("abs:next-page-url")).cookies(cookies).get();
+            }
         }
+        throw new IOException("No more pages");
     }
 }
