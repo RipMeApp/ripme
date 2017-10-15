@@ -43,7 +43,7 @@ public class SankakuComplexRipper extends AbstractHTMLRipper {
         Matcher m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             try {
-                return URLDecoder.decode(m.group(1), "UTF-8");
+                return URLDecoder.decode(m.group(2), "UTF-8");
             } catch (UnsupportedEncodingException e) {
                 throw new MalformedURLException("Cannot decode tag name '" + m.group(1) + "'");
             }
