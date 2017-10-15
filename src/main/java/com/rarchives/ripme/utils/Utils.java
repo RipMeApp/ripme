@@ -36,12 +36,13 @@ import com.rarchives.ripme.ripper.AbstractRipper;
 public class Utils {
     public  static final String RIP_DIRECTORY = "rips";
     private static final String configFile = "rip.properties";
+    private static final String OS = System.getProperty("os.name").toLowerCase();
     private static final Logger logger = Logger.getLogger(Utils.class);
 
     private static PropertiesConfiguration config;
     static {
         try {
-            String configPath = getConfigPath();
+            String configPath = getConfigFilePath();
             File f = new File(configPath);
             if (!f.exists()) {
                 // Use default bundled with .jar
@@ -132,18 +133,52 @@ public class Utils {
 
     public static void saveConfig() {
         try {
-            config.save(getConfigPath());
-            logger.info("Saved configuration to " + getConfigPath());
+            config.save(getConfigFilePath());
+            logger.info("Saved configuration to " + getConfigFilePath());
         } catch (ConfigurationException e) {
             logger.error("Error while saving configuration: ", e);
         }
     }
-    private static String getConfigPath() {
+
+    private static boolean isWindows() {
+        return OS.contains("win");
+    }
+
+    private static boolean isMacOS() {
+        return OS.contains("mac");
+    }
+
+    private static boolean isUnix() {
+        return OS.contains("nix") || OS.contains("nux") || OS.contains("bsd");
+    }
+
+    private static String getWindowsConfigDir() {
+        return System.getenv("LOCALAPPDATA") + File.separator + "ripme";
+    }
+
+    private static String getUnixConfigDir() {
+        return System.getProperty("user.home") + File.separator + ".config" + File.separator + "ripme";
+    }
+
+    private static String getMacOSConfigDir() {
+        return System.getProperty("user.home")
+                + File.separator + "Library" + File.separator + "Application Support" + File.separator + "ripme";
+    }
+
+    public static String getConfigDir() {
+        if (isWindows()) return getWindowsConfigDir();
+        if (isMacOS()) return getMacOSConfigDir();
+        if (isUnix()) return getUnixConfigDir();
+        
         try {
-            return new File(".").getCanonicalPath() + File.separator + configFile;
+            return new File(".").getCanonicalPath();
         } catch (Exception e) {
-            return "." + File.separator + configFile;
+            return ".";
         }
+    }
+
+    private static String getConfigFilePath() {
+        return getConfigDir() + File.separator + configFile;
     }
 
     /**

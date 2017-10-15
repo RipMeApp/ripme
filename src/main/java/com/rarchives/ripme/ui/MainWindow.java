@@ -31,6 +31,9 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Enumeration;
@@ -1001,12 +1004,12 @@ public final class MainWindow implements Runnable, RipStatusHandler {
     }
 
     private void loadHistory() {
-        File historyFile = new File("history.json");
+        File historyFile = new File(Utils.getConfigDir() + File.separator + "history.json");
         HISTORY.clear();
         if (historyFile.exists()) {
             try {
-                logger.info("Loading history from history.json");
-                HISTORY.fromFile("history.json");
+                logger.info("Loading history from " + historyFile.getCanonicalPath());
+                HISTORY.fromFile(historyFile.getCanonicalPath());
             } catch (IOException e) {
                 logger.error("Failed to load history from file " + historyFile, e);
                 JOptionPane.showMessageDialog(null,
@@ -1044,11 +1047,17 @@ public final class MainWindow implements Runnable, RipStatusHandler {
     }
 
     private void saveHistory() {
+        Path historyFile = Paths.get(Utils.getConfigDir() + File.separator + "history.json");
         try {
-            HISTORY.toFile("history.json");
+            if (!Files.exists(historyFile)) {
+                Files.createDirectories(historyFile.getParent());
+                Files.createFile(historyFile);
+            }
+
+            HISTORY.toFile(historyFile.toString());
             Utils.setConfigList("download.history", Collections.emptyList());
         } catch (IOException e) {
-            logger.error("Failed to save history to file history.json", e);
+            logger.error("Failed to save history to file " + historyFile, e);
         }
     }
 

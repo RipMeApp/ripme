@@ -224,12 +224,12 @@ public class App {
     }
 
     private static void loadHistory() {
-        File historyFile = new File("history.json");
+        File historyFile = new File(Utils.getConfigDir() + File.separator + "history.json");
         HISTORY.clear();
         if (historyFile.exists()) {
             try {
-                logger.info("Loading history from history.json");
-                HISTORY.fromFile("history.json");
+                logger.info("Loading history from " + historyFile.getCanonicalPath());
+                HISTORY.fromFile(historyFile.getCanonicalPath());
             } catch (IOException e) {
                 logger.error("Failed to load history from file " + historyFile, e);
                 System.out.println(
