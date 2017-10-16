@@ -241,7 +241,7 @@ public class MyhentaicomicsRipper extends AbstractHTMLRipper {
         for (Element el : doc.select("img")) {
             String imageSource = el.attr("src");
             // This bool is here so we don't try and download the site logo
-            if (!imageSource.startsWith("http://")) {
+            if (!imageSource.startsWith("http://") && !imageSource.startsWith("https://")) {
             // We replace thumbs with resizes so we can the full sized images
             imageSource = imageSource.replace("thumbs", "resizes");
             result.add("http://myhentaicomics.com/" + imageSource);
