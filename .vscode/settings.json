@@ -1,8 +1,0 @@
-{
-    "files.exclude": {
-        "target/**": true,
-        "**/.git": true,
-        "**/.DS_Store": true
-    },
-    "java.configuration.updateBuildConfiguration": "automatic"
-}
