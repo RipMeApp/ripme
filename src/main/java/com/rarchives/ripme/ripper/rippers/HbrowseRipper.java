@@ -34,7 +34,7 @@ public class HbrowseRipper extends AbstractHTMLRipper {
 
         @Override
         public String getGID(URL url) throws MalformedURLException {
-            Pattern p = Pattern.compile("http://www.hbrowse.com/\\d+/([a-zA-Z0-9]*)");
+            Pattern p = Pattern.compile("http://www.hbrowse.com/(\\d+)/[a-zA-Z0-9]*");
             Matcher m = p.matcher(url.toExternalForm());
             if (m.matches()) {
                 return m.group(1);
