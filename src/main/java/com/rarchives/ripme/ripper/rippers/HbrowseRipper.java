@@ -51,6 +51,19 @@ public class HbrowseRipper extends AbstractHTMLRipper {
         }
 
         @Override
+        public String getAlbumTitle(URL url) throws MalformedURLException {
+            try {
+                Document doc = getFirstPage();
+                String title = doc.select("div[id=main] > table.listTable > tbody > tr > td.listLong").first().text();
+                return getHost() + "_" + title + "_" + getGID(url);
+            } catch (Exception e) {
+                // Fall back to default album naming convention
+                logger.warn("Failed to get album title from " + url, e);
+            }
+            return super.getAlbumTitle(url);
+        }
+
+        @Override
         public List<String> getURLsFromPage(Document doc) {
             List<String> result = new ArrayList<String>();
             for (Element el : doc.select("table > tbody > tr > td > a > img")) {
