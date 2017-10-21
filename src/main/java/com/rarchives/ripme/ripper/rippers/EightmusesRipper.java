@@ -85,7 +85,7 @@ public class EightmusesRipper extends AbstractHTMLRipper {
         // get the first image link on the page and check if the last char in it is a number
         // if it is a number then we're ripping a comic if not it's a subalbum
         String firstImageLink = page.select("div.gallery > a.t-hover").first().attr("href");
-        Pattern p = Pattern.compile("/comix/([a-zA-Z0-9\\-_/]*/)?\\d+");
+        Pattern p = Pattern.compile("/comix/picture/([a-zA-Z0-9\\-_/]*/)?\\d+");
         Matcher m = p.matcher(firstImageLink);
         if (!m.matches()) {
             logger.info("Ripping subalbums");
@@ -111,20 +111,25 @@ public class EightmusesRipper extends AbstractHTMLRipper {
                         Document subPage = Http.url(subUrl).get();
                         // Get all images in subalbum, add to list.
                         List<String> subalbumImages = getURLsFromPage(subPage);
-                        String albumTitle = subPage.select("title").first().text();
-                        albumTitle = albumTitle.replace("Sex and Porn Comics", "");
-                        albumTitle = albumTitle.replace("|", "");
-                        albumTitle = albumTitle.replace("8muses", "");
-                        albumTitle = albumTitle.replaceAll("-", "_");
-                        albumTitle = albumTitle.replaceAll(" ", "_");
-                        albumTitle = albumTitle.replaceAll("___", "_");
-                        albumTitle = albumTitle.replaceAll("__", "_");
-                        // This is here to remove the trailing __ from folder names
-                        albumTitle = albumTitle.replaceAll("__", "");
+                        String albumTitle = subPage.select("meta[name=description]").attr("content");
+                        albumTitle = albumTitle.replace("A huge collection of free porn comics for adults. Read ", "");
+                        albumTitle = albumTitle.replace(" online for free at 8muses.com", "");
+                        // albumTitle = albumTitle.replace("Sex and Porn Comics", "");
+                        // albumTitle = albumTitle.replace("|", "");
+                        // albumTitle = albumTitle.replace("8muses", "");
+                        // albumTitle = albumTitle.replaceAll("-", "_");
+                        // albumTitle = albumTitle.replaceAll(" ", "_");
+                        // albumTitle = albumTitle.replaceAll("___", "_");
+                        // albumTitle = albumTitle.replaceAll("__", "_");
+                        // // This is here to remove the trailing __ from folder names
+                        // albumTitle = albumTitle.replaceAll("__", "");
                         logger.info("Found " + subalbumImages.size() + " images in subalbum");
+                        int prefix = 1;
                         for (String image : subalbumImages) {
                             URL imageUrl = new URL(image);
-                            urlTitles.put(imageUrl, albumTitle);
+                            // urlTitles.put(imageUrl, albumTitle);
+                            addURLToDownload(imageUrl, getPrefix(prefix), albumTitle, this.url.toExternalForm(), cookies);
+                            prefix = prefix + 1;
                         }
                         rippingSubalbums = true;
                         imageURLs.addAll(subalbumImages);
@@ -171,6 +176,7 @@ public class EightmusesRipper extends AbstractHTMLRipper {
 
     private String getFullSizeImage(String imageUrl) throws IOException {
         sendUpdate(STATUS.LOADING_RESOURCE, imageUrl);
+        logger.info("Getting full sized image from " + imageUrl);
         Document doc = new Http(imageUrl).get(); // Retrieve the webpage  of the image URL
         Element fullSizeImage = doc.select(".photo").first(); // Select the "photo" element from the page (there should only be 1)
         // subdir is the sub dir the cdn has the image stored in
@@ -181,11 +187,7 @@ public class EightmusesRipper extends AbstractHTMLRipper {
 
     @Override
     public void downloadURL(URL url, int index) {
-        if (rippingSubalbums) {
-            addURLToDownload(url, getPrefix(index), urlTitles.get(url), this.url.toExternalForm(), cookies);
-        } else {
-            addURLToDownload(url, getPrefix(index), "", this.url.toExternalForm(), cookies);
-        }
+        addURLToDownload(url, getPrefix(index), "", this.url.toExternalForm(), cookies);
     }
 
     @Override
