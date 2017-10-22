@@ -114,6 +114,7 @@ public class EightmusesRipper extends AbstractHTMLRipper {
                         String albumTitle = subPage.select("meta[name=description]").attr("content");
                         albumTitle = albumTitle.replace("A huge collection of free porn comics for adults. Read ", "");
                         albumTitle = albumTitle.replace(" online for free at 8muses.com", "");
+                        albumTitle = albumTitle.replace(" ", "_");
                         // albumTitle = albumTitle.replace("Sex and Porn Comics", "");
                         // albumTitle = albumTitle.replace("|", "");
                         // albumTitle = albumTitle.replace("8muses", "");
