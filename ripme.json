@@ -1,6 +1,7 @@
 {
-    "latestVersion": "1.5.14",
+    "latestVersion": "1.5.15",
     "changeList": [
+        "1.5.15: Added Hbrowse.com ripper; 8muses ripper now can rip from all album types",
         "1.5.14: Myhentaicomics ripper no longer tries to download ads; Added hentai.cafe ripper; Fixed sankakucomplex ripper",
         "1.5.13: InstagramRipper: fixed minor bug",
         "1.5.12: Make tray icon optional; work around window positioning bug on Windows.",
