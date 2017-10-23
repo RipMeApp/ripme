@@ -169,7 +169,7 @@ public class BasicRippersTest extends RippersTest {
     }
 
     public void testImgboxRip() throws IOException {
-        AbstractRipper ripper = new ImgboxRipper(new URL("http://imgbox.com/g/sEMHfsqx4w"));
+        AbstractRipper ripper = new ImgboxRipper(new URL("https://imgbox.com/g/FJPF7t26FD"));
         testRipper(ripper);
     }
 
