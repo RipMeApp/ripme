@@ -37,8 +37,8 @@ public class VideoRippersTest extends RippersTest {
 
     public void testXvideosRipper() throws IOException {
         List<URL> contentURLs = new ArrayList<URL>();
-        contentURLs.add(new URL("http://www.xvideos.com/video1428195/stephanie_first_time_anal"));
-        contentURLs.add(new URL("http://www.xvideos.com/video7136868/vid-20140205-wa0011"));
+        contentURLs.add(new URL("https://www.xvideos.com/video19719109/ziggy_star_ultra_hard_anal_pounding"));
+        contentURLs.add(new URL("https://www.xvideos.com/video23515878/dee_s_pool_toys"));
         for (URL url : contentURLs) {
             XvideosRipper ripper = new XvideosRipper(url);
             videoTestHelper(ripper);
