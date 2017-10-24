@@ -50,7 +50,7 @@ public class JagodibujaRipper extends AbstractHTMLRipper {
 
     @Override
     public List<String> getURLsFromPage(Document doc) {
-        List<String> result = new ArrayList<String>();
+        List<String> result = new ArrayList<>();
         for (Element comicPageUrl : doc.select("div.gallery-icon > a")) {
             try {
                 sleep(500);

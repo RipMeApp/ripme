@@ -23,7 +23,7 @@ import java.util.HashMap;
 public class AerisdiesRipper extends AbstractHTMLRipper {
 
     private Document albumDoc = null;
-    private Map<String,String> cookies = new HashMap<String,String>();
+    private Map<String,String> cookies = new HashMap<>();
 
 
     public AerisdiesRipper(URL url) throws IOException {
@@ -74,7 +74,7 @@ public class AerisdiesRipper extends AbstractHTMLRipper {
 
     @Override
     public List<String> getURLsFromPage(Document page) {
-        List<String> imageURLs = new ArrayList<String>();
+        List<String> imageURLs = new ArrayList<>();
         Elements albumElements = page.select("div.imgbox > a > img");
             for (Element imageBox : albumElements) {
                 String imageUrl = imageBox.attr("src");

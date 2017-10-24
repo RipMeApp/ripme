@@ -28,8 +28,8 @@ import com.rarchives.ripme.utils.Http;
 
 public class FuraffinityRipper extends AbstractHTMLRipper {
 
-    static Map<String, String> cookies=null;
-    static final String urlBase = "https://www.furaffinity.net";
+    private static Map<String, String> cookies=null;
+    private static final String urlBase = "https://www.furaffinity.net";
 
     // Thread pool for finding direct image links from "image" pages (html)
     private DownloadThreadPool furaffinityThreadPool
@@ -75,7 +75,7 @@ public class FuraffinityRipper extends AbstractHTMLRipper {
                                  .response();
         cookies = loginPage.cookies();
 
-        Map<String,String> formData = new HashMap<String,String>();
+        Map<String,String> formData = new HashMap<>();
         formData.put("action", "login");
         formData.put("retard_protection", "1");
         formData.put("name", user);
@@ -112,7 +112,7 @@ public class FuraffinityRipper extends AbstractHTMLRipper {
 
     @Override
     public List<String> getURLsFromPage(Document page) {
-        List<String> urls = new ArrayList<String>();
+        List<String> urls = new ArrayList<>();
         Elements urlElements = page.select("figure.t-image > b > u > a");
         for (Element e : urlElements) {
             urls.add(urlBase + e.select("a").first().attr("href"));
@@ -121,7 +121,7 @@ public class FuraffinityRipper extends AbstractHTMLRipper {
     }
     @Override
     public List<String> getDescriptionsFromPage(Document page) {
-        List<String> urls = new ArrayList<String>();
+        List<String> urls = new ArrayList<>();
         Elements urlElements = page.select("figure.t-image > b > u > a");
         for (Element e : urlElements) {
             urls.add(urlBase + e.select("a").first().attr("href"));
@@ -157,9 +157,7 @@ public class FuraffinityRipper extends AbstractHTMLRipper {
             ele.select("p").prepend("\\n\\n");
             logger.debug("Returning description at " + page);
             String tempPage = Jsoup.clean(ele.html().replaceAll("\\\\n", System.getProperty("line.separator")), "", Whitelist.none(), new Document.OutputSettings().prettyPrint(false));
-            String title = documentz.select("meta[property=og:title]").attr("content");
-            String tempText = title;
-            return tempText + "\n" + tempPage; // Overridden saveText takes first line and makes it the file name.
+            return documentz.select("meta[property=og:title]").attr("content") + "\n" + tempPage; // Overridden saveText takes first line and makes it the file name.
         } catch (IOException ioe) {
             logger.info("Failed to get description " + page + " : '" + ioe.getMessage() + "'");
             return null;
@@ -232,7 +230,7 @@ public class FuraffinityRipper extends AbstractHTMLRipper {
     private class FuraffinityDocumentThread extends Thread {
         private URL url;
 
-        public FuraffinityDocumentThread(URL url) {
+        FuraffinityDocumentThread(URL url) {
             super();
             this.url = url;
         }

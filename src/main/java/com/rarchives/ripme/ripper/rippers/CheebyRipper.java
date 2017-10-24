@@ -21,7 +21,7 @@ import com.rarchives.ripme.utils.Http;
 public class CheebyRipper extends AbstractHTMLRipper {
 
     private int offset = 0;
-    private Map<String, Integer> albumSets = new HashMap<String, Integer>();
+    private Map<String, Integer> albumSets = new HashMap<>();
 
     public CheebyRipper(URL url) throws IOException {
         super(url);
@@ -81,8 +81,8 @@ public class CheebyRipper extends AbstractHTMLRipper {
         return null;
     }
 
-    public List<Image> getImagesFromPage(Document page) {
-        List<Image> imageURLs = new ArrayList<Image>();
+    private List<Image> getImagesFromPage(Document page) {
+        List<Image> imageURLs = new ArrayList<>();
         for (Element image : page.select("div.i a img")) {
             // Get image URL
             String imageURL = image.attr("src");
@@ -171,7 +171,7 @@ public class CheebyRipper extends AbstractHTMLRipper {
     private class Image {
         String url, prefix;
         int index;
-        public Image(String url, String prefix, int index) {
+        Image(String url, String prefix, int index) {
             this.url = url;
             this.prefix = prefix;
             this.index = index;

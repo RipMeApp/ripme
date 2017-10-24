@@ -22,23 +22,21 @@ public class CheveretoRipper extends AbstractHTMLRipper {
     super(url);
     }
 
-    public static List<String> explicit_domains_1 = Arrays.asList("hushpix.com", "tag-fox.com");
+    private static List<String> explicit_domains_1 = Arrays.asList("hushpix.com", "tag-fox.com");
         @Override
         public String getHost() {
-            String host = url.toExternalForm().split("/")[2];
-            return host;
+            return url.toExternalForm().split("/")[2];
         }
 
         @Override
         public String getDomain() {
-            String host = url.toExternalForm().split("/")[2];
-            return host;
+            return url.toExternalForm().split("/")[2];
         }
 
         @Override
         public boolean canRip(URL url) {
             String url_name = url.toExternalForm();
-            if (explicit_domains_1.contains(url_name.split("/")[2]) == true) {
+            if (explicit_domains_1.contains(url_name.split("/")[2])) {
                 Pattern pa = Pattern.compile("(?:https?://)?(?:www\\.)?[a-z1-9-]*\\.[a-z1-9]*/album/([a-zA-Z1-9]*)/?$");
                 Matcher ma = pa.matcher(url.toExternalForm());
                 if (ma.matches()) {
@@ -103,7 +101,7 @@ public class CheveretoRipper extends AbstractHTMLRipper {
 
         @Override
         public List<String> getURLsFromPage(Document doc) {
-            List<String> result = new ArrayList<String>();
+            List<String> result = new ArrayList<>();
                 for (Element el : doc.select("a.image-container > img")) {
                     String imageSource = el.attr("src");
                     // We remove the .md from images so we download the full size image

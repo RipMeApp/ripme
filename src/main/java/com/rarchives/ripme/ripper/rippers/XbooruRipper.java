@@ -57,7 +57,7 @@ public class XbooruRipper extends AbstractHTMLRipper {
 
     @Override
     public List<String> getURLsFromPage(Document page) {
-        List<String> res = new ArrayList<String>(100);
+        List<String> res = new ArrayList<>(100);
         for (Element e : page.getElementsByTag("post")) {
             res.add(e.absUrl("file_url") + "#" + e.attr("id"));
         }
@@ -71,7 +71,7 @@ public class XbooruRipper extends AbstractHTMLRipper {
 
     private String getTerm(URL url) throws MalformedURLException {
         if (gidPattern == null) {
-            gidPattern = Pattern.compile("^https?://(www\\.)?xbooru\\.com/(index.php)?.*([?&]tags=([a-zA-Z0-9$_.+!*'(),%-]+))(\\&|(#.*)?$)");
+            gidPattern = Pattern.compile("^https?://(www\\.)?xbooru\\.com/(index.php)?.*([?&]tags=([a-zA-Z0-9$_.+!*'(),%-]+))(&|(#.*)?$)");
         }
 
         Matcher m = gidPattern.matcher(url.toExternalForm());

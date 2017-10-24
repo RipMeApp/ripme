@@ -32,10 +32,10 @@ public abstract class AbstractRipper
 
     protected URL url;
     protected File workingDir;
-    protected DownloadThreadPool threadPool;
-    protected RipStatusHandler observer = null;
+    DownloadThreadPool threadPool;
+    RipStatusHandler observer = null;
 
-    protected boolean completed = true;
+    private boolean completed = true;
 
     public abstract void rip() throws IOException;
     public abstract String getHost();
@@ -110,9 +110,9 @@ public abstract class AbstractRipper
      *      The cookies to send to the server while downloading this file.
      * @return
      */
-    public abstract boolean addURLToDownload(URL url, File saveAs, String referrer, Map<String,String> cookies);
+    protected abstract boolean addURLToDownload(URL url, File saveAs, String referrer, Map<String, String> cookies);
 
-    public boolean addURLToDownload(URL url, String prefix, String subdirectory, String referrer, Map<String,String> cookies) {
+    protected boolean addURLToDownload(URL url, String prefix, String subdirectory, String referrer, Map<String, String> cookies) {
         try {
             stopCheck();
         } catch (IOException e) {
@@ -159,7 +159,7 @@ public abstract class AbstractRipper
      *      Sub-directory of the working directory to save the images to.
      * @return True on success, flase on failure.
      */
-    public boolean addURLToDownload(URL url, String prefix, String subdirectory) {
+    protected boolean addURLToDownload(URL url, String prefix, String subdirectory) {
         return addURLToDownload(url, prefix, subdirectory, null, null);
     }
 
@@ -172,7 +172,7 @@ public abstract class AbstractRipper
      *      Text to append to saved filename.
      * @return True on success, flase on failure.
      */
-    public boolean addURLToDownload(URL url, String prefix) {
+    protected boolean addURLToDownload(URL url, String prefix) {
         // Use empty subdirectory
         return addURLToDownload(url, prefix, "");
     }
@@ -223,14 +223,14 @@ public abstract class AbstractRipper
     /**
      * @return Number of files downloaded.
      */
-    public int getCount() {
+    int getCount() {
         return 1;
     }
 
     /**
      * Notifies observers and updates state if all files have been ripped.
      */
-    protected void checkIfComplete() {
+    void checkIfComplete() {
         if (observer == null) {
             logger.debug("observer is null");
             return;
@@ -320,10 +320,10 @@ public abstract class AbstractRipper
      * @throws Exception
      */
     public static List<Constructor<?>> getRipperConstructors(String pkg) throws Exception {
-        List<Constructor<?>> constructors = new ArrayList<Constructor<?>>();
+        List<Constructor<?>> constructors = new ArrayList<>();
         for (Class<?> clazz : Utils.getClassesForPackage(pkg)) {
             if (AbstractRipper.class.isAssignableFrom(clazz)) {
-                constructors.add( (Constructor<?>) clazz.getConstructor(URL.class) );
+                constructors.add(clazz.getConstructor(URL.class));
             }
         }
         return constructors;
@@ -355,10 +355,6 @@ public abstract class AbstractRipper
             logger.error("Got exception while running ripper:", e);
             waitForThreads();
             sendUpdate(STATUS.RIP_ERRORED, "HTTP status code " + e.getStatusCode() + " for URL " + e.getUrl());
-        } catch (IOException e) {
-            logger.error("Got exception while running ripper:", e);
-            waitForThreads();
-            sendUpdate(STATUS.RIP_ERRORED, e.getMessage());
         } catch (Exception e) {
             logger.error("Got exception while running ripper:", e);
             waitForThreads();
@@ -368,7 +364,7 @@ public abstract class AbstractRipper
         }
     }
 
-    public void cleanup() {
+    private void cleanup() {
         if (this.workingDir.list().length == 0) {
             // No files, delete the dir
             logger.info("Deleting empty directory " + this.workingDir);
@@ -379,7 +375,7 @@ public abstract class AbstractRipper
         }
     }
 
-    public boolean sleep(int milliseconds) {
+    protected boolean sleep(int milliseconds) {
         try {
             logger.debug("Sleeping " + milliseconds + "ms");
             Thread.sleep(milliseconds);
@@ -402,7 +398,7 @@ public abstract class AbstractRipper
         logger.debug("THIS IS A TEST RIP");
         thisIsATest = true;
     }
-    public boolean isThisATest() {
+    protected boolean isThisATest() {
         return thisIsATest;
     }
 }

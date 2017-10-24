@@ -31,7 +31,7 @@ public class ImagearnRipper extends AbstractHTMLRipper {
 
     @Override
     public String getGID(URL url) throws MalformedURLException {
-        Pattern p = Pattern.compile("^.*imagearn.com/{1,}gallery.php\\?id=([0-9]{1,}).*$");
+        Pattern p = Pattern.compile("^.*imagearn.com/+gallery.php\\?id=([0-9]+).*$");
         Matcher m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             return m.group(1);
@@ -43,7 +43,7 @@ public class ImagearnRipper extends AbstractHTMLRipper {
     }
 
     public URL sanitizeURL(URL url) throws MalformedURLException {
-        Pattern p = Pattern.compile("^.*imagearn.com/{1,}image.php\\?id=[0-9]{1,}.*$");
+        Pattern p = Pattern.compile("^.*imagearn.com/+image.php\\?id=[0-9]+.*$");
         Matcher m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             // URL points to imagearn *image*, not gallery
@@ -77,7 +77,7 @@ public class ImagearnRipper extends AbstractHTMLRipper {
 
     @Override
     public List<String> getURLsFromPage(Document doc) {
-        List<String> imageURLs = new ArrayList<String>();
+        List<String> imageURLs = new ArrayList<>();
         for (Element thumb : doc.select("div#gallery > div > a")) {
             String imageURL = thumb.attr("href");
             try {

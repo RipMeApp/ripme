@@ -20,7 +20,7 @@ import com.rarchives.ripme.utils.Http;
 
 public class HentaifoundryRipper extends AbstractHTMLRipper {
 
-    private Map<String,String> cookies = new HashMap<String,String>();
+    private Map<String,String> cookies = new HashMap<>();
     public HentaifoundryRipper(URL url) throws IOException {
         super(url);
     }
@@ -84,7 +84,7 @@ public class HentaifoundryRipper extends AbstractHTMLRipper {
 
     @Override
     public List<String> getURLsFromPage(Document doc) {
-        List<String> imageURLs = new ArrayList<String>();
+        List<String> imageURLs = new ArrayList<>();
         Pattern imgRegex = Pattern.compile(".*/user/([a-zA-Z0-9\\-_]+)/(\\d+)/.*");
         for (Element thumb : doc.select("div.thumb_square > a.thumbLink")) {
             if (isStopped()) {
@@ -115,7 +115,7 @@ public class HentaifoundryRipper extends AbstractHTMLRipper {
                 imagePage = null;
             }
             // This is here for when the image is resized to a thumbnail because ripme doesn't report a screensize
-            if (imagePage.select("div.boxbody > img.center").attr("src").contains("thumbs.") == true) {
+            if (imagePage.select("div.boxbody > img.center").attr("src").contains("thumbs.")) {
                 imageURLs.add("http:" + imagePage.select("div.boxbody > img.center").attr("onclick").replace("this.src=", "").replace("'", "").replace("; $(#resize_message).hide();", ""));
             }
             else {

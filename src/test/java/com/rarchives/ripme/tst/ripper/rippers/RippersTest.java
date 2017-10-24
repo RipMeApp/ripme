@@ -18,14 +18,9 @@ import com.rarchives.ripme.utils.Utils;
  */
 public class RippersTest extends TestCase {
 
-    public final Logger logger = Logger.getLogger(RippersTest.class);
+    private final Logger logger = Logger.getLogger(RippersTest.class);
 
-    /** Dummy test to make JUnit not complain */
-    public void test() {
-        assert(true);
-    }
-
-    protected void testRipper(AbstractRipper ripper) {
+    void testRipper(AbstractRipper ripper) {
         try {
             // Turn on Debug logging
             ((ConsoleAppender)Logger.getRootLogger().getAppender("stdout")).setThreshold(Level.DEBUG);
@@ -61,7 +56,7 @@ public class RippersTest extends TestCase {
          "txt", "log", "php"};
 
     /** Recursively deletes a directory */
-    protected void deleteDir(File dir) {
+    void deleteDir(File dir) {
         if (!dir.getName().contains("_")) {
             // All ripped albums contain an underscore
             // Don't delete an album if it doesn't have an underscore
@@ -83,7 +78,7 @@ public class RippersTest extends TestCase {
         }
         dir.delete();
     }
-    protected void deleteSubdirs(File workingDir) {
+    void deleteSubdirs(File workingDir) {
         for (File f : workingDir.listFiles()) {
             if (f.isDirectory()) {
                 for (File sf : f.listFiles()) {

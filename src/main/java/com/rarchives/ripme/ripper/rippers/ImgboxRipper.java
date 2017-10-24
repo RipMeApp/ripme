@@ -46,7 +46,7 @@ public class ImgboxRipper extends AbstractHTMLRipper {
     }
     @Override
     public List<String> getURLsFromPage(Document doc) {
-        List<String> imageURLs = new ArrayList<String>();
+        List<String> imageURLs = new ArrayList<>();
         for (Element thumb : doc.select("div.boxed-content > a > img")) {
             String image = thumb.attr("src")
                                 .replaceAll("[-a-zA-Z0-9.]+s.imgbox.com",

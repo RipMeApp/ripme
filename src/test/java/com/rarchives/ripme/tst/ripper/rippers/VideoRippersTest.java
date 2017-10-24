@@ -36,7 +36,7 @@ public class VideoRippersTest extends RippersTest {
     }
 
     public void testXvideosRipper() throws IOException {
-        List<URL> contentURLs = new ArrayList<URL>();
+        List<URL> contentURLs = new ArrayList<>();
         contentURLs.add(new URL("https://www.xvideos.com/video19719109/ziggy_star_ultra_hard_anal_pounding"));
         contentURLs.add(new URL("https://www.xvideos.com/video23515878/dee_s_pool_toys"));
         for (URL url : contentURLs) {
@@ -46,7 +46,7 @@ public class VideoRippersTest extends RippersTest {
     }
 
     public void testPornhubRipper() throws IOException {
-        List<URL> contentURLs = new ArrayList<URL>();
+        List<URL> contentURLs = new ArrayList<>();
         contentURLs.add(new URL("http://www.pornhub.com/view_video.php?viewkey=993166542"));
         for (URL url : contentURLs) {
             PornhubRipper ripper = new PornhubRipper(url);
@@ -55,7 +55,7 @@ public class VideoRippersTest extends RippersTest {
     }
 
     public void testVineRipper() throws IOException {
-        List<URL> contentURLs = new ArrayList<URL>();
+        List<URL> contentURLs = new ArrayList<>();
         contentURLs.add(new URL("https://vine.co/v/hiqQrP0eUZx"));
         for (URL url : contentURLs) {
             VineRipper ripper = new VineRipper(url);
@@ -64,7 +64,7 @@ public class VideoRippersTest extends RippersTest {
     }
 
     public void testYoupornRipper() throws IOException {
-        List<URL> contentURLs = new ArrayList<URL>();
+        List<URL> contentURLs = new ArrayList<>();
         contentURLs.add(new URL("http://www.youporn.com/watch/7669155/mrs-li-amateur-69-orgasm/?from=categ"));
         for (URL url : contentURLs) {
             YoupornRipper ripper = new YoupornRipper(url);

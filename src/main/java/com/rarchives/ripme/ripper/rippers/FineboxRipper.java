@@ -80,7 +80,7 @@ public class FineboxRipper extends AlbumRipper {
 
     @Override
     public String getGID(URL url) throws MalformedURLException {
-        Pattern p = Pattern.compile("^https?://(www\\.)?(v|f)inebox\\.co/u/([a-zA-Z0-9]{1,}).*$");
+        Pattern p = Pattern.compile("^https?://(www\\.)?([vf])inebox\\.co/u/([a-zA-Z0-9]+).*$");
         Matcher m = p.matcher(url.toExternalForm());
         if (!m.matches()) {
             throw new MalformedURLException("Expected format: http://"+DOMAIN+"/u/USERNAME");

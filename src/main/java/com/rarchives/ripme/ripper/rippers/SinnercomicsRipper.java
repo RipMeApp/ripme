@@ -71,7 +71,7 @@ public class SinnercomicsRipper extends AbstractHTMLRipper {
 
     @Override
     public List<String> getURLsFromPage(Document doc) {
-        List<String> result = new ArrayList<String>();
+        List<String> result = new ArrayList<>();
         for (Element el : doc.select("meta[property=og:image]")) {
             String imageSource = el.attr("content");
             imageSource = imageSource.replace(" alt=", "");

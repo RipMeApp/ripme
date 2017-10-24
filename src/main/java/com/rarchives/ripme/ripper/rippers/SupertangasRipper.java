@@ -63,7 +63,7 @@ public class SupertangasRipper extends AlbumRipper {
             }
             for (Element imageElement : images) {
                 String image = imageElement.attr("href");
-                image = image.replaceAll("\\/fotos\\/", "/fotos/images/");
+                image = image.replaceAll("/fotos/", "/fotos/images/");
                 addURLToDownload(new URL(image));
             }
             try {

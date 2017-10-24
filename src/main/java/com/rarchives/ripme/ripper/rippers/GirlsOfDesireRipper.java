@@ -50,7 +50,7 @@ public class GirlsOfDesireRipper extends AbstractHTMLRipper {
         Pattern p;
         Matcher m;
 
-        p = Pattern.compile("^www\\.girlsofdesire\\.org\\/galleries\\/([\\w\\d-]+)\\/$");
+        p = Pattern.compile("^www\\.girlsofdesire\\.org/galleries/([\\w\\d-]+)/$");
         m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             return m.group(1);
@@ -72,7 +72,7 @@ public class GirlsOfDesireRipper extends AbstractHTMLRipper {
 
     @Override
     public List<String> getURLsFromPage(Document doc) {
-        List<String> imageURLs = new ArrayList<String>();
+        List<String> imageURLs = new ArrayList<>();
         for (Element thumb : doc.select("td.vtop > a > img")) {
             String imgSrc = thumb.attr("src");
             imgSrc = imgSrc.replaceAll("_thumb\\.", ".");

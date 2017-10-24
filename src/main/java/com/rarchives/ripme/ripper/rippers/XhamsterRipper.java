@@ -87,7 +87,7 @@ public class XhamsterRipper extends AlbumRipper {
 
     @Override
     public String getGID(URL url) throws MalformedURLException {
-        Pattern p = Pattern.compile("^https?://[wmde.]*xhamster\\.com/photos/gallery/.*?(\\d{1,})$");
+        Pattern p = Pattern.compile("^https?://[wmde.]*xhamster\\.com/photos/gallery/.*?(\\d+)$");
         Matcher m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             return m.group(1);

@@ -56,7 +56,7 @@ public class VidbleRipper extends AbstractHTMLRipper {
     }
 
     private static List<String> getURLsFromPageStatic(Document doc) {
-        List<String> imageURLs = new ArrayList<String>();
+        List<String> imageURLs = new ArrayList<>();
         Elements els = doc.select("#ContentPlaceHolder1_divContent");
         Elements imgs = els.select("img");
         for (Element img : imgs) {
@@ -76,7 +76,7 @@ public class VidbleRipper extends AbstractHTMLRipper {
     }
 
     public static List<URL> getURLsFromPage(URL url) throws IOException {
-        List<URL> urls = new ArrayList<URL>();
+        List<URL> urls = new ArrayList<>();
         Document doc = Http.url(url).get();
         for (String stringURL : getURLsFromPageStatic(doc)) {
             urls.add(new URL(stringURL));

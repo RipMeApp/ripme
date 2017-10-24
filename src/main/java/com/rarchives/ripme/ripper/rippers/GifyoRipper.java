@@ -22,7 +22,7 @@ import com.rarchives.ripme.utils.Http;
 public class GifyoRipper extends AbstractHTMLRipper {
 
     private int page = 0;
-    private Map<String,String> cookies = new HashMap<String,String>();
+    private Map<String,String> cookies = new HashMap<>();
 
     public GifyoRipper(URL url) throws IOException {
         super(url);
@@ -70,7 +70,7 @@ public class GifyoRipper extends AbstractHTMLRipper {
     @Override
     public Document getNextPage(Document doc) throws IOException {
         page++;
-        Map<String,String> postData = new HashMap<String,String>();
+        Map<String,String> postData = new HashMap<>();
         postData.put("cmd", "refreshData");
         postData.put("view", "gif");
         postData.put("layout", "grid");
@@ -92,7 +92,7 @@ public class GifyoRipper extends AbstractHTMLRipper {
 
     @Override
     public List<String> getURLsFromPage(Document doc) {
-        List<String> imageURLs = new ArrayList<String>();
+        List<String> imageURLs = new ArrayList<>();
         for (Element image : doc.select("img.profile_gif")) {
             String imageUrl = image.attr("data-animated");
             if (imageUrl.startsWith("//")) {

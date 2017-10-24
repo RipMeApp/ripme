@@ -20,7 +20,7 @@ import com.rarchives.ripme.utils.Utils;
  * Thread for downloading files.
  * Includes retry logic, observer notifications, and other goodies.
  */
-public class DownloadVideoThread extends Thread {
+class DownloadVideoThread extends Thread {
 
     private static final Logger logger = Logger.getLogger(DownloadVideoThread.class);
 

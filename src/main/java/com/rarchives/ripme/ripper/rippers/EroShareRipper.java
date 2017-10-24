@@ -71,19 +71,13 @@ public class EroShareRipper extends AbstractHTMLRipper {
 
         Pattern p_eroshare_profile = Pattern.compile("^https?://eroshare.com/u/([a-zA-Z0-9\\-_]+)/?$");
         Matcher m_eroshare_profile = p_eroshare_profile.matcher(url.toExternalForm());
-        if (m_eroshare_profile.matches()) {
-            return true;
-        }
-        return false;
+        return m_eroshare_profile.matches();
     }
 
-    public boolean is_profile(URL url) {
+    private boolean is_profile(URL url) {
         Pattern pa = Pattern.compile("^https?://eroshae.com/u/([a-zA-Z0-9\\-_]+)/?$");
         Matcher ma = pa.matcher(url.toExternalForm());
-        if (ma.matches()) {
-            return true;
-        }
-        return false;
+        return ma.matches();
     }
 
     @Override
@@ -103,7 +97,7 @@ public class EroShareRipper extends AbstractHTMLRipper {
 
     @Override
     public String getAlbumTitle(URL url) throws MalformedURLException {
-        if (is_profile(url) == false) {
+        if (!is_profile(url)) {
             try {
                 // Attempt to use album title as GID
                 Element titleElement = getFirstPage().select("meta[property=og:title]").first();
@@ -122,7 +116,7 @@ public class EroShareRipper extends AbstractHTMLRipper {
 
     @Override
     public List<String> getURLsFromPage(Document doc) {
-        List<String> URLs = new ArrayList<String>();
+        List<String> URLs = new ArrayList<>();
         //Pictures
         Elements imgs = doc.getElementsByTag("img");
         for (Element img : imgs) {
@@ -172,9 +166,7 @@ public class EroShareRipper extends AbstractHTMLRipper {
                             .ignoreContentType()
                             .response();
 
-        Document doc = resp.parse();
-
-        return doc;
+        return resp.parse();
     }
 
     @Override
@@ -214,7 +206,7 @@ public class EroShareRipper extends AbstractHTMLRipper {
 
         Document doc = resp.parse();
 
-        List<URL> URLs = new ArrayList<URL>();
+        List<URL> URLs = new ArrayList<>();
         //Pictures
         Elements imgs = doc.getElementsByTag("img");
         for (Element img : imgs) {

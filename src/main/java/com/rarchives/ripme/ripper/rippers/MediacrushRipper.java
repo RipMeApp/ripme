@@ -25,7 +25,7 @@ import com.rarchives.ripme.utils.Http;
 public class MediacrushRipper extends AbstractJSONRipper {
 
     /** Ordered list of preferred formats, sorted by preference (low-to-high) */
-    private static final Map<String, Integer> PREFERRED_FORMATS = new HashMap<String,Integer>();
+    private static final Map<String, Integer> PREFERRED_FORMATS = new HashMap<>();
     static {
         PREFERRED_FORMATS.put("mp4", 0);
         PREFERRED_FORMATS.put("wemb",1);
@@ -36,7 +36,7 @@ public class MediacrushRipper extends AbstractJSONRipper {
         PREFERRED_FORMATS.put("png", 6);
         PREFERRED_FORMATS.put("jpg", 7);
         PREFERRED_FORMATS.put("jpeg",8);
-    };
+    }
 
     public MediacrushRipper(URL url) throws IOException {
         super(url);
@@ -113,7 +113,7 @@ public class MediacrushRipper extends AbstractJSONRipper {
 
     @Override
     public List<String> getURLsFromJSON(JSONObject json) {
-        List<String> imageURLs = new ArrayList<String>();
+        List<String> imageURLs = new ArrayList<>();
         // Iterate over all files
         JSONArray files = json.getJSONArray("files");
         for (int i = 0; i < files.length(); i++) {

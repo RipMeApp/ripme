@@ -126,7 +126,7 @@ public class MotherlessRipper extends AlbumRipper {
         private URL url;
         private int index;
 
-        public MotherlessImageThread(URL url, int index) {
+        MotherlessImageThread(URL url, int index) {
             super();
             this.url = url;
             this.index = index;
@@ -142,7 +142,7 @@ public class MotherlessRipper extends AlbumRipper {
                 Document doc = Http.url(u)
                                    .referrer(u)
                                    .get();
-                Pattern p = Pattern.compile("^.*__fileurl = '([^']{1,})';.*$", Pattern.DOTALL);
+                Pattern p = Pattern.compile("^.*__fileurl = '([^']+)';.*$", Pattern.DOTALL);
                 Matcher m = p.matcher(doc.outerHtml());
                 if (m.matches()) {
                     String file = m.group(1);

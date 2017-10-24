@@ -71,7 +71,7 @@ public class CfakeRipper extends AbstractHTMLRipper {
 
         @Override
         public List<String> getURLsFromPage(Document doc) {
-            List<String> result = new ArrayList<String>();
+            List<String> result = new ArrayList<>();
                 for (Element el : doc.select("table.display > tbody > tr > td > table > tbody > tr > td > a")) {
                     if (el.attr("href").contains("upload")) {
                         return result;

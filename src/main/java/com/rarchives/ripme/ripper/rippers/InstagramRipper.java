@@ -75,8 +75,7 @@ public class InstagramRipper extends AbstractJSONRipper {
 
         String baseURL = "http://instagram.com/" + userID + "/media";
         try {
-            JSONObject result = Http.url(baseURL).getJSON();
-            return result;
+            return Http.url(baseURL).getJSON();
         } catch (JSONException e) {
             throw new IOException("Could not get instagram user via: " + baseURL);
         }
@@ -101,9 +100,7 @@ public class InstagramRipper extends AbstractJSONRipper {
             logger.info("Loading " + baseURL);
             sleep(1000);
 
-            JSONObject nextJSON = Http.url(baseURL).getJSON();
-
-            return nextJSON;
+            return Http.url(baseURL).getJSON();
         } else {
             throw new IOException("No more images found");
         }
@@ -129,7 +126,7 @@ public class InstagramRipper extends AbstractJSONRipper {
         // Instagram returns cropped images to unauthenticated applications to maintain legacy support. 
         // To retrieve the uncropped image, remove this segment from the URL. 
         // Segment format: cX.Y.W.H - eg: c0.134.1080.1080
-        imageURL = imageURL.replaceAll("\\/c\\d{1,4}\\.\\d{1,4}\\.\\d{1,4}\\.\\d{1,4}", "");
+        imageURL = imageURL.replaceAll("/c\\d{1,4}\\.\\d{1,4}\\.\\d{1,4}\\.\\d{1,4}", "");
 
         imageURL = imageURL.replaceAll("\\?ig_cache_key.+$", "");
         return imageURL;
@@ -154,7 +151,7 @@ public class InstagramRipper extends AbstractJSONRipper {
 
     @Override
     public List<String> getURLsFromJSON(JSONObject json) {
-        List<String> imageURLs = new ArrayList<String>();
+        List<String> imageURLs = new ArrayList<>();
         JSONArray datas = json.getJSONArray("items");
         for (int i = 0; i < datas.length(); i++) {
             JSONObject data = (JSONObject) datas.get(i);

@@ -34,7 +34,7 @@ import com.rarchives.ripme.ripper.AbstractRipper;
  * Common utility functions used in various places throughout the project.
  */
 public class Utils {
-    public  static final String RIP_DIRECTORY = "rips";
+    private static final String RIP_DIRECTORY = "rips";
     private static final String configFile = "rip.properties";
     private static final String OS = System.getProperty("os.name").toLowerCase();
     private static final Logger logger = Logger.getLogger(Utils.class);
@@ -107,7 +107,7 @@ public class Utils {
         return config.getBoolean(key, defaultValue);
     }
     public static List<String> getConfigList(String key) {
-        List<String> result = new ArrayList<String>();
+        List<String> result = new ArrayList<>();
         for (Object obj : config.getList(key, new ArrayList<String>())) {
             if (obj instanceof String) {
                 result.add( (String) obj);
@@ -124,7 +124,7 @@ public class Utils {
     }
     public static void setConfigList(String key, Enumeration<Object> enumeration) {
         config.clearProperty(key);
-        List<Object> list = new ArrayList<Object>();
+        List<Object> list = new ArrayList<>();
         while (enumeration.hasMoreElements()) {
             list.add(enumeration.nextElement());
         }
@@ -246,7 +246,7 @@ public class Utils {
      *      List of classes within the package
      */
     public static ArrayList<Class<?>> getClassesForPackage(String pkgname) {
-        ArrayList<Class<?>> classes = new ArrayList<Class<?>>();
+        ArrayList<Class<?>> classes = new ArrayList<>();
         String relPath = pkgname.replace('.', '/');
         URL resource = ClassLoader.getSystemClassLoader().getResource(relPath);
         if (resource == null) {
@@ -311,7 +311,7 @@ public class Utils {
         return classes;
     }
 
-    public static final int SHORTENED_PATH_LENGTH = 12;
+    private static final int SHORTENED_PATH_LENGTH = 12;
     public static String shortenPath(String path) {
         return shortenPath(new File(path));
     }
@@ -347,14 +347,14 @@ public class Utils {
     }
 
     public static List<String> getListOfAlbumRippers() throws Exception {
-        List<String> list = new ArrayList<String>();
+        List<String> list = new ArrayList<>();
         for (Constructor<?> ripper : AbstractRipper.getRipperConstructors("com.rarchives.ripme.ripper.rippers")) {
             list.add(ripper.getName());
         }
         return list;
     }
     public static List<String> getListOfVideoRippers() throws Exception {
-        List<String> list = new ArrayList<String>();
+        List<String> list = new ArrayList<>();
         for (Constructor<?> ripper : AbstractRipper.getRipperConstructors("com.rarchives.ripme.ripper.rippers.video")) {
             list.add(ripper.getName());
         }
@@ -365,12 +365,9 @@ public class Utils {
         URL resource = ClassLoader.getSystemClassLoader().getResource(filename);
         try {
             final Clip clip = (Clip) AudioSystem.getLine(new Line.Info(Clip.class));
-            clip.addLineListener(new LineListener() {
-                @Override
-                public void update(LineEvent event) {
-                    if (event.getType() == LineEvent.Type.STOP) {
-                        clip.close();
-                    }
+            clip.addLineListener(event -> {
+                if (event.getType() == LineEvent.Type.STOP) {
+                    clip.close();
                 }
             });
             clip.open(AudioSystem.getAudioInputStream(resource));
@@ -412,7 +409,7 @@ public class Utils {
      * @return List of all strings that are between 'start' and 'finish'
      */
     public static List<String> between(String fullText, String start, String finish) {
-        List<String> result = new ArrayList<String>();
+        List<String> result = new ArrayList<>();
         int i, j;
         i = fullText.indexOf(start);
         while (i >= 0) {
@@ -435,7 +432,7 @@ public class Utils {
      * @return The map of all query parameters
      */
     public static Map<String,String> parseUrlQuery(String query) {
-        Map<String,String> res = new HashMap<String, String>();
+        Map<String,String> res = new HashMap<>();
 
         if (query.equals("")) {
             return res;

@@ -85,8 +85,8 @@ public class PhotobucketRipper extends AlbumRipper {
     public void rip() throws IOException {
         List<String> subalbums = ripAlbumAndGetSubalbums(this.url.toExternalForm());
 
-        List<String> subsToRip = new ArrayList<String>(),
-                    rippedSubs = new ArrayList<String>();
+        List<String> subsToRip = new ArrayList<>(),
+                    rippedSubs = new ArrayList<>();
 
         for (String sub : subalbums) {
             subsToRip.add(sub);
@@ -117,7 +117,7 @@ public class PhotobucketRipper extends AlbumRipper {
         waitForThreads();
     }
 
-    public List<String> ripAlbumAndGetSubalbums(String theUrl) throws IOException {
+    private List<String> ripAlbumAndGetSubalbums(String theUrl) throws IOException {
         int filesIndex = 0,
             filesTotal = 0,
             pageIndex = 0;
@@ -145,7 +145,7 @@ public class PhotobucketRipper extends AlbumRipper {
                 }
                 // Grab the JSON
                 Pattern p; Matcher m;
-                p = Pattern.compile("^.*collectionData: (\\{.*\\}).*$", Pattern.DOTALL);
+                p = Pattern.compile("^.*collectionData: (\\{.*}).*$", Pattern.DOTALL);
                 m = p.matcher(data);
                 if (m.matches()) {
                     jsonString = m.group(1);
@@ -176,12 +176,12 @@ public class PhotobucketRipper extends AlbumRipper {
         if (url != null) {
             return getSubAlbums(url, currentAlbumPath);
         } else {
-            return new ArrayList<String>();
+            return new ArrayList<>();
         }
     }
 
     private List<String> getSubAlbums(String url, String currentAlbumPath) {
-        List<String> result = new ArrayList<String>();
+        List<String> result = new ArrayList<>();
         String subdomain = url.substring(url.indexOf("://")+3);
         subdomain = subdomain.substring(0, subdomain.indexOf("."));
         String apiUrl = "http://" + subdomain + ".photobucket.com/component/Albums-SubalbumList"

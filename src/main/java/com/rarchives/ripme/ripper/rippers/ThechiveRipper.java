@@ -23,7 +23,6 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 public class ThechiveRipper extends AbstractHTMLRipper {
-    public static boolean isTag;
 
     public ThechiveRipper(URL url) throws IOException {
     super(url);
@@ -44,7 +43,7 @@ public class ThechiveRipper extends AbstractHTMLRipper {
         Pattern p = Pattern.compile("^https?://thechive.com/[0-9]*/[0-9]*/[0-9]*/([a-zA-Z0-9_\\-]*)/?$");
         Matcher m = p.matcher(url.toExternalForm());
         if (m.matches()) {
-            isTag = false;
+            boolean isTag = false;
             return m.group(1);
         }
         throw new MalformedURLException("Expected thechive.com URL format: " +
@@ -59,7 +58,7 @@ public class ThechiveRipper extends AbstractHTMLRipper {
 
     @Override
     public List<String> getURLsFromPage(Document doc) {
-        List<String> result = new ArrayList<String>();
+        List<String> result = new ArrayList<>();
         for (Element el : doc.select("img.attachment-gallery-item-full")) {
             String imageSource = el.attr("src");
             // We replace thumbs with resizes so we can the full sized images

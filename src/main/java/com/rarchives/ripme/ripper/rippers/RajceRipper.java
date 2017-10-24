@@ -64,7 +64,7 @@ public class RajceRipper extends AbstractHTMLRipper {
 
     @Override
     public List<String> getURLsFromPage(Document page) {
-        List<String> result = new ArrayList<String>();
+        List<String> result = new ArrayList<>();
         for (Element el : page.select("a.photoThumb")) {
             result.add(el.attr("href"));
         }

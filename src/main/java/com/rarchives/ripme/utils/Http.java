@@ -22,7 +22,7 @@ import com.rarchives.ripme.ripper.AbstractRipper;
  */
 public class Http {
 
-    public  static final int    TIMEOUT = Utils.getConfigInteger("page.timeout", 5 * 1000);
+    private static final int    TIMEOUT = Utils.getConfigInteger("page.timeout", 5 * 1000);
     private static final Logger logger  = Logger.getLogger(AbstractRipper.class);
 
     private int retries;
@@ -34,7 +34,7 @@ public class Http {
         this.url = url;
         defaultSettings();
     }
-    public Http(URL url) {
+    private Http(URL url) {
         this.url = url.toExternalForm();
         defaultSettings();
     }
@@ -92,7 +92,7 @@ public class Http {
         return this;
     }
     public Http data(String name, String value) {
-        Map<String,String> data = new HashMap<String,String>();
+        Map<String,String> data = new HashMap<>();
         data.put(name, value);
         return data(data);
     }
@@ -132,7 +132,6 @@ public class Http {
             } catch (IOException e) {
                 logger.warn("Error while loading " + url, e);
                 lastException = e;
-                continue;
             }
         }
         throw new IOException("Failed to load " + url + " after " + this.retries + " attempts", lastException);
