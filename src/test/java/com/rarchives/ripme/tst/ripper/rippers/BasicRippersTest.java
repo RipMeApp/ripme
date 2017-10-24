@@ -30,6 +30,7 @@ import com.rarchives.ripme.ripper.rippers.VidbleRipper;
 import com.rarchives.ripme.ripper.rippers.VineRipper;
 import com.rarchives.ripme.ripper.rippers.VkRipper;
 import com.rarchives.ripme.ripper.rippers.XhamsterRipper;
+import com.rarchives.ripme.ripper.rippers.MyhentaicomicsRipper;
 
 /**
  * Simple test cases for various rippers.
@@ -51,6 +52,11 @@ public class BasicRippersTest extends RippersTest {
         EightmusesRipper ripper = new EightmusesRipper(new URL("http://www.8muses.com/index/category/jab-hotassneighbor7"));
         testRipper(ripper);
         ripper = new EightmusesRipper(new URL("https://www.8muses.com/album/jab-comics/a-model-life"));
+        testRipper(ripper);
+    }
+
+    public void testMyhentaicomicsAlbum() throws IOException {
+        MyhentaicomicsRipper ripper = new MyhentaicomicsRipper(new URL("http://myhentaicomics.com/index.php/Bizarre-Obsession"));
         testRipper(ripper);
     }
 
