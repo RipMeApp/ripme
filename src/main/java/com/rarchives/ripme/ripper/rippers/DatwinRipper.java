@@ -49,7 +49,7 @@ public class DatwinRipper extends AbstractHTMLRipper {
 
     @Override
     public List<String> getURLsFromPage(Document doc) {
-        List<String> imageURLs = new ArrayList<String>();
+        List<String> imageURLs = new ArrayList<>();
         for (Element thumb : doc.select("img.attachment-thumbnail")) {
             String image = thumb.attr("src");
             image = image.replaceAll("-\\d{1,3}x\\d{1,3}", "");

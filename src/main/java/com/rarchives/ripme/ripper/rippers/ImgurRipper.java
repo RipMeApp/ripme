@@ -31,14 +31,15 @@ public class ImgurRipper extends AlbumRipper {
 
     private Document albumDoc;
 
-    static enum ALBUM_TYPE {
+    enum ALBUM_TYPE {
         ALBUM,
         USER,
         USER_ALBUM,
         USER_IMAGES,
         SERIES_OF_IMAGES,
         SUBREDDIT
-    };
+    }
+
     private ALBUM_TYPE albumType;
 
     public ImgurRipper(URL url) throws IOException {
@@ -223,7 +224,7 @@ public class ImgurRipper extends AlbumRipper {
             String[] imageIds = m.group(1).split(",");
             for (String imageId : imageIds) {
                 // TODO: Fetch image with ID imageId
-                logger.debug("Fetching image info for ID " + imageId);;
+                logger.debug("Fetching image info for ID " + imageId);
                 try {
                     JSONObject json = Http.url("https://api.imgur.com/2/image/" + imageId + ".json").getJSON();
                     if (!json.has("image")) {
@@ -350,7 +351,6 @@ public class ImgurRipper extends AlbumRipper {
                 Thread.sleep(SLEEP_BETWEEN_ALBUMS * 1000);
             } catch (Exception e) {
                 logger.error("Error while ripping album: " + e.getMessage(), e);
-                continue;
             }
         }
     }
@@ -515,12 +515,12 @@ public class ImgurRipper extends AlbumRipper {
     }
 
     public static class ImgurImage {
-        public String title = "",
-                description = "",
-                extension   = "";
+        String title = "";
+        String description = "";
+        String extension   = "";
         public URL url = null;
 
-        public ImgurImage(URL url) {
+        ImgurImage(URL url) {
             this.url = url;
             String tempUrl = url.toExternalForm();
             this.extension = tempUrl.substring(tempUrl.lastIndexOf('.'));
@@ -528,7 +528,7 @@ public class ImgurRipper extends AlbumRipper {
                 this.extension = this.extension.substring(0, this.extension.indexOf("?"));
             }
         }
-        public ImgurImage(URL url, String title) {
+        ImgurImage(URL url, String title) {
             this(url);
             this.title = title;
         }
@@ -536,7 +536,7 @@ public class ImgurRipper extends AlbumRipper {
             this(url, title);
             this.description = description;
         }
-        public String getSaveAs() {
+        String getSaveAs() {
             String saveAs = this.title;
             String u = url.toExternalForm();
             if (u.contains("?")) {
@@ -554,17 +554,17 @@ public class ImgurRipper extends AlbumRipper {
     }
 
     public static class ImgurAlbum {
-        public String title = null;
+        String title = null;
         public URL    url = null;
-        public List<ImgurImage> images = new ArrayList<ImgurImage>();
-        public ImgurAlbum(URL url) {
+        public List<ImgurImage> images = new ArrayList<>();
+        ImgurAlbum(URL url) {
             this.url = url;
         }
         public ImgurAlbum(URL url, String title) {
             this(url);
             this.title = title;
         }
-        public void addImage(ImgurImage image) {
+        void addImage(ImgurImage image) {
             images.add(image);
         }
     }

@@ -75,7 +75,7 @@ public class NfsfwRipper extends AlbumRipper {
 
     @Override
     public void rip() throws IOException {
-        List<Pair> subAlbums = new ArrayList<Pair>();
+        List<Pair> subAlbums = new ArrayList<>();
         int index = 0;
         subAlbums.add(new Pair(this.url.toExternalForm(), ""));
         while (subAlbums.size() > 0) {
@@ -153,7 +153,7 @@ public class NfsfwRipper extends AlbumRipper {
         private String subdir;
         private int index;
 
-        public NfsfwImageThread(URL url, String subdir, int index) {
+        NfsfwImageThread(URL url, String subdir, int index) {
             super();
             this.url = url;
             this.subdir = subdir;
@@ -187,8 +187,9 @@ public class NfsfwRipper extends AlbumRipper {
     }
 
     private class Pair {
-        public String first, second;
-        public Pair(String first, String second) {
+        String first;
+        String second;
+        Pair(String first, String second) {
             this.first = first;
             this.second = second;
         }

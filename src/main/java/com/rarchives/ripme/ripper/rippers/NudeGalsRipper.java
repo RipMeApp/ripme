@@ -55,7 +55,7 @@ public class NudeGalsRipper extends AbstractHTMLRipper {
         Pattern p;
         Matcher m;
 
-        p = Pattern.compile("^.*nude-gals\\.com\\/photoshoot\\.php\\?photoshoot_id=(\\d+)$");
+        p = Pattern.compile("^.*nude-gals\\.com/photoshoot\\.php\\?photoshoot_id=(\\d+)$");
         m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             return m.group(1);
@@ -77,7 +77,7 @@ public class NudeGalsRipper extends AbstractHTMLRipper {
 
     @Override
     public List<String> getURLsFromPage(Document doc) {
-        List<String> imageURLs = new ArrayList<String>();
+        List<String> imageURLs = new ArrayList<>();
 
         Elements thumbs = doc.select("#grid_container .grid > .grid_box");
         for (Element thumb : thumbs) {

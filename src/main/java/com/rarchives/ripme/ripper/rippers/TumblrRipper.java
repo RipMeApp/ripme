@@ -77,7 +77,7 @@ public class TumblrRipper extends AlbumRipper {
         return url;
     }
 
-    public boolean isTumblrURL(URL url) {
+    private boolean isTumblrURL(URL url) {
         String checkURL = "http://api.tumblr.com/v2/blog/";
         checkURL += url.getHost();
         checkURL += "/info?api_key=" + getApiKey();
@@ -202,7 +202,6 @@ public class TumblrRipper extends AlbumRipper {
                         }
                     } catch (Exception e) {
                         logger.error("[!] Error while parsing photo in " + photo, e);
-                        continue;
                     }
                 }
             } else if (post.has("video_url")) {
@@ -254,7 +253,7 @@ public class TumblrRipper extends AlbumRipper {
 
     @Override
     public String getGID(URL url) throws MalformedURLException {
-        final String DOMAIN_REGEX = "^https?://([a-zA-Z0-9\\-\\.]+)";
+        final String DOMAIN_REGEX = "^https?://([a-zA-Z0-9\\-.]+)";
 
         Pattern p;
         Matcher m;

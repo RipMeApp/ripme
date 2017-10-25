@@ -80,7 +80,7 @@ public class FapprovedRipper extends AbstractHTMLRipper {
 
     @Override
     public List<String> getURLsFromPage(Document page) {
-        List<String> imageURLs = new ArrayList<String>();
+        List<String> imageURLs = new ArrayList<>();
         for (Element image : page.select("div.actual-image img")) {
             String imageURL = image.attr("src");
             if (imageURL.startsWith("//")) {

@@ -8,7 +8,7 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
-public class AES {
+class AES {
 
     /**
      * Hack to get JCE Unlimited Strenght so we can use weird AES encryption stuff.

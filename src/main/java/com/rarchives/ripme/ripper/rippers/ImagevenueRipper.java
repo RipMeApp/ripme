@@ -62,7 +62,7 @@ public class ImagevenueRipper extends AbstractHTMLRipper {
     }
 
     public List<String> getURLsFromPage(Document doc) {
-        List<String> imageURLs = new ArrayList<String>();
+        List<String> imageURLs = new ArrayList<>();
         for (Element thumb : doc.select("a[target=_blank]")) {
             imageURLs.add(thumb.attr("href"));
         }
@@ -83,7 +83,7 @@ public class ImagevenueRipper extends AbstractHTMLRipper {
         private URL url;
         private int index;
 
-        public ImagevenueImageThread(URL url, int index) {
+        ImagevenueImageThread(URL url, int index) {
             super();
             this.url = url;
             this.index = index;

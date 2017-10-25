@@ -41,7 +41,7 @@ public class ModelmayhemRipper extends AlbumRipper {
     @Override
     public void rip() throws IOException {
         Map<String,String> cookies  = null,
-                           postData = new HashMap<String,String>();
+                           postData = new HashMap<>();
         String gid = getGID(this.url),
                ref = "http://www.modelmayhem.com/" + gid;
 

@@ -21,7 +21,7 @@ import com.rarchives.ripme.utils.Http;
 
 public class SankakuComplexRipper extends AbstractHTMLRipper {
     private Document albumDoc = null;
-    private Map<String,String> cookies = new HashMap<String,String>();
+    private Map<String,String> cookies = new HashMap<>();
 
     public SankakuComplexRipper(URL url) throws IOException {
         super(url);
@@ -65,7 +65,7 @@ public class SankakuComplexRipper extends AbstractHTMLRipper {
 
     @Override
     public List<String> getURLsFromPage(Document doc) {
-        List<String> imageURLs = new ArrayList<String>();
+        List<String> imageURLs = new ArrayList<>();
         // Image URLs are basically thumbnail URLs with a different domain, a simple
         // path replacement, and a ?xxxxxx post ID at the end (obtainable from the href)
         for (Element thumbSpan : doc.select("div.content > div > span.thumb > a")) {
@@ -77,7 +77,6 @@ public class SankakuComplexRipper extends AbstractHTMLRipper {
                     imageURLs.add("https:" + subPage.select("div[id=post-content] > a > img").attr("src"));
                 } catch (IOException e) {
                     logger.warn("Error while loading page " + postLink, e);
-                    continue;
                 }
         }
         return imageURLs;
@@ -96,7 +95,7 @@ public class SankakuComplexRipper extends AbstractHTMLRipper {
             String nextPage = pagination.attr("abs:next-page-url");
             // Only logged in users can see past page 25
             // Trying to rip page 26 will throw a no images found error
-            if (nextPage.contains("page=26") == false) {
+            if (!nextPage.contains("page=26")) {
                 logger.info("Getting next page: " + pagination.attr("abs:next-page-url"));
                 return Http.url(pagination.attr("abs:next-page-url")).cookies(cookies).get();
             }

@@ -67,7 +67,7 @@ public class ImagestashRipper extends AbstractJSONRipper {
 
     @Override
     public List<String> getURLsFromJSON(JSONObject json) {
-        List<String> imageURLs = new ArrayList<String>();
+        List<String> imageURLs = new ArrayList<>();
         JSONArray images = json.getJSONArray("images");
         for (int i = 0; i < images.length(); i++) {
             JSONObject image = images.getJSONObject(i);

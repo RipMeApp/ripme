@@ -131,7 +131,7 @@ public class RedditRipper extends AlbumRipper {
         Object jsonObj = new JSONTokener(jsonString).nextValue();
         JSONArray jsonArray = new JSONArray();
         if (jsonObj instanceof JSONObject) {
-            jsonArray.put( (JSONObject) jsonObj);
+            jsonArray.put(jsonObj);
         } else if (jsonObj instanceof JSONArray) {
             jsonArray = (JSONArray) jsonObj;
         } else {
@@ -167,7 +167,7 @@ public class RedditRipper extends AlbumRipper {
         }
     }
 
-    public void handleBody(String body, String id) {
+    private void handleBody(String body, String id) {
         Pattern p = RipUtils.getURLRegex();
         Matcher m = p.matcher(body);
         while (m.find()) {
@@ -179,7 +179,7 @@ public class RedditRipper extends AlbumRipper {
         }
     }
 
-    public void handleURL(String theUrl, String id) {
+    private void handleURL(String theUrl, String id) {
         URL originalURL;
         try {
             originalURL = new URL(theUrl);
@@ -220,21 +220,21 @@ public class RedditRipper extends AlbumRipper {
     @Override
     public String getGID(URL url) throws MalformedURLException {
         // User
-        Pattern p = Pattern.compile("^https?://[a-zA-Z0-9\\.]{0,4}reddit\\.com/(user|u)/([a-zA-Z0-9_\\-]{3,}).*$");
+        Pattern p = Pattern.compile("^https?://[a-zA-Z0-9.]{0,4}reddit\\.com/(user|u)/([a-zA-Z0-9_\\-]{3,}).*$");
         Matcher m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             return "user_" + m.group(m.groupCount());
         }
 
         // Post
-        p = Pattern.compile("^https?://[a-zA-Z0-9\\.]{0,4}reddit\\.com/.*comments/([a-zA-Z0-9]{1,8}).*$");
+        p = Pattern.compile("^https?://[a-zA-Z0-9.]{0,4}reddit\\.com/.*comments/([a-zA-Z0-9]{1,8}).*$");
         m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             return "post_" + m.group(m.groupCount());
         }
 
         // Subreddit
-        p = Pattern.compile("^https?://[a-zA-Z0-9\\.]{0,4}reddit\\.com/r/([a-zA-Z0-9_]{1,}).*$");
+        p = Pattern.compile("^https?://[a-zA-Z0-9.]{0,4}reddit\\.com/r/([a-zA-Z0-9_]+).*$");
         m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             return "sub_" + m.group(m.groupCount());

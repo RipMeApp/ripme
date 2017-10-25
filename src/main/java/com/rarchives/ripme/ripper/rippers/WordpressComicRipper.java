@@ -16,7 +16,7 @@ import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 import com.rarchives.ripme.utils.Http;
 
 public class WordpressComicRipper extends AbstractHTMLRipper {
-    String pageTitle = "";
+    private String pageTitle = "";
 
     public WordpressComicRipper(URL url) throws IOException {
         super(url);
@@ -34,7 +34,7 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
     // http://tnbtu.com/comic/01-00/
     // http://shipinbottle.pepsaga.com/?p=281
 
-    public static List<String> explicit_domains = Arrays.asList(
+    private static List<String> explicit_domains = Arrays.asList(
         "www.totempole666.com",
         "buttsmithy.com",
         "themonsterunderthebed.net",
@@ -49,14 +49,12 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
 
     @Override
     public String getHost() {
-        String host = url.toExternalForm().split("/")[2];
-        return host;
+        return url.toExternalForm().split("/")[2];
     }
 
     @Override
     public String getDomain() {
-        String host = url.toExternalForm().split("/")[2];
-        return host;
+        return url.toExternalForm().split("/")[2];
     }
 
     @Override
@@ -130,7 +128,7 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
 
     @Override
     public String getAlbumTitle(URL url) throws MalformedURLException {
-        Pattern totempole666Pat = Pattern.compile("(?:https?://)?(?:www\\.)?totempole666.com\\/comic/([a-zA-Z0-9_-]*)/?$");
+        Pattern totempole666Pat = Pattern.compile("(?:https?://)?(?:www\\.)?totempole666.com/comic/([a-zA-Z0-9_-]*)/?$");
         Matcher totempole666Mat = totempole666Pat.matcher(url.toExternalForm());
         if (totempole666Mat.matches()) {
             return "totempole666.com" + "_" + "The_cummoner";
@@ -237,7 +235,7 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
 
     @Override
     public List<String> getURLsFromPage(Document doc) {
-        List<String> result = new ArrayList<String>();
+        List<String> result = new ArrayList<>();
         if (getHost().contains("www.totempole666.com")
                 || getHost().contains("buttsmithy.com")
                 || getHost().contains("themonsterunderthebed.net")

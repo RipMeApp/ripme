@@ -16,7 +16,7 @@ public abstract class VideoRipper extends AbstractRipper {
     private int bytesTotal = 1,
                  bytesCompleted = 1;
 
-    public VideoRipper(URL url) throws IOException {
+    protected VideoRipper(URL url) throws IOException {
         super(url);
     }
 

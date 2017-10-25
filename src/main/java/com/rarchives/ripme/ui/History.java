@@ -26,7 +26,7 @@ public class History {
     };
 
     public History() {
-        this.list = new ArrayList<HistoryEntry>();
+        this.list = new ArrayList<>();
     }
 
     public void add(HistoryEntry entry) {
@@ -90,7 +90,7 @@ public class History {
         throw new RuntimeException("Could not find URL " + url + " in History");
     }
 
-    public void fromJSON(JSONArray jsonArray) {
+    private void fromJSON(JSONArray jsonArray) {
         JSONObject json;
         for (int i = 0; i < jsonArray.length(); i++) {
             json = jsonArray.getJSONObject(i);
@@ -99,15 +99,12 @@ public class History {
     }
 
     public void fromFile(String filename) throws IOException {
-        InputStream is = new FileInputStream(filename);
-        try {
+        try (InputStream is = new FileInputStream(filename)) {
             String jsonString = IOUtils.toString(is);
             JSONArray jsonArray = new JSONArray(jsonString);
             fromJSON(jsonArray);
         } catch (JSONException e) {
             throw new IOException("Failed to load JSON file " + filename + ": " + e.getMessage(), e);
-        } finally {
-            is.close();
         }
     }
 
@@ -119,7 +116,7 @@ public class History {
         }
     }
 
-    public JSONArray toJSON() {
+    private JSONArray toJSON() {
         JSONArray jsonArray = new JSONArray();
         for (HistoryEntry entry : list) {
             jsonArray.put(entry.toJSON());
@@ -136,11 +133,8 @@ public class History {
     }
 
     public void toFile(String filename) throws IOException {
-        OutputStream os = new FileOutputStream(filename);
-        try {
+        try (OutputStream os = new FileOutputStream(filename)) {
             IOUtils.write(toJSON().toString(2), os);
-        } finally {
-            os.close();
         }
     }
 }

@@ -27,7 +27,7 @@ public class RipUtils {
     private static final Logger logger = Logger.getLogger(RipUtils.class);
 
     public static List<URL> getFilesFromURL(URL url) {
-        List<URL> result = new ArrayList<URL>();
+        List<URL> result = new ArrayList<>();
 
         logger.debug("Checking " + url);
         // Imgur album
@@ -104,7 +104,7 @@ public class RipUtils {
         }
 
         // Direct link to image
-        p = Pattern.compile("(https?://[a-zA-Z0-9\\-\\.]+\\.[a-zA-Z]{2,3}(/\\S*)\\.(jpg|jpeg|gif|png|mp4)(\\?.*)?)");
+        p = Pattern.compile("(https?://[a-zA-Z0-9\\-.]+\\.[a-zA-Z]{2,3}(/\\S*)\\.(jpg|jpeg|gif|png|mp4)(\\?.*)?)");
         m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             try {
@@ -145,7 +145,7 @@ public class RipUtils {
     }
 
     public static Pattern getURLRegex() {
-        return Pattern.compile("(https?://[a-zA-Z0-9\\-\\.]+\\.[a-zA-Z]{2,3}(/\\S*))");
+        return Pattern.compile("(https?://[a-zA-Z0-9\\-.]+\\.[a-zA-Z]{2,3}(/\\S*))");
     }
 
     public static String urlFromDirectoryName(String dir) {
@@ -182,14 +182,16 @@ public class RipUtils {
         }
         String url = null;
         String[] fields = dir.split("_");
-        if (fields[0].equals("sub")) {
-            url = "http://reddit.com/r/" + dir;
-        }
-        else if (fields[0].equals("user")) {
-            url = "http://reddit.com/user/" + dir;
-        }
-        else if (fields[0].equals("post")) {
-            url = "http://reddit.com/comments/" + dir;
+        switch (fields[0]) {
+            case "sub":
+                url = "http://reddit.com/r/" + dir;
+                break;
+            case "user":
+                url = "http://reddit.com/user/" + dir;
+                break;
+            case "post":
+                url = "http://reddit.com/comments/" + dir;
+                break;
         }
         return url;
     }

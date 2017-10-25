@@ -18,11 +18,11 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 public class E621Ripper extends AbstractHTMLRipper {
-    public static final int POOL_IMAGES_PER_PAGE = 24;
+    private static final int POOL_IMAGES_PER_PAGE = 24;
 
     private DownloadThreadPool e621ThreadPool = new DownloadThreadPool("e621");
 
-    public E621Ripper(URL url) throws IOException {
+    private E621Ripper(URL url) throws IOException {
         super(url);
     }
 
@@ -53,7 +53,7 @@ public class E621Ripper extends AbstractHTMLRipper {
     @Override
     public List<String> getURLsFromPage(Document page) {
         Elements elements = page.select("#post-list .thumb a,#pool-show .thumb a");
-        List<String> res = new ArrayList<String>(elements.size());
+        List<String> res = new ArrayList<>(elements.size());
 
         if (page.getElementById("pool-show") != null) {
             int index = 0;
@@ -92,23 +92,21 @@ public class E621Ripper extends AbstractHTMLRipper {
 
     @Override
     public void downloadURL(final URL url, int index) {
-        e621ThreadPool.addThread(new Thread(new Runnable() {
-            public void run() {
-                try {
-                    Document page = Http.url(url).get();
-                    Element e = page.getElementById("image");
+        e621ThreadPool.addThread(new Thread(() -> {
+            try {
+                Document page = Http.url(url).get();
+                Element e = page.getElementById("image");
 
-                    if (e != null) {
-                        addURLToDownload(new URL(e.absUrl("src")), Utils.getConfigBoolean("download.save_order", true) ? url.getRef() + "-" : "");
-                    } else if ((e = page.select(".content object>param[name=\"movie\"]").first()) != null) {
-                        addURLToDownload(new URL(e.absUrl("value")), Utils.getConfigBoolean("download.save_order", true) ? url.getRef() + "-" : "");
-                    } else {
-                        Logger.getLogger(E621Ripper.class.getName()).log(Level.WARNING, "Unsupported media type - please report to program author: " + url.toString());
-                    }
-
-                } catch (IOException ex) {
-                    Logger.getLogger(E621Ripper.class.getName()).log(Level.SEVERE, null, ex);
+                if (e != null) {
+                    addURLToDownload(new URL(e.absUrl("src")), Utils.getConfigBoolean("download.save_order", true) ? url.getRef() + "-" : "");
+                } else if ((e = page.select(".content object>param[name=\"movie\"]").first()) != null) {
+                    addURLToDownload(new URL(e.absUrl("value")), Utils.getConfigBoolean("download.save_order", true) ? url.getRef() + "-" : "");
+                } else {
+                    Logger.getLogger(E621Ripper.class.getName()).log(Level.WARNING, "Unsupported media type - please report to program author: " + url.toString());
                 }
+
+            } catch (IOException ex) {
+                Logger.getLogger(E621Ripper.class.getName()).log(Level.SEVERE, null, ex);
             }
         }));
     }

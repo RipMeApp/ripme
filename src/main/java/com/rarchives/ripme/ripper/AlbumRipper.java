@@ -15,11 +15,11 @@ import com.rarchives.ripme.utils.Utils;
 
 public abstract class AlbumRipper extends AbstractRipper {
 
-    protected Map<URL, File> itemsPending = Collections.synchronizedMap(new HashMap<URL, File>());
-    protected Map<URL, File> itemsCompleted = Collections.synchronizedMap(new HashMap<URL, File>());
-    protected Map<URL, String> itemsErrored = Collections.synchronizedMap(new HashMap<URL, String>());
+    private Map<URL, File> itemsPending = Collections.synchronizedMap(new HashMap<URL, File>());
+    private Map<URL, File> itemsCompleted = Collections.synchronizedMap(new HashMap<URL, File>());
+    private Map<URL, String> itemsErrored = Collections.synchronizedMap(new HashMap<URL, String>());
 
-    public AlbumRipper(URL url) throws IOException {
+    protected AlbumRipper(URL url) throws IOException {
         super(url);
     }
 
@@ -29,7 +29,7 @@ public abstract class AlbumRipper extends AbstractRipper {
     public abstract String getHost();
     public abstract String getGID(URL url) throws MalformedURLException;
 
-    public boolean allowDuplicates() {
+    protected boolean allowDuplicates() {
         return false;
     }
 
@@ -95,7 +95,7 @@ public abstract class AlbumRipper extends AbstractRipper {
      * @return
      *      True on success
      */
-    public boolean addURLToDownload(URL url) {
+    protected boolean addURLToDownload(URL url) {
         // Use empty prefix and empty subdirectory
         return addURLToDownload(url, "", "");
     }

@@ -19,7 +19,7 @@ import com.rarchives.ripme.utils.Utils;
 
 public class PornhubRipper extends AlbumRipper {
     // All sleep times are in milliseconds
-    private static final int IMAGE_SLEEP_TIME    = 1  * 1000;
+    private static final int IMAGE_SLEEP_TIME    = 1000;
 
     private static final String DOMAIN = "pornhub.com", HOST = "Pornhub";
 
@@ -134,7 +134,7 @@ public class PornhubRipper extends AlbumRipper {
         private URL url;
         private int index;
 
-        public PornhubImageThread(URL url, int index, File workingDir) {
+        PornhubImageThread(URL url, int index, File workingDir) {
             super();
             this.url = url;
             this.index = index;

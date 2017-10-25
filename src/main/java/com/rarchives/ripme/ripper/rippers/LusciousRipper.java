@@ -51,7 +51,7 @@ public class LusciousRipper extends AbstractHTMLRipper {
 
     @Override
     public List<String> getURLsFromPage(Document page) {
-        List<String> urls = new ArrayList<String>();
+        List<String> urls = new ArrayList<>();
         Elements urlElements = page.select("img#single_picture");
         for (Element e : urlElements) {
             urls.add(e.attr("src"));

@@ -72,7 +72,7 @@ public class DrawcrowdRipper extends AbstractHTMLRipper {
 
     @Override
     public List<String> getURLsFromPage(Document page) {
-        List<String> imageURLs = new ArrayList<String>();
+        List<String> imageURLs = new ArrayList<>();
         for (Element thumb : page.select("div.item.asset img")) {
             String image = thumb.attr("src");
             image = image

@@ -10,7 +10,7 @@ import com.rarchives.ripme.ripper.rippers.NatalieMuRipper;
 public class NatalieMuRipperTest extends RippersTest {
 
     public void testNatalieMuURLFailures() throws IOException {
-        List<URL> failURLs = new ArrayList<URL>();
+        List<URL> failURLs = new ArrayList<>();
         // URLs that should not work
         for (URL url : failURLs) {
             try {
@@ -18,13 +18,12 @@ public class NatalieMuRipperTest extends RippersTest {
                 fail("Instantiated ripper for URL that should not work: " + url);
             } catch (Exception e) {
                 // Expected
-                continue;
             }
         }
     }
 
     public void testNatalieMuURLPasses() throws IOException {
-        List<URL> passURLs    = new ArrayList<URL>();
+        List<URL> passURLs    = new ArrayList<>();
         // URLs that should work
         passURLs.add(new URL("http://natalie.mu/music/news/140367"));
         passURLs.add(new URL("http://cdn2.natalie.mu/music/news/140411"));
@@ -41,7 +40,7 @@ public class NatalieMuRipperTest extends RippersTest {
     }
 
     public void testNatalieMuRipper() throws IOException {
-        List<URL> contentURLs = new ArrayList<URL>();
+        List<URL> contentURLs = new ArrayList<>();
         // URLs that should return more than 1 image
         contentURLs.add(new URL("http://natalie.mu/music/news/140367"));
         contentURLs.add(new URL("http://cdn2.natalie.mu/music/news/140411"));

@@ -15,7 +15,7 @@ import org.jsoup.select.Elements;
 import java.util.Arrays;
 
 public class MyhentaicomicsRipper extends AbstractHTMLRipper {
-    public static boolean isTag;
+    private static boolean isTag;
 
     public MyhentaicomicsRipper(URL url) throws IOException {
     super(url);
@@ -47,7 +47,7 @@ public class MyhentaicomicsRipper extends AbstractHTMLRipper {
             return ma.group(1);
         }
 
-        Pattern pat = Pattern.compile("^https?://myhentaicomics.com/index.php/tag/([0-9]*)/?([a-zA-Z%0-9+\\?=:]*)?$");
+        Pattern pat = Pattern.compile("^https?://myhentaicomics.com/index.php/tag/([0-9]*)/?([a-zA-Z%0-9+?=:]*)?$");
         Matcher mat = pat.matcher(url.toExternalForm());
         if (mat.matches()) {
             isTag = true;
@@ -84,8 +84,8 @@ public class MyhentaicomicsRipper extends AbstractHTMLRipper {
         }
 
     // This replaces getNextPage when downloading from searchs and tags
-    public List<String> getNextAlbumPage(String pageUrl) {
-        List<String> albumPagesList = new ArrayList<String>();
+    private List<String> getNextAlbumPage(String pageUrl) {
+        List<String> albumPagesList = new ArrayList<>();
         int pageNumber = 1;
         albumPagesList.add("http://myhentaicomics.com/index.php/" + pageUrl.split("\\?")[0] + "?page=" + Integer.toString(pageNumber));
             while (true) {
@@ -115,9 +115,9 @@ public class MyhentaicomicsRipper extends AbstractHTMLRipper {
             return albumPagesList;
         }
 
-    public List<String> getAlbumsFromPage(String url) {
+    private List<String> getAlbumsFromPage(String url) {
         List<String> pagesToRip;
-        List<String> result = new ArrayList<String>();
+        List<String> result = new ArrayList<>();
         logger.info("Running getAlbumsFromPage");
         Document doc;
         try {
@@ -161,7 +161,7 @@ public class MyhentaicomicsRipper extends AbstractHTMLRipper {
                         url_string = url_string.replace("%28", "_");
                         url_string = url_string.replace("%29", "_");
                         url_string = url_string.replace("%2C", "_");
-                        if (isTag == true) {
+                        if (isTag) {
                             logger.info("Downloading from a tag or search");
                             try {
                                 sleep(500);
@@ -180,11 +180,11 @@ public class MyhentaicomicsRipper extends AbstractHTMLRipper {
         return result;
     }
 
-    public List<String> getListOfPages(Document doc) {
-        List<String> pages = new ArrayList<String>();
+    private List<String> getListOfPages(Document doc) {
+        List<String> pages = new ArrayList<>();
         // Get the link from the last button
         String nextPageUrl = doc.select("a.ui-icon-right").last().attr("href");
-        Pattern pat = Pattern.compile("\\/index\\.php\\/tag\\/[0-9]*\\/[a-zA-Z0-9_\\-\\:+]*\\?page=(\\d+)");
+        Pattern pat = Pattern.compile("/index\\.php/tag/[0-9]*/[a-zA-Z0-9_\\-:+]*\\?page=(\\d+)");
         Matcher mat = pat.matcher(nextPageUrl);
         if (mat.matches()) {
             logger.debug("Getting pages from a tag");
@@ -197,7 +197,7 @@ public class MyhentaicomicsRipper extends AbstractHTMLRipper {
                 pages.add(link);
             }
         } else {
-            Pattern pa = Pattern.compile("\\/index\\.php\\/search\\?q=[a-zA-Z0-9_\\-\\:]*\\&page=(\\d+)");
+            Pattern pa = Pattern.compile("/index\\.php/search\\?q=[a-zA-Z0-9_\\-:]*&page=(\\d+)");
             Matcher ma = pa.matcher(nextPageUrl);
             if (ma.matches()) {
                 logger.debug("Getting pages from a search");
@@ -217,7 +217,7 @@ public class MyhentaicomicsRipper extends AbstractHTMLRipper {
 
     @Override
     public List<String> getURLsFromPage(Document doc) {
-        List<String> result = new ArrayList<String>();
+        List<String> result = new ArrayList<>();
         // Checks if this is a comic page or a page of albums
         // If true the page is a page of albums
         if (doc.toString().contains("class=\"g-item g-album\"")) {

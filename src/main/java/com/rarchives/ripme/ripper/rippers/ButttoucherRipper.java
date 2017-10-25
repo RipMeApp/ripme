@@ -33,7 +33,7 @@ public class ButttoucherRipper extends AbstractHTMLRipper {
     public String getGID(URL url) throws MalformedURLException {
         Pattern p; Matcher m;
 
-        p = Pattern.compile("^.*butttoucher.com/users/([a-zA-Z0-9_\\-]{1,}).*$");
+        p = Pattern.compile("^.*butttoucher.com/users/([a-zA-Z0-9_\\-]+).*$");
         m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             return m.group(1);
@@ -51,7 +51,7 @@ public class ButttoucherRipper extends AbstractHTMLRipper {
 
     @Override
     public List<String> getURLsFromPage(Document page) {
-        List<String> thumbs = new ArrayList<String>();
+        List<String> thumbs = new ArrayList<>();
         for (Element thumb : page.select(".thumb img")) {
             if (!thumb.hasAttr("src")) {
                 continue;

@@ -62,13 +62,13 @@ public class App {
         }
     }
 
-    public static void rip(URL url) throws Exception {
+    private static void rip(URL url) throws Exception {
         AbstractRipper ripper = AbstractRipper.getRipper(url);
         ripper.setup();
         ripper.rip();
     }
 
-    public static void handleArguments(String[] args) {
+    private static void handleArguments(String[] args) {
         CommandLine cl = getArgs(args);
         if (cl.hasOption('h')) {
             HelpFormatter hf = new HelpFormatter();
@@ -172,7 +172,7 @@ public class App {
     }
 
     // this function will attempt to rip the provided url
-    public static void ripURL(String targetURL, boolean saveConfig) {
+    private static void ripURL(String targetURL, boolean saveConfig) {
         try {
             URL url = new URL(targetURL);
             rip(url);
@@ -193,7 +193,7 @@ public class App {
         }
     }
 
-    public static Options getOptions() {
+    private static Options getOptions() {
         Options opts = new Options();
         opts.addOption("h", "help", false, "Print the help");
         opts.addOption("u", "url", true, "URL of album to rip");
@@ -211,11 +211,10 @@ public class App {
         return opts;
     }
 
-    public static CommandLine getArgs(String[] args) {
+    private static CommandLine getArgs(String[] args) {
         BasicParser parser = new BasicParser();
         try {
-            CommandLine cl = parser.parse(getOptions(), args, false);
-            return cl;
+            return parser.parse(getOptions(), args, false);
         } catch (ParseException e) {
             logger.error("[!] Error while parsing command-line arguments: " + Arrays.toString(args), e);
             System.exit(-1);
@@ -244,12 +243,7 @@ public class App {
             if (HISTORY.toList().size() == 0) {
                 // Loaded from config, still no entries.
                 // Guess rip history based on rip folder
-                String[] dirs = Utils.getWorkingDirectory().list(new FilenameFilter() {
-                    @Override
-                    public boolean accept(File dir, String file) {
-                        return new File(dir.getAbsolutePath() + File.separator + file).isDirectory();
-                    }
-                });
+                String[] dirs = Utils.getWorkingDirectory().list((dir, file) -> new File(dir.getAbsolutePath() + File.separator + file).isDirectory());
                 for (String dir : dirs) {
                     String url = RipUtils.urlFromDirectoryName(dir);
                     if (url != null) {

@@ -64,7 +64,7 @@ public class HentaiCafeRipper extends AbstractHTMLRipper {
 
         @Override
         public List<String> getURLsFromPage(Document doc) {
-            List<String> result = new ArrayList<String>();
+            List<String> result = new ArrayList<>();
                 result.add(doc.select("div[id=page] > div.inner > a > img.open").attr("src"));
                 return result;
         }

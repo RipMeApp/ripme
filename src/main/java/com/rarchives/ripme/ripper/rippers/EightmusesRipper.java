@@ -23,10 +23,10 @@ import com.rarchives.ripme.utils.Http;
 public class EightmusesRipper extends AbstractHTMLRipper {
 
     private Document albumDoc = null;
-    private Map<String,String> cookies = new HashMap<String,String>();
+    private Map<String,String> cookies = new HashMap<>();
     // TODO put up a wiki page on using maps to store titles
     // the map for storing the title of each album when downloading sub albums
-    private Map<URL,String> urlTitles = new HashMap<URL,String>();
+    private Map<URL,String> urlTitles = new HashMap<>();
 
     private Boolean rippingSubalbums = false;
 
@@ -81,7 +81,7 @@ public class EightmusesRipper extends AbstractHTMLRipper {
 
     @Override
     public List<String> getURLsFromPage(Document page) {
-        List<String> imageURLs = new ArrayList<String>();
+        List<String> imageURLs = new ArrayList<>();
         // get the first image link on the page and check if the last char in it is a number
         // if it is a number then we're ripping a comic if not it's a subalbum
         String firstImageLink = page.select("div.gallery > a.t-hover").first().attr("href");
@@ -136,7 +136,6 @@ public class EightmusesRipper extends AbstractHTMLRipper {
                         imageURLs.addAll(subalbumImages);
                     } catch (IOException e) {
                         logger.warn("Error while loading subalbum " + subUrl, e);
-                        continue;
                     }
                 }
             }
@@ -182,8 +181,7 @@ public class EightmusesRipper extends AbstractHTMLRipper {
         Element fullSizeImage = doc.select(".photo").first(); // Select the "photo" element from the page (there should only be 1)
         // subdir is the sub dir the cdn has the image stored in
         String subdir = doc.select("input#imageDir").first().attr("value");
-        String path = "https://cdn.ampproject.org/i/s/www.8muses.com/" + subdir + "small/" + fullSizeImage.children().select("#imageName").attr("value"); // Append the path to the fullsize image file to the standard prefix
-        return path;
+        return "https://cdn.ampproject.org/i/s/www.8muses.com/" + subdir + "small/" + fullSizeImage.children().select("#imageName").attr("value");
     }
 
     @Override

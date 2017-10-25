@@ -22,7 +22,7 @@ import com.rarchives.ripme.utils.Http;
 public class TwodgalleriesRipper extends AbstractHTMLRipper {
 
     private int offset = 0;
-    private Map<String,String> cookies = new HashMap<String,String>();
+    private Map<String,String> cookies = new HashMap<>();
 
     public TwodgalleriesRipper(URL url) throws IOException {
         super(url);
@@ -90,7 +90,7 @@ public class TwodgalleriesRipper extends AbstractHTMLRipper {
 
     @Override
     public List<String> getURLsFromPage(Document doc) {
-        List<String> imageURLs = new ArrayList<String>();
+        List<String> imageURLs = new ArrayList<>();
         for (Element thumb : doc.select("div.hcaption > img")) {
             String image = thumb.attr("src");
             image = image.replace("/200H/", "/");
@@ -114,7 +114,7 @@ public class TwodgalleriesRipper extends AbstractHTMLRipper {
         cookies = resp.cookies();
         String ctoken = resp.parse().select("form > input[name=ctoken]").first().attr("value");
 
-        Map<String,String> postdata = new HashMap<String,String>();
+        Map<String,String> postdata = new HashMap<>();
         postdata.put("user[login]", new String(Base64.decode("cmlwbWU=")));
         postdata.put("user[password]", new String(Base64.decode("cmlwcGVy")));
         postdata.put("rememberme", "1");

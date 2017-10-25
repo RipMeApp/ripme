@@ -27,7 +27,7 @@ public class UpdateUtils {
     private static final String mainFileName = "ripme.jar";
     private static final String updateFileName = "ripme.jar.update";
 
-    public static String getUpdateJarURL(String latestVersion) {
+    private static String getUpdateJarURL(String latestVersion) {
         return "https://github.com/" + REPO_NAME + "/releases/download/" + latestVersion + "/ripme.jar";
     }
 
@@ -98,7 +98,6 @@ public class UpdateUtils {
                     JOptionPane.ERROR_MESSAGE);
             configUpdateLabel.setText("");
                 logger.error("Error while updating: ", e);
-                return;
             }
         } else {
             logger.debug("This version (" + UpdateUtils.getThisJarVersion() +
@@ -193,18 +192,15 @@ public class UpdateUtils {
         bw.close();
         logger.info("Saved update script to " + batchFile);
         // Run updater script on exit
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-            @Override
-            public void run() {
-                try {
-                    logger.info("Executing: " + batchFile);
-                    Runtime.getRuntime().exec(batchExec);
-                } catch (IOException e) {
-                    //TODO implement proper stack trace handling this is really just intented as a placeholder until you implement proper error handling
-                    e.printStackTrace();
-                }
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            try {
+                logger.info("Executing: " + batchFile);
+                Runtime.getRuntime().exec(batchExec);
+            } catch (IOException e) {
+                //TODO implement proper stack trace handling this is really just intented as a placeholder until you implement proper error handling
+                e.printStackTrace();
             }
-        });
+        }));
         logger.info("Exiting older version, should execute update script (" + batchFile + ") during exit");
         System.exit(0);
     }

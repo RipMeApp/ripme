@@ -68,7 +68,7 @@ public class EromeRipper extends AbstractHTMLRipper {
 
     @Override
     public List<String> getURLsFromPage(Document doc) {
-        List<String> URLs = new ArrayList<String>();
+        List<String> URLs = new ArrayList<>();
         //Pictures
         Elements imgs = doc.select("div.img > img.img-front");
         for (Element img : imgs) {
@@ -92,9 +92,7 @@ public class EromeRipper extends AbstractHTMLRipper {
                             .ignoreContentType()
                             .response();
 
-        Document doc = resp.parse();
-
-        return doc;
+        return resp.parse();
     }
 
     @Override
@@ -115,7 +113,7 @@ public class EromeRipper extends AbstractHTMLRipper {
 
         Document doc = resp.parse();
 
-        List<URL> URLs = new ArrayList<URL>();
+        List<URL> URLs = new ArrayList<>();
         //Pictures
         Elements imgs = doc.getElementsByTag("img");
         for (Element img : imgs) {
