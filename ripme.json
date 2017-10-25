@@ -1,5 +1,5 @@
 {
-    "latestVersion": "1.5.15",
+    "latestVersion": "1.6.0",
     "changeList": [
         "1.6.0: Updated to java 8; Some code cleanup",
         "1.5.15: Added Hbrowse.com ripper; 8muses ripper now can rip from all album types",
