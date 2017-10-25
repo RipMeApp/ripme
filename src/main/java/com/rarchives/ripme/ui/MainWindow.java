@@ -1,32 +1,14 @@
 package com.rarchives.ripme.ui;
 
-import java.awt.CheckboxMenuItem;
-import java.awt.Color;
-import java.awt.Container;
-import java.awt.Cursor;
-import java.awt.Desktop;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.Frame;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Image;
-import java.awt.MenuItem;
-import java.awt.Point;
-import java.awt.PopupMenu;
-import java.awt.SystemTray;
-import java.awt.TrayIcon;
+import java.awt.*;
 import java.awt.TrayIcon.MessageType;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -78,7 +60,7 @@ import org.apache.log4j.Logger;
 import com.rarchives.ripme.ripper.AbstractRipper;
 import com.rarchives.ripme.utils.RipUtils;
 import com.rarchives.ripme.utils.Utils;
-import java.awt.AWTException;
+
 import javax.swing.UnsupportedLookAndFeelException;
 
 /**
@@ -154,14 +136,15 @@ public final class MainWindow implements Runnable, RipStatusHandler {
     public MainWindow() {
         mainFrame = new JFrame("RipMe v" + UpdateUtils.getThisJarVersion());
         mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        mainFrame.setResizable(false);
         mainFrame.setLayout(new GridBagLayout());
 
         createUI(mainFrame.getContentPane());
+        pack();
+
         loadHistory();
         setupHandlers();
 
-        Thread shutdownThread = new Thread(() -> shutdownCleanup());
+        Thread shutdownThread = new Thread(this::shutdownCleanup);
         Runtime.getRuntime().addShutdownHook(shutdownThread);
 
         if (Utils.getConfigBoolean("auto.update", true)) {
@@ -224,7 +207,26 @@ public final class MainWindow implements Runnable, RipStatusHandler {
     }
 
     private void pack() {
-        SwingUtilities.invokeLater(() -> mainFrame.pack());
+        SwingUtilities.invokeLater(() -> {
+            boolean collapsed = isCollapsed();
+            if (!collapsed) {
+                mainFrame.setResizable(true);
+            }
+            Dimension preferredSize = mainFrame.getPreferredSize();
+            mainFrame.setMinimumSize(preferredSize);
+            if (collapsed) {
+                mainFrame.setResizable(false);
+                mainFrame.setSize(preferredSize);
+            }
+        });
+    }
+
+    private boolean isCollapsed() {
+        return (!logPanel.isVisible() &&
+                !historyPanel.isVisible() &&
+                !queuePanel.isVisible() &&
+                !configurationPanel.isVisible()
+        );
     }
 
     private void createUI(Container pane) {
@@ -235,9 +237,10 @@ public final class MainWindow implements Runnable, RipStatusHandler {
 
         EmptyBorder emptyBorder = new EmptyBorder(5, 5, 5, 5);
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.fill = GridBagConstraints.BOTH;
-        gbc.weightx = 2; gbc.ipadx = 2; gbc.gridx = 0;
-        gbc.weighty = 2; gbc.ipady = 2; gbc.gridy = 0;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.weightx = 1; gbc.ipadx = 2; gbc.gridx = 0;
+        gbc.weighty = 0; gbc.ipady = 2; gbc.gridy = 0;
+        gbc.anchor = GridBagConstraints.PAGE_START;
 
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
@@ -258,13 +261,17 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         JPanel ripPanel = new JPanel(new GridBagLayout());
         ripPanel.setBorder(emptyBorder);
 
+        gbc.weightx = 0;
         gbc.gridx = 0; ripPanel.add(new JLabel("URL:", JLabel.RIGHT), gbc);
+        gbc.weightx = 1;
         gbc.gridx = 1; ripPanel.add(ripTextfield, gbc);
+        gbc.weightx = 0;
         gbc.gridx = 2; ripPanel.add(ripButton, gbc);
         gbc.gridx = 3; ripPanel.add(stopButton, gbc);
         gbc.fill = GridBagConstraints.BOTH;
+        gbc.weightx = 1;
 
-        statusLabel  = new JLabel("Inactive");
+        statusLabel = new JLabel("Inactive");
         statusLabel.setHorizontalAlignment(JLabel.CENTER);
         openButton = new JButton();
         openButton.setVisible(false);
@@ -277,7 +284,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
 
         JPanel progressPanel = new JPanel(new GridBagLayout());
         progressPanel.setBorder(emptyBorder);
-        statusProgress = new JProgressBar(0,  100);
+        statusProgress = new JProgressBar(0, 100);
         progressPanel.add(statusProgress, gbc);
 
         JPanel optionsPanel = new JPanel(new GridBagLayout());
@@ -286,6 +293,10 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         optionHistory = new JButton("History");
         optionQueue = new JButton("Queue");
         optionConfiguration = new JButton("Configuration");
+        optionLog.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
+        optionHistory.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
+        optionQueue.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
+        optionConfiguration.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
         try {
             Image icon;
             icon = ImageIO.read(getClass().getClassLoader().getResource("comment.png"));
@@ -304,11 +315,17 @@ public final class MainWindow implements Runnable, RipStatusHandler {
 
         logPanel = new JPanel(new GridBagLayout());
         logPanel.setBorder(emptyBorder);
-        logText = new JTextPaneNoWrap();
+        logText = new JTextPane();
+        logText.setEditable(false);
         JScrollPane logTextScroll = new JScrollPane(logText);
+        logTextScroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
         logPanel.setVisible(false);
         logPanel.setPreferredSize(new Dimension(300, 250));
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.weighty = 1;
         logPanel.add(logTextScroll, gbc);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.weighty = 0;
 
         historyPanel = new JPanel(new GridBagLayout());
         historyPanel.setBorder(emptyBorder);
@@ -373,8 +390,11 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         gbc.gridx = 0;
         // History List Panel
         JPanel historyTablePanel = new JPanel(new GridBagLayout());
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.weighty = 1;
         historyTablePanel.add(historyTableScrollPane, gbc);
         gbc.ipady = 180;
+        gbc.gridy = 0;
         historyPanel.add(historyTablePanel, gbc);
         gbc.ipady = 0;
         JPanel historyButtonPanel = new JPanel(new GridBagLayout());
@@ -384,6 +404,8 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         gbc.gridx = 1; historyButtonPanel.add(historyButtonClear, gbc);
         gbc.gridx = 2; historyButtonPanel.add(historyButtonRerip, gbc);
         gbc.gridy = 1; gbc.gridx = 0;
+        gbc.weighty = 0;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
         historyPanel.add(historyButtonPanel, gbc);
 
         queuePanel = new JPanel(new GridBagLayout());
@@ -407,14 +429,17 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         }
         gbc.gridx = 0;
         JPanel queueListPanel = new JPanel(new GridBagLayout());
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.weighty = 1;
         queueListPanel.add(queueListScroll, gbc);
         queuePanel.add(queueListPanel, gbc);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.weighty = 0;
         gbc.ipady = 0;
 
         configurationPanel = new JPanel(new GridBagLayout());
         configurationPanel.setBorder(emptyBorder);
         configurationPanel.setVisible(false);
-        configurationPanel.setPreferredSize(new Dimension(300, 250));
         // TODO Configuration components
         configUpdateButton = new JButton("Check for updates");
         configUpdateLabel = new JLabel("Current version: " + UpdateUtils.getThisJarVersion(), JLabel.RIGHT);
@@ -497,14 +522,19 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         gbc.gridy = 11; gbc.gridx = 0; configurationPanel.add(configSaveDirLabel, gbc);
                         gbc.gridx = 1; configurationPanel.add(configSaveDirButton, gbc);
 
+        gbc.anchor = GridBagConstraints.PAGE_START;
         gbc.gridy = 0; pane.add(ripPanel, gbc);
         gbc.gridy = 1; pane.add(statusPanel, gbc);
         gbc.gridy = 2; pane.add(progressPanel, gbc);
         gbc.gridy = 3; pane.add(optionsPanel, gbc);
+        gbc.weighty = 1;
+        gbc.fill = GridBagConstraints.BOTH;
         gbc.gridy = 4; pane.add(logPanel, gbc);
         gbc.gridy = 5; pane.add(historyPanel, gbc);
         gbc.gridy = 5; pane.add(queuePanel, gbc);
         gbc.gridy = 5; pane.add(configurationPanel, gbc);
+        gbc.weighty = 0;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
     }
 
     private void setupHandlers() {
@@ -536,7 +566,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
                     AbstractRipper ripper = AbstractRipper.getRipper(url);
                     statusWithColor(ripper.getHost() + " album detected", Color.GREEN);
                 } catch (Exception e) {
-                    statusWithColor("Can't rip this URL: "+e.getMessage(), Color.RED);
+                    statusWithColor("Can't rip this URL: " + e.getMessage(), Color.RED);
                 }
             }
         });
@@ -558,7 +588,11 @@ public final class MainWindow implements Runnable, RipStatusHandler {
             historyPanel.setVisible(false);
             queuePanel.setVisible(false);
             configurationPanel.setVisible(false);
-            optionLog.setFont(optionLog.getFont().deriveFont(Font.BOLD));
+            if (logPanel.isVisible()) {
+                optionLog.setFont(optionLog.getFont().deriveFont(Font.BOLD));
+            } else {
+                optionLog.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
+            }
             optionHistory.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
             optionQueue.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
             optionConfiguration.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
@@ -570,7 +604,11 @@ public final class MainWindow implements Runnable, RipStatusHandler {
             queuePanel.setVisible(false);
             configurationPanel.setVisible(false);
             optionLog.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
-            optionHistory.setFont(optionLog.getFont().deriveFont(Font.BOLD));
+            if (historyPanel.isVisible()) {
+                optionHistory.setFont(optionLog.getFont().deriveFont(Font.BOLD));
+            } else {
+                optionHistory.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
+            }
             optionQueue.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
             optionConfiguration.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
             pack();
@@ -582,7 +620,11 @@ public final class MainWindow implements Runnable, RipStatusHandler {
             configurationPanel.setVisible(false);
             optionLog.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
             optionHistory.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
-            optionQueue.setFont(optionLog.getFont().deriveFont(Font.BOLD));
+            if (queuePanel.isVisible()) {
+                optionQueue.setFont(optionLog.getFont().deriveFont(Font.BOLD));
+            } else {
+                optionQueue.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
+            }
             optionConfiguration.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
             pack();
         });
@@ -594,7 +636,11 @@ public final class MainWindow implements Runnable, RipStatusHandler {
             optionLog.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
             optionHistory.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
             optionQueue.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
-            optionConfiguration.setFont(optionLog.getFont().deriveFont(Font.BOLD));
+            if (configurationPanel.isVisible()) {
+                optionConfiguration.setFont(optionLog.getFont().deriveFont(Font.BOLD));
+            } else {
+                optionConfiguration.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
+            }
             pack();
         });
         historyButtonRemove.addActionListener(event -> {
@@ -620,9 +666,9 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         historyButtonRerip.addActionListener(event -> {
             if (HISTORY.isEmpty()) {
                 JOptionPane.showMessageDialog(null,
-                                              "There are no history entries to re-rip. Rip some albums first",
-                                              "RipMe Error",
-                                              JOptionPane.ERROR_MESSAGE);
+                        "There are no history entries to re-rip. Rip some albums first",
+                        "RipMe Error",
+                        JOptionPane.ERROR_MESSAGE);
                 return;
             }
             int added = 0;
@@ -634,10 +680,10 @@ public final class MainWindow implements Runnable, RipStatusHandler {
             }
             if (added == 0) {
                 JOptionPane.showMessageDialog(null,
-                                              "No history entries have been 'Checked'\n" +
-                                              "Check an entry by clicking the checkbox to the right of the URL or Right-click a URL to check/uncheck all items",
-                                              "RipMe Error",
-                                              JOptionPane.ERROR_MESSAGE);
+                        "No history entries have been 'Checked'\n" +
+                                "Check an entry by clicking the checkbox to the right of the URL or Right-click a URL to check/uncheck all items",
+                        "RipMe Error",
+                        JOptionPane.ERROR_MESSAGE);
             }
         });
         configUpdateButton.addActionListener(arg0 -> {
@@ -869,8 +915,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
             mainFrame.setAlwaysOnTop(true);
             mainFrame.setAlwaysOnTop(false);
             trayMenuMain.setLabel("Hide");
-        }
-        else {
+        } else {
             mainFrame.setVisible(false);
             trayMenuMain.setLabel("Show");
         }
@@ -906,8 +951,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
                         "RipMe - history load failure",
                         JOptionPane.ERROR_MESSAGE);
             }
-        }
-        else {
+        } else {
             logger.info("Loading history from configuration");
             HISTORY.fromList(Utils.getConfigList("download.history"));
             if (HISTORY.toList().size() == 0) {
@@ -956,8 +1000,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         String nextAlbum = (String) queueListModel.remove(0);
         if (queueListModel.isEmpty()) {
             optionQueue.setText("Queue");
-        }
-        else {
+        } else {
             optionQueue.setText("Queue (" + queueListModel.size() + ")");
         }
         Thread t = ripAlbum(nextAlbum);
@@ -968,8 +1011,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
                 logger.error("Interrupted while waiting to rip next album", ie);
             }
             ripNextAlbum();
-        }
-        else {
+        } else {
             t.start();
         }
     }
@@ -1038,8 +1080,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
             if (!queueListModel.contains(ripTextfield.getText()) && !ripTextfield.getText().equals("")) {
                 queueListModel.add(queueListModel.size(), ripTextfield.getText());
                 ripTextfield.setText("");
-            }
-            else {
+            } else {
                 if (!isRipping) {
                     ripNextAlbum();
                 }
@@ -1076,11 +1117,13 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         case LOADING_RESOURCE:
         case DOWNLOAD_STARTED:
             if (logger.isEnabledFor(Level.INFO)) {
-                appendLog( "Downloading " + msg.getObject(), Color.BLACK);
+                appendLog("Downloading " + msg.getObject(), Color.BLACK);
             }
             break;
         case DOWNLOAD_COMPLETE:
-            appendLog( "Downloaded " + msg.getObject(), Color.GREEN);
+            if (logger.isEnabledFor(Level.INFO)) {
+                appendLog("Downloaded " + msg.getObject(), Color.GREEN);
+            }
             break;
         case DOWNLOAD_ERRORED:
             if (logger.isEnabledFor(Level.ERROR)) {
@@ -1088,7 +1131,9 @@ public final class MainWindow implements Runnable, RipStatusHandler {
             }
             break;
         case DOWNLOAD_WARN:
-            appendLog((String) msg.getObject(), Color.ORANGE);
+            if (logger.isEnabledFor(Level.WARN)) {
+                appendLog((String) msg.getObject(), Color.ORANGE);
+            }
             break;
 
         case RIP_ERRORED:
@@ -1111,8 +1156,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
                 HistoryEntry entry = HISTORY.getEntryByURL(url);
                 entry.count = rsc.count;
                 entry.modifiedDate = new Date();
-            }
-            else {
+            } else {
                 HistoryEntry entry = new HistoryEntry();
                 entry.url = url;
                 entry.dir = rsc.getDir();
@@ -1139,7 +1183,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
                 Image folderIcon = ImageIO.read(getClass().getClassLoader().getResource("folder.png"));
                 openButton.setIcon(new ImageIcon(folderIcon));
             } catch (Exception e) { }
-            appendLog( "Rip complete, saved to " + f.getAbsolutePath(), Color.GREEN);
+            appendLog("Rip complete, saved to " + f.getAbsolutePath(), Color.GREEN);
             openButton.setActionCommand(f.toString());
             openButton.addActionListener(event -> {
                 try {
@@ -1163,16 +1207,6 @@ public final class MainWindow implements Runnable, RipStatusHandler {
     public void update(AbstractRipper ripper, RipStatusMessage message) {
         StatusEvent event = new StatusEvent(ripper, message);
         SwingUtilities.invokeLater(event);
-    }
-
-    /** Simple TextPane that allows horizontal scrolling. */
-    class JTextPaneNoWrap extends JTextPane {
-        private static final long serialVersionUID = 1L;
-
-        @Override
-        public boolean getScrollableTracksViewportWidth() {
-            return false;
-        }
     }
 
     public static void ripAlbumStatic(String url) {
