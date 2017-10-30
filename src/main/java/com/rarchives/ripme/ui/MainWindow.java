@@ -524,6 +524,12 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         gbc.gridy = 11; gbc.gridx = 0; configurationPanel.add(configSaveDirLabel, gbc);
                         gbc.gridx = 1; configurationPanel.add(configSaveDirButton, gbc);
 
+        // Sometimes on Linux Java has trouble setting window size when also changing setResizable
+        // Put an empty JPanel on the bottom of the window to keep components anchored to the top
+        JPanel emptyPanel = new JPanel();
+        emptyPanel.setPreferredSize(new Dimension(0, 0));
+        emptyPanel.setSize(0, 0);
+
         gbc.anchor = GridBagConstraints.PAGE_START;
         gbc.gridy = 0; pane.add(ripPanel, gbc);
         gbc.gridy = 1; pane.add(statusPanel, gbc);
@@ -535,6 +541,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         gbc.gridy = 5; pane.add(historyPanel, gbc);
         gbc.gridy = 5; pane.add(queuePanel, gbc);
         gbc.gridy = 5; pane.add(configurationPanel, gbc);
+        gbc.gridy = 6; pane.add(emptyPanel, gbc);
         gbc.weighty = 0;
         gbc.fill = GridBagConstraints.HORIZONTAL;
     }
