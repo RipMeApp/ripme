@@ -81,6 +81,10 @@ public final class MainWindow implements Runnable, RipStatusHandler {
     private static JButton openButton;
     private static JProgressBar statusProgress;
 
+    // Put an empty JPanel on the bottom of the window to keep components
+    // anchored to the top when there is no open lower panel
+    private static JPanel emptyPanel;
+
     // Log
     private static JButton optionLog;
     private static JPanel logPanel;
@@ -208,14 +212,9 @@ public final class MainWindow implements Runnable, RipStatusHandler {
 
     private void pack() {
         SwingUtilities.invokeLater(() -> {
-            boolean collapsed = isCollapsed();
-            if (!collapsed) {
-                mainFrame.setResizable(true);
-            }
             Dimension preferredSize = mainFrame.getPreferredSize();
             mainFrame.setMinimumSize(preferredSize);
-            if (collapsed) {
-                mainFrame.setResizable(false);
+            if (isCollapsed()) {
                 mainFrame.setSize(preferredSize);
             }
         });
@@ -524,9 +523,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         gbc.gridy = 11; gbc.gridx = 0; configurationPanel.add(configSaveDirLabel, gbc);
                         gbc.gridx = 1; configurationPanel.add(configSaveDirButton, gbc);
 
-        // Sometimes on Linux Java has trouble setting window size when also changing setResizable
-        // Put an empty JPanel on the bottom of the window to keep components anchored to the top
-        JPanel emptyPanel = new JPanel();
+        emptyPanel = new JPanel();
         emptyPanel.setPreferredSize(new Dimension(0, 0));
         emptyPanel.setSize(0, 0);
 
@@ -541,7 +538,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         gbc.gridy = 5; pane.add(historyPanel, gbc);
         gbc.gridy = 5; pane.add(queuePanel, gbc);
         gbc.gridy = 5; pane.add(configurationPanel, gbc);
-        gbc.gridy = 6; pane.add(emptyPanel, gbc);
+        gbc.gridy = 5; pane.add(emptyPanel, gbc);
         gbc.weighty = 0;
         gbc.fill = GridBagConstraints.HORIZONTAL;
     }
@@ -594,6 +591,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         });
         optionLog.addActionListener(event -> {
             logPanel.setVisible(!logPanel.isVisible());
+            emptyPanel.setVisible(!logPanel.isVisible());
             historyPanel.setVisible(false);
             queuePanel.setVisible(false);
             configurationPanel.setVisible(false);
@@ -610,6 +608,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         optionHistory.addActionListener(event -> {
             logPanel.setVisible(false);
             historyPanel.setVisible(!historyPanel.isVisible());
+            emptyPanel.setVisible(!historyPanel.isVisible());
             queuePanel.setVisible(false);
             configurationPanel.setVisible(false);
             optionLog.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
@@ -626,6 +625,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
             logPanel.setVisible(false);
             historyPanel.setVisible(false);
             queuePanel.setVisible(!queuePanel.isVisible());
+            emptyPanel.setVisible(!queuePanel.isVisible());
             configurationPanel.setVisible(false);
             optionLog.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
             optionHistory.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
@@ -642,6 +642,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
             historyPanel.setVisible(false);
             queuePanel.setVisible(false);
             configurationPanel.setVisible(!configurationPanel.isVisible());
+            emptyPanel.setVisible(!configurationPanel.isVisible());
             optionLog.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
             optionHistory.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
             optionQueue.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
