@@ -1,6 +1,7 @@
 {
-    "latestVersion": "1.6.2",
+    "latestVersion": "1.6.3",
     "changeList": [
+        "1.6.3: Window is now resizable; Added Porncomix.info ripper; Fixed imgbox ripper; Added hentai2read ripper",
         "1.6.2: Fixed shesfreaky.com ripper; Fixed imgbox ripper; Fixed Xhamster video ripping",
         "1.6.1: Rolled E621Ripper back from 1.6.0 to the 1.5.15 version",
         "1.6.0: Updated to java 8; Some code cleanup",
