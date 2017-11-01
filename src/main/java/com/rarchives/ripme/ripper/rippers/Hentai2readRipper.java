@@ -106,7 +106,7 @@ public class Hentai2readRipper extends AbstractHTMLRipper {
             // Sleep for half a sec to avoid getting IP banned
             sleep(500);
             return Http.url(nextUrl).get();
-            }
+        }
 
         @Override
         public void downloadURL(URL url, int index) {
