@@ -37,7 +37,7 @@ public class WebtoonsRipper extends AbstractHTMLRipper {
 
     @Override
     public boolean canRip(URL url) {
-        Pattern pat = Pattern.compile("https?://www\\.webtoons\\.com/[a-zA-Z]+/[a-zA-Z]+/([a-zA-Z0-9_-]*)/ep-\\d+/\\S*");
+        Pattern pat = Pattern.compile("https?://www.webtoons.com/[a-zA-Z]+/[a-zA-Z]+/([a-zA-Z0-9_-]*)/[a-zA-Z0-9_-]+/\\S*");
         Matcher mat = pat.matcher(url.toExternalForm());
         if (mat.matches()) {
             return true;
@@ -48,7 +48,7 @@ public class WebtoonsRipper extends AbstractHTMLRipper {
 
     @Override
     public String getAlbumTitle(URL url) throws MalformedURLException {
-        Pattern pat = Pattern.compile("https?://www\\.webtoons\\.com/[a-zA-Z]+/[a-zA-Z]+/([a-zA-Z0-9_-]*)/ep-\\d+/\\S*");
+        Pattern pat = Pattern.compile("https?://www.webtoons.com/[a-zA-Z]+/[a-zA-Z]+/([a-zA-Z0-9_-]*)/[a-zA-Z0-9_-]+/\\S*");
         Matcher mat = pat.matcher(url.toExternalForm());
         if (mat.matches()) {
             return mat.group(1);
@@ -59,7 +59,7 @@ public class WebtoonsRipper extends AbstractHTMLRipper {
 
     @Override
     public String getGID(URL url) throws MalformedURLException {
-        Pattern pat = Pattern.compile("https?://www\\.webtoons\\.com/[a-zA-Z]+/[a-zA-Z]+/([a-zA-Z0-9_-]*)/ep-\\d+/\\S*");
+        Pattern pat = Pattern.compile("https?://www.webtoons.com/[a-zA-Z]+/[a-zA-Z]+/([a-zA-Z0-9_-]*)/[a-zA-Z0-9_-]+/\\S*");
         Matcher mat = pat.matcher(url.toExternalForm());
         if (mat.matches()) {
             return mat.group(1);
@@ -95,7 +95,7 @@ public class WebtoonsRipper extends AbstractHTMLRipper {
         String nextUrl = "";
         Element elem = doc.select("a.pg_next").first();
             nextUrl = elem.attr("href");
-            if (nextUrl == "") {
+            if (nextUrl.equals("") || nextUrl.equals("#")) {
                 throw new IOException("No more pages");
             }
             return Http.url(nextUrl).get();
