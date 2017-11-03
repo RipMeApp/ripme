@@ -8,7 +8,6 @@ import com.rarchives.ripme.ripper.rippers.DeviantartRipper;
 import com.rarchives.ripme.ripper.rippers.EightmusesRipper;
 import com.rarchives.ripme.ripper.rippers.FivehundredpxRipper;
 import com.rarchives.ripme.ripper.rippers.FuraffinityRipper;
-import com.rarchives.ripme.ripper.rippers.GifyoRipper;
 import com.rarchives.ripme.ripper.rippers.GirlsOfDesireRipper;
 import com.rarchives.ripme.ripper.rippers.HentaifoundryRipper;
 import com.rarchives.ripme.ripper.rippers.ImagearnRipper;
@@ -130,12 +129,7 @@ public class BasicRippersTest extends RippersTest {
         testRipper(ripper);
     }
     */
-
-    public void testGifyoAlbum() throws IOException {
-        GifyoRipper ripper = new GifyoRipper(new URL("http://gifyo.com/PieSecrets/"));
-        testRipper(ripper);
-    }
-
+    
     public void testGirlsofdesireAlbum() throws IOException {
         GirlsOfDesireRipper ripper = new GirlsOfDesireRipper(new URL("http://www.girlsofdesire.org/galleries/krillia/"));
         testRipper(ripper);
