@@ -1,6 +1,7 @@
 {
-    "latestVersion": "1.6.4",
+    "latestVersion": "1.6.5",
     "changeList": [
+        "1.6.5: Imgbox ripper now downloads full sized image from galleries",
         "1.6.4: Added webtoons ripper",
         "1.6.3: Window is now resizable; Added Porncomix.info ripper; Fixed imgbox ripper; Added hentai2read ripper",
         "1.6.2: Fixed shesfreaky.com ripper; Fixed imgbox ripper; Fixed Xhamster video ripping",
