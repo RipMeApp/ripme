@@ -20,6 +20,10 @@ import com.rarchives.ripme.ui.RipStatusHandler;
 import com.rarchives.ripme.ui.RipStatusMessage;
 import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
 import com.rarchives.ripme.utils.Utils;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.util.Scanner;
 
 public abstract class AbstractRipper
                 extends Observable
@@ -55,6 +59,44 @@ public abstract class AbstractRipper
             throw new IOException("Ripping interrupted");
         }
     }
+
+    private void writeDownloadedURL(String downloadedURL) throws IOException {
+        BufferedWriter bw = null;
+        FileWriter fw = null;
+        try {
+            File file = new File("history.downloaded");
+            // if file doesnt exists, then create it
+            if (!file.exists()) {
+                file.createNewFile();
+            }
+            fw = new FileWriter(file.getAbsoluteFile(), true);
+            bw = new BufferedWriter(fw);
+            bw.write(downloadedURL);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (bw != null)
+                    bw.close();
+                if (fw != null)
+                    fw.close();
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        }
+    }
+
+    private boolean hasDownloadedURL(String url) {
+        Scanner scanner = new Scanner("history.downloaded");
+        while (scanner.hasNextLine()) {
+            final String lineFromFile = scanner.nextLine();
+            if(lineFromFile.contains(url)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 
     /**
      * Ensures inheriting ripper can rip this URL, raises exception if not.
@@ -113,6 +155,10 @@ public abstract class AbstractRipper
     protected abstract boolean addURLToDownload(URL url, File saveAs, String referrer, Map<String, String> cookies);
 
     protected boolean addURLToDownload(URL url, String prefix, String subdirectory, String referrer, Map<String, String> cookies) {
+        if (!hasDownloadedURL(url.toExternalForm())) {
+            sendUpdate(STATUS.DOWNLOAD_WARN, "Already downloaded " + url.toExternalForm());
+            return false;
+        }
         try {
             stopCheck();
         } catch (IOException e) {
@@ -145,6 +191,11 @@ public abstract class AbstractRipper
         if (!saveFileAs.getParentFile().exists()) {
             logger.info("[+] Creating directory: " + Utils.removeCWD(saveFileAs.getParent()));
             saveFileAs.getParentFile().mkdirs();
+        }
+        try {
+            writeDownloadedURL(url.toExternalForm() + "\n");
+        } catch (IOException e) {
+                logger.debug("Unable to write URL history file");
         }
         return addURLToDownload(url, saveFileAs, referrer, cookies);
     }
