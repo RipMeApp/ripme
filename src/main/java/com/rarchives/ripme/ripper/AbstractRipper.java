@@ -85,7 +85,7 @@ public abstract class AbstractRipper
         }
     }
 
-    public boolean hasDownloadedURL(String url) {
+    private boolean hasDownloadedURL(String url) {
         File file = new File(URLHistoryFile);
         try {
             Scanner scanner = new Scanner(file);
