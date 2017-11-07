@@ -1,8 +1,7 @@
 package com.rarchives.ripme.ripper;
 
 import java.awt.Desktop;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.lang.reflect.Constructor;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -20,9 +19,8 @@ import com.rarchives.ripme.ui.RipStatusHandler;
 import com.rarchives.ripme.ui.RipStatusMessage;
 import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
 import com.rarchives.ripme.utils.Utils;
-import java.io.BufferedWriter;
+
 import java.io.File;
-import java.io.FileWriter;
 import java.util.Scanner;
 
 public abstract class AbstractRipper
@@ -30,6 +28,7 @@ public abstract class AbstractRipper
                 implements RipperInterface, Runnable {
 
     protected static final Logger logger = Logger.getLogger(AbstractRipper.class);
+    private final String URLHistoryFile = Utils.getConfigDir() + File.separator + "url_history.txt";
 
     public static final String USER_AGENT =
             "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:36.0) Gecko/20100101 Firefox/36.0";
@@ -64,7 +63,7 @@ public abstract class AbstractRipper
         BufferedWriter bw = null;
         FileWriter fw = null;
         try {
-            File file = new File("history.downloaded");
+            File file = new File(URLHistoryFile);
             // if file doesnt exists, then create it
             if (!file.exists()) {
                 file.createNewFile();
@@ -86,13 +85,18 @@ public abstract class AbstractRipper
         }
     }
 
-    private boolean hasDownloadedURL(String url) {
-        Scanner scanner = new Scanner("history.downloaded");
-        while (scanner.hasNextLine()) {
-            final String lineFromFile = scanner.nextLine();
-            if(lineFromFile.contains(url)) {
-                return true;
+    public boolean hasDownloadedURL(String url) {
+        File file = new File(URLHistoryFile);
+        try {
+            Scanner scanner = new Scanner(file);
+            while (scanner.hasNextLine()) {
+                final String lineFromFile = scanner.nextLine();
+                if (lineFromFile.equals(url)) {
+                    return true;
+                }
             }
+        } catch (FileNotFoundException e) {
+            return false;
         }
         return false;
     }
@@ -155,7 +159,7 @@ public abstract class AbstractRipper
     protected abstract boolean addURLToDownload(URL url, File saveAs, String referrer, Map<String, String> cookies);
 
     protected boolean addURLToDownload(URL url, String prefix, String subdirectory, String referrer, Map<String, String> cookies) {
-        if (!hasDownloadedURL(url.toExternalForm())) {
+        if (hasDownloadedURL(url.toExternalForm())) {
             sendUpdate(STATUS.DOWNLOAD_WARN, "Already downloaded " + url.toExternalForm());
             return false;
         }
