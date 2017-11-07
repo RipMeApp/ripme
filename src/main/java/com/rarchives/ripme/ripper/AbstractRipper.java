@@ -28,7 +28,7 @@ public abstract class AbstractRipper
                 implements RipperInterface, Runnable {
 
     protected static final Logger logger = Logger.getLogger(AbstractRipper.class);
-    private final String URLHistoryFile = Utils.getConfigDir() + File.separator + "url_history.txt";
+    private final String URLHistoryFile = Utils.getURLHistoryFile();
 
     public static final String USER_AGENT =
             "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:36.0) Gecko/20100101 Firefox/36.0";
