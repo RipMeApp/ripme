@@ -665,6 +665,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
             saveHistory();
         });
         historyButtonClear.addActionListener(event -> {
+            Utils.clearURLHistory();
             HISTORY.clear();
             try {
                 historyTableModel.fireTableDataChanged();

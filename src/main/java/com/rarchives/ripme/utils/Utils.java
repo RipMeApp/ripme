@@ -20,7 +20,6 @@ import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
 import javax.sound.sampled.Line;
 import javax.sound.sampled.LineEvent;
-import javax.sound.sampled.LineListener;
 
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
@@ -175,6 +174,16 @@ public class Utils {
         } catch (Exception e) {
             return ".";
         }
+    }
+    // Delete the url history file
+    public static void clearURLHistory() {
+        File file = new File(getURLHistoryFile());
+        file.delete();
+    }
+
+    // Return the path of the url history file
+    public static String getURLHistoryFile() {
+        return getConfigDir() + File.separator + "url_history.txt";
     }
 
     private static String getConfigFilePath() {
