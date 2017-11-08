@@ -1,6 +1,7 @@
 {
-    "latestVersion": "1.6.5",
+    "latestVersion": "1.6.6",
     "changeList": [
+        "1.6.6: Fixed 8muses ripper",
         "1.6.5: Imgbox ripper now downloads full sized image from galleries",
         "1.6.4: Added webtoons ripper",
         "1.6.3: Window is now resizable; Added Porncomix.info ripper; Fixed imgbox ripper; Added hentai2read ripper",
