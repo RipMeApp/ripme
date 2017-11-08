@@ -11,8 +11,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-import java.util.Arrays;
 
 public class MyhentaicomicsRipper extends AbstractHTMLRipper {
     private static boolean isTag;
