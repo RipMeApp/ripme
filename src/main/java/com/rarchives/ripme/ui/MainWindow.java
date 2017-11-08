@@ -118,6 +118,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
     private static JTextField configRetriesText;
     private static JCheckBox configAutoupdateCheckbox;
     private static JComboBox configLogLevelCombobox;
+    private static JCheckBox configURLHistoryCheckbox;
     private static JCheckBox configPlaySound;
     private static JCheckBox configSaveOrderCheckbox;
     private static JCheckBox configShowPopup;
@@ -191,6 +192,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         Utils.setConfigBoolean("clipboard.autorip", configClipboardAutorip.isSelected());
         Utils.setConfigBoolean("descriptions.save", configSaveDescriptions.isSelected());
         Utils.setConfigBoolean("prefer.mp4", configPreferMp4.isSelected());
+        Utils.setConfigBoolean("remember.url_history", configURLHistoryCheckbox.isSelected());
         saveWindowPosition(mainFrame);
         saveHistory();
         Utils.saveConfig();
@@ -489,6 +491,9 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         configWindowPosition = new JCheckBox("Restore window position", Utils.getConfigBoolean("window.position", true));
         configWindowPosition.setHorizontalAlignment(JCheckBox.RIGHT);
         configWindowPosition.setHorizontalTextPosition(JCheckBox.LEFT);
+        configURLHistoryCheckbox = new JCheckBox("Remember URL history", Utils.getConfigBoolean("remember.url_history", true));
+        configURLHistoryCheckbox.setHorizontalAlignment(JCheckBox.RIGHT);
+        configURLHistoryCheckbox.setHorizontalTextPosition(JCheckBox.LEFT);
         configSaveDirLabel = new JLabel();
         try {
             String workingDir = (Utils.shortenPath(Utils.getWorkingDirectory()));
@@ -520,8 +525,10 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         gbc.gridy = 9; gbc.gridx = 0; configurationPanel.add(configSaveDescriptions, gbc);
                        gbc.gridx = 1; configurationPanel.add(configPreferMp4, gbc);
         gbc.gridy = 10; gbc.gridx = 0; configurationPanel.add(configWindowPosition, gbc);
+                        gbc.gridx = 1; configurationPanel.add(configURLHistoryCheckbox, gbc);
         gbc.gridy = 11; gbc.gridx = 0; configurationPanel.add(configSaveDirLabel, gbc);
                         gbc.gridx = 1; configurationPanel.add(configSaveDirButton, gbc);
+
 
         emptyPanel = new JPanel();
         emptyPanel.setPreferredSize(new Dimension(0, 0));
@@ -665,6 +672,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
             saveHistory();
         });
         historyButtonClear.addActionListener(event -> {
+            Utils.clearURLHistory();
             HISTORY.clear();
             try {
                 historyTableModel.fireTableDataChanged();
@@ -741,6 +749,10 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         });
         configSaveURLsOnly.addActionListener(arg0 -> {
             Utils.setConfigBoolean("urls_only.save", configSaveURLsOnly.isSelected());
+            Utils.configureLogger();
+        });
+        configURLHistoryCheckbox.addActionListener(arg0 -> {
+            Utils.setConfigBoolean("remember.url_history", configURLHistoryCheckbox.isSelected());
             Utils.configureLogger();
         });
         configSaveAlbumTitles.addActionListener(arg0 -> {

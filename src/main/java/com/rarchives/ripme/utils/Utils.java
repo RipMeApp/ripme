@@ -175,6 +175,16 @@ public class Utils {
             return ".";
         }
     }
+    // Delete the url history file
+    public static void clearURLHistory() {
+        File file = new File(getURLHistoryFile());
+        file.delete();
+    }
+
+    // Return the path of the url history file
+    public static String getURLHistoryFile() {
+        return getConfigDir() + File.separator + "url_history.txt";
+    }
 
     private static String getConfigFilePath() {
         return getConfigDir() + File.separator + configFile;
