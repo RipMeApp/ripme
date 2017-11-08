@@ -187,7 +187,7 @@ public class BasicRippersTest extends RippersTest {
     */
 
     public void testModelmayhemRip() throws IOException {
-        AbstractRipper ripper = new ModelmayhemRipper(new URL("http://www.modelmayhem.com/portfolio/520206/viewall"));
+        AbstractRipper ripper = new ModelmayhemRipper(new URL("https://www.modelmayhem.com/portfolio/520206/viewall"));
         testRipper(ripper);
     }
 
@@ -268,7 +268,7 @@ public class BasicRippersTest extends RippersTest {
     }
 
     public void testXhamsterAlbums() throws IOException {
-        XhamsterRipper ripper = new XhamsterRipper(new URL("https://xhamster.com/photos/gallery/polaroids-2-8940215"));
+        XhamsterRipper ripper = new XhamsterRipper(new URL("https://xhamster.com/photos/gallery/sexy-preggo-girls-9026608"));
         testRipper(ripper);
     }
 }
