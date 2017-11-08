@@ -15,6 +15,9 @@ import org.json.JSONObject;
 import com.rarchives.ripme.ripper.AbstractJSONRipper;
 import com.rarchives.ripme.utils.Http;
 
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+
 public class InstagramRipper extends AbstractJSONRipper {
 
     private String userID;
@@ -68,42 +71,36 @@ public class InstagramRipper extends AbstractJSONRipper {
 
         throw new IOException("Unable to find userID at " + this.url);
     }
-
-    @Override
-    public JSONObject getFirstPage() throws IOException {
-        userID = getUserID(url);
-
-        String baseURL = "http://instagram.com/" + userID + "/media";
+    private JSONObject getJSONFromPage(String url) throws IOException {
+        String jsonText = "";
         try {
-            return Http.url(baseURL).getJSON();
+            Document firstPage = Http.url(url).get();
+            for (Element script : firstPage.select("script[type=text/javascript]")) {
+                if (script.data().contains("window._sharedData = ")) {
+                    jsonText = script.data().replaceAll("window._sharedData = ", "");
+                    jsonText = jsonText.replaceAll("};", "}");
+                }
+            }
+            return new JSONObject(jsonText);
         } catch (JSONException e) {
-            throw new IOException("Could not get instagram user via: " + baseURL);
+            throw new IOException("Could not get JSON from page " + url);
         }
     }
 
     @Override
-    public JSONObject getNextPage(JSONObject json) throws IOException {
+    public JSONObject getFirstPage() throws IOException {
+        userID = getUserID(url);
+        return getJSONFromPage("http://instagram.com/" + userID);
+    }
 
-        boolean nextPageAvailable;
+    private String getVideoFromPage(String videoID) {
         try {
-            nextPageAvailable = json.getBoolean("more_available");
-        } catch (Exception e) {
-            throw new IOException("No additional pages found");
+            Document doc = Http.url("https://www.instagram.com/p/" + videoID).get();
+            return doc.select("meta[property=og:video]").attr("content");
+        } catch (IOException e) {
+            logger.warn("Unable to get page " + "https://www.instagram.com/p/" + videoID);
         }
-
-        if (nextPageAvailable) {
-            JSONArray items         = json.getJSONArray("items");
-            JSONObject last_item    = items.getJSONObject(items.length() - 1);
-            String nextMaxID        = last_item.getString("id");
-
-            String baseURL = "http://instagram.com/" + userID + "/media/?max_id=" + nextMaxID;
-            logger.info("Loading " + baseURL);
-            sleep(1000);
-
-            return Http.url(baseURL).getJSON();
-        } else {
-            throw new IOException("No more images found");
-        }
+        return "";
     }
 
     private String getOriginalUrl(String imageURL) {
@@ -132,52 +129,41 @@ public class InstagramRipper extends AbstractJSONRipper {
         return imageURL;
     }
 
-    private String getMedia(JSONObject data) {
-        String imageURL = "";
-        JSONObject mediaObject;
-        if (data.has("videos")) {
-            mediaObject = data.getJSONObject("videos");
-            if (!mediaObject.isNull("standard_resolution")) {
-                imageURL = mediaObject.getJSONObject("standard_resolution").getString("url");
-            }
-        } else if (data.has("images")) {
-            mediaObject = data.getJSONObject("images");
-            if (!mediaObject.isNull("standard_resolution")) {
-                imageURL = mediaObject.getJSONObject("standard_resolution").getString("url");
-            }
-        }
-        return imageURL;
-    }
-
     @Override
     public List<String> getURLsFromJSON(JSONObject json) {
+        String nextPageID = "";
         List<String> imageURLs = new ArrayList<>();
-        JSONArray datas = json.getJSONArray("items");
+        JSONArray profilePage = json.getJSONObject("entry_data").getJSONArray("ProfilePage");
+        JSONArray datas = profilePage.getJSONObject(0).getJSONObject("user").getJSONObject("media").getJSONArray("nodes");
         for (int i = 0; i < datas.length(); i++) {
             JSONObject data = (JSONObject) datas.get(i);
-
-            String dataType = data.getString("type");
-            if (dataType.equals("carousel")) {
-                JSONArray carouselMedias = data.getJSONArray("carousel_media");
-                for (int carouselIndex = 0; carouselIndex < carouselMedias.length(); carouselIndex++) {
-                    JSONObject carouselMedia = (JSONObject) carouselMedias.get(carouselIndex);
-                    String imageURL = getMedia(carouselMedia);
-                    if (!imageURL.equals("")) {
-                        imageURL = getOriginalUrl(imageURL);
-                        imageURLs.add(imageURL);
+            try {
+                if (!data.getBoolean("is_video")) {
+                    if (imageURLs.size() == 0) {
+                        // We add this one item to the array because either wise
+                        // the ripper will error out because we returned an empty array
+                        imageURLs.add(data.getString("thumbnail_src"));
                     }
+                    addURLToDownload(new URL(getOriginalUrl(data.getString("thumbnail_src"))));
+                } else {
+                    addURLToDownload(new URL(getVideoFromPage(data.getString("code"))));
                 }
-            } else {
-                String imageURL = getMedia(data);
-                if (!imageURL.equals("")) {
-                    imageURL = getOriginalUrl(imageURL);
-                    imageURLs.add(imageURL);
-                }
+            } catch (MalformedURLException e) {
+                return  imageURLs;
             }
+            nextPageID = data.getString("id");
+
 
             if (isThisATest()) {
                 break;
             }
+        }
+        if (!nextPageID.equals("") && !isThisATest()) {
+            try {
+                // Sleep for a while to avoid a ban
+                sleep(2500);
+                getURLsFromJSON(getJSONFromPage("https://www.instagram.com/" + userID + "/?max_id=" + nextPageID));
+            } catch (IOException e){ return imageURLs;}
         }
         return imageURLs;
     }
