@@ -15,6 +15,11 @@ import org.json.JSONObject;
 import com.rarchives.ripme.ripper.AbstractJSONRipper;
 import com.rarchives.ripme.utils.Http;
 
+import org.jsoup.Connection.Response;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
 public class InstagramRipper extends AbstractJSONRipper {
 
     private String userID;
@@ -73,11 +78,21 @@ public class InstagramRipper extends AbstractJSONRipper {
     public JSONObject getFirstPage() throws IOException {
         userID = getUserID(url);
 
-        String baseURL = "http://instagram.com/" + userID + "/media";
+        String jsonText = "";
         try {
-            return Http.url(baseURL).getJSON();
+            Document firstPage = Http.url("http://instagram.com/" + userID).get();
+            for (Element script : firstPage.select("script[type=text/javascript]")) {
+                logger.info("Found script");
+
+                if (script.data().contains("window._sharedData = ")) {
+                   jsonText = script.data().replaceAll("window._sharedData = ", "");
+                   jsonText = jsonText.replaceAll("};", "}");
+                }
+            }
+            logger.debug(jsonText);
+            return new JSONObject(jsonText);
         } catch (JSONException e) {
-            throw new IOException("Could not get instagram user via: " + baseURL);
+            throw new IOException("Could not get instagram user");
         }
     }
 
@@ -152,28 +167,30 @@ public class InstagramRipper extends AbstractJSONRipper {
     @Override
     public List<String> getURLsFromJSON(JSONObject json) {
         List<String> imageURLs = new ArrayList<>();
-        JSONArray datas = json.getJSONArray("items");
+        JSONArray profilePage = json.getJSONObject("entry_data").getJSONArray("ProfilePage");
+        JSONArray datas = profilePage.getJSONObject(0).getJSONObject("user").getJSONObject("media").getJSONArray("nodes");
         for (int i = 0; i < datas.length(); i++) {
             JSONObject data = (JSONObject) datas.get(i);
+            imageURLs.add(getOriginalUrl(data.getString("thumbnail_src")));
 
-            String dataType = data.getString("type");
-            if (dataType.equals("carousel")) {
-                JSONArray carouselMedias = data.getJSONArray("carousel_media");
-                for (int carouselIndex = 0; carouselIndex < carouselMedias.length(); carouselIndex++) {
-                    JSONObject carouselMedia = (JSONObject) carouselMedias.get(carouselIndex);
-                    String imageURL = getMedia(carouselMedia);
-                    if (!imageURL.equals("")) {
-                        imageURL = getOriginalUrl(imageURL);
-                        imageURLs.add(imageURL);
-                    }
-                }
-            } else {
-                String imageURL = getMedia(data);
-                if (!imageURL.equals("")) {
-                    imageURL = getOriginalUrl(imageURL);
-                    imageURLs.add(imageURL);
-                }
-            }
+//            String dataType = data.getString("type");
+//            if (dataType.equals("carousel")) {
+//                JSONArray carouselMedias = data.getJSONArray("carousel_media");
+//                for (int carouselIndex = 0; carouselIndex < carouselMedias.length(); carouselIndex++) {
+//                    JSONObject carouselMedia = (JSONObject) carouselMedias.get(carouselIndex);
+//                    String imageURL = getMedia(carouselMedia);
+//                    if (!imageURL.equals("")) {
+//                        imageURL = getOriginalUrl(imageURL);
+//                        imageURLs.add(imageURL);
+//                    }
+//                }
+//            } else {
+//                String imageURL = getMedia(data);
+//                if (!imageURL.equals("")) {
+//                    imageURL = getOriginalUrl(imageURL);
+//                    imageURLs.add(imageURL);
+//                }
+//            }
 
             if (isThisATest()) {
                 break;
