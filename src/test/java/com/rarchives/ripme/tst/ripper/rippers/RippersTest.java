@@ -2,7 +2,6 @@ package com.rarchives.ripme.tst.ripper.rippers;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
 
 import junit.framework.TestCase;
 

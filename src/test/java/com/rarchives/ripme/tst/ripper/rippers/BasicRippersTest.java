@@ -22,7 +22,6 @@ import com.rarchives.ripme.ripper.rippers.PornhubRipper;
 import com.rarchives.ripme.ripper.rippers.ShesFreakyRipper;
 import com.rarchives.ripme.ripper.rippers.TapasticRipper;
 import com.rarchives.ripme.ripper.rippers.TeenplanetRipper;
-import com.rarchives.ripme.ripper.rippers.TumblrRipper;
 import com.rarchives.ripme.ripper.rippers.TwitterRipper;
 import com.rarchives.ripme.ripper.rippers.TwodgalleriesRipper;
 import com.rarchives.ripme.ripper.rippers.VidbleRipper;
