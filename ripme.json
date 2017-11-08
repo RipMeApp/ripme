@@ -1,6 +1,7 @@
 {
-    "latestVersion": "1.6.7",
+    "latestVersion": "1.6.8",
     "changeList": [
+        "1.6.8: code clean up; ripme can now remeber and skip already downloaded images",
         "1.6.7: Fixed instagram ripper",
         "1.6.6: Fixed 8muses ripper",
         "1.6.5: Imgbox ripper now downloads full sized image from galleries",
