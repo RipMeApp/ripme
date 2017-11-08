@@ -15,7 +15,6 @@ public class InstagramRipperTest extends RippersTest {
         Map<URL, String> testURLs = new HashMap<>();
         testURLs.put(new URL("http://instagram.com/Test_User"), "Test_User");
         testURLs.put(new URL("http://instagram.com/_test_user_"), "_test_user_");
-        testURLs.put(new URL("http://instagram.com/-test-user-"), "-test-user-");
         for (URL url : testURLs.keySet()) {
             InstagramRipper ripper = new InstagramRipper(url);
             ripper.setup();
