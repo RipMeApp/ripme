@@ -178,10 +178,8 @@ public class EightmusesRipper extends AbstractHTMLRipper {
         sendUpdate(STATUS.LOADING_RESOURCE, imageUrl);
         logger.info("Getting full sized image from " + imageUrl);
         Document doc = new Http(imageUrl).get(); // Retrieve the webpage  of the image URL
-        Element fullSizeImage = doc.select(".photo").first(); // Select the "photo" element from the page (there should only be 1)
-        // subdir is the sub dir the cdn has the image stored in
-        String subdir = doc.select("input#imageDir").first().attr("value");
-        return "https://cdn.ampproject.org/i/s/www.8muses.com/" + subdir + "small/" + fullSizeImage.children().select("#imageName").attr("value");
+        String imageName = doc.select("input[id=imageName]").attr("value"); // Select the "input" element from the page
+        return "https://www.8muses.com/image/fm/" + imageName;
     }
 
     @Override
