@@ -73,53 +73,54 @@ public class InstagramRipper extends AbstractJSONRipper {
 
         throw new IOException("Unable to find userID at " + this.url);
     }
-
-    @Override
-    public JSONObject getFirstPage() throws IOException {
-        userID = getUserID(url);
-
+    private JSONObject getJSONFromPage(String url) throws IOException {
         String jsonText = "";
         try {
-            Document firstPage = Http.url("http://instagram.com/" + userID).get();
+            Document firstPage = Http.url(url).get();
             for (Element script : firstPage.select("script[type=text/javascript]")) {
                 logger.info("Found script");
 
                 if (script.data().contains("window._sharedData = ")) {
-                   jsonText = script.data().replaceAll("window._sharedData = ", "");
-                   jsonText = jsonText.replaceAll("};", "}");
+                    jsonText = script.data().replaceAll("window._sharedData = ", "");
+                    jsonText = jsonText.replaceAll("};", "}");
                 }
             }
-            logger.debug(jsonText);
             return new JSONObject(jsonText);
         } catch (JSONException e) {
-            throw new IOException("Could not get instagram user");
+            throw new IOException("Could not get JSON from page " + url);
         }
     }
 
     @Override
-    public JSONObject getNextPage(JSONObject json) throws IOException {
-
-        boolean nextPageAvailable;
-        try {
-            nextPageAvailable = json.getBoolean("more_available");
-        } catch (Exception e) {
-            throw new IOException("No additional pages found");
-        }
-
-        if (nextPageAvailable) {
-            JSONArray items         = json.getJSONArray("items");
-            JSONObject last_item    = items.getJSONObject(items.length() - 1);
-            String nextMaxID        = last_item.getString("id");
-
-            String baseURL = "http://instagram.com/" + userID + "/media/?max_id=" + nextMaxID;
-            logger.info("Loading " + baseURL);
-            sleep(1000);
-
-            return Http.url(baseURL).getJSON();
-        } else {
-            throw new IOException("No more images found");
-        }
+    public JSONObject getFirstPage() throws IOException {
+        userID = getUserID(url);
+        return getJSONFromPage("http://instagram.com/" + userID);
     }
+
+//    @Override
+//    public JSONObject getNextPage(JSONObject json) throws IOException {
+//
+//        boolean nextPageAvailable;
+//        try {
+//            nextPageAvailable = json.getBoolean("more_available");
+//        } catch (Exception e) {
+//            throw new IOException("No additional pages found");
+//        }
+//
+//        if (nextPageAvailable) {
+//            JSONArray items         = json.getJSONArray("items");
+//            JSONObject last_item    = items.getJSONObject(items.length() - 1);
+//            String nextMaxID        = last_item.getString("id");
+//
+//            String baseURL = "http://instagram.com/" + userID + "/?max_id=" + nextMaxID;
+//            logger.info("Loading " + baseURL);
+//            sleep(1000);
+//
+//            return Http.url(baseURL).getJSON();
+//        } else {
+//            throw new IOException("No more images found");
+//        }
+//    }
 
     private String getOriginalUrl(String imageURL) {
         imageURL = imageURL.replaceAll("scontent.cdninstagram.com/hphotos-", "igcdn-photos-d-a.akamaihd.net/hphotos-ak-");
@@ -166,12 +167,18 @@ public class InstagramRipper extends AbstractJSONRipper {
 
     @Override
     public List<String> getURLsFromJSON(JSONObject json) {
+        String nextPageID = "";
         List<String> imageURLs = new ArrayList<>();
         JSONArray profilePage = json.getJSONObject("entry_data").getJSONArray("ProfilePage");
         JSONArray datas = profilePage.getJSONObject(0).getJSONObject("user").getJSONObject("media").getJSONArray("nodes");
         for (int i = 0; i < datas.length(); i++) {
             JSONObject data = (JSONObject) datas.get(i);
-            imageURLs.add(getOriginalUrl(data.getString("thumbnail_src")));
+            try {
+                addURLToDownload(new URL(getOriginalUrl(data.getString("thumbnail_src"))));
+            } catch (MalformedURLException e) {
+                return  imageURLs;
+            }
+            nextPageID = data.getString("id");
 
 //            String dataType = data.getString("type");
 //            if (dataType.equals("carousel")) {
@@ -195,6 +202,12 @@ public class InstagramRipper extends AbstractJSONRipper {
             if (isThisATest()) {
                 break;
             }
+        }
+        if (!nextPageID.equals("")) {
+            try {
+                sleep(1000);
+                getURLsFromJSON(getJSONFromPage("https://www.instagram.com/annabellpeaksxx/?max_id=" + nextPageID));
+            } catch (IOException e){ return imageURLs;}
         }
         return imageURLs;
     }
