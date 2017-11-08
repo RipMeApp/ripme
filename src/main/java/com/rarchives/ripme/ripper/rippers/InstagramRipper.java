@@ -141,6 +141,11 @@ public class InstagramRipper extends AbstractJSONRipper {
             JSONObject data = (JSONObject) datas.get(i);
             try {
                 if (!data.getBoolean("is_video")) {
+                    if (imageURLs.size() == 0) {
+                        // We add this one item to the array because either wise
+                        // the ripper will error out because we returned an empty array
+                        imageURLs.add(data.getString("thumbnail_src"));
+                    }
                     addURLToDownload(new URL(getOriginalUrl(data.getString("thumbnail_src"))));
                 } else {
                     addURLToDownload(new URL(getVideoFromPage(data.getString("code"))));
