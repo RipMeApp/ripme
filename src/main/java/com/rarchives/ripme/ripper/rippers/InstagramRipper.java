@@ -15,10 +15,8 @@ import org.json.JSONObject;
 import com.rarchives.ripme.ripper.AbstractJSONRipper;
 import com.rarchives.ripme.utils.Http;
 
-import org.jsoup.Connection.Response;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
 
 public class InstagramRipper extends AbstractJSONRipper {
 
@@ -97,30 +95,15 @@ public class InstagramRipper extends AbstractJSONRipper {
         return getJSONFromPage("http://instagram.com/" + userID);
     }
 
-//    @Override
-//    public JSONObject getNextPage(JSONObject json) throws IOException {
-//
-//        boolean nextPageAvailable;
-//        try {
-//            nextPageAvailable = json.getBoolean("more_available");
-//        } catch (Exception e) {
-//            throw new IOException("No additional pages found");
-//        }
-//
-//        if (nextPageAvailable) {
-//            JSONArray items         = json.getJSONArray("items");
-//            JSONObject last_item    = items.getJSONObject(items.length() - 1);
-//            String nextMaxID        = last_item.getString("id");
-//
-//            String baseURL = "http://instagram.com/" + userID + "/?max_id=" + nextMaxID;
-//            logger.info("Loading " + baseURL);
-//            sleep(1000);
-//
-//            return Http.url(baseURL).getJSON();
-//        } else {
-//            throw new IOException("No more images found");
-//        }
-//    }
+    private String getVideoFromPage(String videoID) {
+        try {
+            Document doc = Http.url("https://www.instagram.com/p/" + videoID).get();
+            return doc.select("meta[property=og:video]").attr("content");
+        } catch (IOException e) {
+            logger.warn("Unable to get page " + "https://www.instagram.com/p/" + videoID);
+        }
+        return "";
+    }
 
     private String getOriginalUrl(String imageURL) {
         imageURL = imageURL.replaceAll("scontent.cdninstagram.com/hphotos-", "igcdn-photos-d-a.akamaihd.net/hphotos-ak-");
@@ -148,23 +131,6 @@ public class InstagramRipper extends AbstractJSONRipper {
         return imageURL;
     }
 
-    private String getMedia(JSONObject data) {
-        String imageURL = "";
-        JSONObject mediaObject;
-        if (data.has("videos")) {
-            mediaObject = data.getJSONObject("videos");
-            if (!mediaObject.isNull("standard_resolution")) {
-                imageURL = mediaObject.getJSONObject("standard_resolution").getString("url");
-            }
-        } else if (data.has("images")) {
-            mediaObject = data.getJSONObject("images");
-            if (!mediaObject.isNull("standard_resolution")) {
-                imageURL = mediaObject.getJSONObject("standard_resolution").getString("url");
-            }
-        }
-        return imageURL;
-    }
-
     @Override
     public List<String> getURLsFromJSON(JSONObject json) {
         String nextPageID = "";
@@ -174,30 +140,16 @@ public class InstagramRipper extends AbstractJSONRipper {
         for (int i = 0; i < datas.length(); i++) {
             JSONObject data = (JSONObject) datas.get(i);
             try {
-                addURLToDownload(new URL(getOriginalUrl(data.getString("thumbnail_src"))));
+                if (!data.getBoolean("is_video")) {
+                    addURLToDownload(new URL(getOriginalUrl(data.getString("thumbnail_src"))));
+                } else {
+                    addURLToDownload(new URL(getVideoFromPage(data.getString("code"))));
+                }
             } catch (MalformedURLException e) {
                 return  imageURLs;
             }
             nextPageID = data.getString("id");
 
-//            String dataType = data.getString("type");
-//            if (dataType.equals("carousel")) {
-//                JSONArray carouselMedias = data.getJSONArray("carousel_media");
-//                for (int carouselIndex = 0; carouselIndex < carouselMedias.length(); carouselIndex++) {
-//                    JSONObject carouselMedia = (JSONObject) carouselMedias.get(carouselIndex);
-//                    String imageURL = getMedia(carouselMedia);
-//                    if (!imageURL.equals("")) {
-//                        imageURL = getOriginalUrl(imageURL);
-//                        imageURLs.add(imageURL);
-//                    }
-//                }
-//            } else {
-//                String imageURL = getMedia(data);
-//                if (!imageURL.equals("")) {
-//                    imageURL = getOriginalUrl(imageURL);
-//                    imageURLs.add(imageURL);
-//                }
-//            }
 
             if (isThisATest()) {
                 break;
@@ -205,8 +157,9 @@ public class InstagramRipper extends AbstractJSONRipper {
         }
         if (!nextPageID.equals("")) {
             try {
-                sleep(1000);
-                getURLsFromJSON(getJSONFromPage("https://www.instagram.com/annabellpeaksxx/?max_id=" + nextPageID));
+                // Sleep for a while to avoid a ban
+                sleep(2500);
+                getURLsFromJSON(getJSONFromPage("https://www.instagram.com/" + userID + "/?max_id=" + nextPageID));
             } catch (IOException e){ return imageURLs;}
         }
         return imageURLs;
