@@ -76,8 +76,6 @@ public class InstagramRipper extends AbstractJSONRipper {
         try {
             Document firstPage = Http.url(url).get();
             for (Element script : firstPage.select("script[type=text/javascript]")) {
-                logger.info("Found script");
-
                 if (script.data().contains("window._sharedData = ")) {
                     jsonText = script.data().replaceAll("window._sharedData = ", "");
                     jsonText = jsonText.replaceAll("};", "}");
@@ -160,7 +158,7 @@ public class InstagramRipper extends AbstractJSONRipper {
                 break;
             }
         }
-        if (!nextPageID.equals("")) {
+        if (!nextPageID.equals("") && !isThisATest()) {
             try {
                 // Sleep for a while to avoid a ban
                 sleep(2500);
