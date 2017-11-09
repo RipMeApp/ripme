@@ -149,9 +149,9 @@ public class NfsfwRipper extends AlbumRipper {
      * Helper class to find and download images found on "image" pages
      */
     private class NfsfwImageThread extends Thread {
-        private URL url;
-        private String subdir;
-        private int index;
+        private final URL url;
+        private final String subdir;
+        private final int index;
 
         NfsfwImageThread(URL url, String subdir, int index) {
             super();
@@ -187,8 +187,8 @@ public class NfsfwRipper extends AlbumRipper {
     }
 
     private class Pair {
-        String first;
-        String second;
+        final String first;
+        final String second;
         Pair(String first, String second) {
             this.first = first;
             this.second = second;

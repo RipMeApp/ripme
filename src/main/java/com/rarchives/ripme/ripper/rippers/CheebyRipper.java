@@ -21,7 +21,7 @@ import com.rarchives.ripme.utils.Http;
 public class CheebyRipper extends AbstractHTMLRipper {
 
     private int offset = 0;
-    private Map<String, Integer> albumSets = new HashMap<>();
+    private final Map<String, Integer> albumSets = new HashMap<>();
 
     public CheebyRipper(URL url) throws IOException {
         super(url);
@@ -169,8 +169,9 @@ public class CheebyRipper extends AbstractHTMLRipper {
     }
 
     private class Image {
-        String url, prefix;
-        int index;
+        final String url;
+        final String prefix;
+        final int index;
         Image(String url, String prefix, int index) {
             this.url = url;
             this.prefix = prefix;

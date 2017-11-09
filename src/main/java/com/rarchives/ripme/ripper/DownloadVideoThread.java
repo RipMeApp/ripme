@@ -24,11 +24,11 @@ class DownloadVideoThread extends Thread {
 
     private static final Logger logger = Logger.getLogger(DownloadVideoThread.class);
 
-    private URL url;
-    private File saveAs;
-    private String prettySaveAs;
-    private AbstractRipper observer;
-    private int retries;
+    private final URL url;
+    private final File saveAs;
+    private final String prettySaveAs;
+    private final AbstractRipper observer;
+    private final int retries;
 
     public DownloadVideoThread(URL url, File saveAs, AbstractRipper observer) {
         super();

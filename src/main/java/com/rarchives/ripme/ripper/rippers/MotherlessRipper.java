@@ -123,8 +123,8 @@ public class MotherlessRipper extends AlbumRipper {
      * Helper class to find and download images found on "image" pages
      */
     private class MotherlessImageThread extends Thread {
-        private URL url;
-        private int index;
+        private final URL url;
+        private final int index;
 
         MotherlessImageThread(URL url, int index) {
             super();

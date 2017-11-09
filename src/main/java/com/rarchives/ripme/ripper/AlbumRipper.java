@@ -15,9 +15,9 @@ import com.rarchives.ripme.utils.Utils;
 
 public abstract class AlbumRipper extends AbstractRipper {
 
-    private Map<URL, File> itemsPending = Collections.synchronizedMap(new HashMap<URL, File>());
-    private Map<URL, File> itemsCompleted = Collections.synchronizedMap(new HashMap<URL, File>());
-    private Map<URL, String> itemsErrored = Collections.synchronizedMap(new HashMap<URL, String>());
+    private final Map<URL, File> itemsPending = Collections.synchronizedMap(new HashMap<URL, File>());
+    private final Map<URL, File> itemsCompleted = Collections.synchronizedMap(new HashMap<URL, File>());
+    private final Map<URL, String> itemsErrored = Collections.synchronizedMap(new HashMap<URL, String>());
 
     protected AlbumRipper(URL url) throws IOException {
         super(url);

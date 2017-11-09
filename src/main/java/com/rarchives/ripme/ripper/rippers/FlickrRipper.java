@@ -28,7 +28,7 @@ import com.rarchives.ripme.utils.Utils;
 public class FlickrRipper extends AbstractHTMLRipper {
 
     private int page = 1;
-    private Set<String> attempted = new HashSet<>();
+    private final Set<String> attempted = new HashSet<>();
     private Document albumDoc = null;
     private final DownloadThreadPool flickrThreadPool;
     @Override
@@ -236,8 +236,8 @@ public class FlickrRipper extends AbstractHTMLRipper {
      * Helper class to find and download images found on "image" pages
      */
     private class FlickrImageThread extends Thread {
-        private URL    url;
-        private int    index;
+        private final URL    url;
+        private final int    index;
 
         FlickrImageThread(URL url, int index) {
             super();

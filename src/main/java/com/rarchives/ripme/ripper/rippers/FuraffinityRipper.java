@@ -32,7 +32,7 @@ public class FuraffinityRipper extends AbstractHTMLRipper {
     private static final String urlBase = "https://www.furaffinity.net";
 
     // Thread pool for finding direct image links from "image" pages (html)
-    private DownloadThreadPool furaffinityThreadPool
+    private final DownloadThreadPool furaffinityThreadPool
                                = new DownloadThreadPool( "furaffinity");
 
     @Override
@@ -228,7 +228,7 @@ public class FuraffinityRipper extends AbstractHTMLRipper {
     }
 
     private class FuraffinityDocumentThread extends Thread {
-        private URL url;
+        private final URL url;
 
         FuraffinityDocumentThread(URL url) {
             super();

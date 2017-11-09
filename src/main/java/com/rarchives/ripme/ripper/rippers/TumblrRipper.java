@@ -31,7 +31,7 @@ public class TumblrRipper extends AlbumRipper {
     private ALBUM_TYPE albumType;
     private String subdomain, tagName, postNumber;
 
-    private static String TUMBLR_AUTH_CONFIG_KEY = "tumblr.auth";
+    private static final String TUMBLR_AUTH_CONFIG_KEY = "tumblr.auth";
 
     private static boolean useDefaultApiKey = false; // fall-back for bad user-specified key
     private static final String DEFAULT_API_KEY = "JFNLu3CbINQjRdUvZibXW9VpSEVYYtiPJ86o8YmvgLZIoKyuNX";

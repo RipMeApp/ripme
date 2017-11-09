@@ -18,13 +18,13 @@ import javax.swing.text.JTextComponent;
  * @author Bozhidar Batsov
  */
 public class ContextMenuMouseListener extends MouseAdapter {
-    private JPopupMenu popup = new JPopupMenu();
+    private final JPopupMenu popup = new JPopupMenu();
 
-    private Action cutAction;
-    private Action copyAction;
-    private Action pasteAction;
-    private Action undoAction;
-    private Action selectAllAction;
+    private final Action cutAction;
+    private final Action copyAction;
+    private final Action pasteAction;
+    private final Action undoAction;
+    private final Action selectAllAction;
 
     private JTextComponent textComponent;
     private String savedString = "";

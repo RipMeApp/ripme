@@ -16,14 +16,14 @@ public class RipStatusMessage {
         COMPLETED_BYTES("Completed bytes"),
         RIP_ERRORED("Rip Errored");
 
-        String value;
+        final String value;
         STATUS(String value) {
             this.value = value;
         }
     }
 
-    private STATUS status;
-    private Object object;
+    private final STATUS status;
+    private final Object object;
 
     public RipStatusMessage(STATUS status, Object object) {
         this.status = status;

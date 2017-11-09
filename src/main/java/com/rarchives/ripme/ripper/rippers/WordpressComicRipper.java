@@ -34,7 +34,7 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
     // http://tnbtu.com/comic/01-00/
     // http://shipinbottle.pepsaga.com/?p=281
 
-    private static List<String> explicit_domains = Arrays.asList(
+    private static final List<String> explicit_domains = Arrays.asList(
         "www.totempole666.com",
         "buttsmithy.com",
         "themonsterunderthebed.net",

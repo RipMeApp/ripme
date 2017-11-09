@@ -23,7 +23,7 @@ public class ImagebamRipper extends AbstractHTMLRipper {
     private Document albumDoc = null;
 
     // Thread pool for finding direct image links from "image" pages (html)
-    private DownloadThreadPool imagebamThreadPool = new DownloadThreadPool("imagebam");
+    private final DownloadThreadPool imagebamThreadPool = new DownloadThreadPool("imagebam");
     @Override
     public DownloadThreadPool getThreadPool() {
         return imagebamThreadPool;
@@ -121,8 +121,8 @@ public class ImagebamRipper extends AbstractHTMLRipper {
      * Handles case when site has IP-banned the user.
      */
     private class ImagebamImageThread extends Thread {
-        private URL url;
-        private int index;
+        private final URL url;
+        private final int index;
 
         ImagebamImageThread(URL url, int index) {
             super();

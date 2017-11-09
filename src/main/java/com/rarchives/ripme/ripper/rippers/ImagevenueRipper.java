@@ -20,7 +20,7 @@ import com.rarchives.ripme.utils.Utils;
 public class ImagevenueRipper extends AbstractHTMLRipper {
 
     // Thread pool for finding direct image links from "image" pages (html)
-    private DownloadThreadPool imagevenueThreadPool = new DownloadThreadPool("imagevenue");
+    private final DownloadThreadPool imagevenueThreadPool = new DownloadThreadPool("imagevenue");
     @Override
     public DownloadThreadPool getThreadPool() {
         return imagevenueThreadPool;
@@ -80,8 +80,8 @@ public class ImagevenueRipper extends AbstractHTMLRipper {
      * Handles case when site has IP-banned the user.
      */
     private class ImagevenueImageThread extends Thread {
-        private URL url;
-        private int index;
+        private final URL url;
+        private final int index;
 
         ImagevenueImageThread(URL url, int index) {
             super();

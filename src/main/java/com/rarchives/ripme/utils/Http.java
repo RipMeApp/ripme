@@ -26,7 +26,7 @@ public class Http {
     private static final Logger logger  = Logger.getLogger(AbstractRipper.class);
 
     private int retries;
-    private String url;
+    private final String url;
     private Connection connection;
 
     // Constructors

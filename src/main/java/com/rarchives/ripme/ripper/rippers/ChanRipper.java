@@ -18,7 +18,7 @@ import com.rarchives.ripme.utils.Http;
 import com.rarchives.ripme.utils.RipUtils;
 
 public class ChanRipper extends AbstractHTMLRipper {
-    private static List<ChanSite> explicit_domains = Arrays.asList(
+    private static final List<ChanSite> explicit_domains = Arrays.asList(
         new ChanSite(Arrays.asList("boards.4chan.org"),   Arrays.asList("4cdn.org", "is.4chan.org", "is2.4chan.org")),
         new ChanSite(Arrays.asList("archive.moe"),        Arrays.asList("data.archive.moe")),
         new ChanSite(Arrays.asList("4archive.org"),       Arrays.asList("imgur.com")),
@@ -26,7 +26,7 @@ public class ChanRipper extends AbstractHTMLRipper {
         new ChanSite(Arrays.asList("fgts.jp"),            Arrays.asList("dat.fgtsi.org"))
         );
 
-    private static List<String> url_piece_blacklist = Arrays.asList(
+    private static final List<String> url_piece_blacklist = Arrays.asList(
         "=http",
         "http://imgops.com/",
         "iqdb.org",
