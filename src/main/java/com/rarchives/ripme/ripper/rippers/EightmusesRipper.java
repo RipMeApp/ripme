@@ -24,8 +24,6 @@ public class EightmusesRipper extends AbstractHTMLRipper {
     // the map for storing the title of each album when downloading sub albums
     private Map<URL,String> urlTitles = new HashMap<>();
 
-    private Boolean rippingSubalbums = false;
-
     public EightmusesRipper(URL url) throws IOException {
         super(url);
     }
@@ -128,7 +126,6 @@ public class EightmusesRipper extends AbstractHTMLRipper {
                             addURLToDownload(imageUrl, getPrefix(prefix), albumTitle, this.url.toExternalForm(), cookies);
                             prefix = prefix + 1;
                         }
-                        rippingSubalbums = true;
                         imageURLs.addAll(subalbumImages);
                     } catch (IOException e) {
                         logger.warn("Error while loading subalbum " + subUrl, e);
