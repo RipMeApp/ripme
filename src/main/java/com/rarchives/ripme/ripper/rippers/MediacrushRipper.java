@@ -102,7 +102,7 @@ public class MediacrushRipper extends AbstractJSONRipper {
                 URL javaUrl = new URL("https://www.java.com/en/download/");
                 try {
                     Desktop.getDesktop().browse(javaUrl.toURI());
-                } catch (URISyntaxException use) { }
+                } catch (URISyntaxException ignored) { }
             }
             throw new IOException("Cannot rip due to limitations in Java installation, consider upgrading Java", re.getCause());
         }

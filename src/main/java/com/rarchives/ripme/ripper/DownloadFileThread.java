@@ -163,10 +163,10 @@ class DownloadFileThread extends Thread {
                 // Close any open streams
                 try {
                     if (bis != null) { bis.close(); }
-                } catch (IOException e) { }
+                } catch (IOException ignored) { }
                 try {
                     if (fos != null) { fos.close(); }
-                } catch (IOException e) { }
+                } catch (IOException ignored) { }
             }
             if (tries > this.retries) {
                 logger.error("[!] Exceeded maximum retries (" + this.retries + ") for URL " + url);

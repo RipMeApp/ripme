@@ -407,7 +407,7 @@ public class Utils {
         logger.info("Loaded " + logFile);
         try {
             stream.close();
-        } catch (IOException e) { }
+        } catch (IOException ignored) { }
     }
 
     /**

@@ -234,7 +234,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         //If creating the tray icon fails, ignore it.
         try {
             setupTrayIcon();
-        } catch (Exception e) { }
+        } catch (Exception ignored) { }
 
         EmptyBorder emptyBorder = new EmptyBorder(5, 5, 5, 5);
         GridBagConstraints gbc = new GridBagConstraints();
@@ -310,7 +310,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
             optionQueue.setIcon(new ImageIcon(icon));
             icon = ImageIO.read(getClass().getClassLoader().getResource("gear.png"));
             optionConfiguration.setIcon(new ImageIcon(icon));
-        } catch (Exception e) { }
+        } catch (Exception ignored) { }
         gbc.gridx = 0; optionsPanel.add(optionLog, gbc);
         gbc.gridx = 1; optionsPanel.add(optionHistory, gbc);
         gbc.gridx = 2; optionsPanel.add(optionQueue, gbc);
@@ -500,7 +500,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
             configSaveDirLabel.setText(workingDir);
             configSaveDirLabel.setForeground(Color.BLUE);
             configSaveDirLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        } catch (Exception e) { }
+        } catch (Exception ignored) { }
         configSaveDirLabel.setToolTipText(configSaveDirLabel.getText());
         configSaveDirLabel.setHorizontalAlignment(JLabel.RIGHT);
         configSaveDirButton = new JButton("Select Save Directory...");
@@ -668,7 +668,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
             }
             try {
                 historyTableModel.fireTableDataChanged();
-            } catch (Exception e) { }
+            } catch (Exception ignored) { }
             saveHistory();
         });
         historyButtonClear.addActionListener(event -> {
@@ -676,7 +676,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
             HISTORY.clear();
             try {
                 historyTableModel.fireTableDataChanged();
-            } catch (Exception e) { }
+            } catch (Exception ignored) { }
             saveHistory();
         });
 
@@ -719,7 +719,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
                 Desktop desktop = Desktop.getDesktop();
                 try {
                     desktop.open(file);
-                } catch (Exception e1) { }
+                } catch (Exception ignored) { }
             }
         });
         configSaveDirButton.addActionListener(arg0 -> {
@@ -859,7 +859,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
                     about.append("</li>");
                 }
                 about.append("</ul>");
-            } catch (Exception e) { }
+            } catch (Exception ignored) { }
            about.append("<br>And download videos from video sites:");
             try {
                 List<String> rippers = Utils.getListOfVideoRippers();
@@ -874,7 +874,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
                     about.append("</li>");
                 }
                 about.append("</ul>");
-            } catch (Exception e) { }
+            } catch (Exception ignored) { }
 
             about.append("Do you want to visit the project homepage on Github?");
             about.append("</html>");
@@ -951,7 +951,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
             synchronized (this) {
                 sd.insertString(sd.getLength(), text + "\n", sas);
             }
-        } catch (BadLocationException e) { }
+        } catch (BadLocationException ignored) { }
 
         logText.setCaretPosition(sd.getLength());
     }
@@ -1185,7 +1185,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
                 entry.count = rsc.count;
                 try {
                     entry.title = ripper.getAlbumTitle(ripper.getURL());
-                } catch (MalformedURLException e) { }
+                } catch (MalformedURLException ignored) { }
                 HISTORY.add(entry);
                 historyTableModel.fireTableDataChanged();
             }
@@ -1204,7 +1204,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
             try {
                 Image folderIcon = ImageIO.read(getClass().getClassLoader().getResource("folder.png"));
                 openButton.setIcon(new ImageIcon(folderIcon));
-            } catch (Exception e) { }
+            } catch (Exception ignored) { }
             appendLog("Rip complete, saved to " + f.getAbsolutePath(), Color.GREEN);
             openButton.setActionCommand(f.toString());
             openButton.addActionListener(event -> {
