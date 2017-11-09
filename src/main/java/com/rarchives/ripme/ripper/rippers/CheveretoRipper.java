@@ -6,6 +6,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -90,7 +91,7 @@ public class CheveretoRipper extends AbstractHTMLRipper {
                 String nextPage = elem.attr("href");
                 // Some times this returns a empty string
                 // This for stops that
-                if (nextPage == "") {
+                if (Objects.equals(nextPage, "")) {
                     return null;
                 }
                 else {

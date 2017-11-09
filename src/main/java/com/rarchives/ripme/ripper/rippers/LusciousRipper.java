@@ -5,6 +5,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -50,7 +51,7 @@ public class LusciousRipper extends AbstractHTMLRipper {
         // This is here for pages with mp4s instead of images
         String video_image = "";
         video_image = page.select("div > video > source").attr("src");
-        if (video_image != "") {
+        if (!Objects.equals(video_image, "")) {
             urls.add(video_image);
         }
         return urls;
@@ -61,7 +62,7 @@ public class LusciousRipper extends AbstractHTMLRipper {
         // Find next page
         String nextPageUrl = "https://luscious.net" + doc.select("a.image_link[rel=next]").attr("href");
         // The more_like_this is here so we don't try to download the page that comes after the end of an album
-        if (nextPageUrl == "https://luscious.net" ||
+        if (Objects.equals(nextPageUrl, "https://luscious.net") ||
         nextPageUrl.contains("more_like_this")) {
             throw new IOException("No more pages");
         }

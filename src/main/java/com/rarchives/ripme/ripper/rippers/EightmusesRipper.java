@@ -3,11 +3,7 @@ package com.rarchives.ripme.ripper.rippers;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -97,7 +93,7 @@ public class EightmusesRipper extends AbstractHTMLRipper {
             for (Element subalbum : albumsList) {
                 String subUrl = subalbum.attr("href");
                 // This if is to skip ads which don't have a href
-                if (subUrl != "") {
+                if (!Objects.equals(subUrl, "")) {
                     subUrl = subUrl.replaceAll("\\.\\./", "");
                     if (subUrl.startsWith("//")) {
                         subUrl = "https:";
