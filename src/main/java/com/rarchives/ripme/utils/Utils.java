@@ -179,7 +179,6 @@ public class Utils {
 
     public static String getConfigDir() {
         if (portableMode()) {
-            logger.info("Running in portable mode");
             try {
                 return new File(".").getCanonicalPath();
             } catch (Exception e) {
