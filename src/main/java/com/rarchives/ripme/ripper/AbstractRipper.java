@@ -159,7 +159,7 @@ public abstract class AbstractRipper
     protected abstract boolean addURLToDownload(URL url, File saveAs, String referrer, Map<String, String> cookies);
 
     protected boolean addURLToDownload(URL url, String prefix, String subdirectory, String referrer, Map<String, String> cookies) {
-        if (Utils.getConfigBoolean("remember.url_history", true)) {
+        if (Utils.getConfigBoolean("remember.url_history", true) && !isThisATest()) {
             if (hasDownloadedURL(url.toExternalForm())) {
                 sendUpdate(STATUS.DOWNLOAD_WARN, "Already downloaded " + url.toExternalForm());
                 return false;
@@ -198,7 +198,7 @@ public abstract class AbstractRipper
             logger.info("[+] Creating directory: " + Utils.removeCWD(saveFileAs.getParent()));
             saveFileAs.getParentFile().mkdirs();
         }
-        if (Utils.getConfigBoolean("remember.url_history", true)) {
+        if (Utils.getConfigBoolean("remember.url_history", true) && !isThisATest()) {
             try {
                 writeDownloadedURL(url.toExternalForm() + "\n");
             } catch (IOException e) {
