@@ -16,7 +16,7 @@ import com.rarchives.ripme.utils.Http;
 public class HentaiCafeRipper extends AbstractHTMLRipper {
 
     public HentaiCafeRipper(URL url) throws IOException {
-    super(url);
+        super(url);
     }
 
         @Override
