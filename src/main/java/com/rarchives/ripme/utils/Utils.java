@@ -164,7 +164,28 @@ public class Utils {
                 + File.separator + "Library" + File.separator + "Application Support" + File.separator + "ripme";
     }
 
+    private static boolean portableMode() {
+        try {
+            File f = new File(new File(".").getCanonicalPath() + File.separator + configFile);
+            if(f.exists() && !f.isDirectory()) {
+                return true;
+            }
+        } catch (IOException e) {
+            return false;
+        }
+        return false;
+    }
+
+
     public static String getConfigDir() {
+        if (portableMode()) {
+            try {
+                return new File(".").getCanonicalPath();
+            } catch (Exception e) {
+                return ".";
+            }
+        }
+
         if (isWindows()) return getWindowsConfigDir();
         if (isMacOS()) return getMacOSConfigDir();
         if (isUnix()) return getUnixConfigDir();
