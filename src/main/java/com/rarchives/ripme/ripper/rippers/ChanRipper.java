@@ -68,8 +68,7 @@ public class ChanRipper extends AbstractHTMLRipper {
             if (subject != null) {
                 return getHost() + "_" + getGID(url) + "_" + subject;
             }
-            subject = doc.select("title").text();
-            return getHost() + "_" + getGID(url) + "_" + subject;
+            return doc.select("title").first().text();
         } catch (Exception e) {
             // Fall back to default album naming convention
             logger.warn("Failed to get album title from " + url, e);
