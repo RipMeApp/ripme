@@ -64,9 +64,11 @@ public class ChanRipper extends AbstractHTMLRipper {
         try {
             // Attempt to use album title as GID
             Document doc = getFirstPage();
-            String subject = doc.select(".post.op > .postinfo > .subject").first().text();
-            if (subject != null) {
+            try {
+                String subject = doc.select(".post.op > .postinfo > .subject").first().text();
                 return getHost() + "_" + getGID(url) + "_" + subject;
+            } catch (NullPointerException e) {
+                logger.warn("Failed to get thread title from " + url);
             }
             return doc.select("title").first().text();
         } catch (Exception e) {
