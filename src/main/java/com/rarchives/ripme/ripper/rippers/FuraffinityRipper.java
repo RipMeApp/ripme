@@ -55,15 +55,12 @@ public class FuraffinityRipper extends AbstractHTMLRipper {
     }
     @Override
     public boolean hasDescriptionSupport() {
-        return true;
+        return false;
     }
     @Override
     public Document getFirstPage() throws IOException {
-        if (cookies == null || cookies.size() == 0) {
-            login();
-        }
 
-        return Http.url(url).cookies(cookies).get();
+        return Http.url(url).get();
     }
 
     private void login() throws IOException {
@@ -84,7 +81,6 @@ public class FuraffinityRipper extends AbstractHTMLRipper {
 
         Response doLogin = Http.url(urlBase + "/login/?ref=" + url)
                                .referrer(urlBase + "/login/")
-                               .cookies(cookies)
                                .data(formData)
                                .method(Method.POST)
                                .response();
@@ -101,7 +97,7 @@ public class FuraffinityRipper extends AbstractHTMLRipper {
         String nextUrl = urlBase + nextPageUrl.first().attr("action");
 
         sleep(500);
-        Document nextPage = Http.url(nextUrl).cookies(cookies).get();
+        Document nextPage = Http.url(nextUrl).get();
 
         Elements hrefs = nextPage.select("div#no-images");
         if (hrefs.size() != 0) {
@@ -110,12 +106,21 @@ public class FuraffinityRipper extends AbstractHTMLRipper {
         return nextPage;
     }
 
+    private String getImageFromPost(String url) {
+        try {
+            logger.info("found url " + Http.url(url).get().select("meta[property=og:image]").attr("content"));
+            return Http.url(url).get().select("meta[property=og:image]").attr("content");
+        } catch (IOException e) {
+            return "";
+        }
+    }
+
     @Override
     public List<String> getURLsFromPage(Document page) {
         List<String> urls = new ArrayList<>();
         Elements urlElements = page.select("figure.t-image > b > u > a");
         for (Element e : urlElements) {
-            urls.add(urlBase + e.select("a").first().attr("href"));
+            urls.add(getImageFromPost(urlBase + e.select("a").first().attr("href")));
         }
         return urls;
     }
@@ -138,7 +143,6 @@ public class FuraffinityRipper extends AbstractHTMLRipper {
             // Fetch the image page
             Response resp = Http.url(page)
                     .referrer(this.url)
-                    .cookies(cookies)
                     .response();
             cookies.putAll(resp.cookies());
 
@@ -210,8 +214,7 @@ public class FuraffinityRipper extends AbstractHTMLRipper {
     }
     @Override
     public void downloadURL(URL url, int index) {
-        furaffinityThreadPool.addThread(new FuraffinityDocumentThread(url));
-        sleep(250);
+        addURLToDownload(url, getPrefix(index));
     }
 
     @Override
@@ -222,6 +225,7 @@ public class FuraffinityRipper extends AbstractHTMLRipper {
         if (m.matches()) {
             return m.group(1);
         }
+
         throw new MalformedURLException("Expected furaffinity.net URL format: "
                 + "www.furaffinity.net/gallery/username  - got " + url
                 + " instead");
@@ -235,37 +239,8 @@ public class FuraffinityRipper extends AbstractHTMLRipper {
             this.url = url;
         }
 
-        @Override
-        public void run() {
-            try {
-                Document doc = Http.url(url).cookies(cookies).get();
-                // Find image
-                Elements donwloadLink = doc.select("div.alt1 b a[href^=//d.facdn.net/]");
-                if (donwloadLink.size() == 0) {
-                    logger.warn("Could not download " + this.url);
-                    return;
-                }
-                String link = "http:" + donwloadLink.first().attr("href");
-                logger.info("Found URL " + link);
-                String[] fileNameSplit = link.split("/");
-                String fileName = fileNameSplit[fileNameSplit.length -1];
-                fileName = fileName.replaceAll("[0-9]*\\.", "");
-                String[] fileExtSplit = link.split("\\.");
-                String fileExt = fileExtSplit[fileExtSplit.length -1];
-                fileName = fileName.replaceAll(fileExt, "");
-                File saveAS;
-                fileName = fileName.replace("[0-9]*\\.", "");
-                saveAS = new File(
-                    workingDir.getCanonicalPath()
-                            + File.separator
-                            + fileName
-                            + "."
-                            + fileExt);
-                addURLToDownload(new URL(link),saveAS,"",cookies);
-            } catch (IOException e) {
-                logger.error("[!] Exception while loading/parsing " + this.url, e);
-            }
-        }
+
     }
+
 
 }
