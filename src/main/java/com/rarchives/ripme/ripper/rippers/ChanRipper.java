@@ -20,10 +20,8 @@ import com.rarchives.ripme.utils.RipUtils;
 public class ChanRipper extends AbstractHTMLRipper {
     private static List<ChanSite> explicit_domains = Arrays.asList(
         new ChanSite(Arrays.asList("boards.4chan.org"),   Arrays.asList("4cdn.org", "is.4chan.org", "is2.4chan.org")),
-        new ChanSite(Arrays.asList("archive.moe"),        Arrays.asList("data.archive.moe")),
         new ChanSite(Arrays.asList("4archive.org"),       Arrays.asList("imgur.com")),
-        new ChanSite(Arrays.asList("archive.4plebs.org"), Arrays.asList("img.4plebs.org")),
-        new ChanSite(Arrays.asList("fgts.jp"),            Arrays.asList("dat.fgtsi.org"))
+        new ChanSite(Arrays.asList("archive.4plebs.org"), Arrays.asList("img.4plebs.org"))
         );
 
     private static List<String> url_piece_blacklist = Arrays.asList(
@@ -67,7 +65,10 @@ public class ChanRipper extends AbstractHTMLRipper {
             // Attempt to use album title as GID
             Document doc = getFirstPage();
             String subject = doc.select(".post.op > .postinfo > .subject").first().text();
-            return getHost() + "_" + getGID(url) + "_" + subject;
+            if (subject != null) {
+                return getHost() + "_" + getGID(url) + "_" + subject;
+            }
+            return doc.select("title").first().text();
         } catch (Exception e) {
             // Fall back to default album naming convention
             logger.warn("Failed to get album title from " + url, e);
