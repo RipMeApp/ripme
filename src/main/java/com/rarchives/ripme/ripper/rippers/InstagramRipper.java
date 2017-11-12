@@ -14,14 +14,14 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.rarchives.ripme.ripper.AbstractJSONRipper;
+import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 import com.rarchives.ripme.utils.Http;
 
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
 
-public class InstagramRipper extends AbstractJSONRipper {
+public class InstagramRipper extends AbstractHTMLRipper {
 
     private String userID;
 
@@ -45,24 +45,36 @@ public class InstagramRipper extends AbstractJSONRipper {
 
     @Override
     public String getGID(URL url) throws MalformedURLException {
-        Pattern p = Pattern.compile("^https?://instagram.com/([^/]+)");
+        Pattern p = Pattern.compile("^https?://instagram.com/([^/]+)/?");
         Matcher m = p.matcher(url.toExternalForm());
+        if (m.matches()) {
+            return m.group(1);
+        }
+
+        p = Pattern.compile("^https?://www.instagram.com/([^/]+)/?");
+        m = p.matcher(url.toExternalForm());
+        if (m.matches()) {
+            return m.group(1);
+        }
+
+        p = Pattern.compile("^https?://www.instagram.com/p/[a-zA-Z0-9_-]+/\\?taken-by=([^/]+)/?");
+        m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             return m.group(1);
         }
         throw new MalformedURLException("Unable to find user in " + url);
     }
 
-    @Override
-    public URL sanitizeURL(URL url) throws MalformedURLException {
-        Pattern p = Pattern.compile("^.*instagram\\.com/([a-zA-Z0-9\\-_.]+).*$");
-        Matcher m = p.matcher(url.toExternalForm());
-        if (m.matches()) {
-            return new URL("http://instagram.com/" + m.group(1));
-        }
-
-        throw new MalformedURLException("Expected username in URL (instagram.com/username and not " + url);
-    }
+//    @Override
+//    public URL sanitizeURL(URL url) throws MalformedURLException {
+//        Pattern p = Pattern.compile("^.*instagram\\.com/([a-zA-Z0-9\\-_.]+).*$");
+//        Matcher m = p.matcher(url.toExternalForm());
+//        if (m.matches()) {
+//            return new URL("http://instagram.com/" + m.group(1));
+//        }
+//
+//        throw new MalformedURLException("Expected username in URL (instagram.com/username and not " + url);
+//    }
 
     private String getUserID(URL url) throws IOException {
 
@@ -72,12 +84,23 @@ public class InstagramRipper extends AbstractJSONRipper {
             return m.group(1);
         }
 
+        p = Pattern.compile("^https?://www.instagram.com/([^/]+)/?");
+        m = p.matcher(url.toExternalForm());
+        if (m.matches()) {
+            return m.group(1);
+        }
+        
+        p = Pattern.compile("^https?://(www.)?instagram.com/p/[a-zA-Z0-9_-]+/\\?taken-by=([^/]+)");
+        m = p.matcher(url.toExternalForm());
+        if (m.matches()) {
+            return m.group(1);
+        }
+
         throw new IOException("Unable to find userID at " + this.url);
     }
-    private JSONObject getJSONFromPage(String url) throws IOException {
+    private JSONObject getJSONFromPage(Document firstPage) throws IOException {
         String jsonText = "";
         try {
-            Document firstPage = Http.url(url).get();
             for (Element script : firstPage.select("script[type=text/javascript]")) {
                 if (script.data().contains("window._sharedData = ")) {
                     jsonText = script.data().replaceAll("window._sharedData = ", "");
@@ -86,14 +109,14 @@ public class InstagramRipper extends AbstractJSONRipper {
             }
             return new JSONObject(jsonText);
         } catch (JSONException e) {
-            throw new IOException("Could not get JSON from page " + url);
+            throw new IOException("Could not get JSON from page");
         }
     }
 
     @Override
-    public JSONObject getFirstPage() throws IOException {
+    public Document getFirstPage() throws IOException {
         userID = getUserID(url);
-        return getJSONFromPage("http://instagram.com/" + userID);
+        return Http.url(url).get();
     }
 
     private String getVideoFromPage(String videoID) {
@@ -133,43 +156,67 @@ public class InstagramRipper extends AbstractJSONRipper {
     }
 
     @Override
-    public List<String> getURLsFromJSON(JSONObject json) {
+    public List<String> getURLsFromPage(Document doc) {
         String nextPageID = "";
         List<String> imageURLs = new ArrayList<>();
-        JSONArray profilePage = json.getJSONObject("entry_data").getJSONArray("ProfilePage");
-        JSONArray datas = profilePage.getJSONObject(0).getJSONObject("user").getJSONObject("media").getJSONArray("nodes");
-        for (int i = 0; i < datas.length(); i++) {
-            JSONObject data = (JSONObject) datas.get(i);
-            Long epoch = data.getLong("date");
-            Instant instant = Instant.ofEpochSecond(epoch);
-            String image_date = DateTimeFormatter.ofPattern("yyyy_MM_dd_hh:mm_").format(ZonedDateTime.ofInstant(instant, ZoneOffset.UTC));
-            try {
-                if (!data.getBoolean("is_video")) {
-                    if (imageURLs.size() == 0) {
-                        // We add this one item to the array because either wise
-                        // the ripper will error out because we returned an empty array
-                        imageURLs.add(data.getString("thumbnail_src"));
-                    }
-                    addURLToDownload(new URL(getOriginalUrl(data.getString("thumbnail_src"))), image_date);
-                } else {
-                    addURLToDownload(new URL(getVideoFromPage(data.getString("code"))), image_date);
-                }
-            } catch (MalformedURLException e) {
-                return  imageURLs;
-            }
-            nextPageID = data.getString("id");
-
-
-            if (isThisATest()) {
-                break;
-            }
+        JSONObject json = new JSONObject();
+        try {
+            json = getJSONFromPage(doc);
+        } catch (IOException e) {
+            logger.warn("Unable to exact json from page");
         }
-        if (!nextPageID.equals("") && !isThisATest()) {
-            try {
-                // Sleep for a while to avoid a ban
-                sleep(2500);
-                getURLsFromJSON(getJSONFromPage("https://www.instagram.com/" + userID + "/?max_id=" + nextPageID));
-            } catch (IOException e){ return imageURLs;}
+
+        Pattern p = Pattern.compile("^.*instagram\\.com/([a-zA-Z0-9\\-_.]+)/?");
+        Matcher m = p.matcher(url.toExternalForm());
+        if (m.matches()) {
+            JSONArray profilePage = json.getJSONObject("entry_data").getJSONArray("ProfilePage");
+            JSONArray datas = profilePage.getJSONObject(0).getJSONObject("user").getJSONObject("media").getJSONArray("nodes");
+            for (int i = 0; i < datas.length(); i++) {
+                JSONObject data = (JSONObject) datas.get(i);
+                Long epoch = data.getLong("date");
+                Instant instant = Instant.ofEpochSecond(epoch);
+                String image_date = DateTimeFormatter.ofPattern("yyyy_MM_dd_hh:mm_").format(ZonedDateTime.ofInstant(instant, ZoneOffset.UTC));
+                try {
+                    if (!data.getBoolean("is_video")) {
+                        if (imageURLs.size() == 0) {
+                            // We add this one item to the array because either wise
+                            // the ripper will error out because we returned an empty array
+                            imageURLs.add(data.getString("thumbnail_src"));
+                        }
+                        addURLToDownload(new URL(getOriginalUrl(data.getString("thumbnail_src"))), image_date);
+                    } else {
+                        addURLToDownload(new URL(getVideoFromPage(data.getString("code"))), image_date);
+                    }
+                } catch (MalformedURLException e) {
+                    return imageURLs;
+                }
+                nextPageID = data.getString("id");
+
+
+                if (isThisATest()) {
+                    break;
+                }
+            }
+            // Rip the next page
+            if (!nextPageID.equals("") && !isThisATest()) {
+                try {
+                    // Sleep for a while to avoid a ban
+                    sleep(2500);
+                    getURLsFromPage(Http.url("https://www.instagram.com/" + userID + "/?max_id=" + nextPageID).get());
+                } catch (IOException e) {
+                    return imageURLs;
+                }
+            }
+        } else { // We're ripping from a single page
+            if (!doc.select("meta[property=og:video]").attr("content").equals("")) {
+                String videoURL = doc.select("meta[property=og:video]").attr("content");
+                // We're ripping a page with a video on it
+                imageURLs.add(videoURL);
+            } else {
+                // We're ripping a picture
+                imageURLs.add(doc.select("meta[property=og:image]").attr("content"));
+            }
+
         }
         return imageURLs;
     }
