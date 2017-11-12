@@ -3,6 +3,8 @@ package com.rarchives.ripme.ripper.rippers;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.time.*;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -17,6 +19,7 @@ import com.rarchives.ripme.utils.Http;
 
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+
 
 public class InstagramRipper extends AbstractJSONRipper {
 
@@ -137,6 +140,9 @@ public class InstagramRipper extends AbstractJSONRipper {
         JSONArray datas = profilePage.getJSONObject(0).getJSONObject("user").getJSONObject("media").getJSONArray("nodes");
         for (int i = 0; i < datas.length(); i++) {
             JSONObject data = (JSONObject) datas.get(i);
+            Long epoch = data.getLong("date");
+            Instant instant = Instant.ofEpochSecond(epoch);
+            String image_date = DateTimeFormatter.ofPattern("yyyy_MM_dd_hh:mm_").format(ZonedDateTime.ofInstant(instant, ZoneOffset.UTC));
             try {
                 if (!data.getBoolean("is_video")) {
                     if (imageURLs.size() == 0) {
@@ -144,9 +150,9 @@ public class InstagramRipper extends AbstractJSONRipper {
                         // the ripper will error out because we returned an empty array
                         imageURLs.add(data.getString("thumbnail_src"));
                     }
-                    addURLToDownload(new URL(getOriginalUrl(data.getString("thumbnail_src"))));
+                    addURLToDownload(new URL(getOriginalUrl(data.getString("thumbnail_src"))), image_date);
                 } else {
-                    addURLToDownload(new URL(getVideoFromPage(data.getString("code"))));
+                    addURLToDownload(new URL(getVideoFromPage(data.getString("code"))), image_date);
                 }
             } catch (MalformedURLException e) {
                 return  imageURLs;
