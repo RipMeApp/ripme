@@ -65,39 +65,6 @@ public class InstagramRipper extends AbstractHTMLRipper {
         throw new MalformedURLException("Unable to find user in " + url);
     }
 
-//    @Override
-//    public URL sanitizeURL(URL url) throws MalformedURLException {
-//        Pattern p = Pattern.compile("^.*instagram\\.com/([a-zA-Z0-9\\-_.]+).*$");
-//        Matcher m = p.matcher(url.toExternalForm());
-//        if (m.matches()) {
-//            return new URL("http://instagram.com/" + m.group(1));
-//        }
-//
-//        throw new MalformedURLException("Expected username in URL (instagram.com/username and not " + url);
-//    }
-
-    private String getUserID(URL url) throws IOException {
-
-        Pattern p = Pattern.compile("^https?://instagram\\.com/([^/]+)");
-        Matcher m = p.matcher(url.toExternalForm());
-        if (m.matches()) {
-            return m.group(1);
-        }
-
-        p = Pattern.compile("^https?://www.instagram.com/([^/]+)/?");
-        m = p.matcher(url.toExternalForm());
-        if (m.matches()) {
-            return m.group(1);
-        }
-        
-        p = Pattern.compile("^https?://(www.)?instagram.com/p/[a-zA-Z0-9_-]+/\\?taken-by=([^/]+)");
-        m = p.matcher(url.toExternalForm());
-        if (m.matches()) {
-            return m.group(1);
-        }
-
-        throw new IOException("Unable to find userID at " + this.url);
-    }
     private JSONObject getJSONFromPage(Document firstPage) throws IOException {
         String jsonText = "";
         try {
@@ -115,7 +82,7 @@ public class InstagramRipper extends AbstractHTMLRipper {
 
     @Override
     public Document getFirstPage() throws IOException {
-        userID = getUserID(url);
+        userID = getGID(url);
         return Http.url(url).get();
     }
 
@@ -131,6 +98,7 @@ public class InstagramRipper extends AbstractHTMLRipper {
 
     private String getOriginalUrl(String imageURL) {
         imageURL = imageURL.replaceAll("scontent.cdninstagram.com/hphotos-", "igcdn-photos-d-a.akamaihd.net/hphotos-ak-");
+        // TODO replace this with a single regex
         imageURL = imageURL.replaceAll("p150x150/", "");
         imageURL = imageURL.replaceAll("p320x320/", "");
         imageURL = imageURL.replaceAll("p480x480/", "");
