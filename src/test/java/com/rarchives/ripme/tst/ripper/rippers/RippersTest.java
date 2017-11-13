@@ -19,6 +19,10 @@ public class RippersTest extends TestCase {
 
     private final Logger logger = Logger.getLogger(RippersTest.class);
 
+    public void testStub() {
+        assertTrue("RippersTest must contain at lease one test.", true);
+    }
+
     void testRipper(AbstractRipper ripper) {
         try {
             // Turn on Debug logging

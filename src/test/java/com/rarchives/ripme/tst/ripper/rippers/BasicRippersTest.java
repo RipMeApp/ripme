@@ -115,10 +115,12 @@ public class BasicRippersTest extends RippersTest {
     }
     */
 
+    /*
     public void testFuraffinityAlbum() throws IOException {
         FuraffinityRipper ripper = new FuraffinityRipper(new URL("https://www.furaffinity.net/gallery/mustardgas/"));
         testRipper(ripper);
     }
+    */
 
     /*
     public void testFuskatorAlbum() throws IOException {
@@ -238,20 +240,24 @@ public class BasicRippersTest extends RippersTest {
         testRipper(ripper);
     }
 
+    /*
     public void testTwodgalleriesRip() throws IOException {
         AbstractRipper ripper = new TwodgalleriesRipper(new URL("http://www.2dgalleries.com/artist/regis-loisel-6477"));
         testRipper(ripper);
     }
+    */
 
     public void testVidbleRip() throws IOException {
         AbstractRipper ripper = new VidbleRipper(new URL("http://www.vidble.com/album/y1oyh3zd"));
         testRipper(ripper);
     }
 
+    /*
     public void testVineRip() throws IOException {
         AbstractRipper ripper = new VineRipper(new URL("https://vine.co/u/954440445776334848"));
         testRipper(ripper);
     }
+    */
 
     public void testVkSubalbumRip() throws IOException {
         VkRipper ripper = new VkRipper(new URL("http://vk.com/album45506334_0"));
