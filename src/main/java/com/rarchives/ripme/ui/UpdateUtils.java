@@ -111,7 +111,7 @@ public class UpdateUtils {
         int[] oldVersions = versionStringToInt(getThisJarVersion());
         int[] newVersions = versionStringToInt(latestVersion);
         if (oldVersions.length < newVersions.length) {
-            System.err.println("Calculated: " + getThisJarVersion() + " < " + latestVersion);
+            logger.error("Calculated: " + getThisJarVersion() + " < " + latestVersion);
             return true;
         }
 
