@@ -45,6 +45,7 @@ public class VideoRippersTest extends RippersTest {
         }
     }
 
+    /*
     public void testPornhubRipper() throws IOException {
         List<URL> contentURLs = new ArrayList<>();
         contentURLs.add(new URL("http://www.pornhub.com/view_video.php?viewkey=993166542"));
@@ -53,7 +54,9 @@ public class VideoRippersTest extends RippersTest {
             videoTestHelper(ripper);
         }
     }
+    */
 
+    /*
     public void testVineRipper() throws IOException {
         List<URL> contentURLs = new ArrayList<>();
         contentURLs.add(new URL("https://vine.co/v/hiqQrP0eUZx"));
@@ -62,6 +65,7 @@ public class VideoRippersTest extends RippersTest {
             videoTestHelper(ripper);
         }
     }
+    */
 
     public void testYoupornRipper() throws IOException {
         List<URL> contentURLs = new ArrayList<>();
