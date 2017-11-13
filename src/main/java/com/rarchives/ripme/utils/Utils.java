@@ -522,4 +522,26 @@ public class Utils {
 
         return null;
     }
+
+    private static HashMap<String, HashMap<String, String>> cookieCache;
+    static {
+        cookieCache = new HashMap<String, HashMap<String, String>>();
+    }
+
+    public static Map<String, String> getCookies(String host) {
+        HashMap<String, String> domainCookies = cookieCache.get(host);
+        if (domainCookies == null) {
+            domainCookies = new HashMap<String, String>();
+            String cookiesConfig = getConfigString("cookies." + host, "");
+            for (String pair : cookiesConfig.split(" ")) {
+                pair = pair.trim();
+                if (pair.contains("=")) {
+                    String[] pieces = pair.split("=", 2);
+                    domainCookies.put(pieces[0], pieces[1]);
+                }
+            }
+            cookieCache.put(host, domainCookies);
+        }
+        return domainCookies;
+    }
 }
