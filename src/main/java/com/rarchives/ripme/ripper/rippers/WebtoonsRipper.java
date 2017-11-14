@@ -63,7 +63,7 @@ public class WebtoonsRipper extends AbstractHTMLRipper {
         if (mat.matches()) {
             return mat.group(1);
         }
-        throw new MalformedURLException("You should never see this error message");
+        throw new MalformedURLException("Expected URL format: http://www.webtoons.com/LANG/CAT/TITLE/VOL/, got: " + url);
     }
 
 
