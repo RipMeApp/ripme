@@ -28,7 +28,6 @@ public abstract class AbstractRipper
                 implements RipperInterface, Runnable {
 
     protected static final Logger logger = Logger.getLogger(AbstractRipper.class);
-    private String URLHistoryFile = new String();
 
     public static final String USER_AGENT =
             "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:36.0) Gecko/20100101 Firefox/36.0";
@@ -59,7 +58,7 @@ public abstract class AbstractRipper
         }
     }
 
-    private void writeDownloadedURL(String downloadedURL) throws IOException {
+    private void writeDownloadedURL(String downloadedURL, String URLHistoryFile) throws IOException {
         BufferedWriter bw = null;
         FileWriter fw = null;
         try {
@@ -85,7 +84,7 @@ public abstract class AbstractRipper
         }
     }
 
-    private boolean hasDownloadedURL(String url) {
+    private boolean hasDownloadedURL(String url, String URLHistoryFile) {
         File file = new File(URLHistoryFile);
         try {
             Scanner scanner = new Scanner(file);
@@ -159,9 +158,14 @@ public abstract class AbstractRipper
     protected abstract boolean addURLToDownload(URL url, File saveAs, String referrer, Map<String, String> cookies);
 
     protected boolean addURLToDownload(URL url, String prefix, String subdirectory, String referrer, Map<String, String> cookies) {
-        URLHistoryFile = Utils.getURLHistoryFile(getURL().toExternalForm());
         if (Utils.getConfigBoolean("remember.url_history", true)) {
-            if (hasDownloadedURL(url.toExternalForm())) {
+            if (hasDownloadedURL(url.toExternalForm(), Utils.getURLHistoryFile(getURL().toExternalForm()))) {
+                sendUpdate(STATUS.DOWNLOAD_WARN, "Already downloaded " + url.toExternalForm());
+                return false;
+            }
+        }
+        if (Utils.getConfigBoolean("remember.global_url_history", false)) {
+            if (hasDownloadedURL(url.toExternalForm(), Utils.getGlobalURLHistoryFile())) {
                 sendUpdate(STATUS.DOWNLOAD_WARN, "Already downloaded " + url.toExternalForm());
                 return false;
             }
@@ -201,7 +205,14 @@ public abstract class AbstractRipper
         }
         if (Utils.getConfigBoolean("remember.url_history", true)) {
             try {
-                writeDownloadedURL(url.toExternalForm() + "\n");
+                writeDownloadedURL(url.toExternalForm() + "\n", Utils.getURLHistoryFile(getURL().toExternalForm()));
+            } catch (IOException e) {
+                logger.debug("Unable to write URL history file");
+            }
+        }
+        if (Utils.getConfigBoolean("remember.global_url_history", false)) {
+            try {
+                writeDownloadedURL(url.toExternalForm() + "\n", Utils.getGlobalURLHistoryFile());
             } catch (IOException e) {
                 logger.debug("Unable to write URL history file");
             }
