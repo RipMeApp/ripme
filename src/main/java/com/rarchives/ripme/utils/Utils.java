@@ -176,14 +176,44 @@ public class Utils {
         }
     }
     // Delete the url history file
-    public static void clearURLHistory() {
-        File file = new File(getURLHistoryFile());
-        file.delete();
+//    public static void clearURLHistory() {
+//        File file = new File(getURLHistoryFile());
+//        file.delete();
+//    }
+
+    private static boolean historyDirExists() {
+        File historyDir = new File(getConfigDir() + File.separator + "history_files");
+        if (historyDir.exists() && historyDir.isDirectory()) {
+            return true;
+        }
+        return false;
     }
 
     // Return the path of the url history file
-    public static String getURLHistoryFile() {
-        return getConfigDir() + File.separator + "url_history.txt";
+    public static String getURLHistoryFile(String url) {
+        url = url.replaceAll("https?","");
+        url = url.replaceAll("//","");
+        url = url.replaceAll("/","_");
+        url = url.replaceAll("[+.^:,]","");
+        final String historyFilePath = getConfigDir() + File.separator + "history_files" + File.separator + url + "_history.txt";
+        if (historyDirExists()) {
+            return historyFilePath;
+        } else {
+            File historyDir = new File(getConfigDir() + File.separator + "history_files");
+            historyDir.mkdir();
+        }
+        return historyFilePath;
+    }
+
+    public static String getGlobalURLHistoryFile() {
+        final String historyFilePath = getConfigDir() + File.separator + "history_files" + File.separator + "url_history.txt";
+        if (historyDirExists()) {
+            return historyFilePath;
+        } else {
+            File historyDir = new File(getConfigDir() + File.separator + "history_files");
+            historyDir.mkdir();
+        }
+        return historyFilePath;
     }
 
     private static String getConfigFilePath() {

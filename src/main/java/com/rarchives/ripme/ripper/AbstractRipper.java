@@ -28,7 +28,7 @@ public abstract class AbstractRipper
                 implements RipperInterface, Runnable {
 
     protected static final Logger logger = Logger.getLogger(AbstractRipper.class);
-    private final String URLHistoryFile = Utils.getURLHistoryFile();
+    private String URLHistoryFile = new String();
 
     public static final String USER_AGENT =
             "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:36.0) Gecko/20100101 Firefox/36.0";
@@ -159,6 +159,7 @@ public abstract class AbstractRipper
     protected abstract boolean addURLToDownload(URL url, File saveAs, String referrer, Map<String, String> cookies);
 
     protected boolean addURLToDownload(URL url, String prefix, String subdirectory, String referrer, Map<String, String> cookies) {
+        URLHistoryFile = Utils.getURLHistoryFile(getURL().toExternalForm());
         if (Utils.getConfigBoolean("remember.url_history", true)) {
             if (hasDownloadedURL(url.toExternalForm())) {
                 sendUpdate(STATUS.DOWNLOAD_WARN, "Already downloaded " + url.toExternalForm());
