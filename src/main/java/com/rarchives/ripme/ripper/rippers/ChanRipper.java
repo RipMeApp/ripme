@@ -70,12 +70,12 @@ public class ChanRipper extends AbstractHTMLRipper {
             } catch (NullPointerException e) {
                 logger.warn("Failed to get thread title from " + url);
             }
-            return doc.select("title").first().text();
         } catch (Exception e) {
             // Fall back to default album naming convention
             logger.warn("Failed to get album title from " + url, e);
         }
-        return super.getAlbumTitle(url);
+        // Fall back on the GID
+        return getHost() + "_" + getGID(url);
     }
 
     @Override
@@ -211,6 +211,6 @@ public class ChanRipper extends AbstractHTMLRipper {
 
     @Override
     public void downloadURL(URL url, int index) {
-        addURLToDownload(url, getPrefix(index), "", this.url.toString(), null);
+        addURLToDownload(url, getPrefix(index));
     }
 }
