@@ -158,13 +158,13 @@ public abstract class AbstractRipper
     protected abstract boolean addURLToDownload(URL url, File saveAs, String referrer, Map<String, String> cookies);
 
     protected boolean addURLToDownload(URL url, String prefix, String subdirectory, String referrer, Map<String, String> cookies) {
-        if (Utils.getConfigBoolean("remember.url_history", true)) {
+        if (Utils.getConfigBoolean("remember.url_history", true) && !isThisATest()) {
             if (hasDownloadedURL(url.toExternalForm(), Utils.getURLHistoryFile(getURL().toExternalForm()))) {
                 sendUpdate(STATUS.DOWNLOAD_WARN, "Already downloaded " + url.toExternalForm());
                 return false;
             }
         }
-        if (Utils.getConfigBoolean("remember.global_url_history", false)) {
+        if (Utils.getConfigBoolean("remember.global_url_history", false) && !isThisATest()) {
             if (hasDownloadedURL(url.toExternalForm(), Utils.getGlobalURLHistoryFile())) {
                 sendUpdate(STATUS.DOWNLOAD_WARN, "Already downloaded " + url.toExternalForm());
                 return false;
@@ -203,14 +203,14 @@ public abstract class AbstractRipper
             logger.info("[+] Creating directory: " + Utils.removeCWD(saveFileAs.getParent()));
             saveFileAs.getParentFile().mkdirs();
         }
-        if (Utils.getConfigBoolean("remember.url_history", true)) {
+        if (Utils.getConfigBoolean("remember.url_history", true) && !isThisATest()) {
             try {
                 writeDownloadedURL(url.toExternalForm() + "\n", Utils.getURLHistoryFile(getURL().toExternalForm()));
             } catch (IOException e) {
                 logger.debug("Unable to write URL history file");
             }
         }
-        if (Utils.getConfigBoolean("remember.global_url_history", false)) {
+        if (Utils.getConfigBoolean("remember.global_url_history", false) && !isThisATest()) {
             try {
                 writeDownloadedURL(url.toExternalForm() + "\n", Utils.getGlobalURLHistoryFile());
             } catch (IOException e) {
