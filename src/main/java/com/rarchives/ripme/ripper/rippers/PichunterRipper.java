@@ -32,7 +32,7 @@ public class PichunterRipper extends AbstractHTMLRipper {
 
     @Override
     public String getGID(URL url) throws MalformedURLException {
-        Pattern p = Pattern.compile("https?://www.pichunter.com/(tags|models|sites)/([a-zA-Z0-9_-]+)/?");
+        Pattern p = Pattern.compile("https?://www.pichunter.com/(|tags|models|sites)/([a-zA-Z0-9_-]+)/?");
         Matcher m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             return m.group(2);
@@ -41,6 +41,11 @@ public class PichunterRipper extends AbstractHTMLRipper {
         m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             return m.group(2);
+        }
+        p = Pattern.compile("https?://www.pichunter.com/tags/all/([a-zA-Z0-9_-]+)/\\d+/?");
+        m = p.matcher(url.toExternalForm());
+        if (m.matches()) {
+            return m.group(1);
         }
         throw new MalformedURLException("Expected pichunter URL format: " +
                 "pichunter.com/(tags|models|sites)/Name/ - got " + url + " instead");
