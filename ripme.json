@@ -1,6 +1,7 @@
 {
-    "latestVersion": "1.6.10",
+    "latestVersion": "1.6.11",
     "changeList": [
+        "1.6.11: dded pichunter.com ripper; Changed instagram output name format; added tehyiffgallery ripper; Fixed xchan ripper; Fixed regession in chanRipper folder naming",
         "1.6.10: Added viewcomic ripper; Fixed webtoons malformed url error message; Fixed chan ripper thread title; Fixed Modelmayhem ripper",
         "1.6.9: Added support for imgur /t/ albums; Added portable mode; Unit tests no longer fail if run twice; Formating fixes",
         "1.6.8: code clean up; ripme can now remeber and skip already downloaded images",
