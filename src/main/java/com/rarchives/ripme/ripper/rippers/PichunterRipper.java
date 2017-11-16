@@ -37,6 +37,11 @@ public class PichunterRipper extends AbstractHTMLRipper {
         if (m.matches()) {
             return m.group(2);
         }
+        p = Pattern.compile("https?://www.pichunter.com/(tags|models|sites)/([a-zA-Z0-9_-]+)/photos/\\d+/?");
+        m = p.matcher(url.toExternalForm());
+        if (m.matches()) {
+            return m.group(2);
+        }
         throw new MalformedURLException("Expected pichunter URL format: " +
                 "pichunter.com/(tags|models|sites)/Name/ - got " + url + " instead");
     }
@@ -51,11 +56,13 @@ public class PichunterRipper extends AbstractHTMLRipper {
     public Document getNextPage(Document doc) throws IOException {
         // We use comic-nav-next to the find the next page
         Element elem = doc.select("div.paperSpacings > ul > li.arrow").last();
-
-        String nextPage = elem.select("a").attr("href");
-        // Some times this returns a empty string
-        // This for stops that
-        return Http.url("http://www.pichunter.com" + nextPage).get();
+        if (elem != null) {
+            String nextPage = elem.select("a").attr("href");
+            // Some times this returns a empty string
+            // This for stops that
+            return Http.url("http://www.pichunter.com" + nextPage).get();
+        }
+        throw new IOException("No more pages");
     }
 
     @Override
