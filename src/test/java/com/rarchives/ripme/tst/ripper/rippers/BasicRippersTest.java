@@ -28,6 +28,7 @@ import com.rarchives.ripme.ripper.rippers.VidbleRipper;
 import com.rarchives.ripme.ripper.rippers.VineRipper;
 import com.rarchives.ripme.ripper.rippers.VkRipper;
 import com.rarchives.ripme.ripper.rippers.XhamsterRipper;
+import com.rarchives.ripme.ripper.rippers.PichunterRipper;
 
 /**
  * Simple test cases for various rippers.
@@ -189,6 +190,11 @@ public class BasicRippersTest extends RippersTest {
 
     public void testModelmayhemRip() throws IOException {
         AbstractRipper ripper = new ModelmayhemRipper(new URL("https://www.modelmayhem.com/portfolio/520206/viewall"));
+        testRipper(ripper);
+    }
+
+    public void testPichunterRip() throws IOException {
+        AbstractRipper ripper = new PichunterRipper(new URL("http://www.pichunter.com/tags/all/Sex/14"));
         testRipper(ripper);
     }
 
