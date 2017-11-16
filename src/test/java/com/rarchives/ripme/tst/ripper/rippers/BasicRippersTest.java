@@ -194,7 +194,7 @@ public class BasicRippersTest extends RippersTest {
     }
 
     public void testPichunterRip() throws IOException {
-        AbstractRipper ripper = new PichunterRipper(new URL("http://www.pichunter.com/tags/all/Sex/14"));
+        AbstractRipper ripper = new PichunterRipper(new URL("https://www.pichunter.com/models/Madison_Ivy"));
         testRipper(ripper);
     }
 
