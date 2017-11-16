@@ -278,8 +278,8 @@ public class BasicRippersTest extends RippersTest {
         testRipper(ripper);
     }
 
-    public void testXhamsterAlbums() throws IOException {
-        XhamsterRipper ripper = new XhamsterRipper(new URL("https://xhamster.com/photos/gallery/sexy-preggo-girls-9026608"));
-        testRipper(ripper);
-    }
+    // public void testXhamsterAlbums() throws IOException {
+    //     XhamsterRipper ripper = new XhamsterRipper(new URL("https://xhamster.com/photos/gallery/sexy-preggo-girls-9026608"));
+    //     testRipper(ripper);
+    // }
 }
