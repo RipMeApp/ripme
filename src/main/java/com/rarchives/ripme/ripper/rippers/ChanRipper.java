@@ -70,12 +70,12 @@ public class ChanRipper extends AbstractHTMLRipper {
             } catch (NullPointerException e) {
                 logger.warn("Failed to get thread title from " + url);
             }
-            return doc.select("title").first().text();
         } catch (Exception e) {
             // Fall back to default album naming convention
             logger.warn("Failed to get album title from " + url, e);
         }
-        return super.getAlbumTitle(url);
+        // Fall back on the GID
+        return getHost() + "_" + getGID(url);
     }
 
     @Override
@@ -113,6 +113,12 @@ public class ChanRipper extends AbstractHTMLRipper {
 
             // Drawchan is weird, has drawchan.net/dc/dw/res/####.html
             p = Pattern.compile("^.*\\.[a-z]{1,3}/[a-zA-Z0-9]+/[a-zA-Z0-9]+/res/([0-9]+)(\\.html|\\.php)?.*$");
+            m = p.matcher(u);
+            if (m.matches()) {
+                return m.group(1);
+            }
+            // xchan
+            p = Pattern.compile("^.*\\.[a-z]{1,3}/board/[a-zA-Z0-9]+/thread/([0-9]+)/?.*$");
             m = p.matcher(u);
             if (m.matches()) {
                 return m.group(1);
@@ -211,6 +217,6 @@ public class ChanRipper extends AbstractHTMLRipper {
 
     @Override
     public void downloadURL(URL url, int index) {
-        addURLToDownload(url, getPrefix(index), "", this.url.toString(), null);
+        addURLToDownload(url, getPrefix(index));
     }
 }
