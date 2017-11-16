@@ -28,6 +28,7 @@ import com.rarchives.ripme.ripper.rippers.VidbleRipper;
 import com.rarchives.ripme.ripper.rippers.VineRipper;
 import com.rarchives.ripme.ripper.rippers.VkRipper;
 import com.rarchives.ripme.ripper.rippers.XhamsterRipper;
+import com.rarchives.ripme.ripper.rippers.TheyiffgalleryRipper;
 
 /**
  * Simple test cases for various rippers.
@@ -211,6 +212,11 @@ public class BasicRippersTest extends RippersTest {
 
     public void testPornhubRip() throws IOException {
         AbstractRipper ripper = new PornhubRipper(new URL("https://www.pornhub.com/album/15680522"));
+        testRipper(ripper);
+    }
+
+    public void testTheyiffgallery() throws IOException {
+        AbstractRipper ripper = new TheyiffgalleryRipper(new URL("https://theyiffgallery.com/index?/category/4303"));
         testRipper(ripper);
     }
 
