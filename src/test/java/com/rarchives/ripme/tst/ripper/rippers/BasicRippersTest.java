@@ -194,8 +194,13 @@ public class BasicRippersTest extends RippersTest {
     }
 
     public void testPichunterRip() throws IOException {
+        // A non-photoset
         AbstractRipper ripper = new PichunterRipper(new URL("https://www.pichunter.com/models/Madison_Ivy"));
         testRipper(ripper);
+        // a photo set
+        ripper = new PichunterRipper(new URL("http://www.pichunter.com/gallery/3270642/Its_not_only_those_who"));
+        testRipper(ripper);
+
     }
 
     public void testMotherlessAlbumRip() throws IOException {
