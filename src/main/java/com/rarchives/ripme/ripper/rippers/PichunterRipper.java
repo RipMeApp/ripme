@@ -47,8 +47,23 @@ public class PichunterRipper extends AbstractHTMLRipper {
         if (m.matches()) {
             return m.group(1);
         }
+
+        p = Pattern.compile("https?://www.pichunter.com/gallery/\\d+/([a-zA-Z0-9_-]+)/?");
+        m = p.matcher(url.toExternalForm());
+        if (m.matches()) {
+            return m.group(1);
+        }
         throw new MalformedURLException("Expected pichunter URL format: " +
                 "pichunter.com/(tags|models|sites)/Name/ - got " + url + " instead");
+    }
+
+    private boolean isPhotoSet(URL url) {
+        Pattern p = Pattern.compile("https?://www.pichunter.com/gallery/\\d+/([a-zA-Z0-9_-]+)/?");
+        Matcher m = p.matcher(url.toExternalForm());
+        if (m.matches()) {
+            return true;
+        }
+        return false;
     }
 
     @Override
@@ -73,8 +88,14 @@ public class PichunterRipper extends AbstractHTMLRipper {
     @Override
     public List<String> getURLsFromPage(Document doc) {
         List<String> result = new ArrayList<>();
-        for (Element el : doc.select("div.thumbtable > a.thumb > img")) {
-            result.add(el.attr("src").replaceAll("_i", "_o"));
+        if (!isPhotoSet(url)) {
+            for (Element el : doc.select("div.thumbtable > a.thumb > img")) {
+                result.add(el.attr("src").replaceAll("_i", "_o"));
+            }
+        } else {
+            for (Element el : doc.select("div.flex-images > figure > a.item > img")) {
+                result.add(el.attr("src").replaceAll("_i", "_o"));
+            }
         }
         return result;
     }
