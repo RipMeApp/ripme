@@ -117,6 +117,12 @@ public class ChanRipper extends AbstractHTMLRipper {
             if (m.matches()) {
                 return m.group(1);
             }
+
+            p = Pattern.compile("^.*\\.[a-z]{1,3}/board/\\w\\w/thread/([0-9]+)/?");
+            m = p.matcher(u);
+            if (m.matches()) {
+                return m.group(1);
+            }
         }
 
         throw new MalformedURLException(
