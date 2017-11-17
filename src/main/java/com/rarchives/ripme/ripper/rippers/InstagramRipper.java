@@ -144,6 +144,7 @@ public class InstagramRipper extends AbstractHTMLRipper {
                 Long epoch = data.getLong("date");
                 Instant instant = Instant.ofEpochSecond(epoch);
                 String image_date = DateTimeFormatter.ofPattern("yyyy_MM_dd_hh:mm_").format(ZonedDateTime.ofInstant(instant, ZoneOffset.UTC));
+
                 try {
                     if (!data.getBoolean("is_video")) {
                         if (imageURLs.size() == 0) {
@@ -158,8 +159,8 @@ public class InstagramRipper extends AbstractHTMLRipper {
                 } catch (MalformedURLException e) {
                     return imageURLs;
                 }
-                nextPageID = data.getString("id");
 
+                nextPageID = data.getString("id");
 
                 if (isThisATest()) {
                     break;
