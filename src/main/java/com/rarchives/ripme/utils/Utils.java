@@ -367,13 +367,13 @@ public class Utils {
 
     public static String bytesToHumanReadable(int bytes) {
         float fbytes = (float) bytes;
-        String[] mags = new String[] {"", "k", "m", "g", "t"};
+        String[] mags = new String[] {"", "K", "M", "G", "T"};
         int magIndex = 0;
         while (fbytes >= 1024) {
             fbytes /= 1024;
             magIndex++;
         }
-        return String.format("%.2f%sb", fbytes, mags[magIndex]);
+        return String.format("%.2f%siB", fbytes, mags[magIndex]);
     }
 
     public static List<String> getListOfAlbumRippers() throws Exception {
