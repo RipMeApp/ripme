@@ -183,6 +183,7 @@ public abstract class AbstractRipper
             if (!subdirectory.equals("")) {
                 subdirectory = File.separator + subdirectory;
             }
+            prefix = Utils.filesystemSanitized(prefix);
             saveFileAs = new File(
                     workingDir.getCanonicalPath()
                     + subdirectory

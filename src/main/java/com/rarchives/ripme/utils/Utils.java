@@ -355,6 +355,11 @@ public class Utils {
                 + path.substring(path.length() - SHORTENED_PATH_LENGTH);
     }
 
+    public static String filesystemSanitized(String text) {
+        text = text.replaceAll("[^a-zA-Z0-9.-]", "_");
+        return text;
+    }
+
     public static String filesystemSafe(String text) {
         text = text.replaceAll("[^a-zA-Z0-9.-]", "_")
                    .replaceAll("__", "_")
