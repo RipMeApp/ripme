@@ -29,6 +29,8 @@ import com.rarchives.ripme.ripper.rippers.VineRipper;
 import com.rarchives.ripme.ripper.rippers.VkRipper;
 import com.rarchives.ripme.ripper.rippers.XhamsterRipper;
 import com.rarchives.ripme.ripper.rippers.PichunterRipper;
+import com.rarchives.ripme.ripper.rippers.TheyiffgalleryRipper;
+
 
 /**
  * Simple test cases for various rippers.
@@ -225,6 +227,11 @@ public class BasicRippersTest extends RippersTest {
         testRipper(ripper);
     }
 
+    public void testTheyiffgallery() throws IOException {
+        AbstractRipper ripper = new TheyiffgalleryRipper(new URL("https://theyiffgallery.com/index?/category/4303"));
+        testRipper(ripper);
+    }
+
     /*
     public void testSankakuChanRip() throws IOException {
         AbstractRipper ripper = new SankakuComplexRipper(new URL("https://chan.sankakucomplex.com/?tags=cleavage"));
@@ -283,8 +290,8 @@ public class BasicRippersTest extends RippersTest {
         testRipper(ripper);
     }
 
-    public void testXhamsterAlbums() throws IOException {
-        XhamsterRipper ripper = new XhamsterRipper(new URL("https://xhamster.com/photos/gallery/sexy-preggo-girls-9026608"));
-        testRipper(ripper);
-    }
+    // public void testXhamsterAlbums() throws IOException {
+    //     XhamsterRipper ripper = new XhamsterRipper(new URL("https://xhamster.com/photos/gallery/sexy-preggo-girls-9026608"));
+    //     testRipper(ripper);
+    // }
 }
