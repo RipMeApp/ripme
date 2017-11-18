@@ -186,7 +186,12 @@ public class InstagramRipper extends AbstractHTMLRipper {
                     try {
                         // Sleep for a while to avoid a ban
                         sleep(2500);
-                        getURLsFromPage(Http.url(url.toExternalForm() + "?max_id=" + nextPageID).get());
+                        if (url.toExternalForm().substring(url.toExternalForm().length() - 1).equals("/")) {
+                            getURLsFromPage(Http.url(url.toExternalForm() + "?max_id=" + nextPageID).get());
+                        } else {
+                            getURLsFromPage(Http.url(url.toExternalForm() + "/?max_id=" + nextPageID).get());
+                        }
+
                     } catch (IOException e) {
                         return imageURLs;
                     }
@@ -199,6 +204,8 @@ public class InstagramRipper extends AbstractHTMLRipper {
                 } catch (IOException e) {
                     return imageURLs;
                 }
+            } else {
+                logger.warn("Can't get net page");
             }
         } else { // We're ripping from a single page
             logger.info("Ripping from single page");
