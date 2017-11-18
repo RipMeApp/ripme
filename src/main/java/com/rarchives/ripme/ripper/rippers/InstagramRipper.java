@@ -44,6 +44,13 @@ public class InstagramRipper extends AbstractHTMLRipper {
     }
 
     @Override
+    public URL sanitizeURL(URL url) throws MalformedURLException {
+       URL san_url = new URL(url.toExternalForm().replaceAll("\\?hl=\\S*", ""));
+       logger.info("sanitized URL is " + san_url.toExternalForm());
+        return san_url;
+    }
+
+    @Override
     public String getGID(URL url) throws MalformedURLException {
         Pattern p = Pattern.compile("^https?://instagram.com/([^/]+)/?");
         Matcher m = p.matcher(url.toExternalForm());
@@ -51,7 +58,7 @@ public class InstagramRipper extends AbstractHTMLRipper {
             return m.group(1);
         }
 
-        p = Pattern.compile("^https?://www.instagram.com/([^/]+)/?");
+        p = Pattern.compile("^https?://www.instagram.com/([^/]+)/?(?:\\?hl=\\S*)?/?");
         m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             return m.group(1);
