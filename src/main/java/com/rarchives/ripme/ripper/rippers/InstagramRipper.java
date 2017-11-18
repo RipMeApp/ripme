@@ -62,6 +62,13 @@ public class InstagramRipper extends AbstractHTMLRipper {
         if (m.matches()) {
             return m.group(1);
         }
+
+        p = Pattern.compile("^https?://www.instagram.com/explore/tags/([^/]+)/?");
+        m = p.matcher(url.toExternalForm());
+        if (m.matches()) {
+            return m.group(1);
+        }
+
         throw new MalformedURLException("Unable to find user in " + url);
     }
 
@@ -134,11 +141,18 @@ public class InstagramRipper extends AbstractHTMLRipper {
             logger.warn("Unable to exact json from page");
         }
 
-        Pattern p = Pattern.compile("^.*instagram\\.com/([a-zA-Z0-9\\-_.]+)/?");
+        Pattern p = Pattern.compile("^.*instagram.com/p/([a-zA-Z0-9\\-_.]+)/?");
         Matcher m = p.matcher(url.toExternalForm());
-        if (m.matches()) {
-            JSONArray profilePage = json.getJSONObject("entry_data").getJSONArray("ProfilePage");
-            JSONArray datas = profilePage.getJSONObject(0).getJSONObject("user").getJSONObject("media").getJSONArray("nodes");
+        if (!m.matches()) {
+            JSONArray datas = new JSONArray();
+            try {
+                JSONArray profilePage = json.getJSONObject("entry_data").getJSONArray("ProfilePage");
+                datas = profilePage.getJSONObject(0).getJSONObject("user").getJSONObject("media").getJSONArray("nodes");
+            } catch (JSONException e) {
+                // Handle hashtag pages
+                datas = json.getJSONObject("entry_data").getJSONArray("TagPage").getJSONObject(0)
+                        .getJSONObject("tag").getJSONObject("media").getJSONArray("nodes");
+            }
             for (int i = 0; i < datas.length(); i++) {
                 JSONObject data = (JSONObject) datas.get(i);
                 Long epoch = data.getLong("date");
@@ -168,6 +182,16 @@ public class InstagramRipper extends AbstractHTMLRipper {
             }
             // Rip the next page
             if (!nextPageID.equals("") && !isThisATest()) {
+                if (url.toExternalForm().contains("/tags/")) {
+                    try {
+                        // Sleep for a while to avoid a ban
+                        sleep(2500);
+                        getURLsFromPage(Http.url(url.toExternalForm() + "?max_id=" + nextPageID).get());
+                    } catch (IOException e) {
+                        return imageURLs;
+                    }
+
+                }
                 try {
                     // Sleep for a while to avoid a ban
                     sleep(2500);
@@ -177,6 +201,7 @@ public class InstagramRipper extends AbstractHTMLRipper {
                 }
             }
         } else { // We're ripping from a single page
+            logger.info("Ripping from single page");
             if (!doc.select("meta[property=og:video]").attr("content").equals("")) {
                 String videoURL = doc.select("meta[property=og:video]").attr("content");
                 // We're ripping a page with a video on it
