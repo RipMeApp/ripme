@@ -29,7 +29,7 @@ public class E621Ripper extends AbstractHTMLRipper{
 	private static Pattern gidPattern2=null;
 	private static Pattern gidPatternPool=null;
 
-	private DownloadThreadPool e621ThreadPool=new DownloadThreadPool("e621");
+	private final DownloadThreadPool e621ThreadPool=new DownloadThreadPool("e621");
 
 	public E621Ripper(URL url) throws IOException {
 		super(url);

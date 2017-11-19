@@ -26,7 +26,7 @@ public class NhentaiRipper extends AbstractHTMLRipper {
     private Document firstPage;
 
     // Thread pool for finding direct image links from "image" pages (html)
-    private DownloadThreadPool nhentaiThreadPool = new DownloadThreadPool("nhentai");
+    private final DownloadThreadPool nhentaiThreadPool = new DownloadThreadPool("nhentai");
 
     @Override
     public DownloadThreadPool getThreadPool() {
@@ -109,9 +109,9 @@ public class NhentaiRipper extends AbstractHTMLRipper {
 
     private class NHentaiImageThread extends Thread {
 
-        private URL url;
-        private int index;
-        private File workingDir;
+        private final URL url;
+        private final int index;
+        private final File workingDir;
 
         NHentaiImageThread(URL url, int index, File workingDir) {
             super();

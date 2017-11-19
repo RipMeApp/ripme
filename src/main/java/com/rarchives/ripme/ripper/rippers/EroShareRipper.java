@@ -10,6 +10,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -86,7 +87,7 @@ public class EroShareRipper extends AbstractHTMLRipper {
             throw new IOException("No more pages");
         }
             nextUrl = elem.attr("href");
-            if (nextUrl == "") {
+            if (Objects.equals(nextUrl, "")) {
                 throw new IOException("No more pages");
             }
             return Http.url("eroshae.com" + nextUrl).get();

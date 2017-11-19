@@ -8,7 +8,7 @@ public class Base64 {
 
     private final static char[] ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/".toCharArray();
 
-    private static int[] toInt = new int[128];
+    private static final int[] toInt = new int[128];
 
     static {
         for (int i = 0; i < ALPHABET.length; i++) {

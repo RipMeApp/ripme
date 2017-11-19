@@ -18,8 +18,8 @@ import com.rarchives.ripme.utils.Http;
 import com.rarchives.ripme.utils.Utils;
 
 class TapasticEpisode {
-    int id;
-    String filename;
+    final int id;
+    final String filename;
     public TapasticEpisode(int index, int id, String title) {
         int index1 = index;
         this.id    = id;
@@ -30,7 +30,7 @@ class TapasticEpisode {
 
 public class TapasticRipper extends AbstractHTMLRipper {
 
-    private List<TapasticEpisode> episodes= new ArrayList<>();
+    private final List<TapasticEpisode> episodes= new ArrayList<>();
 
     public TapasticRipper(URL url) throws IOException {
         super(url);

@@ -30,7 +30,7 @@ public class EHentaiRipper extends AbstractHTMLRipper {
     private String lastURL = null;
 
     // Thread pool for finding direct image links from "image" pages (html)
-    private DownloadThreadPool ehentaiThreadPool = new DownloadThreadPool("ehentai");
+    private final DownloadThreadPool ehentaiThreadPool = new DownloadThreadPool("ehentai");
     @Override
     public DownloadThreadPool getThreadPool() {
         return ehentaiThreadPool;
@@ -189,9 +189,9 @@ public class EHentaiRipper extends AbstractHTMLRipper {
      * Handles case when site has IP-banned the user.
      */
     private class EHentaiImageThread extends Thread {
-        private URL url;
-        private int index;
-        private File workingDir;
+        private final URL url;
+        private final int index;
+        private final File workingDir;
 
         EHentaiImageThread(URL url, int index, File workingDir) {
             super();

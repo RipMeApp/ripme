@@ -31,11 +31,11 @@ class DownloadFileThread extends Thread {
     private String referrer = "";
     private Map<String,String> cookies = new HashMap<>();
 
-    private URL url;
-    private File saveAs;
-    private String prettySaveAs;
-    private AbstractRipper observer;
-    private int retries;
+    private final URL url;
+    private final File saveAs;
+    private final String prettySaveAs;
+    private final AbstractRipper observer;
+    private final int retries;
 
     private final int TIMEOUT;
 
@@ -163,10 +163,10 @@ class DownloadFileThread extends Thread {
                 // Close any open streams
                 try {
                     if (bis != null) { bis.close(); }
-                } catch (IOException e) { }
+                } catch (IOException ignored) { }
                 try {
                     if (fos != null) { fos.close(); }
-                } catch (IOException e) { }
+                } catch (IOException ignored) { }
             }
             if (tries > this.retries) {
                 logger.error("[!] Exceeded maximum retries (" + this.retries + ") for URL " + url);

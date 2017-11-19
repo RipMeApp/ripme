@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
+import java.util.Objects;
 
 import org.jsoup.nodes.Document;
 
@@ -142,7 +143,7 @@ public abstract class AbstractHTMLRipper extends AlbumRipper {
     }
     private String fileNameFromURL(URL url) {
         String saveAs = url.toExternalForm();
-        if (saveAs.substring(saveAs.length() - 1) == "/") { saveAs = saveAs.substring(0,saveAs.length() - 1) ;}
+        if (Objects.equals(saveAs.substring(saveAs.length() - 1), "/")) { saveAs = saveAs.substring(0,saveAs.length() - 1) ;}
         saveAs = saveAs.substring(saveAs.lastIndexOf('/')+1);
         if (saveAs.indexOf('?') >= 0) { saveAs = saveAs.substring(0, saveAs.indexOf('?')); }
         if (saveAs.indexOf('#') >= 0) { saveAs = saveAs.substring(0, saveAs.indexOf('#')); }

@@ -24,7 +24,7 @@ public class PornhubRipper extends AlbumRipper {
     private static final String DOMAIN = "pornhub.com", HOST = "Pornhub";
 
     // Thread pool for finding direct image links from "image" pages (html)
-    private DownloadThreadPool pornhubThreadPool = new DownloadThreadPool("pornhub");
+    private final DownloadThreadPool pornhubThreadPool = new DownloadThreadPool("pornhub");
 
     // Current HTML document
     private Document albumDoc = null;
@@ -131,8 +131,8 @@ public class PornhubRipper extends AlbumRipper {
      * Handles case when site has IP-banned the user.
      */
     private class PornhubImageThread extends Thread {
-        private URL url;
-        private int index;
+        private final URL url;
+        private final int index;
 
         PornhubImageThread(URL url, int index, File workingDir) {
             super();

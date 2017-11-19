@@ -33,7 +33,7 @@ public class DeviantartRipper extends AbstractHTMLRipper {
                              IMAGE_SLEEP_TIME = 2000;
 
     private Map<String,String> cookies = new HashMap<>();
-    private Set<String> triedURLs = new HashSet<>();
+    private final Set<String> triedURLs = new HashSet<>();
 
     public DeviantartRipper(URL url) throws IOException {
         super(url);

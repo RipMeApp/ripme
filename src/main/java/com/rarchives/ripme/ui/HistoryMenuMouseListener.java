@@ -11,7 +11,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.JTable;
 
 class HistoryMenuMouseListener extends MouseAdapter {
-    private JPopupMenu popup = new JPopupMenu();
+    private final JPopupMenu popup = new JPopupMenu();
     private JTable tableComponent;
 
     @SuppressWarnings("serial")

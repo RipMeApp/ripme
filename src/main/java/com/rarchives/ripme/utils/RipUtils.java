@@ -98,7 +98,7 @@ public class RipUtils {
             String u = url.toExternalForm().replaceAll("&amp;", "&");
             try {
                 result.add(new URL(u));
-            } catch (MalformedURLException e) {
+            } catch (MalformedURLException ignored) {
             }
             return result;
         }

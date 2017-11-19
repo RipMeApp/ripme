@@ -3,11 +3,7 @@ package com.rarchives.ripme.ripper.rippers;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -23,12 +19,10 @@ import com.rarchives.ripme.utils.Http;
 public class EightmusesRipper extends AbstractHTMLRipper {
 
     private Document albumDoc = null;
-    private Map<String,String> cookies = new HashMap<>();
+    private final Map<String,String> cookies = new HashMap<>();
     // TODO put up a wiki page on using maps to store titles
     // the map for storing the title of each album when downloading sub albums
     private Map<URL,String> urlTitles = new HashMap<>();
-
-    private Boolean rippingSubalbums = false;
 
     public EightmusesRipper(URL url) throws IOException {
         super(url);
@@ -97,7 +91,7 @@ public class EightmusesRipper extends AbstractHTMLRipper {
             for (Element subalbum : albumsList) {
                 String subUrl = subalbum.attr("href");
                 // This if is to skip ads which don't have a href
-                if (subUrl != "") {
+                if (!Objects.equals(subUrl, "")) {
                     subUrl = subUrl.replaceAll("\\.\\./", "");
                     if (subUrl.startsWith("//")) {
                         subUrl = "https:";
@@ -132,7 +126,6 @@ public class EightmusesRipper extends AbstractHTMLRipper {
                             addURLToDownload(imageUrl, getPrefix(prefix), albumTitle, this.url.toExternalForm(), cookies);
                             prefix = prefix + 1;
                         }
-                        rippingSubalbums = true;
                         imageURLs.addAll(subalbumImages);
                     } catch (IOException e) {
                         logger.warn("Error while loading subalbum " + subUrl, e);

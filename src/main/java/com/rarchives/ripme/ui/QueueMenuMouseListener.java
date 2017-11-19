@@ -15,7 +15,7 @@ import javax.swing.JPopupMenu;
 import com.rarchives.ripme.utils.Utils;
 
 class QueueMenuMouseListener extends MouseAdapter {
-    private JPopupMenu popup = new JPopupMenu();
+    private final JPopupMenu popup = new JPopupMenu();
     private JList queueList;
     private DefaultListModel queueListModel;
 

@@ -21,7 +21,7 @@ import com.rarchives.ripme.utils.Http;
 
 public class SankakuComplexRipper extends AbstractHTMLRipper {
     private Document albumDoc = null;
-    private Map<String,String> cookies = new HashMap<>();
+    private final Map<String,String> cookies = new HashMap<>();
 
     public SankakuComplexRipper(URL url) throws IOException {
         super(url);

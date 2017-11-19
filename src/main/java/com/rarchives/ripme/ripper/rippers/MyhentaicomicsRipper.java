@@ -7,6 +7,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.jsoup.nodes.Document;
@@ -73,7 +74,7 @@ public class MyhentaicomicsRipper extends AbstractHTMLRipper {
             if (m.matches()) {
                 nextUrl = "http://myhentaicomics.com" + m.group(0);
                 }
-            if (nextUrl == "") {
+            if (Objects.equals(nextUrl, "")) {
                 throw new IOException("No more pages");
             }
             // Sleep for half a sec to avoid getting IP banned
@@ -100,7 +101,7 @@ public class MyhentaicomicsRipper extends AbstractHTMLRipper {
                 Element elem = nextAlbumPage.select("a.ui-icon-right").first();
                 String nextPage = elem.attr("href");
                 pageNumber = pageNumber + 1;
-                if (nextPage == "") {
+                if (Objects.equals(nextPage, "")) {
                     logger.info("Got " + pageNumber + " pages");
                     break;
                 }
@@ -220,7 +221,7 @@ public class MyhentaicomicsRipper extends AbstractHTMLRipper {
         // If true the page is a page of albums
         if (doc.toString().contains("class=\"g-item g-album\"")) {
             // This if checks that there is more than 1 page
-            if (doc.select("a.ui-icon-right").last().attr("href") != "") {
+            if (!Objects.equals(doc.select("a.ui-icon-right").last().attr("href"), "")) {
                 // There is more than one page so we call getListOfPages
                 List<String> pagesToRip = getListOfPages(doc);
                 logger.debug("Pages to rip = " + pagesToRip);

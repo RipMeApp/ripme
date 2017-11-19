@@ -21,7 +21,7 @@ import java.util.HashMap;
 public class AerisdiesRipper extends AbstractHTMLRipper {
 
     private Document albumDoc = null;
-    private Map<String,String> cookies = new HashMap<>();
+    private final Map<String,String> cookies = new HashMap<>();
 
 
     public AerisdiesRipper(URL url) throws IOException {
