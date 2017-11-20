@@ -50,6 +50,48 @@ public class InstagramRipper extends AbstractHTMLRipper {
         return san_url;
     }
 
+    private List<String> getPostsFromSinglePage(Document Doc) {
+        List<String> imageURLs = new ArrayList<>();
+        JSONArray datas;
+        try {
+            JSONObject json = getJSONFromPage(Doc);
+            if (json.getJSONObject("entry_data").getJSONArray("PostPage")
+                    .getJSONObject(0).getJSONObject("graphql").getJSONObject("shortcode_media")
+                    .has("edge_sidecar_to_children")) {
+
+                datas = json.getJSONObject("entry_data").getJSONArray("PostPage")
+                        .getJSONObject(0).getJSONObject("graphql").getJSONObject("shortcode_media")
+                        .getJSONObject("edge_sidecar_to_children").getJSONArray("edges");
+                for (int i = 0; i < datas.length(); i++) {
+                    JSONObject data = (JSONObject) datas.get(i);
+                    data = data.getJSONObject("node");
+                    if (data.has("is_video") && data.getBoolean("is_video")) {
+                        imageURLs.add(data.getString("video_url"));
+                    } else {
+                        imageURLs.add(data.getString("display_url"));
+                    }
+
+                }
+            } else {
+                JSONObject data = json.getJSONObject("entry_data").getJSONArray("PostPage")
+                        .getJSONObject(0).getJSONObject("graphql").getJSONObject("shortcode_media");
+                if (data.getBoolean("is_video")) {
+                    imageURLs.add(data.getString("video_url"));
+                } else {
+                    imageURLs.add(data.getString("display_url"));
+                }
+
+
+            }
+            return imageURLs;
+
+
+        } catch (IOException e) {
+            logger.error("Unable to get JSON from page " + url.toExternalForm());
+            return null;
+        }
+    }
+
     @Override
     public String getGID(URL url) throws MalformedURLException {
         Pattern p = Pattern.compile("^https?://instagram.com/([^/]+)/?");
@@ -64,7 +106,7 @@ public class InstagramRipper extends AbstractHTMLRipper {
             return m.group(1);
         }
 
-        p = Pattern.compile("^https?://www.instagram.com/p/[a-zA-Z0-9_-]+/\\?taken-by=([^/]+)/?");
+        p = Pattern.compile("^https?://www.instagram.com/p/([a-zA-Z0-9_-]+)/?(?:\\?taken-by=([^/]+)|\\?hl=\\S*/?)?");
         m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             return m.group(1);
@@ -148,9 +190,8 @@ public class InstagramRipper extends AbstractHTMLRipper {
             logger.warn("Unable to exact json from page");
         }
 
-        Pattern p = Pattern.compile("^.*instagram.com/p/([a-zA-Z0-9\\-_.]+)/?");
-        Matcher m = p.matcher(url.toExternalForm());
-        if (!m.matches()) {
+
+        if (!url.toExternalForm().contains("/p/")) {
             JSONArray datas = new JSONArray();
             try {
                 JSONArray profilePage = json.getJSONObject("entry_data").getJSONArray("ProfilePage");
@@ -216,16 +257,9 @@ public class InstagramRipper extends AbstractHTMLRipper {
             }
         } else { // We're ripping from a single page
             logger.info("Ripping from single page");
-            if (!doc.select("meta[property=og:video]").attr("content").equals("")) {
-                String videoURL = doc.select("meta[property=og:video]").attr("content");
-                // We're ripping a page with a video on it
-                imageURLs.add(videoURL);
-            } else {
-                // We're ripping a picture
-                imageURLs.add(doc.select("meta[property=og:image]").attr("content"));
-            }
-
+            imageURLs = getPostsFromSinglePage(doc);
         }
+
         return imageURLs;
     }
 
