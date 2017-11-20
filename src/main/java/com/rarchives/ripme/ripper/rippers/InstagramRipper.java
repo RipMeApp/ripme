@@ -100,7 +100,19 @@ public class InstagramRipper extends AbstractHTMLRipper {
             return m.group(1);
         }
 
-        p = Pattern.compile("^https?://www.instagram.com/p/([a-zA-Z0-9_-]+)/?(?:\\?taken-by=([^/]+)|\\?hl=\\S*/?)?");
+        p = Pattern.compile("^https?://www.instagram.com/p/([a-zA-Z0-9_-]+)/\\?taken-by=([^/]+)/?");
+        m = p.matcher(url.toExternalForm());
+        if (m.matches()) {
+            return m.group(2) + "_" + m.group(1);
+        }
+
+        p = Pattern.compile("^https?://www.instagram.com/p/([a-zA-Z0-9_-]+)/?");
+        m = p.matcher(url.toExternalForm());
+        if (m.matches()) {
+            return m.group(1);
+        }
+
+        p = Pattern.compile("^https?://www.instagram.com/p/([a-zA-Z0-9_-]+)/?(?:\\?hl=\\S*)?/?");
         m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             return m.group(1);
