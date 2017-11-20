@@ -58,7 +58,6 @@ public class InstagramRipper extends AbstractHTMLRipper {
             if (json.getJSONObject("entry_data").getJSONArray("PostPage")
                     .getJSONObject(0).getJSONObject("graphql").getJSONObject("shortcode_media")
                     .has("edge_sidecar_to_children")) {
-
                 datas = json.getJSONObject("entry_data").getJSONArray("PostPage")
                         .getJSONObject(0).getJSONObject("graphql").getJSONObject("shortcode_media")
                         .getJSONObject("edge_sidecar_to_children").getJSONArray("edges");
@@ -70,7 +69,6 @@ public class InstagramRipper extends AbstractHTMLRipper {
                     } else {
                         imageURLs.add(data.getString("display_url"));
                     }
-
                 }
             } else {
                 JSONObject data = json.getJSONObject("entry_data").getJSONArray("PostPage")
@@ -80,12 +78,8 @@ public class InstagramRipper extends AbstractHTMLRipper {
                 } else {
                     imageURLs.add(data.getString("display_url"));
                 }
-
-
             }
             return imageURLs;
-
-
         } catch (IOException e) {
             logger.error("Unable to get JSON from page " + url.toExternalForm());
             return null;
