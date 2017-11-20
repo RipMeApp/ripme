@@ -215,12 +215,15 @@ public class BasicRippersTest extends RippersTest {
         testRipper(ripper);
     }
 
+    /*
+    // https://github.com/RipMeApp/ripme/issues/229 : Disabled test (temporary) : BasicRippersTest#testPhotobucketRip (timing out)
     public void testPhotobucketRip() throws IOException {
         AbstractRipper ripper = new PhotobucketRipper(new URL("http://s844.photobucket.com/user/SpazzySpizzy/library/Album%20Covers?sort=3&page=1"));
         testRipper(ripper);
         deleteSubdirs(ripper.getWorkingDir());
         deleteDir(ripper.getWorkingDir());
     }
+    */
 
     public void testPornhubRip() throws IOException {
         AbstractRipper ripper = new PornhubRipper(new URL("https://www.pornhub.com/album/15680522"));
@@ -290,6 +293,7 @@ public class BasicRippersTest extends RippersTest {
         testRipper(ripper);
     }
 
+    // https://github.com/RipMeApp/ripme/issues/206 : Disabled test : BasicRippersTest#testXhamsterAlbums -- fix and re-enable
     // public void testXhamsterAlbums() throws IOException {
     //     XhamsterRipper ripper = new XhamsterRipper(new URL("https://xhamster.com/photos/gallery/sexy-preggo-girls-9026608"));
     //     testRipper(ripper);

@@ -32,23 +32,23 @@ public class PichunterRipper extends AbstractHTMLRipper {
 
     @Override
     public String getGID(URL url) throws MalformedURLException {
-        Pattern p = Pattern.compile("https?://www.pichunter.com/(|tags|models|sites)/([a-zA-Z0-9_-]+)/?");
+        Pattern p = Pattern.compile("https?://www.pichunter.com/(|tags|models|sites)/(\\S*)/?");
         Matcher m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             return m.group(2);
         }
-        p = Pattern.compile("https?://www.pichunter.com/(tags|models|sites)/([a-zA-Z0-9_-]+)/photos/\\d+/?");
+        p = Pattern.compile("https?://www.pichunter.com/(tags|models|sites)/(\\S*)/photos/\\d+/?");
         m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             return m.group(2);
         }
-        p = Pattern.compile("https?://www.pichunter.com/tags/all/([a-zA-Z0-9_-]+)/\\d+/?");
+        p = Pattern.compile("https?://www.pichunter.com/tags/all/(\\S*)/\\d+/?");
         m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             return m.group(1);
         }
 
-        p = Pattern.compile("https?://www.pichunter.com/gallery/\\d+/([a-zA-Z0-9_-]+)/?");
+        p = Pattern.compile("https?://www.pichunter.com/gallery/\\d+/(\\S*)/?");
         m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             return m.group(1);
@@ -58,7 +58,7 @@ public class PichunterRipper extends AbstractHTMLRipper {
     }
 
     private boolean isPhotoSet(URL url) {
-        Pattern p = Pattern.compile("https?://www.pichunter.com/gallery/\\d+/([a-zA-Z0-9_-]+)/?");
+        Pattern p = Pattern.compile("https?://www.pichunter.com/gallery/\\d+/(\\S*)/?");
         Matcher m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             return true;

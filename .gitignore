@@ -112,7 +112,7 @@ rips/
 .history
 ripme.jar.update
 *.swp
-rip.properties
+*.properties
 history.json
 *.iml
 .settings/
