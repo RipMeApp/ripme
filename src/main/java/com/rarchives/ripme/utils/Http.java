@@ -23,7 +23,7 @@ import com.rarchives.ripme.ripper.AbstractRipper;
 public class Http {
 
     private static final int    TIMEOUT = Utils.getConfigInteger("page.timeout", 5 * 1000);
-    private static final Logger logger  = Logger.getLogger(AbstractRipper.class);
+    private static final Logger logger  = Logger.getLogger(Http.class);
 
     private int retries;
     private String url;
