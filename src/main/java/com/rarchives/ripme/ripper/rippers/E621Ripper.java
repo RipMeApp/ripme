@@ -1,4 +1,3 @@
-
 package com.rarchives.ripme.ripper.rippers;
 
 import com.rarchives.ripme.ripper.AbstractHTMLRipper;
@@ -12,19 +11,16 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.apache.log4j.Logger;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-/**
- *
- * @author
- */
 public class E621Ripper extends AbstractHTMLRipper{
+	private static final Logger logger = Logger.getLogger(E621Ripper.class);
+
 	private static Pattern gidPattern=null;
 	private static Pattern gidPattern2=null;
 	private static Pattern gidPatternPool=null;
@@ -89,7 +85,7 @@ public class E621Ripper extends AbstractHTMLRipper{
 
 					addURLToDownload(new URL(page.getElementById("image").absUrl("src")),Utils.getConfigBoolean("download.save_order",true)?url.getRef()+"-":"");
 				} catch (IOException ex) {
-					Logger.getLogger(E621Ripper.class.getName()).log(Level.SEVERE, null, ex);
+					logger.error(ex);
 				}
 			}
 		}));
@@ -121,7 +117,7 @@ public class E621Ripper extends AbstractHTMLRipper{
 
 			return Utils.filesystemSafe(prefix+new URI(getTerm(url)).getPath());
 		} catch (URISyntaxException ex) {
-			Logger.getLogger(PahealRipper.class.getName()).log(Level.SEVERE, null, ex);
+			logger.error(ex);
 		}
 
 		throw new MalformedURLException("Expected e621.net URL format: e621.net/post/index/1/searchterm - got "+url+" instead");

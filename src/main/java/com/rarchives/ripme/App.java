@@ -34,8 +34,14 @@ import com.rarchives.ripme.utils.Utils;
  */
 public class App {
 
-    public static Logger logger;
+    public static final Logger logger;
     private static final History HISTORY = new History();
+
+    static {
+        //initialize logger
+        Utils.configureLogger();
+        logger = Logger.getLogger(App.class);
+    }
 
     public static void main(String[] args) throws MalformedURLException {
         CommandLine cl = getArgs(args);
@@ -44,11 +50,8 @@ public class App {
             System.exit(0);
         }
 
-        //initialize logger
-        Utils.configureLogger();
         System.setProperty("apple.laf.useScreenMenuBar", "true");
         System.setProperty("com.apple.mrj.application.apple.menu.about.name", "RipMe");
-        logger = Logger.getLogger(App.class);
         logger.info("Initialized ripme v" + UpdateUtils.getThisJarVersion());
 
         if (args.length > 0) {
