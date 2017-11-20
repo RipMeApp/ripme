@@ -33,6 +33,9 @@ import com.rarchives.ripme.ripper.rippers.TheyiffgalleryRipper;
 import com.rarchives.ripme.ripper.rippers.HentaiCafeRipper;
 import com.rarchives.ripme.ripper.rippers.Hentai2readRipper;
 import com.rarchives.ripme.ripper.rippers.MyhentaicomicsRipper;
+import com.rarchives.ripme.ripper.rippers.EHentaiRipper;
+import com.rarchives.ripme.ripper.rippers.SinnercomicsRipper;
+import com.rarchives.ripme.ripper.rippers.ShesFreakyRipper;
 
 
 /**
@@ -68,6 +71,21 @@ public class BasicRippersTest extends RippersTest {
 
     public void testMyhentaicomicsAlbum() throws IOException {
         MyhentaicomicsRipper ripper = new MyhentaicomicsRipper(new URL("http://myhentaicomics.com/index.php/Nienna-Lost-Tales"));
+        testRipper(ripper);
+    }
+
+    public void testEhentaiAlbum() throws IOException {
+        EHentaiRipper ripper = new EHentaiRipper(new URL("https://e-hentai.org/g/1144492/e823bdf9a5/"));
+        testRipper(ripper);
+    }
+
+    public void testSinnerComicsAlbum() throws IOException {
+        SinnercomicsRipper ripper = new SinnercomicsRipper(new URL("https://sinnercomics.com/comic/beyond-the-hotel-page-01/"));
+        testRipper(ripper);
+    }
+
+    public void testShesFreakyAlbum() throws IOException {
+        ShesFreakyRipper ripper = new ShesFreakyRipper(new URL("https://www.shesfreaky.com/gallery/shoutout-my-subscribers-216767.html"));
         testRipper(ripper);
     }
 
