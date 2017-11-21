@@ -1,6 +1,7 @@
 {
-    "latestVersion": "1.7.0",
+    "latestVersion": "1.7.1",
     "changeList": [
+        "1.7.1: Fix WordpressComicRipper's ripper for freeadultcomix.com; FuraffinityRipper can now rip public albums",
         "1.7.0: Improved webtoons folder naming; Added code coverage with Coveralls.io; improved unit tests and code coverage; removed rippers for dead sites",
         "1.6.13: Added support for ripping from instagram tags; Instagram regex now matches all ripable urls; improved regex for pichunter",
         "1.6.12: Fix InstagramRipper with timestamps; Pichunter galleries support; logging improvements",
