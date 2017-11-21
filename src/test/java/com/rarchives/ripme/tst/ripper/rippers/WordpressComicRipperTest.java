@@ -18,23 +18,32 @@ public class WordpressComicRipperTest extends RippersTest {
     // http://tnbtu.com/comic/01-00/
     // http://shipinbottle.pepsaga.com/?p=281
 
+    /*
+    // https://github.com/RipMeApp/ripme/issues/269 - Disabled test - WordpressRipperTest: various domains flaky in CI
     public void test_totempole666() throws IOException {
         WordpressComicRipper ripper = new WordpressComicRipper(
                 new URL("http://www.totempole666.com/comic/first-time-for-everything-00-cover/"));
         testRipper(ripper);
     }
+    */
 
+    /*
+    // https://github.com/RipMeApp/ripme/issues/269 - Disabled test - WordpressRipperTest: various domains flaky in CI
     public void test_buttsmithy() throws IOException {
         WordpressComicRipper ripper = new WordpressComicRipper(
                 new URL("http://buttsmithy.com/archives/comic/p1"));
         testRipper(ripper);
     }
+    */
 
+    /*
+    // https://github.com/RipMeApp/ripme/issues/269 - Disabled test - WordpressRipperTest: various domains flaky in CI
     public void test_themonsterunderthebed() throws IOException {
         WordpressComicRipper ripper = new WordpressComicRipper(
                 new URL("http://themonsterunderthebed.net/?comic=test-post"));
         testRipper(ripper);
     }
+    */
 
     public void test_prismblush() throws IOException {
         WordpressComicRipper ripper = new WordpressComicRipper(
@@ -58,11 +67,14 @@ public class WordpressComicRipperTest extends RippersTest {
     }
     */
 
+    /*
+    // https://github.com/RipMeApp/ripme/issues/269 - Disabled test - WordpressRipperTest: various domains flaky in CI
     public void test_freeadultcomix() throws IOException {
         WordpressComicRipper ripper = new WordpressComicRipper(
                 new URL("http://freeadultcomix.com/finders-feepaid-in-full-sparrow/"));
         testRipper(ripper);
     }
+    */
 
     public void test_delvecomic() throws IOException {
         WordpressComicRipper ripper = new WordpressComicRipper(
