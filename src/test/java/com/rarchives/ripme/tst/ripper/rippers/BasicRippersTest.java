@@ -30,6 +30,13 @@ import com.rarchives.ripme.ripper.rippers.VkRipper;
 import com.rarchives.ripme.ripper.rippers.XhamsterRipper;
 import com.rarchives.ripme.ripper.rippers.PichunterRipper;
 import com.rarchives.ripme.ripper.rippers.TheyiffgalleryRipper;
+import com.rarchives.ripme.ripper.rippers.HentaiCafeRipper;
+import com.rarchives.ripme.ripper.rippers.Hentai2readRipper;
+import com.rarchives.ripme.ripper.rippers.MyhentaicomicsRipper;
+import com.rarchives.ripme.ripper.rippers.EHentaiRipper;
+import com.rarchives.ripme.ripper.rippers.SinnercomicsRipper;
+import com.rarchives.ripme.ripper.rippers.PorncomixRipper;
+
 
 
 /**
@@ -50,6 +57,36 @@ public class BasicRippersTest extends RippersTest {
 
     public void testEightmusesAlbum() throws IOException {
         EightmusesRipper ripper = new EightmusesRipper(new URL("https://www.8muses.com/album/jab-comics/a-model-life"));
+        testRipper(ripper);
+    }
+
+    public void testHentaiCafeAlbum() throws IOException {
+        HentaiCafeRipper ripper = new HentaiCafeRipper(new URL("https://hentai.cafe/kikuta-the-oni-in-the-room/"));
+        testRipper(ripper);
+    }
+
+    public void testHentai2ReadAlbum() throws IOException {
+        Hentai2readRipper ripper = new Hentai2readRipper(new URL("https://hentai2read.com/sm_school_memorial/"));
+        testRipper(ripper);
+    }
+
+    public void testMyhentaicomicsAlbum() throws IOException {
+        MyhentaicomicsRipper ripper = new MyhentaicomicsRipper(new URL("http://myhentaicomics.com/index.php/Nienna-Lost-Tales"));
+        testRipper(ripper);
+    }
+
+    public void testEhentaiAlbum() throws IOException {
+        EHentaiRipper ripper = new EHentaiRipper(new URL("https://e-hentai.org/g/1144492/e823bdf9a5/"));
+        testRipper(ripper);
+    }
+
+    public void testSinnerComicsAlbum() throws IOException {
+        SinnercomicsRipper ripper = new SinnercomicsRipper(new URL("https://sinnercomics.com/comic/beyond-the-hotel-page-01/"));
+        testRipper(ripper);
+    }
+
+    public void testPornComixAlbum() throws IOException {
+        PorncomixRipper ripper = new PorncomixRipper(new URL("http://www.porncomix.info/lust-unleashed-desire-to-submit/"));
         testRipper(ripper);
     }
 
@@ -293,9 +330,8 @@ public class BasicRippersTest extends RippersTest {
         testRipper(ripper);
     }
 
-    // https://github.com/RipMeApp/ripme/issues/206 : Disabled test : BasicRippersTest#testXhamsterAlbums -- fix and re-enable
-    // public void testXhamsterAlbums() throws IOException {
-    //     XhamsterRipper ripper = new XhamsterRipper(new URL("https://xhamster.com/photos/gallery/sexy-preggo-girls-9026608"));
-    //     testRipper(ripper);
-    // }
+     public void testXhamsterAlbums() throws IOException {
+         XhamsterRipper ripper = new XhamsterRipper(new URL("https://xhamster.com/photos/gallery/sexy-preggo-girls-9026608"));
+         testRipper(ripper);
+     }
 }
