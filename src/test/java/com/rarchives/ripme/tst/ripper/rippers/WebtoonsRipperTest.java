@@ -1,0 +1,13 @@
+package com.rarchives.ripme.tst.ripper.rippers;
+
+import java.io.IOException;
+import java.net.URL;
+
+import com.rarchives.ripme.ripper.rippers.WebtoonsRipper;
+
+public class WebtoonsRipperTest extends RippersTest {
+    public void testWebtoonsAlbum() throws IOException {
+        WebtoonsRipper ripper = new WebtoonsRipper(new URL("http://www.webtoons.com/en/drama/my-boo/ep-33/viewer?title_no=1185&episode_no=33"));
+        testRipper(ripper);
+    }
+}
