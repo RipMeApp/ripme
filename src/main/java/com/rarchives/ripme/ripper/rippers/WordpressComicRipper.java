@@ -22,7 +22,7 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
         super(url);
     }
 
-    // Test links:
+    // Test links (see also WordpressComicRipperTest.java)
     // http://www.totempole666.com/comic/first-time-for-everything-00-cover/
     // http://buttsmithy.com/archives/comic/p1
     // http://themonsterunderthebed.net/?comic=test-post
