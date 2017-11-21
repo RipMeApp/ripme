@@ -6,6 +6,7 @@ import java.net.URL;
 import com.rarchives.ripme.ripper.rippers.FuraffinityRipper;
 
 public class FuraffinityRipperTest extends RippersTest {
+    // https://github.com/RipMeApp/ripme/issues/183
     /*
     public void testFuraffinityAlbum() throws IOException {
         FuraffinityRipper ripper = new FuraffinityRipper(new URL("https://www.furaffinity.net/gallery/mustardgas/"));
