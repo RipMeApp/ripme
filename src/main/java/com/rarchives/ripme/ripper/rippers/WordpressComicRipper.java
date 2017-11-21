@@ -275,9 +275,10 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
         }
 
         // freeadultcomix gets it own if because it needs to add http://freeadultcomix.com to the start of each link
+        // TODO review the above comment which no longer applies -- see if there's a refactoring we should do here.
         if (url.toExternalForm().contains("freeadultcomix.com")) {
             for (Element elem : doc.select("div.single-post > p > img.aligncenter")) {
-                result.add("http://freeadultcomix.com" + elem.attr("src"));
+                result.add(elem.attr("src"));
             }
         }
 
