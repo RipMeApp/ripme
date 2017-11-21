@@ -45,6 +45,7 @@ public class VideoRippersTest extends RippersTest {
         }
     }
 
+    // https://github.com/RipMeApp/ripme/issues/187
     /*
     public void testPornhubRipper() throws IOException {
         List<URL> contentURLs = new ArrayList<>();
@@ -56,6 +57,7 @@ public class VideoRippersTest extends RippersTest {
     }
     */
 
+    // https://github.com/RipMeApp/ripme/issues/186
     /*
     public void testVineRipper() throws IOException {
         List<URL> contentURLs = new ArrayList<>();
