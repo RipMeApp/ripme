@@ -6,7 +6,7 @@ import java.net.URL;
 import com.rarchives.ripme.ripper.rippers.MyhentaicomicsRipper;
 
 public class MyhentaicomicsRipperTest extends RippersTest {
-    public void testHentaiCafeAlbum() throws IOException {
+    public void testMyhentaicomicsAlbum() throws IOException {
         MyhentaicomicsRipper ripper = new MyhentaicomicsRipper(new URL("http://myhentaicomics.com/index.php/Nienna-Lost-Tales"));
         testRipper(ripper);
     }
