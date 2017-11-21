@@ -35,6 +35,8 @@ import com.rarchives.ripme.ripper.rippers.Hentai2readRipper;
 import com.rarchives.ripme.ripper.rippers.MyhentaicomicsRipper;
 import com.rarchives.ripme.ripper.rippers.EHentaiRipper;
 import com.rarchives.ripme.ripper.rippers.SinnercomicsRipper;
+import com.rarchives.ripme.ripper.rippers.PorncomixRipper;
+
 
 
 /**
@@ -80,6 +82,11 @@ public class BasicRippersTest extends RippersTest {
 
     public void testSinnerComicsAlbum() throws IOException {
         SinnercomicsRipper ripper = new SinnercomicsRipper(new URL("https://sinnercomics.com/comic/beyond-the-hotel-page-01/"));
+        testRipper(ripper);
+    }
+
+    public void testPornComixAlbum() throws IOException {
+        PorncomixRipper ripper = new PorncomixRipper(new URL("http://www.porncomix.info/lust-unleashed-desire-to-submit/"));
         testRipper(ripper);
     }
 
