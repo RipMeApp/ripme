@@ -30,7 +30,6 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
     // http://www.konradokonski.com/sawdust/
     // http://www.konradokonski.com/wiory/
     // http://freeadultcomix.com/finders-feepaid-in-full-sparrow/
-    // http://comics-xxx.com/republic-rendezvous-palcomix-star-wars-xxx/
     // http://tnbtu.com/comic/01-00/
     // http://shipinbottle.pepsaga.com/?p=281
 
@@ -42,7 +41,6 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
         "www.konradokonski.com",
         "freeadultcomix.com",
         "thisis.delvecomic.com",
-        "comics-xxx.com",
         "tnbtu.com",
         "shipinbottle.pepsaga.com"
     );

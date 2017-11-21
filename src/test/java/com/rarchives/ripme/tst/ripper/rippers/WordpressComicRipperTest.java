@@ -14,7 +14,6 @@ public class WordpressComicRipperTest extends RippersTest {
     // http://www.konradokonski.com/sawdust/
     // http://www.konradokonski.com/wiory/
     // http://freeadultcomix.com/finders-feepaid-in-full-sparrow/
-    // http://comics-xxx.com/republic-rendezvous-palcomix-star-wars-xxx/
     // http://tnbtu.com/comic/01-00/
     // http://shipinbottle.pepsaga.com/?p=281
 
@@ -61,12 +60,6 @@ public class WordpressComicRipperTest extends RippersTest {
     public void test_freeadultcomix() throws IOException {
         WordpressComicRipper ripper = new WordpressComicRipper(
                 new URL("http://freeadultcomix.com/finders-feepaid-in-full-sparrow/"));
-        testRipper(ripper);
-    }
-
-    public void test_comicsxxx() throws IOException {
-        WordpressComicRipper ripper = new WordpressComicRipper(
-                new URL("http://comics-xxx.com/republic-rendezvous-palcomix-star-wars-xxx/"));
         testRipper(ripper);
     }
 
