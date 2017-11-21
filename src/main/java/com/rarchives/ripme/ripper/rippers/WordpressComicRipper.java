@@ -22,7 +22,7 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
         super(url);
     }
 
-    // Test links:
+    // Test links (see also WordpressComicRipperTest.java)
     // http://www.totempole666.com/comic/first-time-for-everything-00-cover/
     // http://buttsmithy.com/archives/comic/p1
     // http://themonsterunderthebed.net/?comic=test-post
@@ -30,7 +30,7 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
     // http://www.konradokonski.com/sawdust/
     // http://www.konradokonski.com/wiory/
     // http://freeadultcomix.com/finders-feepaid-in-full-sparrow/
-    // http://comics-xxx.com/republic-rendezvous-palcomix-star-wars-xxx/
+    // http://thisis.delvecomic.com/NewWP/comic/in-too-deep/
     // http://tnbtu.com/comic/01-00/
     // http://shipinbottle.pepsaga.com/?p=281
 
@@ -42,7 +42,6 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
         "www.konradokonski.com",
         "freeadultcomix.com",
         "thisis.delvecomic.com",
-        "comics-xxx.com",
         "tnbtu.com",
         "shipinbottle.pepsaga.com"
     );
