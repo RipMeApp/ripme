@@ -6,6 +6,8 @@ import java.net.URL;
 import com.rarchives.ripme.ripper.rippers.FineboxRipper;
 
 public class FineboxRipperTest extends RippersTest {
+    // https://github.com/RipMeApp/ripme/issues/242
+
     /*
     public void testVineboxAlbum() throws IOException {
         FineboxRipper ripper = new FineboxRipper(new URL("http://vinebox.co/u/wi57hMjc2Ka"));
