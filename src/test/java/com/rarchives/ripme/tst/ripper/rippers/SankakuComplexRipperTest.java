@@ -6,6 +6,8 @@ import java.net.URL;
 import com.rarchives.ripme.ripper.rippers.SankakuComplexRipper;
 
 public class SankakuComplexRipperTest extends RippersTest {
+    // https://github.com/RipMeApp/ripme/issues/257
+    /*
     public void testSankakuChanRip() throws IOException {
         SankakuComplexRipper ripper = new SankakuComplexRipper(new URL("https://chan.sankakucomplex.com/?tags=cleavage"));
         testRipper(ripper);
@@ -14,4 +16,5 @@ public class SankakuComplexRipperTest extends RippersTest {
         SankakuComplexRipper ripper = new SankakuComplexRipper(new URL("https://idol.sankakucomplex.com/?tags=meme_%28me%21me%21me%21%29_%28cosplay%29"));
         testRipper(ripper);
     }
+    */
 }
