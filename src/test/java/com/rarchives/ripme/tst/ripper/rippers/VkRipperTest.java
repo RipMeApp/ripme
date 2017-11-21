@@ -6,8 +6,10 @@ import java.net.URL;
 import com.rarchives.ripme.ripper.rippers.VkRipper;
 
 public class VkRipperTest extends RippersTest {
+    // https://github.com/RipMeApp/ripme/issues/252
     // Not supported (error): https://vk.com/helga_model (Profile Page)
     // Not supported (rips nothing): https://vk.com/albums45506334 (all albums under a Profile Page)
+
     // EXAMPLE: https://vk.com/photos45506334 (all photos for a model)
     // EXAMPLE: https://vk.com/album45506334_0 (a single album - profile pictures)
     // EXAMPLE: https://vk.com/album45506334_00?rev=1 (a single album - wall pictures)

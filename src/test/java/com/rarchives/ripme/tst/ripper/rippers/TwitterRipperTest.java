@@ -11,9 +11,10 @@ public class TwitterRipperTest extends RippersTest {
         testRipper(ripper);
     }
 
+    // https://github.com/RipMeApp/ripme/issues/251
     /*
     public void testTwitterSearchRip() throws IOException {
-        TwitterRipper ripper = new TwitterRipper(new URL("https://twitter.com/search?q=from%3ADaisyfairymfc%20filter%3Aimages&src=typd"));
+        TwitterRipper ripper = new TwitterRipper(new URL("https://twitter.com/search?f=tweets&q=from%3Aalinalixxx%20filter%3Aimages&src=typd"));
         testRipper(ripper);
     }
     */

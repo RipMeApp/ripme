@@ -7,6 +7,7 @@ import java.net.URL;
 import com.rarchives.ripme.ripper.rippers.TumblrRipper;
 
 public class TumblrRipperTest extends RippersTest {
+    // https://github.com/RipMeApp/ripme/issues/250
     /*
     public void testTumblrFullRip() throws IOException {
         TumblrRipper ripper = new TumblrRipper(new URL("http://wrouinr.tumblr.com/archive"));
