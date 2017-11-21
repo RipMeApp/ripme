@@ -7,7 +7,6 @@ import java.net.URL;
 import com.rarchives.ripme.ripper.rippers.RedditRipper;
 
 public class RedditRipperTest extends RippersTest {
-    /*
     public void testRedditSubredditRip() throws IOException {
         RedditRipper ripper = new RedditRipper(new URL("http://www.reddit.com/r/nsfw_oc"));
         testRipper(ripper);
@@ -20,5 +19,4 @@ public class RedditRipperTest extends RippersTest {
         RedditRipper ripper = new RedditRipper(new URL("http://www.reddit.com/r/UnrealGirls/comments/1ziuhl/in_class_veronique_popa/"));
         testRipper(ripper);
     }
-    */
 }
