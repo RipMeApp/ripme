@@ -8,12 +8,8 @@ import java.util.Map;
 import com.rarchives.ripme.ripper.rippers.ImagefapRipper;
 
 public class ImagefapRipperTest extends RippersTest {
-
     public void testImagefapAlbums() throws IOException {
         Map<URL, String> testURLs = new HashMap<>();
-
-        /*
-        Temporarily disabled test. See issue https://github.com/RipMeApp/ripme/issues/226
 
         // Album with specific title
         testURLs.put(new URL("http://www.imagefap.com/pictures/4649440/Frozen-%28Elsa-and-Anna%29?view=2"),
@@ -22,12 +18,10 @@ public class ImagefapRipperTest extends RippersTest {
         // New URL format
         testURLs.put(new URL("http://www.imagefap.com/gallery.php?pgid=fffd68f659befa5535cf78f014e348f1"),
                              "imagefap_fffd68f659befa5535cf78f014e348f1");
-        */
 
         for (URL url : testURLs.keySet()) {
             ImagefapRipper ripper = new ImagefapRipper(url);
             testRipper(ripper);
         }
     }
-
 }
