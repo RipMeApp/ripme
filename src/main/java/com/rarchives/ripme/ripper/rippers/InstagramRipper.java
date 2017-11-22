@@ -217,7 +217,7 @@ public class InstagramRipper extends AbstractHTMLRipper {
                         Document slideShowDoc = Http.url(new URL ("https://www.instagram.com/p/" + data.getString("code"))).get();
                         List<String> toAdd = getPostsFromSinglePage(slideShowDoc);
                         for (int slideShowInt=0; slideShowInt<toAdd.size(); slideShowInt++) {
-                            addURLToDownload(new URL(toAdd.get(slideShowInt)));
+                            addURLToDownload(new URL(toAdd.get(slideShowInt)), image_date + data.getString("code"));
                         }
                     } catch (MalformedURLException e) {
                         logger.error("Unable to download slide show, URL was malformed");
