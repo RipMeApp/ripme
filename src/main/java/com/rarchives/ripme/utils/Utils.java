@@ -211,29 +211,12 @@ public class Utils {
     }
 
     // Return the path of the url history file
-    public static String getURLHistoryFile(String url) {
-        url = url.replaceAll("https?","");
-        url = url.replaceAll("//","");
-        url = url.replaceAll("/","_");
-        url = url.replaceAll("[+.^:,]","");
-        final String historyFilePath = getConfigDir() + File.separator + "history_files" + File.separator + url + "_history.txt";
-        if (historyDirExists()) {
-            return historyFilePath;
-        } else {
-            File historyDir = new File(getConfigDir() + File.separator + "history_files");
-            historyDir.mkdir();
-        }
-        return historyFilePath;
+    public static String getURLHistoryFile(File workingDir) {
+        return workingDir + File.separator + "history.txt";
     }
 
     public static String getGlobalURLHistoryFile() {
-        final String historyFilePath = getConfigDir() + File.separator + "history_files" + File.separator + "url_history.txt";
-        if (historyDirExists()) {
-            return historyFilePath;
-        } else {
-            File historyDir = new File(getConfigDir() + File.separator + "history_files");
-            historyDir.mkdir();
-        }
+        final String historyFilePath = getConfigDir() + File.separator + "url_history.txt";
         return historyFilePath;
     }
 
