@@ -39,26 +39,26 @@ public class AerisdiesRipper extends AbstractHTMLRipper {
 
     @Override
     public String getGID(URL url) throws MalformedURLException {
-        Pattern p = Pattern.compile("^https?://www.aerisdies.com/html/lb/([a-z]*_[0-9]*_\\d)\\.html");
+        Pattern p = Pattern.compile("^https?://www.aerisdies.com/html/lb/[a-z]*_(\\d+)_\\d\\.html");
         Matcher m = p.matcher(url.toExternalForm());
         if (!m.matches()) {
             throw new MalformedURLException("Expected URL format: http://www.aerisdies.com/html/lb/albumDIG, got: " + url);
         }
-        return m.group(m.groupCount());
+        return m.group(1);
     }
 
-    @Override
-    public String getAlbumTitle(URL url) throws MalformedURLException {
-        try {
-            // Attempt to use album title as GID
-            String title = getFirstPage().select("title").first().text();
-            return getHost() + "_" + title.trim();
-        } catch (IOException e) {
-            // Fall back to default album naming convention
-            logger.info("Unable to find title at " + url);
-        }
-        return super.getAlbumTitle(url);
-    }
+//    @Override
+//    public String getAlbumTitle(URL url) throws MalformedURLException {
+//        try {
+//            // Attempt to use album title as GID
+//            String title = getFirstPage().select("title").first().text();
+//            return getHost() + "_" + title.trim();
+//        } catch (IOException e) {
+//            // Fall back to default album naming convention
+//            logger.info("Unable to find title at " + url);
+//        }
+//        return super.getAlbumTitle(url);
+//    }
 
     @Override
     public Document getFirstPage() throws IOException {
