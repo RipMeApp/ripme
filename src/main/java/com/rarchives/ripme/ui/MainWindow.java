@@ -737,10 +737,16 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         addCheckboxListener(configSaveURLsOnly, "urls_only.save");
         addCheckboxListener(configURLHistoryCheckbox, "remember.url_history");
         addCheckboxListener(configSaveAlbumTitles, "album_titles.save");
-        addCheckboxListener(configClipboardAutorip, "clipboard.autorip");
         addCheckboxListener(configSaveDescriptions, "descriptions.save");
         addCheckboxListener(configPreferMp4, "prefer.mp4");
         addCheckboxListener(configWindowPosition, "window.position");
+        
+        configClipboardAutorip.addActionListener(arg0 -> {
+            Utils.setConfigBoolean("clipboard.autorip", configClipboardAutorip.isSelected());
+            ClipboardUtils.setClipboardAutoRip(configClipboardAutorip.isSelected());
+            trayMenuAutorip.setState(configClipboardAutorip.isSelected());
+            Utils.configureLogger();
+        });
 
         queueListModel.addListDataListener(new ListDataListener() {
             @Override
