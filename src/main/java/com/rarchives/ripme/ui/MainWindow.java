@@ -731,9 +731,8 @@ public final class MainWindow implements Runnable, RipStatusHandler {
             configSaveDirLabel.setText(Utils.shortenPath(chosenPath));
             Utils.setConfigString("rips.directory", chosenPath);
         });
-        configOverwriteCheckbox.addActionListener(arg0 -> Utils.setConfigBoolean("file.overwrite", configOverwriteCheckbox.isSelected()));
-        configSaveOrderCheckbox.addActionListener(arg0 -> Utils.setConfigBoolean("download.save_order", configSaveOrderCheckbox.isSelected()));
-
+        addCheckboxListener(configSaveOrderCheckbox, "download.save_order");
+        addCheckboxListener(configOverwriteCheckbox, "file.overwrite");
         addCheckboxListener(configSaveLogs, "log.save");
         addCheckboxListener(configSaveURLsOnly, "urls_only.save");
         addCheckboxListener(configURLHistoryCheckbox, "remember.url_history");
