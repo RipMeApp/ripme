@@ -138,6 +138,14 @@ public final class MainWindow implements Runnable, RipStatusHandler {
 
     private static AbstractRipper ripper;
 
+    private static void addCheckboxListener(JCheckBox checkBox, String configString) {
+        checkBox.addActionListener(arg0 -> {
+            Utils.setConfigBoolean(configString, checkBox.isSelected());
+            Utils.configureLogger();
+        });
+
+    }
+
     public MainWindow() {
         mainFrame = new JFrame("RipMe v" + UpdateUtils.getThisJarVersion());
         mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -743,40 +751,16 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         });
         configOverwriteCheckbox.addActionListener(arg0 -> Utils.setConfigBoolean("file.overwrite", configOverwriteCheckbox.isSelected()));
         configSaveOrderCheckbox.addActionListener(arg0 -> Utils.setConfigBoolean("download.save_order", configSaveOrderCheckbox.isSelected()));
-        configSaveLogs.addActionListener(arg0 -> {
-            Utils.setConfigBoolean("log.save", configSaveLogs.isSelected());
-            Utils.configureLogger();
-        });
-        configSaveURLsOnly.addActionListener(arg0 -> {
-            Utils.setConfigBoolean("urls_only.save", configSaveURLsOnly.isSelected());
-            Utils.configureLogger();
-        });
-        configURLHistoryCheckbox.addActionListener(arg0 -> {
-            Utils.setConfigBoolean("remember.url_history", configURLHistoryCheckbox.isSelected());
-            Utils.configureLogger();
-        });
-        configSaveAlbumTitles.addActionListener(arg0 -> {
-            Utils.setConfigBoolean("album_titles.save", configSaveAlbumTitles.isSelected());
-            Utils.configureLogger();
-        });
-        configClipboardAutorip.addActionListener(arg0 -> {
-            Utils.setConfigBoolean("clipboard.autorip", configClipboardAutorip.isSelected());
-            ClipboardUtils.setClipboardAutoRip(configClipboardAutorip.isSelected());
-            trayMenuAutorip.setState(configClipboardAutorip.isSelected());
-            Utils.configureLogger();
-        });
-        configSaveDescriptions.addActionListener(arg0 -> {
-            Utils.setConfigBoolean("descriptions.save", configSaveDescriptions.isSelected());
-            Utils.configureLogger();
-        });
-        configPreferMp4.addActionListener(arg0 -> {
-            Utils.setConfigBoolean("prefer.mp4", configPreferMp4.isSelected());
-            Utils.configureLogger();
-        });
-        configWindowPosition.addActionListener(arg0 -> {
-            Utils.setConfigBoolean("window.position", configWindowPosition.isSelected());
-            Utils.configureLogger();
-        });
+
+        addCheckboxListener(configSaveLogs, "log.save");
+        addCheckboxListener(configSaveURLsOnly, "urls_only.save");
+        addCheckboxListener(configURLHistoryCheckbox, "remember.url_history");
+        addCheckboxListener(configSaveAlbumTitles, "album_titles.save");
+        addCheckboxListener(configClipboardAutorip, "clipboard.autorip");
+        addCheckboxListener(configSaveDescriptions, "descriptions.save");
+        addCheckboxListener(configPreferMp4, "prefer.mp4");
+        addCheckboxListener(configWindowPosition, "window.position");
+
         queueListModel.addListDataListener(new ListDataListener() {
             @Override
             public void intervalAdded(ListDataEvent arg0) {
