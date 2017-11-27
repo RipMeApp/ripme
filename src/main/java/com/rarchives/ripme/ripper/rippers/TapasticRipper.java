@@ -38,12 +38,12 @@ public class TapasticRipper extends AbstractHTMLRipper {
 
     @Override
     public String getDomain() {
-        return "tapastic.com";
+        return "tapas.io";
     }
 
     @Override
     public String getHost() {
-        return "tapastic";
+        return "tapas";
     }
 
     @Override
@@ -100,12 +100,12 @@ public class TapasticRipper extends AbstractHTMLRipper {
 
     @Override
     public String getGID(URL url) throws MalformedURLException {
-        Pattern p = Pattern.compile("^http://tapastic.com/series/([^/?]+).*$");
+        Pattern p = Pattern.compile("^https?://tapas.io/series/([^/?]+).*$");
         Matcher m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             return "series_ " + m.group(1);
         }
-        p = Pattern.compile("^http://tapastic.com/episode/([^/?]+).*$");
+        p = Pattern.compile("^https?://tapas.io/episode/([^/?]+).*$");
         m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             return "ep_" + m.group(1);
