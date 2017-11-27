@@ -30,20 +30,6 @@ public class ImagearnRipper extends AbstractHTMLRipper {
     }
 
     @Override
-    public String getAlbumTitle(URL url) throws MalformedURLException {
-        try {
-            Document doc = getFirstPage();
-            String title = doc.select("h3 > strong").first().text(); // profile name
-            logger.error(title);
-            return getHost() + "_" + title;
-        } catch (Exception e) {
-            // Fall back to default album naming convention
-            logger.warn("Failed to get album title from " + url, e);
-        }
-        return super.getAlbumTitle(url);
-    }
-
-    @Override
     public String getGID(URL url) throws MalformedURLException {
         Pattern p = Pattern.compile("^.*imagearn.com/+gallery.php\\?id=([0-9]+).*$");
         Matcher m = p.matcher(url.toExternalForm());
@@ -87,6 +73,19 @@ public class ImagearnRipper extends AbstractHTMLRipper {
     @Override
     public Document getFirstPage() throws IOException {
         return Http.url(url).get();
+    }
+
+    @Override
+    public String getAlbumTitle(URL url) throws MalformedURLException {
+        try {
+            Document doc = getFirstPage();
+            String title = doc.select("h3 > strong").first().text(); // profile name
+            return getHost() + "_" + title;
+        } catch (Exception e) {
+            // Fall back to default album naming convention
+            logger.warn("Failed to get album title from " + url, e);
+        }
+        return super.getAlbumTitle(url);
     }
 
     @Override
