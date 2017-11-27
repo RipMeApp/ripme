@@ -76,6 +76,19 @@ public class ImagearnRipper extends AbstractHTMLRipper {
     }
 
     @Override
+    public String getAlbumTitle(URL url) throws MalformedURLException {
+        try {
+            Document doc = getFirstPage();
+            String title = doc.select("h3 > strong").first().text(); // profile name
+            return getHost() + "_" + title + "_" + getGID(url);
+        } catch (Exception e) {
+            // Fall back to default album naming convention
+            logger.warn("Failed to get album title from " + url, e);
+        }
+        return super.getAlbumTitle(url);
+    }
+
+    @Override
     public List<String> getURLsFromPage(Document doc) {
         List<String> imageURLs = new ArrayList<>();
         for (Element thumb : doc.select("div#gallery > div > a")) {
