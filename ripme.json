@@ -1,6 +1,7 @@
 {
-    "latestVersion": "1.7.2",
+    "latestVersion": "1.7.3",
     "changeList": [
+        "1.7.3: Minor improvements to Aerisdies folder naming; Change folder name in imagearn; Fixed ripper for tapas.io; Rewrote xhamster ripper to use mobile site; Instagram ripper can now downloads slideshows when ripping user profiles",
         "1.7.2: InstagramRipper: Added support for ripping individual posts",
         "1.7.1: Fix WordpressComicRipper's ripper for freeadultcomix.com; FuraffinityRipper can now rip public albums",
         "1.7.0: Improved webtoons folder naming; Added code coverage with Coveralls.io; improved unit tests and code coverage; removed rippers for dead sites",
