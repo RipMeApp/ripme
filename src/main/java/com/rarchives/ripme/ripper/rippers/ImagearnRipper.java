@@ -80,7 +80,7 @@ public class ImagearnRipper extends AbstractHTMLRipper {
         try {
             Document doc = getFirstPage();
             String title = doc.select("h3 > strong").first().text(); // profile name
-            return getHost() + "_" + title + getGID();;
+            return getHost() + "_" + title + "_" + getGID();
         } catch (Exception e) {
             // Fall back to default album naming convention
             logger.warn("Failed to get album title from " + url, e);
