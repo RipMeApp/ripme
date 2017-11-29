@@ -138,6 +138,21 @@ public final class MainWindow implements Runnable, RipStatusHandler {
 
     private static AbstractRipper ripper;
 
+    private static void addCheckboxListener(JCheckBox checkBox, String configString) {
+        checkBox.addActionListener(arg0 -> {
+            Utils.setConfigBoolean(configString, checkBox.isSelected());
+            Utils.configureLogger();
+        });
+
+    }
+
+    private static JCheckBox addNewCheckbox(String text, String configString, Boolean configBool) {
+        JCheckBox checkbox = new JCheckBox(text, Utils.getConfigBoolean(configString, configBool));
+        checkbox.setHorizontalAlignment(JCheckBox.RIGHT);
+        checkbox.setHorizontalTextPosition(JCheckBox.LEFT);
+        return checkbox;
+    }
+
     public MainWindow() {
         mainFrame = new JFrame("RipMe v" + UpdateUtils.getThisJarVersion());
         mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -452,48 +467,23 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         configThreadsText = new JTextField(Integer.toString(Utils.getConfigInteger("threads.size", 3)));
         configTimeoutText = new JTextField(Integer.toString(Utils.getConfigInteger("download.timeout", 60000)));
         configRetriesText = new JTextField(Integer.toString(Utils.getConfigInteger("download.retries", 3)));
-        configOverwriteCheckbox = new JCheckBox("Overwrite existing files?", Utils.getConfigBoolean("file.overwrite", false));
-        configOverwriteCheckbox.setHorizontalAlignment(JCheckBox.RIGHT);
-        configOverwriteCheckbox.setHorizontalTextPosition(JCheckBox.LEFT);
-        configAutoupdateCheckbox = new JCheckBox("Auto-update?", Utils.getConfigBoolean("auto.update", true));
-        configAutoupdateCheckbox.setHorizontalAlignment(JCheckBox.RIGHT);
-        configAutoupdateCheckbox.setHorizontalTextPosition(JCheckBox.LEFT);
+        configOverwriteCheckbox = addNewCheckbox("Overwrite existing files?", "file.overwrite", false);
+        configAutoupdateCheckbox = addNewCheckbox("Auto-update?", "auto.update", true);
+        configPlaySound = addNewCheckbox("Sound when rip completes", "play.sound", false);
+        configShowPopup = addNewCheckbox("Notification when rip starts", "download.show_popup", false);
+        configSaveOrderCheckbox = addNewCheckbox("Preserve order", "download.save_order", true);
+        configSaveLogs = addNewCheckbox("Save logs", "log.save", false);
+        configSaveURLsOnly = addNewCheckbox("Save URLs only", "urls_only.save", false);
+        configSaveAlbumTitles = addNewCheckbox("Save album titles", "album_titles.save", true);
+        configClipboardAutorip = addNewCheckbox("Autorip from Clipboard", "clipboard.autorip", false);
+        configSaveDescriptions = addNewCheckbox("Save descriptions", "descriptions.save", true);
+        configPreferMp4 = addNewCheckbox("Prefer MP4 over GIF","prefer.mp4", false);
+        configWindowPosition = addNewCheckbox("Restore window position", "window.position", true);
+        configURLHistoryCheckbox = addNewCheckbox("Remember URL history", "remember.url_history", true);
+
         configLogLevelCombobox = new JComboBox(new String[] {"Log level: Error", "Log level: Warn", "Log level: Info", "Log level: Debug"});
         configLogLevelCombobox.setSelectedItem(Utils.getConfigString("log.level", "Log level: Debug"));
         setLogLevel(configLogLevelCombobox.getSelectedItem().toString());
-        configPlaySound = new JCheckBox("Sound when rip completes", Utils.getConfigBoolean("play.sound", false));
-        configPlaySound.setHorizontalAlignment(JCheckBox.RIGHT);
-        configPlaySound.setHorizontalTextPosition(JCheckBox.LEFT);
-        configSaveOrderCheckbox = new JCheckBox("Preserve order", Utils.getConfigBoolean("download.save_order", true));
-        configSaveOrderCheckbox.setHorizontalAlignment(JCheckBox.RIGHT);
-        configSaveOrderCheckbox.setHorizontalTextPosition(JCheckBox.LEFT);
-        configShowPopup = new JCheckBox("Notification when rip starts", Utils.getConfigBoolean("download.show_popup", false));
-        configShowPopup.setHorizontalAlignment(JCheckBox.RIGHT);
-        configShowPopup.setHorizontalTextPosition(JCheckBox.LEFT);
-        configSaveLogs = new JCheckBox("Save logs", Utils.getConfigBoolean("log.save", false));
-        configSaveLogs.setHorizontalAlignment(JCheckBox.RIGHT);
-        configSaveLogs.setHorizontalTextPosition(JCheckBox.LEFT);
-        configSaveURLsOnly = new JCheckBox("Save URLs only", Utils.getConfigBoolean("urls_only.save", false));
-        configSaveURLsOnly.setHorizontalAlignment(JCheckBox.RIGHT);
-        configSaveURLsOnly.setHorizontalTextPosition(JCheckBox.LEFT);
-        configSaveAlbumTitles = new JCheckBox("Save album titles", Utils.getConfigBoolean("album_titles.save", true));
-        configSaveAlbumTitles.setHorizontalAlignment(JCheckBox.RIGHT);
-        configSaveAlbumTitles.setHorizontalTextPosition(JCheckBox.LEFT);
-        configClipboardAutorip = new JCheckBox("Autorip from Clipboard", Utils.getConfigBoolean("clipboard.autorip", false));
-        configClipboardAutorip.setHorizontalAlignment(JCheckBox.RIGHT);
-        configClipboardAutorip.setHorizontalTextPosition(JCheckBox.LEFT);
-        configSaveDescriptions = new JCheckBox("Save descriptions", Utils.getConfigBoolean("descriptions.save", true));
-        configSaveDescriptions.setHorizontalAlignment(JCheckBox.RIGHT);
-        configSaveDescriptions.setHorizontalTextPosition(JCheckBox.LEFT);
-        configPreferMp4 = new JCheckBox("Prefer MP4 over GIF", Utils.getConfigBoolean("prefer.mp4", false));
-        configPreferMp4.setHorizontalAlignment(JCheckBox.RIGHT);
-        configPreferMp4.setHorizontalTextPosition(JCheckBox.LEFT);
-        configWindowPosition = new JCheckBox("Restore window position", Utils.getConfigBoolean("window.position", true));
-        configWindowPosition.setHorizontalAlignment(JCheckBox.RIGHT);
-        configWindowPosition.setHorizontalTextPosition(JCheckBox.LEFT);
-        configURLHistoryCheckbox = new JCheckBox("Remember URL history", Utils.getConfigBoolean("remember.url_history", true));
-        configURLHistoryCheckbox.setHorizontalAlignment(JCheckBox.RIGHT);
-        configURLHistoryCheckbox.setHorizontalTextPosition(JCheckBox.LEFT);
         configSaveDirLabel = new JLabel();
         try {
             String workingDir = (Utils.shortenPath(Utils.getWorkingDirectory()));
@@ -741,42 +731,23 @@ public final class MainWindow implements Runnable, RipStatusHandler {
             configSaveDirLabel.setText(Utils.shortenPath(chosenPath));
             Utils.setConfigString("rips.directory", chosenPath);
         });
-        configOverwriteCheckbox.addActionListener(arg0 -> Utils.setConfigBoolean("file.overwrite", configOverwriteCheckbox.isSelected()));
-        configSaveOrderCheckbox.addActionListener(arg0 -> Utils.setConfigBoolean("download.save_order", configSaveOrderCheckbox.isSelected()));
-        configSaveLogs.addActionListener(arg0 -> {
-            Utils.setConfigBoolean("log.save", configSaveLogs.isSelected());
-            Utils.configureLogger();
-        });
-        configSaveURLsOnly.addActionListener(arg0 -> {
-            Utils.setConfigBoolean("urls_only.save", configSaveURLsOnly.isSelected());
-            Utils.configureLogger();
-        });
-        configURLHistoryCheckbox.addActionListener(arg0 -> {
-            Utils.setConfigBoolean("remember.url_history", configURLHistoryCheckbox.isSelected());
-            Utils.configureLogger();
-        });
-        configSaveAlbumTitles.addActionListener(arg0 -> {
-            Utils.setConfigBoolean("album_titles.save", configSaveAlbumTitles.isSelected());
-            Utils.configureLogger();
-        });
+        addCheckboxListener(configSaveOrderCheckbox, "download.save_order");
+        addCheckboxListener(configOverwriteCheckbox, "file.overwrite");
+        addCheckboxListener(configSaveLogs, "log.save");
+        addCheckboxListener(configSaveURLsOnly, "urls_only.save");
+        addCheckboxListener(configURLHistoryCheckbox, "remember.url_history");
+        addCheckboxListener(configSaveAlbumTitles, "album_titles.save");
+        addCheckboxListener(configSaveDescriptions, "descriptions.save");
+        addCheckboxListener(configPreferMp4, "prefer.mp4");
+        addCheckboxListener(configWindowPosition, "window.position");
+        
         configClipboardAutorip.addActionListener(arg0 -> {
             Utils.setConfigBoolean("clipboard.autorip", configClipboardAutorip.isSelected());
             ClipboardUtils.setClipboardAutoRip(configClipboardAutorip.isSelected());
             trayMenuAutorip.setState(configClipboardAutorip.isSelected());
             Utils.configureLogger();
         });
-        configSaveDescriptions.addActionListener(arg0 -> {
-            Utils.setConfigBoolean("descriptions.save", configSaveDescriptions.isSelected());
-            Utils.configureLogger();
-        });
-        configPreferMp4.addActionListener(arg0 -> {
-            Utils.setConfigBoolean("prefer.mp4", configPreferMp4.isSelected());
-            Utils.configureLogger();
-        });
-        configWindowPosition.addActionListener(arg0 -> {
-            Utils.setConfigBoolean("window.position", configWindowPosition.isSelected());
-            Utils.configureLogger();
-        });
+
         queueListModel.addListDataListener(new ListDataListener() {
             @Override
             public void intervalAdded(ListDataEvent arg0) {
