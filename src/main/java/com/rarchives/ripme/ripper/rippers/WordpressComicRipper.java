@@ -67,8 +67,16 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
                 return true;
             }
 
-            Pattern konradokonskiPat = Pattern.compile("https?://www.konradokonski.com/sawdust/comic/([a-zA-Z0-9_-]*)/?$");
+            Pattern konradokonskiPat = Pattern.compile("https?://www.konradokonski.com/([a-zA-Z0-9_-]*)/comic/([a-zA-Z0-9_-]*)/?$");
             Matcher konradokonskiMat = konradokonskiPat.matcher(url.toExternalForm());
+            if (konradokonskiMat.matches()) {
+                return true;
+            }
+
+            // This is hardcoded because it starts on the first page, unlike all the other
+            // konradokonski which start on the last page
+            konradokonskiPat = Pattern.compile("https?://www.konradokonski.com/aquartzbead/?$");
+            konradokonskiMat = konradokonskiPat.matcher(url.toExternalForm());
             if (konradokonskiMat.matches()) {
                 return true;
             }
@@ -139,16 +147,10 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
             return "buttsmithy.com" + "_" + "Alfie";
         }
 
-        Pattern konradokonskiSawdustPat = Pattern.compile("http://www.konradokonski.com/sawdust/comic/([a-zA-Z0-9_-]*)/?$");
+        Pattern konradokonskiSawdustPat = Pattern.compile("http://www.konradokonski.com/([a-zA-Z]+)/comic/([a-zA-Z0-9_-]*)/?$");
         Matcher konradokonskiSawdustMat = konradokonskiSawdustPat.matcher(url.toExternalForm());
         if (konradokonskiSawdustMat.matches()) {
-            return "konradokonski.com_sawdust";
-        }
-
-        Pattern konradokonskiWioryPat = Pattern.compile("http://www.konradokonski.com/wiory/comic/([a-zA-Z0-9_-]*)/?$");
-        Matcher konradokonskiWioryMat = konradokonskiWioryPat.matcher(url.toExternalForm());
-        if (konradokonskiWioryMat.matches()) {
-            return "konradokonski.com_wiory";
+            return "konradokonski.com_" + konradokonskiSawdustMat.group(1);
         }
 
         Pattern freeadultcomixPat = Pattern.compile("https?://freeadultcomix.com/([a-zA-Z0-9_\\-]*)/?$");
