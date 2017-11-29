@@ -86,14 +86,3 @@ mvn test
 Please note that some tests may fail as sites change and our rippers become out of date.
 Start by building and testing a released version of RipMe
 and then ensure that any changes you make do not cause more tests to break.
-
-# Dependencies
-
-* junit-3.8.1
-* jsoup-1.8.1
-* json-20140107
-* apache-commons-configuration-1.7
-* log4j-1.2.17
-* commons-cli-1.2
-* commons-io-1.3.2
-* httpcomponents-4.3.3
