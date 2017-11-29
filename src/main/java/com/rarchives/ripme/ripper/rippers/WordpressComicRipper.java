@@ -147,10 +147,16 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
             return "buttsmithy.com" + "_" + "Alfie";
         }
 
-        Pattern konradokonskiSawdustPat = Pattern.compile("http://www.konradokonski.com/([a-zA-Z]+)/comic/([a-zA-Z0-9_-]*)/?$");
-        Matcher konradokonskiSawdustMat = konradokonskiSawdustPat.matcher(url.toExternalForm());
-        if (konradokonskiSawdustMat.matches()) {
-            return "konradokonski.com_" + konradokonskiSawdustMat.group(1);
+        Pattern konradokonskiPat = Pattern.compile("http://www.konradokonski.com/([a-zA-Z]+)/comic/([a-zA-Z0-9_-]*)/?$");
+        Matcher konradokonskiMat = konradokonskiPat.matcher(url.toExternalForm());
+        if (konradokonskiMat.matches()) {
+            return "konradokonski.com_" + konradokonskiMat.group(1);
+        }
+
+        konradokonskiPat = Pattern.compile("https?://www.konradokonski.com/aquartzbead/?$");
+        konradokonskiMat = konradokonskiPat.matcher(url.toExternalForm());
+        if (konradokonskiMat.matches()) {
+            return "konradokonski.com_aquartzbead";
         }
 
         Pattern freeadultcomixPat = Pattern.compile("https?://freeadultcomix.com/([a-zA-Z0-9_\\-]*)/?$");
