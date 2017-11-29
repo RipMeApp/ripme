@@ -1,13 +1,13 @@
 {
     "latestVersion": "1.7.3",
     "changeList": [
-        "1.7.3: Minor improvements to Aerisdies folder naming; Change folder name in imagearn; Fixed ripper for tapas.io; Rewrote xhamster ripper to use mobile site; Instagram ripper can now downloads slideshows when ripping user profiles",
+        "1.7.3: Improved Aerisdies and Omagearn folders; fixed tapas.io; XhamsterRipper now uses mobile site; InstagramRipper slideshows under user profiles",
         "1.7.2: InstagramRipper: Added support for ripping individual posts",
         "1.7.1: Fix WordpressComicRipper's ripper for freeadultcomix.com; FuraffinityRipper can now rip public albums",
-        "1.7.0: Improved webtoons folder naming; Added code coverage with Coveralls.io; improved unit tests and code coverage; removed rippers for dead sites",
-        "1.6.13: Added support for ripping from instagram tags; Instagram regex now matches all ripable urls; improved regex for pichunter",
+        "1.7.0: Improved Webtoons folders; Added code coverage with Coveralls.io and improved unit tests; removed rippers for dead sites",
+        "1.6.13: Added Instagram tags; improved Instagram and Pichunter regexes",
         "1.6.12: Fix InstagramRipper with timestamps; Pichunter galleries support; logging improvements",
-        "1.6.11: dded pichunter.com ripper; Changed instagram output name format; added tehyiffgallery ripper; Fixed xchan ripper; Fixed regession in chanRipper folder naming",
+        "1.6.11: Added pichunter.com ripper; Improved Instagram filenames; added tehyiffgallery ripper; Fixed xchan ripper; Fixed chanRipper folders",
         "1.6.10: Added viewcomic ripper; Fixed webtoons malformed url error message; Fixed chan ripper thread title; Fixed Modelmayhem ripper",
         "1.6.9: Added support for imgur /t/ albums; Added portable mode; Unit tests no longer fail if run twice; Formating fixes",
         "1.6.8: code clean up; ripme can now remeber and skip already downloaded images",
