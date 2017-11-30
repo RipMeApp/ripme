@@ -70,6 +70,8 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
             Pattern konradokonskiPat = Pattern.compile("https?://www.konradokonski.com/([a-zA-Z0-9_-]*)/comic/([a-zA-Z0-9_-]*)/?$");
             Matcher konradokonskiMat = konradokonskiPat.matcher(url.toExternalForm());
             if (konradokonskiMat.matches()) {
+                return true;
+            }
 
             // This is hardcoded because it starts on the first page, unlike all the other
             // konradokonski which start on the last page
@@ -127,6 +129,7 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
                 return true;
             }
         }
+
 
         return false;
     }
