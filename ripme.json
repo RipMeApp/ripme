@@ -1,6 +1,7 @@
 {
-    "latestVersion": "1.7.4",
+    "latestVersion": "1.7.5",
     "changeList": [
+        "1.7.5: Improve WordpressComicRipper; update to a modern User Agent",
         "1.7.4: Fix WordpressComicRipper konradokonski.com/wiory; Fix CheveretoRipper hushpix.com by adding consent cookie",
         "1.7.3: Improved Aerisdies and Imagearn folders; fixed tapas.io; XhamsterRipper now uses mobile site; InstagramRipper slideshows under user profiles",
         "1.7.2: InstagramRipper: Added support for ripping individual posts",
