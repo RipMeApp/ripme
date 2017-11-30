@@ -6,7 +6,7 @@ import java.net.URL;
 import com.rarchives.ripme.ripper.rippers.CfakeRipper;
 
 public class CfakeRipperTest extends RippersTest {
-    public void testVidbleRip() throws IOException {
+    public void testRip() throws IOException {
         CfakeRipper ripper = new CfakeRipper(new URL("http://cfake.com/picture/Zooey_Deschanel/1264"));
         testRipper(ripper);
     }
