@@ -27,8 +27,8 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
     // http://buttsmithy.com/archives/comic/p1
     // http://themonsterunderthebed.net/?comic=test-post
     // http://prismblush.com/comic/hella-trap-pg-01/
-    // http://www.konradokonski.com/sawdust/
-    // http://www.konradokonski.com/wiory/
+    // http://www.konradokonski.com/sawdust/comic/get-up/
+    // http://www.konradokonski.com/wiory/comic/08182008/
     // http://freeadultcomix.com/finders-feepaid-in-full-sparrow/
     // http://thisis.delvecomic.com/NewWP/comic/in-too-deep/
     // http://tnbtu.com/comic/01-00/
@@ -70,8 +70,6 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
             Pattern konradokonskiPat = Pattern.compile("https?://www.konradokonski.com/([a-zA-Z0-9_-]*)/comic/([a-zA-Z0-9_-]*)/?$");
             Matcher konradokonskiMat = konradokonskiPat.matcher(url.toExternalForm());
             if (konradokonskiMat.matches()) {
-                return true;
-            }
 
             // This is hardcoded because it starts on the first page, unlike all the other
             // konradokonski which start on the last page

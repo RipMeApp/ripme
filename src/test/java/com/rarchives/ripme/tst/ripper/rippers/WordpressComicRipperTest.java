@@ -11,8 +11,8 @@ public class WordpressComicRipperTest extends RippersTest {
     // http://buttsmithy.com/archives/comic/p1
     // http://themonsterunderthebed.net/?comic=test-post
     // http://prismblush.com/comic/hella-trap-pg-01/
-    // http://www.konradokonski.com/sawdust/
-    // http://www.konradokonski.com/wiory/
+    // http://www.konradokonski.com/sawdust/comic/get-up/
+    // http://www.konradokonski.com/wiory/comic/08182008/
     // http://freeadultcomix.com/finders-feepaid-in-full-sparrow/
     // http://thisis.delvecomic.com/NewWP/comic/in-too-deep/
     // http://tnbtu.com/comic/01-00/
@@ -51,21 +51,17 @@ public class WordpressComicRipperTest extends RippersTest {
         testRipper(ripper);
     }
 
-    /*
-    // https://github.com/RipMeApp/ripme/issues/266 - WordpressRipper: konradokonski.com previously supported but now cannot rip
-
     public void test_konradokonski_1() throws IOException {
         WordpressComicRipper ripper = new WordpressComicRipper(
-                new URL("http://www.konradokonski.com/sawdust/"));
+                new URL("http://www.konradokonski.com/sawdust/comic/get-up/"));
         testRipper(ripper);
     }
 
     public void test_konradokonski_2() throws IOException {
         WordpressComicRipper ripper = new WordpressComicRipper(
-                new URL("http://www.konradokonski.com/wiory/"));
+                new URL("http://www.konradokonski.com/wiory/comic/08182008/"));
         testRipper(ripper);
     }
-    */
 
     /*
     // https://github.com/RipMeApp/ripme/issues/269 - Disabled test - WordpressRipperTest: various domains flaky in CI
