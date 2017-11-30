@@ -3,7 +3,8 @@
         "target/**": true,
         "**/.git": true,
         "**/.DS_Store": true,
-        "**/*.class": true
+        "**/*.class": true,
+        "**/rips/**": true
     },
     "java.configuration.updateBuildConfiguration": "automatic"
 }
