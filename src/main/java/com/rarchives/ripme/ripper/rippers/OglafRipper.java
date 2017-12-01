@@ -42,6 +42,11 @@ public class OglafRipper extends AbstractHTMLRipper {
     }
 
     @Override
+    public String getAlbumTitle(URL url) throws MalformedURLException {
+        return getDomain();
+    }
+
+    @Override
     public Document getFirstPage() throws IOException {
         // "url" is an instance field of the superclass
         return Http.url(url).get();
