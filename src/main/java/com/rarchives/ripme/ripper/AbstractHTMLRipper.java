@@ -53,7 +53,7 @@ public abstract class AbstractHTMLRipper extends AlbumRipper {
     protected boolean hasDescriptionSupport() {
         return false;
     }
-    public boolean hasASAPRipping() {return false;}
+    public boolean hasASAPRipping() { return false; }
     protected String[] getDescription(String url, Document page) throws IOException {
         throw new IOException("getDescription not implemented"); // Do I do this or make an abstract function?
     }
@@ -69,9 +69,8 @@ public abstract class AbstractHTMLRipper extends AlbumRipper {
         Document doc = getFirstPage();
 
         while (doc != null) {
-            List<String> imageURLs;
+            List<String> imageURLs = getURLsFromPage(doc);
             if (!hasASAPRipping()) {
-                imageURLs = getURLsFromPage(doc);
                 // Remove all but 1 image
                 if (isThisATest()) {
                     while (imageURLs.size() > 1) {
