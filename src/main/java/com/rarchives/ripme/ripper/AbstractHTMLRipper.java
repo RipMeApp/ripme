@@ -53,6 +53,7 @@ public abstract class AbstractHTMLRipper extends AlbumRipper {
     protected boolean hasDescriptionSupport() {
         return false;
     }
+    public boolean hasASAPRipping() {return false;}
     protected String[] getDescription(String url, Document page) throws IOException {
         throw new IOException("getDescription not implemented"); // Do I do this or make an abstract function?
     }
@@ -68,24 +69,27 @@ public abstract class AbstractHTMLRipper extends AlbumRipper {
         Document doc = getFirstPage();
 
         while (doc != null) {
-            List<String> imageURLs = getURLsFromPage(doc);
-            // Remove all but 1 image
-            if (isThisATest()) {
-                while (imageURLs.size() > 1) {
-                    imageURLs.remove(1);
+            List<String> imageURLs;
+            if (!hasASAPRipping()) {
+                imageURLs = getURLsFromPage(doc);
+                // Remove all but 1 image
+                if (isThisATest()) {
+                    while (imageURLs.size() > 1) {
+                        imageURLs.remove(1);
+                    }
                 }
-            }
 
-            if (imageURLs.size() == 0) {
-                throw new IOException("No images found at " + doc.location());
-            }
+                if (imageURLs.size() == 0) {
+                    throw new IOException("No images found at " + doc.location());
+                }
 
-            for (String imageURL : imageURLs) {
-                index += 1;
-                logger.debug("Found image url #" + index + ": " + imageURL);
-                downloadURL(new URL(imageURL), index);
-                if (isStopped()) {
-                    break;
+                for (String imageURL : imageURLs) {
+                    index += 1;
+                    logger.debug("Found image url #" + index + ": " + imageURL);
+                    downloadURL(new URL(imageURL), index);
+                    if (isStopped()) {
+                        break;
+                    }
                 }
             }
             if (hasDescriptionSupport() && Utils.getConfigBoolean("descriptions.save", false)) {
