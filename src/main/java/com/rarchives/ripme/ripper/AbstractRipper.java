@@ -43,6 +43,7 @@ public abstract class AbstractRipper
     public abstract void rip() throws IOException;
     public abstract String getHost();
     public abstract String getGID(URL url) throws MalformedURLException;
+    public boolean hasASAPRipping() { return false; }
 
     private boolean shouldStop = false;
     private boolean thisIsATest = false;
