@@ -71,7 +71,6 @@ public final class MainWindow implements Runnable, RipStatusHandler {
     private static final Logger logger = Logger.getLogger(MainWindow.class);
 
     private boolean isRipping = false; // Flag to indicate if we're ripping something
-
     private static JFrame mainFrame;
     private static JTextField ripTextfield;
     private static JButton ripButton,
@@ -662,12 +661,33 @@ public final class MainWindow implements Runnable, RipStatusHandler {
             saveHistory();
         });
         historyButtonClear.addActionListener(event -> {
-            Utils.clearURLHistory();
-            HISTORY.clear();
-            try {
-                historyTableModel.fireTableDataChanged();
-            } catch (Exception e) { }
-            saveHistory();
+            JPanel checkChoise = new JPanel();
+            checkChoise.setLayout(new FlowLayout());
+            JButton yesButton = new JButton("YES");
+            JButton noButton =  new JButton("NO");
+            yesButton.setPreferredSize(new Dimension(70,30));
+            noButton.setPreferredSize(new Dimension(70,30));
+            checkChoise.add(yesButton);
+            checkChoise.add(noButton);
+            JFrame.setDefaultLookAndFeelDecorated(true);
+            JFrame frame = new JFrame("Are you sure?");
+            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            frame.add(checkChoise);
+            frame.setSize(405, 70);
+            frame.setVisible(true);
+            frame.setLocationRelativeTo(null);
+            noButton.addActionListener(e -> {
+                frame.setVisible(false);
+            });
+            yesButton.addActionListener(ed -> {
+                frame.setVisible(false);
+                Utils.clearURLHistory();
+                HISTORY.clear();
+                try {
+                    historyTableModel.fireTableDataChanged();
+                } catch (Exception e) { }
+                saveHistory();
+            });
         });
 
         // Re-rip all history
@@ -1278,3 +1298,4 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         }
     }
 }
+
