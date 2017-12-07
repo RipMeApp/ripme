@@ -662,16 +662,6 @@ public final class MainWindow implements Runnable, RipStatusHandler {
             saveHistory();
         });
         historyButtonClear.addActionListener(event -> {
-            Utils.clearURLHistory();
-            HISTORY.clear();
-            try {
-                historyTableModel.fireTableDataChanged();
-            } catch (Exception e) { }
-            saveHistory();
-        });
-
-        // Re-rip all history
-        historyButtonClear.addActionListener(event -> {
             if (Utils.getConfigBoolean("history.warn_before_delete", true)) {
 
                 JPanel checkChoise = new JPanel();
@@ -713,6 +703,16 @@ public final class MainWindow implements Runnable, RipStatusHandler {
                 saveHistory();
             }
         });
+
+        // Re-rip all history
+        historyButtonRerip.addActionListener(event -> {
+            if (HISTORY.isEmpty()) {
+                JOptionPane.showMessageDialog(null,
+                        "There are no history entries to re-rip. Rip some albums first",
+                        "RipMe Error",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
             int added = 0;
             for (HistoryEntry entry : HISTORY.toList()) {
                 if (entry.selected) {
