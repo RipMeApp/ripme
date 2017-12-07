@@ -54,13 +54,27 @@ public class E621Ripper extends AbstractHTMLRipper{
 			return Http.url("https://e621.net/post/index/1/"+getTerm(url)).get();
 	}
 
+	private String getFullSizedImage(String url) {
+	    try {
+            return Http.url("https://e621.net" + url).get().select("div > img#image").attr("src");
+        } catch (IOException e) {
+	        logger.error("Unable to get full sized image from " + url);
+	        return null;
+        }
+    }
+
 	@Override
 	public List<String> getURLsFromPage(Document page) {
-		Elements elements=page.select("#post-list .thumb a,#pool-show .thumb a");
-		List<String> res=new ArrayList<String>(elements.size());
+		Elements elements = page.select("div > span.thumb > a");
+		List<String> res = new ArrayList<>();
 
-		for(Element e:elements){
-			res.add(e.absUrl("href")+"#"+e.child(0).attr("id").substring(1));
+		for(Element e:elements) {
+		    if (!e.attr("href").isEmpty()) {
+                String fullSizedImage = getFullSizedImage(e.attr("href"));
+                if (fullSizedImage != null && !fullSizedImage.equals("")) {
+                    res.add(getFullSizedImage(e.attr("href")));
+                }
+            }
 		}
 
 		return res;
@@ -68,27 +82,16 @@ public class E621Ripper extends AbstractHTMLRipper{
 
 	@Override
 	public Document getNextPage(Document page) throws IOException {
-		for(Element e:page.select("#paginator a")){
-			if(e.attr("rel").equals("next"))
-				return Http.url(e.absUrl("href")).get();
-		}
-
-		return null;
-	}
+        if (page.select("a.next_page") != null) {
+            return Http.url("https://e621.net" + page.select("a.next_page").attr("href")).get();
+        } else {
+            throw new IOException("No more pages");
+        }
+    }
 
 	@Override
 	public void downloadURL(final URL url, int index) {
-		e621ThreadPool.addThread(new Thread(new Runnable() {
-			public void run() {
-				try {
-					Document page=Http.url(url).get();
-
-					addURLToDownload(new URL(page.getElementById("image").absUrl("src")),Utils.getConfigBoolean("download.save_order",true)?url.getRef()+"-":"");
-				} catch (IOException ex) {
-					logger.error(ex);
-				}
-			}
-		}));
+        addURLToDownload(url, getPrefix(index));
 	}
 
 	private String getTerm(URL url) throws MalformedURLException{
