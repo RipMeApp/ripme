@@ -1,6 +1,7 @@
 {
-    "latestVersion": "1.7.6",
+    "latestVersion": "1.7.7",
     "changeList": [
+        "1.7.7: Fixed E621 Ripper; Added unit test for zizki.com; Added unit test for Xbooru.com; Updated reddit useragent",
         "1.7.6: Added OglafRipper",
         "1.7.5: Improve WordpressComicRipper; update to a modern User Agent",
         "1.7.4: Fix WordpressComicRipper konradokonski.com/wiory; Fix CheveretoRipper hushpix.com by adding consent cookie",
