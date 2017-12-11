@@ -74,7 +74,7 @@ public class SankakuComplexRipper extends AbstractHTMLRipper {
                     // Get the page the full sized image is on
                     Document subPage = Http.url("https://chan.sankakucomplex.com" + postLink).get();
                     logger.info("Checking page " + "https://chan.sankakucomplex.com" + postLink);
-                    imageURLs.add("https:" + subPage.select("div[id=post-content] > a > img").attr("src"));
+                    imageURLs.add("https:" + subPage.select("div[id=stats] > ul > li > a[id=highres]").attr("href"));
                 } catch (IOException e) {
                     logger.warn("Error while loading page " + postLink, e);
                 }
