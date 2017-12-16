@@ -192,7 +192,7 @@ public class TumblrRipper extends AlbumRipper {
                 for (int j = 0; j < photos.length(); j++) {
                     photo = photos.getJSONObject(j);
                     try {
-                        fileURL = new URL(photo.getJSONObject("original_size").getString("url"));
+                        fileURL = new URL(photo.getJSONObject("original_size").getString("url").replaceAll("http", "https"));
                         m = p.matcher(fileURL.toString());
                         if (m.matches()) {
                             addURLToDownload(fileURL);
@@ -206,7 +206,7 @@ public class TumblrRipper extends AlbumRipper {
                 }
             } else if (post.has("video_url")) {
                 try {
-                    fileURL = new URL(post.getString("video_url"));
+                    fileURL = new URL(post.getString("video_url").replaceAll("http", "https"));
                     addURLToDownload(fileURL);
                 } catch (Exception e) {
                         logger.error("[!] Error while parsing video in " + post, e);
