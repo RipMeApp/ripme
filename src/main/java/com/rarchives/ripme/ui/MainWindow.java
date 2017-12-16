@@ -662,12 +662,46 @@ public final class MainWindow implements Runnable, RipStatusHandler {
             saveHistory();
         });
         historyButtonClear.addActionListener(event -> {
-            Utils.clearURLHistory();
-            HISTORY.clear();
-            try {
-                historyTableModel.fireTableDataChanged();
-            } catch (Exception e) { }
-            saveHistory();
+            if (Utils.getConfigBoolean("history.warn_before_delete", true)) {
+
+                JPanel checkChoise = new JPanel();
+                checkChoise.setLayout(new FlowLayout());
+                JButton yesButton = new JButton("YES");
+                JButton noButton = new JButton("NO");
+                yesButton.setPreferredSize(new Dimension(70, 30));
+                noButton.setPreferredSize(new Dimension(70, 30));
+                checkChoise.add(yesButton);
+                checkChoise.add(noButton);
+                JFrame.setDefaultLookAndFeelDecorated(true);
+                JFrame frame = new JFrame("Are you sure?");
+                frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                frame.add(checkChoise);
+                frame.setSize(405, 70);
+                frame.setVisible(true);
+                frame.setLocationRelativeTo(null);
+                noButton.addActionListener(e -> {
+                    frame.setVisible(false);
+                });
+                yesButton.addActionListener(ed -> {
+                    frame.setVisible(false);
+                    Utils.clearURLHistory();
+                    HISTORY.clear();
+                    try {
+                        historyTableModel.fireTableDataChanged();
+                    } catch (Exception e) {
+                    }
+                    saveHistory();
+                });
+            }
+            else {
+                Utils.clearURLHistory();
+                HISTORY.clear();
+                try {
+                    historyTableModel.fireTableDataChanged();
+                } catch (Exception e) {
+                }
+                saveHistory();
+            }
         });
 
         // Re-rip all history
