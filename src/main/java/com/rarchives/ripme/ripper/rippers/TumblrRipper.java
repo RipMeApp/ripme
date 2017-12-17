@@ -95,6 +95,7 @@ public class TumblrRipper extends AlbumRipper {
     @Override
     public void rip() throws IOException {
         String[] mediaTypes;
+        boolean exceededRateLimit = false;
         if (albumType == ALBUM_TYPE.POST) {
             mediaTypes = new String[] { "post" };
         } else {
@@ -105,11 +106,20 @@ public class TumblrRipper extends AlbumRipper {
             if (isStopped()) {
                 break;
             }
+
+            if (exceededRateLimit) {
+                break;
+            }
             offset = 0;
             while (true) {
                 if (isStopped()) {
                     break;
                 }
+
+                if (exceededRateLimit) {
+                    break;
+                }
+
 
                 String apiURL = getTumblrApiURL(mediaType, offset);
                 logger.info("Retrieving " + apiURL);
@@ -126,6 +136,11 @@ public class TumblrRipper extends AlbumRipper {
                         HttpStatusException status = (HttpStatusException)cause;
                         if (status.getStatusCode() == HttpURLConnection.HTTP_UNAUTHORIZED && !useDefaultApiKey) {
                             retry = true;
+                        } else if (status.getStatusCode() == 429) {
+                            logger.error("Tumblr rate limit has been exceeded");
+                            sendUpdate(STATUS.DOWNLOAD_ERRORED,"Tumblr rate limit has been exceeded");
+                            exceededRateLimit = true;
+                            break;
                         }
                     }
                 }
