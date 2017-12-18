@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.rarchives.ripme.ripper.rippers;
 
 import java.io.IOException;
@@ -62,6 +57,11 @@ public class EromeRipper extends AbstractHTMLRipper {
             return super.getAlbumTitle(url);
     }
 
+    @Override
+    public URL sanitizeURL(URL url) throws MalformedURLException {
+        return new URL(url.toExternalForm().replaceAll("https?://erome.com", "https://www.erome.com"));
+    }
+
 
     @Override
     public List<String> getURLsFromPage(Document doc) {
@@ -99,7 +99,15 @@ public class EromeRipper extends AbstractHTMLRipper {
         if (m.matches()) {
             return m.group(1);
         }
-        throw new MalformedURLException("erome album not found in " + url + ", expected https://erome.com/album");
+
+        p = Pattern.compile("^https?://erome.com/a/([a-zA-Z0-9]*)/?$");
+        m = p.matcher(url.toExternalForm());
+
+        if (m.matches()) {
+            return m.group(1);
+        }
+
+        throw new MalformedURLException("erome album not found in " + url + ", expected https://www.erome.com/album");
     }
 
     public static List<URL> getURLs(URL url) throws IOException{
