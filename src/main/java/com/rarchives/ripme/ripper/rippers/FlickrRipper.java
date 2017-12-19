@@ -7,6 +7,7 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.rarchives.ripme.ui.RipStatusMessage;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.jsoup.nodes.Document;
@@ -14,6 +15,7 @@ import org.jsoup.nodes.Document;
 import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 import com.rarchives.ripme.ripper.DownloadThreadPool;
 import com.rarchives.ripme.utils.Http;
+import org.jsoup.nodes.Element;
 
 public class FlickrRipper extends AbstractHTMLRipper {
 
@@ -56,12 +58,21 @@ public class FlickrRipper extends AbstractHTMLRipper {
     }
 
     private String getAPIKey(Document doc) {
-//        Pattern p; Matcher m;
-//        p = Pattern.compile("root.YUI_config.flickr.api.site_key = \"(\\S*)\"");
-//        m = p.matcher(doc.body().html());
-//        logger.info(doc.body().html());
-//        return m.group(1);
-        return "cd26dd7e6f904bbf63c4d1f9f013e76a";
+        Pattern p; Matcher m;
+        p = Pattern.compile("root.YUI_config.flickr.api.site_key = \"([0-9]*)\";");
+        for (Element e : doc.select("script")) {
+            // You have to use .html here as .text will strip most of the javascript
+            m = p.matcher(e.html());
+            logger.info("JS: " + e.html());
+            if (m.find()) {
+                logger.info("Found api key:" + m.group(1));
+                return m.group(1);
+            }
+        }
+        logger.error("Unable to get api key");
+        // A nice error message to tell our users what went wrong
+        sendUpdate(RipStatusMessage.STATUS.DOWNLOAD_ERRORED, "Unable to extract api key from flickr");
+        return null;
     }
 
     private String apiURLBuilder(String photoset, String pageNumber, String apiKey) {
