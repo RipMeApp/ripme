@@ -59,11 +59,10 @@ public class FlickrRipper extends AbstractHTMLRipper {
 
     private String getAPIKey(Document doc) {
         Pattern p; Matcher m;
-        p = Pattern.compile("root.YUI_config.flickr.api.site_key = \"([0-9]*)\";");
+        p = Pattern.compile("root.YUI_config.flickr.api.site_key = \"([a-zA-Z0-9]*)\";");
         for (Element e : doc.select("script")) {
             // You have to use .html here as .text will strip most of the javascript
             m = p.matcher(e.html());
-            logger.info("JS: " + e.html());
             if (m.find()) {
                 logger.info("Found api key:" + m.group(1));
                 return m.group(1);
@@ -71,8 +70,9 @@ public class FlickrRipper extends AbstractHTMLRipper {
         }
         logger.error("Unable to get api key");
         // A nice error message to tell our users what went wrong
-        sendUpdate(RipStatusMessage.STATUS.DOWNLOAD_ERRORED, "Unable to extract api key from flickr");
-        return null;
+        sendUpdate(RipStatusMessage.STATUS.DOWNLOAD_WARN, "Unable to extract api key from flickr");
+        sendUpdate(RipStatusMessage.STATUS.DOWNLOAD_WARN, "Using hardcoded api key");
+        return "935649baf09b2cc50628e2b306e4da5d";
     }
 
     private String apiURLBuilder(String photoset, String pageNumber, String apiKey) {
@@ -125,24 +125,10 @@ public class FlickrRipper extends AbstractHTMLRipper {
         final String domainRegex = "https?://[wm.]*flickr.com";
         final String userRegex = "[a-zA-Z0-9@]+";
         // Album
-        p = Pattern.compile("^" + domainRegex + "/photos/(" + userRegex + ")/sets/([0-9]+)/?.*$");
+        p = Pattern.compile("^" + domainRegex + "/photos/(" + userRegex + ")/(sets|albums)/([0-9]+)/?.*$");
         m = p.matcher(url);
         if (m.matches()) {
-            return m.group(2);
-        }
-
-        // User page
-        p = Pattern.compile("^" + domainRegex + "/photos/(" + userRegex + ").*$");
-        m = p.matcher(url);
-        if (m.matches()) {
-            return m.group(1);
-        }
-
-        // Groups page
-        p = Pattern.compile("^" + domainRegex + "/groups/(" + userRegex + ").*$");
-        m = p.matcher(url);
-        if (m.matches()) {
-            return "groups-" + m.group(1);
+            return m.group(3);
         }
         return null;
     }
