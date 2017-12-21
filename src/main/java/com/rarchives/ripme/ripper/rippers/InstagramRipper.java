@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.rarchives.ripme.ui.RipStatusMessage;
+import com.rarchives.ripme.utils.Utils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -234,7 +236,11 @@ public class InstagramRipper extends AbstractHTMLRipper {
                         }
                         addURLToDownload(new URL(getOriginalUrl(data.getString("thumbnail_src"))), image_date);
                     } else {
-                        addURLToDownload(new URL(getVideoFromPage(data.getString("code"))), image_date);
+                        if (!Utils.getConfigBoolean("instagram.download_images_only", false)) {
+                            addURLToDownload(new URL(getVideoFromPage(data.getString("code"))), image_date);
+                        } else {
+                            sendUpdate(RipStatusMessage.STATUS.DOWNLOAD_WARN, "Skipping video " + data.getString("code"));
+                        }
                     }
                 } catch (MalformedURLException e) {
                     return imageURLs;
