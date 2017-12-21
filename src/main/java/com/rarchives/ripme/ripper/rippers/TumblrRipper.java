@@ -207,7 +207,14 @@ public class TumblrRipper extends AlbumRipper {
                 for (int j = 0; j < photos.length(); j++) {
                     photo = photos.getJSONObject(j);
                     try {
-                        fileURL = new URL(photo.getJSONObject("original_size").getString("url").replaceAll("http", "https"));
+                        if (Utils.getConfigBoolean("tumblr.get_raw_image", false)) {
+                            String urlString = photo.getJSONObject("original_size").getString("url").replaceAll("http", "https");
+                            urlString = urlString.replaceAll("https://[a-sA-z0-9_-]*\\.tumblr", "https://data.tumblr");
+                            urlString = urlString.replaceAll("_\\d+\\.", "_raw.");
+                            fileURL = new URL(urlString);
+                        } else {
+                            fileURL = new URL(photo.getJSONObject("original_size").getString("url").replaceAll("http", "https"));
+                        }
                         m = p.matcher(fileURL.toString());
                         if (m.matches()) {
                             addURLToDownload(fileURL);
