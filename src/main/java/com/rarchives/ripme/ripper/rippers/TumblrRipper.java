@@ -4,6 +4,9 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -34,18 +37,19 @@ public class TumblrRipper extends AlbumRipper {
     private static String TUMBLR_AUTH_CONFIG_KEY = "tumblr.auth";
 
     private static boolean useDefaultApiKey = false; // fall-back for bad user-specified key
-    private static final String DEFAULT_API_KEY = "JFNLu3CbINQjRdUvZibXW9VpSEVYYtiPJ86o8YmvgLZIoKyuNX";
+    private static final List<String> apiKeys = Arrays.asList("JFNLu3CbINQjRdUvZibXW9VpSEVYYtiPJ86o8YmvgLZIoKyuNX",
+            "FQrwZMCxVnzonv90rgNUJcAk4FpnoS0mYuSuGYqIpM2cFgp9L4",
+            "qpdkY6nMknksfvYAhf2xIHp0iNRLkMlcWShxqzXyFJRxIsZ1Zz");
+    private static final String API_KEY = apiKeys.get(new Random().nextInt(apiKeys.size()));
 
-    private static final String API_KEY;
-    static {
-        API_KEY = Utils.getConfigString(TUMBLR_AUTH_CONFIG_KEY, DEFAULT_API_KEY);
-    }
 
     private static String getApiKey() {
-        if (useDefaultApiKey) {
-            return DEFAULT_API_KEY;
-        } else {
+        if (useDefaultApiKey || Utils.getConfigString(TUMBLR_AUTH_CONFIG_KEY, "JFNLu3CbINQjRdUvZibXW9VpSEVYYtiPJ86o8YmvgLZIoKyuNX").equals("JFNLu3CbINQjRdUvZibXW9VpSEVYYtiPJ86o8YmvgLZIoKyuNX")) {
+            logger.info("Using api key: " + API_KEY);
             return API_KEY;
+        } else {
+            logger.info("Using user tumblr.auth api key");
+            return Utils.getConfigString(TUMBLR_AUTH_CONFIG_KEY, "JFNLu3CbINQjRdUvZibXW9VpSEVYYtiPJ86o8YmvgLZIoKyuNX");
         }
     }
 
@@ -208,8 +212,8 @@ public class TumblrRipper extends AlbumRipper {
                     photo = photos.getJSONObject(j);
                     try {
                         if (Utils.getConfigBoolean("tumblr.get_raw_image", false)) {
-                            String urlString = photo.getJSONObject("original_size").getString("url").replaceAll("http", "https");
-                            urlString = urlString.replaceAll("https://[a-sA-z0-9_-]*\\.tumblr", "https://data.tumblr");
+                            String urlString = photo.getJSONObject("original_size").getString("url").replaceAll("https", "http");
+                            urlString = urlString.replaceAll("https?://[a-sA-Z0-9_\\-\\.]*\\.tumblr", "http://data.tumblr");
                             urlString = urlString.replaceAll("_\\d+\\.", "_raw.");
                             fileURL = new URL(urlString);
                         } else {
