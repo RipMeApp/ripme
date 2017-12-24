@@ -28,12 +28,16 @@ import com.rarchives.ripme.utils.Http;
 
 public class FuraffinityRipper extends AbstractHTMLRipper {
 
-    private static Map<String, String> cookies=null;
     private static final String urlBase = "https://www.furaffinity.net";
+    private static Map<String,String> cookies = new HashMap<>();
+    static {
+        cookies.put("b", "bd5ccac8-51dc-4265-8ae1-7eac685ad667");
+        cookies.put("a", "7c41b782-d01d-4b0e-b45b-62a4f0b2a369");
+    }
 
     // Thread pool for finding direct image links from "image" pages (html)
     private DownloadThreadPool furaffinityThreadPool
-                               = new DownloadThreadPool( "furaffinity");
+            = new DownloadThreadPool( "furaffinity");
 
     @Override
     public DownloadThreadPool getThreadPool() {
@@ -59,57 +63,28 @@ public class FuraffinityRipper extends AbstractHTMLRipper {
     }
     @Override
     public Document getFirstPage() throws IOException {
-
-        return Http.url(url).get();
-    }
-
-    private void login() throws IOException {
-        String user = new String(Base64.decode("cmlwbWU="));
-        String pass = new String(Base64.decode("cmlwbWVwYXNzd29yZA=="));
-
-        Response loginPage = Http.url(urlBase + "/login/")
-                                 .referrer(urlBase)
-                                 .response();
-        cookies = loginPage.cookies();
-
-        Map<String,String> formData = new HashMap<>();
-        formData.put("action", "login");
-        formData.put("retard_protection", "1");
-        formData.put("name", user);
-        formData.put("pass", pass);
-        formData.put("login", "Login toÂ FurAffinity");
-
-        Response doLogin = Http.url(urlBase + "/login/?ref=" + url)
-                               .referrer(urlBase + "/login/")
-                               .data(formData)
-                               .method(Method.POST)
-                               .response();
-        cookies.putAll(doLogin.cookies());
+        return Http.url(url).cookies(cookies).get();
     }
 
     @Override
     public Document getNextPage(Document doc) throws IOException {
         // Find next page
-        Elements nextPageUrl = doc.select("td[align=right] form");
+        Elements nextPageUrl = doc.select("a.right");
         if (nextPageUrl.size() == 0) {
             throw new IOException("No more pages");
         }
-        String nextUrl = urlBase + nextPageUrl.first().attr("action");
+        String nextUrl = urlBase + nextPageUrl.first().attr("href");
 
         sleep(500);
-        Document nextPage = Http.url(nextUrl).get();
+        Document nextPage = Http.url(nextUrl).cookies(cookies).get();
 
-        Elements hrefs = nextPage.select("div#no-images");
-        if (hrefs.size() != 0) {
-            throw new IOException("No more pages");
-        }
         return nextPage;
     }
 
     private String getImageFromPost(String url) {
         try {
-            logger.info("found url " + Http.url(url).get().select("meta[property=og:image]").attr("content"));
-            return Http.url(url).get().select("meta[property=og:image]").attr("content");
+            logger.info("found url " + Http.url(url).cookies(cookies).get().select("meta[property=og:image]").attr("content"));
+            return Http.url(url).cookies(cookies).get().select("meta[property=og:image]").attr("content");
         } catch (IOException e) {
             return "";
         }
@@ -169,8 +144,8 @@ public class FuraffinityRipper extends AbstractHTMLRipper {
     }
     @Override
     public boolean saveText(URL url, String subdirectory, String text, int index) {
-       //TODO Make this better please?
-       try {
+        //TODO Make this better please?
+        try {
             stopCheck();
         } catch (IOException e) {
             return false;
@@ -181,7 +156,7 @@ public class FuraffinityRipper extends AbstractHTMLRipper {
         saveAs = text.split("\n")[0];
         saveAs = saveAs.replaceAll("^(\\S+)\\s+by\\s+(.*)$", "$2_$1");
         for (int i = 1;i < text.split("\n").length; i++) {
-             newText = newText.replace("\\","").replace("/","").replace("~","") + "\n" + text.split("\n")[i];
+            newText = newText.replace("\\","").replace("/","").replace("~","") + "\n" + text.split("\n")[i];
         }
         try {
             if (!subdirectory.equals("")) {
