@@ -30,8 +30,17 @@ public class GfycatRipper extends VideoRipper {
         return url.getHost().endsWith(HOST);
     }
 
+    /**
+     * Sanitizes URL, fix for issue #356
+     * @param url
+     * @return Sanitized URL
+     * @throws MalformedURLException 
+     */
     @Override
     public URL sanitizeURL(URL url) throws MalformedURLException {
+        if(url.toString().contains("/gifs/detail/")){
+            url = new URL(url.toString().replace("/gifs/detail/", "/"));//Remove /gifs/detail from URL
+        }
         return url;
     }
 
