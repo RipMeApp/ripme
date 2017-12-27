@@ -1,6 +1,7 @@
 {
-    "latestVersion": "1.7.8",
+    "latestVersion": "1.7.9",
     "changeList": [
+        "1.7.9: FuraffinityRipper can now rip non-public albums; Added 2 new api keys, ripper can now download raw images from tumblr; Erome ripper now matchs links without the www; Tumblr ripper now tells the user if it hits the rate limit",
         "1.7.8: Forced https for tumblr image links; Fixed imgur album filenames; SankakuComplexRipper now downloads full sized images; Added dribbble.com ripper; Added comfirm button for clearing history",
         "1.7.7: Fixed E621 Ripper; Added unit test for zizki.com; Added unit test for Xbooru.com; Updated reddit useragent",
         "1.7.6: Added OglafRipper",
