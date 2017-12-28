@@ -7,6 +7,8 @@ import java.net.URL;
 /**
  * I have no idea why I made this interface. Everything is captured within the AbstractRipper.
  * Oh well, here's to encapsulation and abstraction! (raises glass)
+ * 
+ * (cheers!)
  */
 interface RipperInterface {
     void rip() throws IOException;

@@ -20,6 +20,7 @@ public abstract class AbstractJSONRipper extends AlbumRipper {
     }
 
     protected abstract String getDomain();
+    @Override
     public abstract String getHost();
 
     protected abstract JSONObject getFirstPage() throws IOException;
