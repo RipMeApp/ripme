@@ -7,7 +7,7 @@ import com.rarchives.ripme.ripper.rippers.FuskatorRipper;
 
 public class FuskatorRipperTest extends RippersTest {
     public void testFuskatorAlbum() throws IOException {
-        FuskatorRipper ripper = new FuskatorRipper(new URL("http://fuskator.com/full/emJa1U6cqbi/index.html"));
+        FuskatorRipper ripper = new FuskatorRipper(new URL("https://fuskator.com/thumbs/hqt6pPXAf9z/Shaved-Blonde-Babe-Katerina-Ambre.html"));
         testRipper(ripper);
     }
 }
