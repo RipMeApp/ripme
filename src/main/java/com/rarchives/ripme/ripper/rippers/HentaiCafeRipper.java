@@ -31,7 +31,7 @@ public class HentaiCafeRipper extends AbstractHTMLRipper {
 
         @Override
         public String getGID(URL url) throws MalformedURLException {
-            Pattern p = Pattern.compile("https?://hentai\\.cafe/([a-zA-Z1-9_\\-%]*)/?$");
+            Pattern p = Pattern.compile("https?://hentai\\.cafe/([a-zA-Z0-9_\\-%]*)/?$");
             Matcher m = p.matcher(url.toExternalForm());
             if (m.matches()) {
                 return m.group(1);
