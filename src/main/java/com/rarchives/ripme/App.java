@@ -63,13 +63,21 @@ public class App {
             SwingUtilities.invokeLater(mw);
         }
     }
-
+    /**
+     * Creates an abstract ripper and instructs it to rip.
+     * @param url URL to be ripped
+     * @throws Exception 
+     */
     private static void rip(URL url) throws Exception {
         AbstractRipper ripper = AbstractRipper.getRipper(url);
         ripper.setup();
         ripper.rip();
     }
 
+    /**
+     * For dealing with command-line arguments.
+     * @param args Array of Command-line arguments
+     */
     private static void handleArguments(String[] args) {
         CommandLine cl = getArgs(args);
         if (cl.hasOption('h')) {
@@ -109,7 +117,7 @@ public class App {
         }
         if (cl.hasOption('R')) {
             loadHistory();
-            if (HISTORY.toList().size() == 0) {
+            if (HISTORY.toList().isEmpty()) {
                 logger.error("There are no history entries to re-rip. Rip some albums first");
                 System.exit(-1);
             }
@@ -173,14 +181,18 @@ public class App {
         }
     }
 
-    // this function will attempt to rip the provided url
+    /**
+     * Attempt to rip targetURL.
+     * @param targetURL URL to rip
+     * @param saveConfig Whether or not you want to save the config (?)
+     */
     private static void ripURL(String targetURL, boolean saveConfig) {
         try {
             URL url = new URL(targetURL);
             rip(url);
             List<String> history = Utils.getConfigList("download.history");
-            if (!history.contains(url.toExternalForm())) {
-                history.add(url.toExternalForm());
+            if (!history.contains(url.toExternalForm())) {//if you haven't already downloaded the file before
+                history.add(url.toExternalForm());//add it to history so you won't have to redownload
                 Utils.setConfigList("download.history", Arrays.asList(history.toArray()));
                 if (saveConfig) {
                     Utils.saveConfig();
@@ -195,6 +207,10 @@ public class App {
         }
     }
 
+    /**
+     * Creates an Options object, returns it.
+     * @return Returns all acceptable command-line options.
+     */
     private static Options getOptions() {
         Options opts = new Options();
         opts.addOption("h", "help", false, "Print the help");
@@ -213,6 +229,11 @@ public class App {
         return opts;
     }
 
+    /**
+     * Tries to parse commandline arguments.
+     * @param args Array of commandline arguments.
+     * @return CommandLine object containing arguments.
+     */
     private static CommandLine getArgs(String[] args) {
         BasicParser parser = new BasicParser();
         try {
@@ -223,7 +244,10 @@ public class App {
             return null;
         }
     }
-
+    
+    /**
+     * Loads history from history file into memory.
+     */
     private static void loadHistory() {
         File historyFile = new File(Utils.getConfigDir() + File.separator + "history.json");
         HISTORY.clear();
