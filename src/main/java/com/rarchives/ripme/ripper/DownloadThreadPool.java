@@ -23,17 +23,28 @@ public class DownloadThreadPool {
     public DownloadThreadPool(String threadPoolName) {
         initialize(threadPoolName);
     }
-
+    
+    /**
+     * Initializes the threadpool.
+     * @param threadPoolName Name of the threadpool.
+     */
     private void initialize(String threadPoolName) {
         int threads = Utils.getConfigInteger("threads.size", 10);
         logger.debug("Initializing " + threadPoolName + " thread pool with " + threads + " threads");
         threadPool = (ThreadPoolExecutor) Executors.newFixedThreadPool(threads);
     }
-
+    /**
+     * For adding threads to execution pool.
+     * @param t 
+     *      Thread to be added.
+     */
     public void addThread(Thread t) {
         threadPool.execute(t);
     }
 
+    /**
+     * Tries to shutdown threadpool.
+     */
     public void waitForThreads() {
         threadPool.shutdown();
         try {

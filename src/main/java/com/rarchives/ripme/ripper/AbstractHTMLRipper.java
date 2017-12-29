@@ -140,6 +140,14 @@ public abstract class AbstractHTMLRipper extends AlbumRipper {
         }
         waitForThreads();
     }
+    
+    /**
+     * Gets the file name from the URL
+     * @param url 
+     *      URL that you want to get the filename from
+     * @return 
+     *      Filename of the URL
+     */
     private String fileNameFromURL(URL url) {
         String saveAs = url.toExternalForm();
         if (saveAs.substring(saveAs.length() - 1) == "/") { saveAs = saveAs.substring(0,saveAs.length() - 1) ;}
@@ -150,6 +158,20 @@ public abstract class AbstractHTMLRipper extends AlbumRipper {
         if (saveAs.indexOf(':') >= 0) { saveAs = saveAs.substring(0, saveAs.indexOf(':')); }
         return saveAs;
     }
+    /**
+     * 
+     * @param url
+     *      Target URL
+     * @param subdirectory
+     *      Path to subdirectory where you want to save it
+     * @param text
+     *      Text you want to save
+     * @param index
+     *      Index in something like an album
+     * @return 
+     *      True if ripped successfully
+     *      False if failed
+     */
     public boolean saveText(URL url, String subdirectory, String text, int index) {
         String saveAs = fileNameFromURL(url);
         return saveText(url,subdirectory,text,index,saveAs);
@@ -189,6 +211,14 @@ public abstract class AbstractHTMLRipper extends AlbumRipper {
         }
         return true;
     }
+    
+    /**
+     * Gets prefix based on where in the index it is
+     * @param index 
+     *      The index in question
+     * @return 
+     *      Returns prefix for a file. (?)
+     */
     protected String getPrefix(int index) {
         String prefix = "";
         if (keepSortOrder() && Utils.getConfigBoolean("download.save_order", true)) {

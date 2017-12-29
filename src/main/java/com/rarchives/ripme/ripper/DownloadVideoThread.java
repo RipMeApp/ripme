@@ -136,6 +136,12 @@ class DownloadVideoThread extends Thread {
         logger.info("[+] Saved " + url + " as " + this.prettySaveAs);
     }
 
+    /**
+     * @param url
+     *      Target URL
+     * @return 
+     *      Returns connection length
+     */
     private int getTotalBytes(URL url) throws IOException {
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestMethod("HEAD");
