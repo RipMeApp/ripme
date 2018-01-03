@@ -47,26 +47,6 @@ public class PornpicsRipper extends AbstractHTMLRipper {
         return Http.url(url).get();
     }
 
-//    @Override
-//    public Document getNextPage(Document doc) throws IOException {
-//        // Find next page
-//        String nextUrl = "";
-//        // We use comic-nav-next to the find the next page
-//        Element elem = doc.select("td > div.next > a").first();
-//        if (elem == null) {
-//            throw new IOException("No more pages");
-//        }
-//        String nextPage = elem.attr("href");
-//        // Some times this returns a empty string
-//        // This for stops that
-//        if (nextPage == "") {
-//            return null;
-//        }
-//        else {
-//            return Http.url("http://cfake.com" + nextPage).get();
-//        }
-//    }
-
     @Override
     public List<String> getURLsFromPage(Document doc) {
         List<String> result = new ArrayList<>();
