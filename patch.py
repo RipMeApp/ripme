@@ -59,17 +59,6 @@ subprocess.call(['sed', '-i', '-e', substrExpr, 'pom.xml'])
 subprocess.call(['git', 'grep', '<version>' + nextVersion + '</version>', 'pom.xml'])
 
 commitMessage = nextVersion + ': ' + message
-changeLogLine = '        \"' + commitMessage + '\",\n'
-
-dataFile = open("ripme.json", "r")
-ripmeJsonLines = dataFile.readlines()
-ripmeJsonLines.insert(3, changeLogLine)
-outputContent = ''.join(ripmeJsonLines)
-dataFile.close()
-
-dataFile = open("ripme.json", "w")
-dataFile.write(outputContent)
-dataFile.close()
 
 subprocess.call(['git', 'add', '-u'])
 subprocess.call(['git', 'commit', '-m', commitMessage])
@@ -83,3 +72,4 @@ file_hash = sha256(readFile).hexdigest()
 print("Hash is: {}".format(file_hash))
 print("Updating hash")
 update_hash(file_hash)
+update_change_list(commitMessage)
