@@ -1,19 +1,33 @@
 import json
 import subprocess
+from hashlib import sha256
 
 # This script will:
 # - read current version
 # - increment patch version
 # - update version in a few places
 # - insert new line in ripme.json with message
+# - build ripme
+# - add the hash of the lastest binary to ripme.json
 
 message = input('message: ')
 
-with open('ripme.json') as dataFile:
-    ripmeJson = json.load(dataFile)
-currentVersion = ripmeJson["latestVersion"]
+def get_ripme_json():
+    with open('ripme.json') as dataFile:
+        ripmeJson = json.load(dataFile)
+    return ripmeJson
 
-print ('Current version ' + currentVersion)
+def update_hash(current_hash):
+    ripmeJson = get_ripme_json()
+    with open('ripme.json', 'w') as dataFile:
+        ripmeJson["currentHash"] = current_hash
+        print(ripmeJson["currentHash"])
+        json.dump(ripmeJson, dataFile, indent=4)
+
+
+currentVersion = get_ripme_json()["latestVersion"]
+
+print('Current version ' + currentVersion)
 
 versionFields = currentVersion.split('.')
 patchCur = int(versionFields[2])
@@ -22,7 +36,7 @@ majorMinor = versionFields[:2]
 majorMinor.append(str(patchNext))
 nextVersion = '.'.join(majorMinor)
 
-print ('Updating to ' + nextVersion)
+print('Updating to ' + nextVersion)
 
 substrExpr = 's/' + currentVersion + '/' + nextVersion + '/'
 subprocess.call(['sed', '-i', '-e', substrExpr, 'src/main/java/com/rarchives/ripme/ui/UpdateUtils.java'])
@@ -54,3 +68,12 @@ dataFile.close()
 subprocess.call(['git', 'add', '-u'])
 subprocess.call(['git', 'commit', '-m', commitMessage])
 subprocess.call(['git', 'tag', nextVersion])
+print("Building ripme")
+subprocess.call(["mvn", "clean", "compile", "assembly:single"])
+print("Hashing .jar file")
+openedFile = open("./target/ripme-{}-jar-with-dependencies.jar".format(currentVersion), "rb")
+readFile = openedFile.read()
+file_hash = sha256(readFile).hexdigest()
+print("Hash is: {}".format(file_hash))
+print("Updating hash")
+update_hash(file_hash)
