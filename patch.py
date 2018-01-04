@@ -49,11 +49,13 @@ subprocess.call(['sed', '-i', '-e', substrExpr, 'src/main/java/com/rarchives/rip
 subprocess.call(['git', 'grep', 'DEFAULT_VERSION.*' + nextVersion,
                  'src/main/java/com/rarchives/ripme/ui/UpdateUtils.java'])
 
+# TODO: use json parsing here instead of regex
 substrExpr = 's/\\\"latestVersion\\\": \\\"' + currentVersion + '\\\"/\\\"latestVersion\\\": \\\"' +\
              nextVersion + '\\\"/'
 subprocess.call(['sed', '-i', '-e', substrExpr, 'ripme.json'])
 subprocess.call(['git', 'grep', 'latestVersion', 'ripme.json'])
 
+# TODO: Don't use regex and shell calls here, use a xml parserd
 substrExpr = 's/<version>' + currentVersion + '/<version>' + nextVersion + '/'
 subprocess.call(['sed', '-i', '-e', substrExpr, 'pom.xml'])
 subprocess.call(['git', 'grep', '<version>' + nextVersion + '</version>', 'pom.xml'])
