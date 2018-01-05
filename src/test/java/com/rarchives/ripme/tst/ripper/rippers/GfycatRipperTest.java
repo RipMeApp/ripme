@@ -8,25 +8,19 @@ import java.net.URL;
 public class GfycatRipperTest extends RippersTest {
     
     /**
-     * REDDIT TEST
-     * Tests a good GfycatURL (no "/gifs/detail")
+     * Rips correctly formatted URL directly from Gfycat
      * @throws IOException 
      */
-    public void testRedditGfyGoodURL() throws IOException {
-        GfycatRipper ripper = new GfycatRipper(new URL("https://www.reddit.com/r/bottesting/comments/7msozf/good_link/"));
+    public void GfycatGoodURL() throws IOException{
+        GfycatRipper ripper = new GfycatRipper(new URL("https://gfycat.com/TemptingExcellentIchthyosaurs"));
         testRipper(ripper);
     }
-    
-    
     /**
-     * REDDIT TEST
-     * Tests a Bad URL with the "/gifs/detail" inside.
+     * Rips badly formatted URL directly from Gfycat
      * @throws IOException 
      */
-    public void testRedditGfyBadURL() throws IOException {
-        GfycatRipper ripper = new GfycatRipper(new URL("https://www.reddit.com/r/bottesting/comments/7msmhi/bad_link/"));
+    public void GfycatBadURL() throws IOException {
+        GfycatRipper ripper  = new GfycatRipper(new URL("https://gfycat.com/gifs/detail/limitedtestyamericancrow"));
         testRipper(ripper);
     }
-    
-    
 }
