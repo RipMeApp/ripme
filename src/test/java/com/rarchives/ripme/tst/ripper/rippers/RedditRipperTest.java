@@ -30,7 +30,7 @@ public class RedditRipperTest extends RippersTest {
      * @throws IOException 
      */
     public void testRedditGfyGoodURL() throws IOException {
-        GfycatRipper ripper = new GfycatRipper(new URL("https://www.reddit.com/r/bottesting/comments/7msozf/good_link/"));
+        RedditRipper ripper = new RedditRipper(new URL("https://www.reddit.com/r/bottesting/comments/7msozf/good_link/"));
         testRipper(ripper);
     }
     
@@ -41,7 +41,7 @@ public class RedditRipperTest extends RippersTest {
      * @throws IOException 
      */
     public void testRedditGfyBadURL() throws IOException {
-        GfycatRipper ripper = new GfycatRipper(new URL("https://www.reddit.com/r/bottesting/comments/7msmhi/bad_link/"));
+        RedditRipper ripper = new RedditRipper(new URL("https://www.reddit.com/r/bottesting/comments/7msmhi/bad_link/"));
         testRipper(ripper);
     }
 }
