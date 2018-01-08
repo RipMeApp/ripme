@@ -72,7 +72,7 @@ public class WebtoonsRipper extends AbstractHTMLRipper {
         List<String> result = new ArrayList<String>();
         for (Element elem : doc.select("div.viewer_img > img")) {
             String origUrl = elem.attr("data-url");
-            String[] finalUrl = ogUrl.split("\\?type");
+            String[] finalUrl = origUrl.split("\\?type");
             result.add(finalUrl[0]);
         }
         return result;
