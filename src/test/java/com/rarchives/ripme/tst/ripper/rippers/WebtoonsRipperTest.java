@@ -12,7 +12,7 @@ public class WebtoonsRipperTest extends RippersTest {
     }
 
     public void testWebtoonsType() throws IOException {
-    	WebtoonsRipper ripper = new WebtoonsRipper(new URL("http://webtoon.phinf.naver.net/20180103_72/1514974518278wi4tU_JPEG/151497451824910491454.jpg?type=q90"));
+    	WebtoonsRipper ripper = new WebtoonsRipper(new URL("http://www.webtoons.com/en/drama/lookism/ep-145/viewer?title_no=1049&episode_no=145"));
     	testRipper(ripper);
     }
 }
