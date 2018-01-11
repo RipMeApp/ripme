@@ -84,7 +84,14 @@ public abstract class AbstractRipper
             }
         }
     }
-
+    
+    /**
+     * Checks to see if Ripme has already downloaded a URL
+     * @param url URL to check if downloaded
+     * @return 
+     *      Returns true if previously downloaded.
+     *      Returns false if not yet downloaded.
+     */
     private boolean hasDownloadedURL(String url) {
         File file = new File(URLHistoryFile);
         try {
@@ -118,6 +125,15 @@ public abstract class AbstractRipper
         this.url = sanitizeURL(url);
     }
 
+    /**
+     * Sets ripper's:
+     *      Working directory
+     *      Logger (for debugging)
+     *      FileAppender
+     *      Threadpool
+     * @throws IOException 
+     *      Always be prepared.
+     */
     public void setup() throws IOException {
         setWorkingDir(this.url);
         Logger rootLogger = Logger.getRootLogger();
@@ -155,9 +171,27 @@ public abstract class AbstractRipper
      * @param cookies
      *      The cookies to send to the server while downloading this file.
      * @return
+     *      True if downloaded successfully
+     *      False if failed to download
      */
     protected abstract boolean addURLToDownload(URL url, File saveAs, String referrer, Map<String, String> cookies);
 
+    /**
+     * Queues image to be downloaded and saved.
+     * @param url
+     *      URL of the file
+     * @param prefix
+     *      Prefix for the downloaded file
+     * @param subdirectory
+     *      Path to get to desired directory from working directory
+     * @param referrer
+     *      The HTTP referrer to use while downloading this file.
+     * @param cookies
+     *      The cookies to send to the server while downloading this file.
+     * @return 
+     *      True if downloaded successfully
+     *      False if failed to download
+     */
     protected boolean addURLToDownload(URL url, String prefix, String subdirectory, String referrer, Map<String, String> cookies) {
         if (Utils.getConfigBoolean("remember.url_history", true) && !isThisATest()) {
             if (hasDownloadedURL(url.toExternalForm())) {
@@ -322,6 +356,11 @@ public abstract class AbstractRipper
         }
     }
 
+    /**
+     * Gets URL
+     * @return 
+     *      Returns URL that wants to be downloaded.
+     */
     public URL getURL() {
         return url;
     }
@@ -335,8 +374,20 @@ public abstract class AbstractRipper
         return workingDir;
     }
 
+    @Override
     public abstract void setWorkingDir(URL url) throws IOException;
 
+    /**
+     * 
+     * @param url 
+     *      The URL you want to get the title of.
+     * @return
+     *      host_URLid
+     *      e.g. (for a reddit post)
+     *      reddit_post_7mg2ur
+     * @throws MalformedURLException 
+     *      If any of those damned URLs gets malformed.
+     */
     public String getAlbumTitle(URL url) throws MalformedURLException {
         return getHost() + "_" + getGID(url);
     }
@@ -391,7 +442,7 @@ public abstract class AbstractRipper
 
     /**
      * Sends an update message to the relevant observer(s) on this ripper.
-     * @param status
+     * @param status 
      * @param message
      */
     public void sendUpdate(STATUS status, Object message) {
@@ -400,9 +451,17 @@ public abstract class AbstractRipper
         }
         observer.update(this, new RipStatusMessage(status, message));
     }
-
+    
+    /**
+     * Get the completion percentage.
+     * @return 
+     *      Percentage complete
+     */
     public abstract int getCompletionPercentage();
-
+    /**
+     * @return 
+     *      Text for status
+     */
     public abstract String getStatusText();
 
     /**
@@ -423,7 +482,9 @@ public abstract class AbstractRipper
             cleanup();
         }
     }
-
+    /**
+     * Tries to delete any empty directories
+     */
     private void cleanup() {
         if (this.workingDir.list().length == 0) {
             // No files, delete the dir
@@ -434,7 +495,15 @@ public abstract class AbstractRipper
             }
         }
     }
-
+    
+    /**
+     * Pauses thread for a set amount of time.
+     * @param milliseconds
+     *      Amount of time (in milliseconds) that the thread gets paused for
+     * @return 
+     *      True if paused successfully
+     *      False if failed to pause/got interrupted.
+     */
     protected boolean sleep(int milliseconds) {
         try {
             logger.debug("Sleeping " + milliseconds + "ms");
