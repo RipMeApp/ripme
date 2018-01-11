@@ -19,6 +19,8 @@ import com.rarchives.ripme.utils.Http;
 
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import com.rarchives.ripme.ui.RipStatusMessage;
+import com.rarchives.ripme.utils.Utils;
 
 
 public class InstagramRipper extends AbstractHTMLRipper {
@@ -234,7 +236,11 @@ public class InstagramRipper extends AbstractHTMLRipper {
                         }
                         addURLToDownload(new URL(getOriginalUrl(data.getString("thumbnail_src"))), image_date);
                     } else {
-                        addURLToDownload(new URL(getVideoFromPage(data.getString("code"))), image_date);
+                        if (!Utils.getConfigBoolean("instagram.download_images_only", false)) {
+                            addURLToDownload(new URL(getVideoFromPage(data.getString("code"))), image_date);
+                        } else {
+                            sendUpdate(RipStatusMessage.STATUS.DOWNLOAD_WARN, "Skipping video " + data.getString("code"));
+                        }
                     }
                 } catch (MalformedURLException e) {
                     return imageURLs;
