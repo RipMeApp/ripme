@@ -2,24 +2,16 @@ package com.rarchives.ripme.ripper.rippers;
 
 import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 import com.rarchives.ripme.utils.Http;
-import com.rarchives.ripme.utils.Utils;
-import java.io.File;
+
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
 
 public class SinnercomicsRipper extends AbstractHTMLRipper {
 
@@ -71,7 +63,7 @@ public class SinnercomicsRipper extends AbstractHTMLRipper {
 
     @Override
     public List<String> getURLsFromPage(Document doc) {
-        List<String> result = new ArrayList<String>();
+        List<String> result = new ArrayList<>();
         for (Element el : doc.select("meta[property=og:image]")) {
             String imageSource = el.attr("content");
             imageSource = imageSource.replace(" alt=", "");

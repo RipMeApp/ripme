@@ -13,21 +13,22 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.apache.log4j.Logger;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 public class PahealRipper extends AbstractHTMLRipper {
+    private static final Logger logger = Logger.getLogger(PahealRipper.class);
+
     private static Map<String, String> cookies = null;
     private static Pattern gidPattern = null;
 
     private static Map<String, String> getCookies() {
         if (cookies == null) {
-            cookies = new HashMap<String, String>(1);
+            cookies = new HashMap<>(1);
             cookies.put("ui-tnc-agreed", "true");
         }
         return cookies;
@@ -66,7 +67,7 @@ public class PahealRipper extends AbstractHTMLRipper {
     @Override
     public List<String> getURLsFromPage(Document page) {
         Elements elements = page.select(".shm-thumb.thumb>a").not(".shm-thumb-link");
-        List<String> res = new ArrayList<String>(elements.size());
+        List<String> res = new ArrayList<>(elements.size());
 
         for (Element e : elements) {
             res.add(e.absUrl("href"));
@@ -92,10 +93,8 @@ public class PahealRipper extends AbstractHTMLRipper {
                 + Utils.filesystemSafe(new URI(name).getPath())
                 + ext);
             addURLToDownload(url, outFile);
-        } catch (IOException ex) {
-            Logger.getLogger(PahealRipper.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (URISyntaxException ex) {
-            Logger.getLogger(PahealRipper.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException | URISyntaxException ex) {
+            logger.error("Error while downloading URL " + url, ex);
         }
     }
 
@@ -117,7 +116,7 @@ public class PahealRipper extends AbstractHTMLRipper {
         try {
             return Utils.filesystemSafe(new URI(getTerm(url)).getPath());
         } catch (URISyntaxException ex) {
-            Logger.getLogger(PahealRipper.class.getName()).log(Level.SEVERE, null, ex);
+            logger.error(ex);
         }
 
         throw new MalformedURLException("Expected paheal.net URL format: rule34.paheal.net/post/list/searchterm - got " + url + " instead");

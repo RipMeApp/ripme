@@ -18,23 +18,21 @@ import com.rarchives.ripme.utils.Http;
 import com.rarchives.ripme.utils.RipUtils;
 
 public class ChanRipper extends AbstractHTMLRipper {
-    public static List<ChanSite> explicit_domains = Arrays.asList(
+    private static List<ChanSite> explicit_domains = Arrays.asList(
         new ChanSite(Arrays.asList("boards.4chan.org"),   Arrays.asList("4cdn.org", "is.4chan.org", "is2.4chan.org")),
-        new ChanSite(Arrays.asList("archive.moe"),        Arrays.asList("data.archive.moe")),
         new ChanSite(Arrays.asList("4archive.org"),       Arrays.asList("imgur.com")),
-        new ChanSite(Arrays.asList("archive.4plebs.org"), Arrays.asList("img.4plebs.org")),
-        new ChanSite(Arrays.asList("fgts.jp"),            Arrays.asList("dat.fgtsi.org"))
+        new ChanSite(Arrays.asList("archive.4plebs.org"), Arrays.asList("img.4plebs.org"))
         );
 
-    public static List<String> url_piece_blacklist = Arrays.asList(
+    private static List<String> url_piece_blacklist = Arrays.asList(
         "=http",
         "http://imgops.com/",
         "iqdb.org",
         "saucenao.com"
         );
 
-    public ChanSite chanSite;
-    public Boolean generalChanSite = true;
+    private ChanSite chanSite;
+    private Boolean generalChanSite = true;
 
     public ChanRipper(URL url) throws IOException {
         super(url);
@@ -66,13 +64,18 @@ public class ChanRipper extends AbstractHTMLRipper {
         try {
             // Attempt to use album title as GID
             Document doc = getFirstPage();
-            String subject = doc.select(".post.op > .postinfo > .subject").first().text();
-            return getHost() + "_" + getGID(url) + "_" + subject;
+            try {
+                String subject = doc.select(".post.op > .postinfo > .subject").first().text();
+                return getHost() + "_" + getGID(url) + "_" + subject;
+            } catch (NullPointerException e) {
+                logger.warn("Failed to get thread title from " + url);
+            }
         } catch (Exception e) {
             // Fall back to default album naming convention
             logger.warn("Failed to get album title from " + url, e);
         }
-        return super.getAlbumTitle(url);
+        // Fall back on the GID
+        return getHost() + "_" + getGID(url);
     }
 
     @Override
@@ -114,6 +117,12 @@ public class ChanRipper extends AbstractHTMLRipper {
             if (m.matches()) {
                 return m.group(1);
             }
+            // xchan
+            p = Pattern.compile("^.*\\.[a-z]{1,3}/board/[a-zA-Z0-9]+/thread/([0-9]+)/?.*$");
+            m = p.matcher(u);
+            if (m.matches()) {
+                return m.group(1);
+            }
         }
 
         throw new MalformedURLException(
@@ -143,7 +152,7 @@ public class ChanRipper extends AbstractHTMLRipper {
     }
     @Override
     public List<String> getURLsFromPage(Document page) {
-        List<String> imageURLs = new ArrayList<String>();
+        List<String> imageURLs = new ArrayList<>();
         Pattern p; Matcher m;
         for (Element link : page.select("a")) {
             if (!link.hasAttr("href")) {
@@ -208,6 +217,6 @@ public class ChanRipper extends AbstractHTMLRipper {
 
     @Override
     public void downloadURL(URL url, int index) {
-        addURLToDownload(url, getPrefix(index), "", this.url.toString(), null);
+        addURLToDownload(url, getPrefix(index));
     }
 }

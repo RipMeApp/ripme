@@ -30,7 +30,7 @@ public class ContextMenuMouseListener extends MouseAdapter {
     private String savedString = "";
     private Actions lastActionSelected;
 
-    private enum Actions { UNDO, CUT, COPY, PASTE, SELECT_ALL };
+    private enum Actions { UNDO, CUT, COPY, PASTE, SELECT_ALL }
 
     @SuppressWarnings("serial")
     public ContextMenuMouseListener() {

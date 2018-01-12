@@ -1,15 +1,9 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.rarchives.ripme.ripper.rippers;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -18,10 +12,8 @@ import org.jsoup.Connection.Response;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-import org.jsoup.Connection.Method;
 
 import com.rarchives.ripme.ripper.AbstractHTMLRipper;
-import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
 import com.rarchives.ripme.utils.Http;
 
 /**
@@ -65,10 +57,15 @@ public class EromeRipper extends AbstractHTMLRipper {
             return super.getAlbumTitle(url);
     }
 
+    @Override
+    public URL sanitizeURL(URL url) throws MalformedURLException {
+        return new URL(url.toExternalForm().replaceAll("https?://erome.com", "https://www.erome.com"));
+    }
+
 
     @Override
     public List<String> getURLsFromPage(Document doc) {
-        List<String> URLs = new ArrayList<String>();
+        List<String> URLs = new ArrayList<>();
         //Pictures
         Elements imgs = doc.select("div.img > img.img-front");
         for (Element img : imgs) {
@@ -92,9 +89,7 @@ public class EromeRipper extends AbstractHTMLRipper {
                             .ignoreContentType()
                             .response();
 
-        Document doc = resp.parse();
-
-        return doc;
+        return resp.parse();
     }
 
     @Override
@@ -104,7 +99,15 @@ public class EromeRipper extends AbstractHTMLRipper {
         if (m.matches()) {
             return m.group(1);
         }
-        throw new MalformedURLException("erome album not found in " + url + ", expected https://erome.com/album");
+
+        p = Pattern.compile("^https?://erome.com/a/([a-zA-Z0-9]*)/?$");
+        m = p.matcher(url.toExternalForm());
+
+        if (m.matches()) {
+            return m.group(1);
+        }
+
+        throw new MalformedURLException("erome album not found in " + url + ", expected https://www.erome.com/album");
     }
 
     public static List<URL> getURLs(URL url) throws IOException{
@@ -115,7 +118,7 @@ public class EromeRipper extends AbstractHTMLRipper {
 
         Document doc = resp.parse();
 
-        List<URL> URLs = new ArrayList<URL>();
+        List<URL> URLs = new ArrayList<>();
         //Pictures
         Elements imgs = doc.getElementsByTag("img");
         for (Element img : imgs) {

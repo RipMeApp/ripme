@@ -32,6 +32,8 @@ public class GfycatRipper extends VideoRipper {
 
     @Override
     public URL sanitizeURL(URL url) throws MalformedURLException {
+        url = new URL(url.toExternalForm().replace("/gifs/detail", ""));
+        
         return url;
     }
 
@@ -64,6 +66,10 @@ public class GfycatRipper extends VideoRipper {
      */
     public static String getVideoURL(URL url) throws IOException {
         logger.info("Retrieving " + url.toExternalForm());
+        
+        //Sanitize the URL first
+        url = new URL(url.toExternalForm().replace("/gifs/detail", ""));
+        
         Document doc = Http.url(url).get();
         Elements videos = doc.select("source#mp4Source");
         if (videos.size() == 0) {

@@ -55,7 +55,7 @@ public class MotherlessVideoRipper extends VideoRipper {
         logger.info("    Retrieving " + this.url);
         String html = Http.url(this.url).get().toString();
         if (html.contains("__fileurl = '")) {
-            System.err.println("WTF");
+            logger.error("WTF");
         }
         List<String> vidUrls = Utils.between(html, "__fileurl = '", "';");
         if (vidUrls.size() == 0) {

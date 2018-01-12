@@ -66,7 +66,7 @@ public class BcfakesRipper extends AbstractHTMLRipper {
 
     @Override
     public List<String> getURLsFromPage(Document doc) {
-        List<String> imageURLs = new ArrayList<String>();
+        List<String> imageURLs = new ArrayList<>();
         for (Element thumb : doc.select("div.ngg-gallery-thumbnail > a > img")) {
             String imageURL = thumb.attr("src");
             imageURL = imageURL.replace("thumbs/thumbs_", "");

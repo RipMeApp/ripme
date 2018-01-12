@@ -16,7 +16,7 @@ public abstract class VideoRipper extends AbstractRipper {
     private int bytesTotal = 1,
                  bytesCompleted = 1;
 
-    public VideoRipper(URL url) throws IOException {
+    protected VideoRipper(URL url) throws IOException {
         super(url);
     }
 
@@ -74,6 +74,12 @@ public abstract class VideoRipper extends AbstractRipper {
         return addURLToDownload(url, saveAs);
     }
 
+    
+    /**
+     * Creates & sets working directory based on URL.
+     * @param url
+     *      Target URL
+     */
     @Override
     public void setWorkingDir(URL url) throws IOException {
         String path = Utils.getWorkingDirectory().getCanonicalPath();
@@ -88,12 +94,23 @@ public abstract class VideoRipper extends AbstractRipper {
         }
         logger.debug("Set working directory to: " + this.workingDir);
     }
-
+    
+    /**
+     * @return
+     *      Returns % of video done downloading.
+     */
     @Override
     public int getCompletionPercentage() {
         return (int) (100 * (bytesCompleted / (float) bytesTotal));
     }
-
+    
+    /**
+     * Runs if download successfully completed.
+     * @param url
+     *      Target URL
+     * @param saveAs
+     *      Path to file, including filename.
+     */
     @Override
     public void downloadCompleted(URL url, File saveAs) {
         if (observer == null) {
@@ -109,6 +126,14 @@ public abstract class VideoRipper extends AbstractRipper {
             logger.error("Exception while updating observer: ", e);
         }
     }
+    
+    /**
+     * Runs if the download errored somewhere.
+     * @param url
+     *      Target URL
+     * @param reason
+     *      Reason why the download failed.
+     */
     @Override
     public void downloadErrored(URL url, String reason) {
         if (observer == null) {
@@ -117,6 +142,15 @@ public abstract class VideoRipper extends AbstractRipper {
         observer.update(this, new RipStatusMessage(STATUS.DOWNLOAD_ERRORED, url + " : " + reason));
         checkIfComplete();
     }
+    
+    
+    /**
+     * Runs if user tries to redownload an already existing File.
+     * @param url
+     *      Target URL
+     * @param file
+     *      Existing file
+     */
     @Override
     public void downloadExists(URL url, File file) {
         if (observer == null) {
@@ -126,6 +160,11 @@ public abstract class VideoRipper extends AbstractRipper {
         checkIfComplete();
     }
 
+    /**
+     * Gets the status and changes it to a human-readable form.
+     * @return 
+     *      Status of current download.
+     */
     @Override
     public String getStatusText() {
         StringBuilder sb = new StringBuilder();
@@ -139,6 +178,10 @@ public abstract class VideoRipper extends AbstractRipper {
     }
 
     @Override
+    /**
+     * Sanitizes URL.
+     * Usually just returns itself.
+     */
     public URL sanitizeURL(URL url) throws MalformedURLException {
         return url;
     }

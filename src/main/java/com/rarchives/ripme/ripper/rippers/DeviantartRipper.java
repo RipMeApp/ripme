@@ -32,8 +32,8 @@ public class DeviantartRipper extends AbstractHTMLRipper {
     private static final int PAGE_SLEEP_TIME  = 3000,
                              IMAGE_SLEEP_TIME = 2000;
 
-    private Map<String,String> cookies = new HashMap<String,String>();
-    private Set<String> triedURLs = new HashSet<String>();
+    private Map<String,String> cookies = new HashMap<>();
+    private Set<String> triedURLs = new HashSet<>();
 
     public DeviantartRipper(URL url) throws IOException {
         super(url);
@@ -63,7 +63,7 @@ public class DeviantartRipper extends AbstractHTMLRipper {
             u += "gallery/?";
         }
 
-        Pattern p = Pattern.compile("^https?://([a-zA-Z0-9\\-]{1,})\\.deviantart\\.com/favou?rites/([0-9]+)/*?$");
+        Pattern p = Pattern.compile("^https?://([a-zA-Z0-9\\-]+)\\.deviantart\\.com/favou?rites/([0-9]+)/*?$");
         Matcher m = p.matcher(url.toExternalForm());
         if (!m.matches()) {
             String subdir = "/";
@@ -88,18 +88,18 @@ public class DeviantartRipper extends AbstractHTMLRipper {
                 return m.group(1);
             }
         }
-        p = Pattern.compile("^https?://([a-zA-Z0-9\\-]{1,})\\.deviantart\\.com/gallery/([0-9]{1,}).*$");
+        p = Pattern.compile("^https?://([a-zA-Z0-9\\-]+)\\.deviantart\\.com/gallery/([0-9]+).*$");
         m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             // Subgallery
             return m.group(1) + "_" + m.group(2);
         }
-        p = Pattern.compile("^https?://([a-zA-Z0-9\\-]{1,})\\.deviantart\\.com/favou?rites/([0-9]+)/.*?$");
+        p = Pattern.compile("^https?://([a-zA-Z0-9\\-]+)\\.deviantart\\.com/favou?rites/([0-9]+)/.*?$");
         m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             return m.group(1) + "_faves_" + m.group(2);
         }
-        p = Pattern.compile("^https?://([a-zA-Z0-9\\-]{1,})\\.deviantart\\.com/favou?rites/?$");
+        p = Pattern.compile("^https?://([a-zA-Z0-9\\-]+)\\.deviantart\\.com/favou?rites/?$");
         m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             // Subgallery
@@ -121,14 +121,14 @@ public class DeviantartRipper extends AbstractHTMLRipper {
                    .cookies(cookies)
                    .get();
     }
-    public String jsonToImage(Document page,String id) {
+    private String jsonToImage(Document page, String id) {
         Elements js = page.select("script[type=\"text/javascript\"]");
         for (Element tag : js) {
             if (tag.html().contains("window.__pageload")) {
                 try {
                     String script = tag.html();
                     script = script.substring(script.indexOf("window.__pageload"));
-                    if (script.indexOf(id) < 0) {
+                    if (!script.contains(id)) {
                         continue;
                     }
                     script = script.substring(script.indexOf(id));
@@ -144,7 +144,7 @@ public class DeviantartRipper extends AbstractHTMLRipper {
     }
     @Override
     public List<String> getURLsFromPage(Document page) {
-        List<String> imageURLs = new ArrayList<String>();
+        List<String> imageURLs = new ArrayList<>();
 
         // Iterate over all thumbnails
         for (Element thumb : page.select("div.zones-container span.thumb")) {
@@ -194,7 +194,7 @@ public class DeviantartRipper extends AbstractHTMLRipper {
     }
     @Override
     public List<String> getDescriptionsFromPage(Document page) {
-        List<String> textURLs = new ArrayList<String>();
+        List<String> textURLs = new ArrayList<>();
         // Iterate over all thumbnails
         for (Element thumb : page.select("div.zones-container span.thumb")) {
             logger.info(thumb.attr("href"));
@@ -257,9 +257,9 @@ public class DeviantartRipper extends AbstractHTMLRipper {
      * @return Full-size image URL
      * @throws Exception If it can't find the full-size URL
      */
-    public static String thumbToFull(String thumb, boolean throwException) throws Exception {
+    private static String thumbToFull(String thumb, boolean throwException) throws Exception {
         thumb = thumb.replace("http://th", "http://fc");
-        List<String> fields = new ArrayList<String>(Arrays.asList(thumb.split("/")));
+        List<String> fields = new ArrayList<>(Arrays.asList(thumb.split("/")));
         fields.remove(4);
         if (!fields.get(4).equals("f") && throwException) {
             // Not a full-size image
@@ -339,7 +339,7 @@ public class DeviantartRipper extends AbstractHTMLRipper {
      * @param page Page the thumbnail is retrieved from
      * @return Highest-resolution version of the image based on thumbnail URL and the page.
      */
-    public String smallToFull(String thumb, String page) {
+    private String smallToFull(String thumb, String page) {
         try {
             // Fetch the image page
             Response resp = Http.url(page)
@@ -373,7 +373,7 @@ public class DeviantartRipper extends AbstractHTMLRipper {
                 }
                 cookieString = cookieString.substring(0,cookieString.length() - 1);
                 con.setRequestProperty("Cookie",cookieString);
-                con.setRequestProperty("User-Agent",this.USER_AGENT);
+                con.setRequestProperty("User-Agent", USER_AGENT);
                 con.setInstanceFollowRedirects(true);
                 con.connect();
                 int code = con.getResponseCode();
@@ -406,7 +406,7 @@ public class DeviantartRipper extends AbstractHTMLRipper {
      */
     private Map<String, String> loginToDeviantart() throws IOException {
         // Populate postData fields
-        Map<String,String> postData = new HashMap<String,String>();
+        Map<String,String> postData = new HashMap<>();
         String username = Utils.getConfigString("deviantart.username", new String(Base64.decode("Z3JhYnB5")));
         String password = Utils.getConfigString("deviantart.password", new String(Base64.decode("ZmFrZXJz")));
         if (username == null || password == null) {

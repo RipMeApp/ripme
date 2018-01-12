@@ -12,7 +12,7 @@ import java.util.regex.Pattern;
 
 import static com.rarchives.ripme.App.logger;
 
-public class ClipboardUtils {
+class ClipboardUtils {
     private static AutoripThread autoripThread = new AutoripThread();
 
     public static void setClipboardAutoRip(boolean enabled) {
@@ -38,11 +38,7 @@ public class ClipboardUtils {
         } catch (IllegalStateException e) {
             e.printStackTrace();
             logger.error("Caught and recovered from IllegalStateException: " + e.getMessage());
-        } catch (HeadlessException e) {
-            e.printStackTrace();
-        } catch (UnsupportedFlavorException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
+        } catch (HeadlessException | IOException | UnsupportedFlavorException e) {
             e.printStackTrace();
         }
         return null;
@@ -50,8 +46,8 @@ public class ClipboardUtils {
 }
 
 class AutoripThread extends Thread {
-    protected volatile boolean isRunning = false;
-    Set<String> rippedURLs = new HashSet<String>();
+    volatile boolean isRunning = false;
+    private Set<String> rippedURLs = new HashSet<>();
 
     public void run() {
         isRunning = true;
@@ -61,11 +57,11 @@ class AutoripThread extends Thread {
                 String clipboard = ClipboardUtils.getClipboardString();
                 if (clipboard != null) {
                     Pattern p = Pattern.compile(
-                            "\\b(((ht|f)tp(s?)\\:\\/\\/|~\\/|\\/)|www.)" +
+                            "\\b(((ht|f)tp(s?)://|~/|/)|www.)" +
                             "(\\w+:\\w+@)?(([-\\w]+\\.)+(com|org|net|gov" +
                             "|mil|biz|info|mobi|name|aero|jobs|museum" +
                             "|travel|[a-z]{2}))(:[\\d]{1,5})?" +
-                            "(((\\/([-\\w~!$+|.,=]|%[a-f\\d]{2})+)+|\\/)+|\\?|#)?" +
+                            "(((/([-\\w~!$+|.,=]|%[a-f\\d]{2})+)+|/)+|\\?|#)?" +
                             "((\\?([-\\w~!$+|.,*:]|%[a-f\\d{2}])+=?" +
                             "([-\\w~!$+|.,*:=]|%[a-f\\d]{2})*)" +
                             "(&(?:[-\\w~!$+|.,*:]|%[a-f\\d{2}])+=?" +

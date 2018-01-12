@@ -60,7 +60,7 @@ public class FuskatorRipper extends AbstractHTMLRipper {
 
     @Override
     public List<String> getURLsFromPage(Document doc) {
-        List<String> imageURLs = new ArrayList<String>();
+        List<String> imageURLs = new ArrayList<>();
         String html = doc.html();
         // Get "baseUrl"
         String baseUrl = Utils.between(html, "unescape('", "'").get(0);

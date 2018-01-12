@@ -120,7 +120,7 @@ public class ImagefapRipper extends AbstractHTMLRipper {
 
     @Override
     public List<String> getURLsFromPage(Document doc) {
-        List<String> imageURLs = new ArrayList<String>();
+        List<String> imageURLs = new ArrayList<>();
         for (Element thumb : doc.select("#gallery img")) {
             if (!thumb.hasAttr("src") || !thumb.hasAttr("width")) {
                 continue;
@@ -129,7 +129,7 @@ public class ImagefapRipper extends AbstractHTMLRipper {
             image = image.replaceAll(
                     "http://x.*.fap.to/images/thumb/",
                     "http://fap.to/images/full/");
-            image = image.replaceAll("w[0-9]{1,}-h[0-9]{1,}/", "");
+            image = image.replaceAll("w[0-9]+-h[0-9]+/", "");
             imageURLs.add(image);
             if (isThisATest()) {
                 break;
@@ -152,7 +152,7 @@ public class ImagefapRipper extends AbstractHTMLRipper {
             Pattern p = Pattern.compile("^Porn pics of (.*) \\(Page 1\\)$");
             Matcher m = p.matcher(title);
             if (m.matches()) {
-                return getHost() + "_" + m.group(1);
+                return getHost() + "_" + m.group(1) + "_" + getGID(url);
             }
         } catch (IOException e) {
             // Fall back to default album naming convention

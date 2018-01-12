@@ -18,19 +18,19 @@ import com.rarchives.ripme.utils.Http;
 import com.rarchives.ripme.utils.Utils;
 
 class TapasticEpisode {
-    protected int index, id;
-    protected String title, filename;
+    int id;
+    String filename;
     public TapasticEpisode(int index, int id, String title) {
-        this.index = index;
+        int index1 = index;
         this.id    = id;
-        this.title = title;
+        String title1 = title;
         this.filename = Utils.filesystemSafe(title);
     }
 }
 
 public class TapasticRipper extends AbstractHTMLRipper {
 
-    private List<TapasticEpisode> episodes=new ArrayList<TapasticEpisode>();
+    private List<TapasticEpisode> episodes= new ArrayList<>();
 
     public TapasticRipper(URL url) throws IOException {
         super(url);
@@ -38,12 +38,12 @@ public class TapasticRipper extends AbstractHTMLRipper {
 
     @Override
     public String getDomain() {
-        return "tapastic.com";
+        return "tapas.io";
     }
 
     @Override
     public String getHost() {
-        return "tapastic";
+        return "tapas";
     }
 
     @Override
@@ -53,7 +53,7 @@ public class TapasticRipper extends AbstractHTMLRipper {
 
     @Override
     public List<String> getURLsFromPage(Document page) {
-        List<String> urls = new ArrayList<String>();
+        List<String> urls = new ArrayList<>();
         String html = page.data();
         if (!html.contains("episodeList : ")) {
             logger.error("No 'episodeList' found at " + this.url);
@@ -100,12 +100,12 @@ public class TapasticRipper extends AbstractHTMLRipper {
 
     @Override
     public String getGID(URL url) throws MalformedURLException {
-        Pattern p = Pattern.compile("^http://tapastic.com/series/([^/?]+).*$");
+        Pattern p = Pattern.compile("^https?://tapas.io/series/([^/?]+).*$");
         Matcher m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             return "series_ " + m.group(1);
         }
-        p = Pattern.compile("^http://tapastic.com/episode/([^/?]+).*$");
+        p = Pattern.compile("^https?://tapas.io/episode/([^/?]+).*$");
         m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             return "ep_" + m.group(1);

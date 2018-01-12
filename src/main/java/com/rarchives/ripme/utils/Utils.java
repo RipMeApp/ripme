@@ -20,7 +20,6 @@ import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
 import javax.sound.sampled.Line;
 import javax.sound.sampled.LineEvent;
-import javax.sound.sampled.LineListener;
 
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
@@ -34,14 +33,15 @@ import com.rarchives.ripme.ripper.AbstractRipper;
  * Common utility functions used in various places throughout the project.
  */
 public class Utils {
-    public  static final String RIP_DIRECTORY = "rips";
+    private static final String RIP_DIRECTORY = "rips";
     private static final String configFile = "rip.properties";
+    private static final String OS = System.getProperty("os.name").toLowerCase();
     private static final Logger logger = Logger.getLogger(Utils.class);
 
     private static PropertiesConfiguration config;
     static {
         try {
-            String configPath = getConfigPath();
+            String configPath = getConfigFilePath();
             File f = new File(configPath);
             if (!f.exists()) {
                 // Use default bundled with .jar
@@ -106,7 +106,7 @@ public class Utils {
         return config.getBoolean(key, defaultValue);
     }
     public static List<String> getConfigList(String key) {
-        List<String> result = new ArrayList<String>();
+        List<String> result = new ArrayList<>();
         for (Object obj : config.getList(key, new ArrayList<String>())) {
             if (obj instanceof String) {
                 result.add( (String) obj);
@@ -123,7 +123,7 @@ public class Utils {
     }
     public static void setConfigList(String key, Enumeration<Object> enumeration) {
         config.clearProperty(key);
-        List<Object> list = new ArrayList<Object>();
+        List<Object> list = new ArrayList<>();
         while (enumeration.hasMoreElements()) {
             list.add(enumeration.nextElement());
         }
@@ -132,18 +132,83 @@ public class Utils {
 
     public static void saveConfig() {
         try {
-            config.save(getConfigPath());
-            logger.info("Saved configuration to " + getConfigPath());
+            config.save(getConfigFilePath());
+            logger.info("Saved configuration to " + getConfigFilePath());
         } catch (ConfigurationException e) {
             logger.error("Error while saving configuration: ", e);
         }
     }
-    private static String getConfigPath() {
+
+    private static boolean isWindows() {
+        return OS.contains("win");
+    }
+
+    private static boolean isMacOS() {
+        return OS.contains("mac");
+    }
+
+    private static boolean isUnix() {
+        return OS.contains("nix") || OS.contains("nux") || OS.contains("bsd");
+    }
+
+    private static String getWindowsConfigDir() {
+        return System.getenv("LOCALAPPDATA") + File.separator + "ripme";
+    }
+
+    private static String getUnixConfigDir() {
+        return System.getProperty("user.home") + File.separator + ".config" + File.separator + "ripme";
+    }
+
+    private static String getMacOSConfigDir() {
+        return System.getProperty("user.home")
+                + File.separator + "Library" + File.separator + "Application Support" + File.separator + "ripme";
+    }
+
+    private static boolean portableMode() {
         try {
-            return new File(".").getCanonicalPath() + File.separator + configFile;
-        } catch (Exception e) {
-            return "." + File.separator + configFile;
+            File f = new File(new File(".").getCanonicalPath() + File.separator + configFile);
+            if(f.exists() && !f.isDirectory()) {
+                return true;
+            }
+        } catch (IOException e) {
+            return false;
         }
+        return false;
+    }
+
+
+    public static String getConfigDir() {
+        if (portableMode()) {
+            try {
+                return new File(".").getCanonicalPath();
+            } catch (Exception e) {
+                return ".";
+            }
+        }
+
+        if (isWindows()) return getWindowsConfigDir();
+        if (isMacOS()) return getMacOSConfigDir();
+        if (isUnix()) return getUnixConfigDir();
+        
+        try {
+            return new File(".").getCanonicalPath();
+        } catch (Exception e) {
+            return ".";
+        }
+    }
+    // Delete the url history file
+    public static void clearURLHistory() {
+        File file = new File(getURLHistoryFile());
+        file.delete();
+    }
+
+    // Return the path of the url history file
+    public static String getURLHistoryFile() {
+        return getConfigDir() + File.separator + "url_history.txt";
+    }
+
+    private static String getConfigFilePath() {
+        return getConfigDir() + File.separator + configFile;
     }
 
     /**
@@ -211,7 +276,7 @@ public class Utils {
      *      List of classes within the package
      */
     public static ArrayList<Class<?>> getClassesForPackage(String pkgname) {
-        ArrayList<Class<?>> classes = new ArrayList<Class<?>>();
+        ArrayList<Class<?>> classes = new ArrayList<>();
         String relPath = pkgname.replace('.', '/');
         URL resource = ClassLoader.getSystemClassLoader().getResource(relPath);
         if (resource == null) {
@@ -276,7 +341,7 @@ public class Utils {
         return classes;
     }
 
-    public static final int SHORTENED_PATH_LENGTH = 12;
+    private static final int SHORTENED_PATH_LENGTH = 12;
     public static String shortenPath(String path) {
         return shortenPath(new File(path));
     }
@@ -288,6 +353,11 @@ public class Utils {
         return path.substring(0, SHORTENED_PATH_LENGTH)
                 + "..."
                 + path.substring(path.length() - SHORTENED_PATH_LENGTH);
+    }
+
+    public static String filesystemSanitized(String text) {
+        text = text.replaceAll("[^a-zA-Z0-9.-]", "_");
+        return text;
     }
 
     public static String filesystemSafe(String text) {
@@ -302,24 +372,24 @@ public class Utils {
 
     public static String bytesToHumanReadable(int bytes) {
         float fbytes = (float) bytes;
-        String[] mags = new String[] {"", "k", "m", "g", "t"};
+        String[] mags = new String[] {"", "K", "M", "G", "T"};
         int magIndex = 0;
         while (fbytes >= 1024) {
             fbytes /= 1024;
             magIndex++;
         }
-        return String.format("%.2f%sb", fbytes, mags[magIndex]);
+        return String.format("%.2f%siB", fbytes, mags[magIndex]);
     }
 
     public static List<String> getListOfAlbumRippers() throws Exception {
-        List<String> list = new ArrayList<String>();
+        List<String> list = new ArrayList<>();
         for (Constructor<?> ripper : AbstractRipper.getRipperConstructors("com.rarchives.ripme.ripper.rippers")) {
             list.add(ripper.getName());
         }
         return list;
     }
     public static List<String> getListOfVideoRippers() throws Exception {
-        List<String> list = new ArrayList<String>();
+        List<String> list = new ArrayList<>();
         for (Constructor<?> ripper : AbstractRipper.getRipperConstructors("com.rarchives.ripme.ripper.rippers.video")) {
             list.add(ripper.getName());
         }
@@ -330,12 +400,9 @@ public class Utils {
         URL resource = ClassLoader.getSystemClassLoader().getResource(filename);
         try {
             final Clip clip = (Clip) AudioSystem.getLine(new Line.Info(Clip.class));
-            clip.addLineListener(new LineListener() {
-                @Override
-                public void update(LineEvent event) {
-                    if (event.getType() == LineEvent.Type.STOP) {
-                        clip.close();
-                    }
+            clip.addLineListener(event -> {
+                if (event.getType() == LineEvent.Type.STOP) {
+                    clip.close();
                 }
             });
             clip.open(AudioSystem.getAudioInputStream(resource));
@@ -377,7 +444,7 @@ public class Utils {
      * @return List of all strings that are between 'start' and 'finish'
      */
     public static List<String> between(String fullText, String start, String finish) {
-        List<String> result = new ArrayList<String>();
+        List<String> result = new ArrayList<>();
         int i, j;
         i = fullText.indexOf(start);
         while (i >= 0) {
@@ -400,7 +467,7 @@ public class Utils {
      * @return The map of all query parameters
      */
     public static Map<String,String> parseUrlQuery(String query) {
-        Map<String,String> res = new HashMap<String, String>();
+        Map<String,String> res = new HashMap<>();
 
         if (query.equals("")) {
             return res;
@@ -459,5 +526,27 @@ public class Utils {
         }
 
         return null;
+    }
+
+    private static HashMap<String, HashMap<String, String>> cookieCache;
+    static {
+        cookieCache = new HashMap<String, HashMap<String, String>>();
+    }
+
+    public static Map<String, String> getCookies(String host) {
+        HashMap<String, String> domainCookies = cookieCache.get(host);
+        if (domainCookies == null) {
+            domainCookies = new HashMap<String, String>();
+            String cookiesConfig = getConfigString("cookies." + host, "");
+            for (String pair : cookiesConfig.split(" ")) {
+                pair = pair.trim();
+                if (pair.contains("=")) {
+                    String[] pieces = pair.split("=", 2);
+                    domainCookies.put(pieces[0], pieces[1]);
+                }
+            }
+            cookieCache.put(host, domainCookies);
+        }
+        return domainCookies;
     }
 }

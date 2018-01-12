@@ -14,17 +14,15 @@ import javax.swing.JPopupMenu;
 
 import com.rarchives.ripme.utils.Utils;
 
-public class QueueMenuMouseListener extends MouseAdapter {
+class QueueMenuMouseListener extends MouseAdapter {
     private JPopupMenu popup = new JPopupMenu();
-    private Action removeSelected,
-                   clearQueue;
     private JList queueList;
     private DefaultListModel queueListModel;
 
     @SuppressWarnings("serial")
     public QueueMenuMouseListener() {
 
-        removeSelected = new AbstractAction("Remove Selected") {
+        Action removeSelected = new AbstractAction("Remove Selected") {
             @Override
             public void actionPerformed(ActionEvent ae) {
                 Object o = queueList.getSelectedValue();
@@ -37,7 +35,7 @@ public class QueueMenuMouseListener extends MouseAdapter {
         };
         popup.add(removeSelected);
 
-        clearQueue = new AbstractAction("Remove All") {
+        Action clearQueue = new AbstractAction("Remove All") {
             @Override
             public void actionPerformed(ActionEvent ae) {
                 queueListModel.removeAllElements();

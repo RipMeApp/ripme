@@ -1,9 +1,22 @@
-# RipMe
+# RipMe [![Licensed under the MIT License](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/RipMeApp/ripme/blob/master/LICENSE.txt) [![Join the chat at https://gitter.im/RipMeApp/Lobby](https://badges.gitter.im/RipMeApp/Lobby.svg)](https://gitter.im/RipMeApp/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) [![Subreddit](https://img.shields.io/badge/discuss-on%20reddit-blue.svg)](https://www.reddit.com/r/ripme/)
 
-[![Build Status](https://travis-ci.org/4pr0n/ripme.svg?branch=master)](https://travis-ci.org/4pr0n/ripme)
-[![Join the chat at https://gitter.im/RipMeApp/Lobby](https://badges.gitter.im/RipMeApp/Lobby.svg)](https://gitter.im/RipMeApp/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Build Status](https://travis-ci.org/RipMeApp/ripme.svg?branch=master)](https://travis-ci.org/RipMeApp/ripme)
+[![Coverage Status](https://coveralls.io/repos/github/RipMeApp/ripme/badge.svg?branch=master)](https://coveralls.io/github/RipMeApp/ripme?branch=master)
 
-Album ripper for various websites. Runs on your computer. Requires Java 1.6
+# Contribute
+
+RipMe is maintained with ♥️ and in our limited free time by **[@MetaPrime](https://github.com/metaprime)** and **[@cyian-1756](https://github.com/cyian-1756)**. If you'd like to contribute but aren't good with code, help keep us happy with a small contribution!
+
+[![Tip with PayPal](https://img.shields.io/badge/PayPal-Buy_us...-lightgrey.svg)](https://www.paypal.me/ripmeapp)
+[![Tip with PayPal](https://img.shields.io/badge/coffee-%245-green.svg)](https://www.paypal.com/paypalme/ripmeapp/send?amount=5.00&currencyCode=USD&locale.x=en_US&country.x=US)
+[![Tip with PayPal](https://img.shields.io/badge/beer-%2410-yellow.svg)](https://www.paypal.com/paypalme/ripmeapp/send?amount=10.00&currencyCode=USD&locale.x=en_US&country.x=US)
+[![Tip with PayPal](https://img.shields.io/badge/lunch-%2420-orange.svg)](https://www.paypal.com/paypalme/ripmeapp/send?amount=20.00&currencyCode=USD&locale.x=en_US&country.x=US)
+[![Tip with PayPal](https://img.shields.io/badge/dinner-%2450-red.svg)](https://www.paypal.com/paypalme/ripmeapp/send?amount=50.00&currencyCode=USD&locale.x=en_US&country.x=US)
+[![Tip with PayPal](https://img.shields.io/badge/custom_amount-...-lightgrey.svg)](https://www.paypal.me/ripmeapp)
+
+# About
+
+RipMe is an album ripper for various websites. Runs on your computer. Requires Java 8.
 
 ![Screenshot](http://i.imgur.com/kWzhsIu.png)
 
@@ -73,14 +86,3 @@ mvn test
 Please note that some tests may fail as sites change and our rippers become out of date.
 Start by building and testing a released version of RipMe
 and then ensure that any changes you make do not cause more tests to break.
-
-# Dependencies
-
-* junit-3.8.1
-* jsoup-1.7.3
-* json-20140107
-* apache-commons-configuration-1.7
-* log4j-1.2.17
-* commons-cli-1.2
-* commons-io-1.3.2
-* httpcomponents-4.3.3

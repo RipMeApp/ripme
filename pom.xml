@@ -4,7 +4,7 @@
   <groupId>com.rarchives.ripme</groupId>
   <artifactId>ripme</artifactId>
   <packaging>jar</packaging>
-  <version>1.5.7</version>
+  <version>1.7.12</version>
   <name>ripme</name>
   <url>http://rip.rarchives.com</url>
   <properties>
@@ -84,9 +84,28 @@
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.1</version>
         <configuration>
-          <source>1.6</source>
-          <target>1.6</target>
+          <source>1.8</source>
+          <target>1.8</target>
         </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.eluder.coveralls</groupId>
+        <artifactId>coveralls-maven-plugin</artifactId>
+        <version>4.3.0</version>
+      </plugin>
+      <plugin>
+        <!-- At time of writing: JaCoCo is (allegedly) the only coverage report generator that supports Java 8 -->
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
+        <version>0.7.6.201602180812</version>
+        <executions>
+          <execution>
+            <id>prepare-agent</id>
+            <goals>
+              <goal>prepare-agent</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>

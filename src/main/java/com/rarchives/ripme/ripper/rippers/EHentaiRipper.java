@@ -39,7 +39,7 @@ public class EHentaiRipper extends AbstractHTMLRipper {
     // Current HTML document
     private Document albumDoc = null;
 
-    private static final Map<String,String> cookies = new HashMap<String,String>();
+    private static final Map<String,String> cookies = new HashMap<>();
     static {
         cookies.put("nw", "1");
         cookies.put("tip", "1");
@@ -162,7 +162,7 @@ public class EHentaiRipper extends AbstractHTMLRipper {
 
     @Override
     public List<String> getURLsFromPage(Document page) {
-        List<String> imageURLs = new ArrayList<String>();
+        List<String> imageURLs = new ArrayList<>();
         Elements thumbs = page.select("#gdt > .gdtm a");
         // Iterate over images on page
         for (Element thumb : thumbs) {
@@ -193,7 +193,7 @@ public class EHentaiRipper extends AbstractHTMLRipper {
         private int index;
         private File workingDir;
 
-        public EHentaiImageThread(URL url, int index, File workingDir) {
+        EHentaiImageThread(URL url, int index, File workingDir) {
             super();
             this.url = url;
             this.index = index;

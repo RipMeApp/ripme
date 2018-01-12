@@ -1,7 +1,6 @@
 package com.rarchives.ripme;
 
 import java.io.File;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -35,31 +34,51 @@ import com.rarchives.ripme.utils.Utils;
  */
 public class App {
 
-    public static Logger logger;
+    public static final Logger logger;
     private static final History HISTORY = new History();
 
-    public static void main(String[] args) throws MalformedURLException {
+    static {
+        //initialize logger
         Utils.configureLogger();
+        logger = Logger.getLogger(App.class);
+    }
+
+    public static void main(String[] args) throws MalformedURLException {
+        CommandLine cl = getArgs(args);
+        if (args.length > 0 && cl.hasOption('v')){
+            logger.error(UpdateUtils.getThisJarVersion());
+            System.exit(0);
+        }
+
         System.setProperty("apple.laf.useScreenMenuBar", "true");
         System.setProperty("com.apple.mrj.application.apple.menu.about.name", "RipMe");
-        logger = Logger.getLogger(App.class);
         logger.info("Initialized ripme v" + UpdateUtils.getThisJarVersion());
 
         if (args.length > 0) {
+            // CLI Mode
             handleArguments(args);
         } else {
+            // GUI Mode
             MainWindow mw = new MainWindow();
             SwingUtilities.invokeLater(mw);
         }
     }
-
-    public static void rip(URL url) throws Exception {
+    /**
+     * Creates an abstract ripper and instructs it to rip.
+     * @param url URL to be ripped
+     * @throws Exception 
+     */
+    private static void rip(URL url) throws Exception {
         AbstractRipper ripper = AbstractRipper.getRipper(url);
         ripper.setup();
         ripper.rip();
     }
 
-    public static void handleArguments(String[] args) {
+    /**
+     * For dealing with command-line arguments.
+     * @param args Array of Command-line arguments
+     */
+    private static void handleArguments(String[] args) {
         CommandLine cl = getArgs(args);
         if (cl.hasOption('h')) {
             HelpFormatter hf = new HelpFormatter();
@@ -98,8 +117,8 @@ public class App {
         }
         if (cl.hasOption('R')) {
             loadHistory();
-            if (HISTORY.toList().size() == 0) {
-                System.err.println("There are no history entries to re-rip. Rip some albums first");
+            if (HISTORY.toList().isEmpty()) {
+                logger.error("There are no history entries to re-rip. Rip some albums first");
                 System.exit(-1);
             }
             int added = 0;
@@ -122,7 +141,7 @@ public class App {
                 }
             }
             if (added == 0) {
-                System.err.println("No history entries have been 'Checked'\n" +
+                logger.error("No history entries have been 'Checked'\n" +
                     "Check an entry by clicking the checkbox to the right of the URL or Right-click a URL to check/uncheck all items");
                 System.exit(-1);
             }
@@ -134,7 +153,7 @@ public class App {
             Utils.setConfigBoolean("download.save_order", false);
         }
         if ((cl.hasOption('d'))&&(cl.hasOption('D'))) {
-            System.err.println("\nCannot specify '-d' and '-D' simultaneously");
+            logger.error("\nCannot specify '-d' and '-D' simultaneously");
             System.exit(-1);
         }
         if (cl.hasOption('l')) {
@@ -162,14 +181,18 @@ public class App {
         }
     }
 
-    // this function will attempt to rip the provided url
-    public static void ripURL(String targetURL, boolean saveConfig) {
+    /**
+     * Attempt to rip targetURL.
+     * @param targetURL URL to rip
+     * @param saveConfig Whether or not you want to save the config (?)
+     */
+    private static void ripURL(String targetURL, boolean saveConfig) {
         try {
             URL url = new URL(targetURL);
             rip(url);
             List<String> history = Utils.getConfigList("download.history");
-            if (!history.contains(url.toExternalForm())) {
-                history.add(url.toExternalForm());
+            if (!history.contains(url.toExternalForm())) {//if you haven't already downloaded the file before
+                history.add(url.toExternalForm());//add it to history so you won't have to redownload
                 Utils.setConfigList("download.history", Arrays.asList(history.toArray()));
                 if (saveConfig) {
                     Utils.saveConfig();
@@ -184,7 +207,11 @@ public class App {
         }
     }
 
-    public static Options getOptions() {
+    /**
+     * Creates an Options object, returns it.
+     * @return Returns all acceptable command-line options.
+     */
+    private static Options getOptions() {
         Options opts = new Options();
         opts.addOption("h", "help", false, "Print the help");
         opts.addOption("u", "url", true, "URL of album to rip");
@@ -198,31 +225,39 @@ public class App {
         opts.addOption("l", "ripsdirectory", true, "Rips Directory (Default: ./rips)");
         opts.addOption("n", "no-prop-file", false, "Do not create properties file.");
         opts.addOption("f", "urls-file", true, "Rip URLs from a file.");
+        opts.addOption("v", "version", false, "Show current version");
         return opts;
     }
 
-    public static CommandLine getArgs(String[] args) {
+    /**
+     * Tries to parse commandline arguments.
+     * @param args Array of commandline arguments.
+     * @return CommandLine object containing arguments.
+     */
+    private static CommandLine getArgs(String[] args) {
         BasicParser parser = new BasicParser();
         try {
-            CommandLine cl = parser.parse(getOptions(), args, false);
-            return cl;
+            return parser.parse(getOptions(), args, false);
         } catch (ParseException e) {
             logger.error("[!] Error while parsing command-line arguments: " + Arrays.toString(args), e);
             System.exit(-1);
             return null;
         }
     }
-
+    
+    /**
+     * Loads history from history file into memory.
+     */
     private static void loadHistory() {
-        File historyFile = new File("history.json");
+        File historyFile = new File(Utils.getConfigDir() + File.separator + "history.json");
         HISTORY.clear();
         if (historyFile.exists()) {
             try {
-                logger.info("Loading history from history.json");
-                HISTORY.fromFile("history.json");
+                logger.info("Loading history from " + historyFile.getCanonicalPath());
+                HISTORY.fromFile(historyFile.getCanonicalPath());
             } catch (IOException e) {
                 logger.error("Failed to load history from file " + historyFile, e);
-                System.out.println(
+                logger.warn(
                         "RipMe failed to load the history file at " + historyFile.getAbsolutePath() + "\n\n" +
                         "Error: " + e.getMessage() + "\n\n" +
                         "Closing RipMe will automatically overwrite the contents of this file,\n" +
@@ -234,12 +269,7 @@ public class App {
             if (HISTORY.toList().size() == 0) {
                 // Loaded from config, still no entries.
                 // Guess rip history based on rip folder
-                String[] dirs = Utils.getWorkingDirectory().list(new FilenameFilter() {
-                    @Override
-                    public boolean accept(File dir, String file) {
-                        return new File(dir.getAbsolutePath() + File.separator + file).isDirectory();
-                    }
-                });
+                String[] dirs = Utils.getWorkingDirectory().list((dir, file) -> new File(dir.getAbsolutePath() + File.separator + file).isDirectory());
                 for (String dir : dirs) {
                     String url = RipUtils.urlFromDirectoryName(dir);
                     if (url != null) {

@@ -15,24 +15,25 @@ import com.rarchives.ripme.utils.Utils;
  */
 public abstract class AbstractJSONRipper extends AlbumRipper {
 
-    public AbstractJSONRipper(URL url) throws IOException {
+    protected AbstractJSONRipper(URL url) throws IOException {
         super(url);
     }
 
-    public abstract String getDomain();
+    protected abstract String getDomain();
+    @Override
     public abstract String getHost();
 
-    public abstract JSONObject getFirstPage() throws IOException;
-    public JSONObject getNextPage(JSONObject doc) throws IOException {
+    protected abstract JSONObject getFirstPage() throws IOException;
+    protected JSONObject getNextPage(JSONObject doc) throws IOException {
         throw new IOException("getNextPage not implemented");
     }
-    public abstract List<String> getURLsFromJSON(JSONObject json);
-    public abstract void downloadURL(URL url, int index);
-    public DownloadThreadPool getThreadPool() {
+    protected abstract List<String> getURLsFromJSON(JSONObject json);
+    protected abstract void downloadURL(URL url, int index);
+    private DownloadThreadPool getThreadPool() {
         return null;
     }
 
-    public boolean keepSortOrder() {
+    protected boolean keepSortOrder() {
         return true;
     }
 
@@ -96,7 +97,7 @@ public abstract class AbstractJSONRipper extends AlbumRipper {
         waitForThreads();
     }
 
-    public String getPrefix(int index) {
+    protected String getPrefix(int index) {
         String prefix = "";
         if (keepSortOrder() && Utils.getConfigBoolean("download.save_order", true)) {
             prefix = String.format("%03d_", index);

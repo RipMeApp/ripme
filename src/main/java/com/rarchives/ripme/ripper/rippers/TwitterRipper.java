@@ -54,14 +54,14 @@ public class TwitterRipper extends AlbumRipper {
     @Override
     public URL sanitizeURL(URL url) throws MalformedURLException {
         // https://twitter.com/search?q=from%3Apurrbunny%20filter%3Aimages&src=typd
-        Pattern p = Pattern.compile("^https?://(m\\.)?twitter\\.com/search\\?q=([a-zA-Z0-9%\\-_]{1,}).*$");
+        Pattern p = Pattern.compile("^https?://(m\\.)?twitter\\.com/search\\?q=([a-zA-Z0-9%\\-_]+).*$");
         Matcher m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             albumType = ALBUM_TYPE.SEARCH;
             searchText = m.group(2);
             return url;
         }
-        p = Pattern.compile("^https?://(m\\.)?twitter\\.com/([a-zA-Z0-9\\-_]{1,}).*$");
+        p = Pattern.compile("^https?://(m\\.)?twitter\\.com/([a-zA-Z0-9\\-_]+).*$");
         m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             albumType = ALBUM_TYPE.ACCOUNT;
@@ -83,7 +83,6 @@ public class TwitterRipper extends AlbumRipper {
         try {
             JSONObject json = new JSONObject(body);
             accessToken = json.getString("access_token");
-            return;
         } catch (JSONException e) {
             // Fall through
             throw new IOException("Failure while parsing JSON: " + body, e);
@@ -142,7 +141,7 @@ public class TwitterRipper extends AlbumRipper {
     }
 
     private List<JSONObject> getTweets(String url) throws IOException {
-        List<JSONObject> tweets = new ArrayList<JSONObject>();
+        List<JSONObject> tweets = new ArrayList<>();
         logger.info("    Retrieving " + url);
         Document doc = Http.url(url)
                 .ignoreContentType()
@@ -283,7 +282,6 @@ public class TwitterRipper extends AlbumRipper {
                     if (c == '%') {
                         gid.append('_');
                         i += 2;
-                        continue;
                         // Ignore non-alphanumeric chars
                     } else if (
                             (c >= 'a' && c <= 'z')

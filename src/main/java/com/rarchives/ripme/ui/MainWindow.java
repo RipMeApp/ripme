@@ -1,36 +1,21 @@
 package com.rarchives.ripme.ui;
 
-import java.awt.CheckboxMenuItem;
-import java.awt.Color;
-import java.awt.Container;
-import java.awt.Cursor;
-import java.awt.Desktop;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.Frame;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Image;
-import java.awt.MenuItem;
-import java.awt.Point;
-import java.awt.PopupMenu;
-import java.awt.SystemTray;
-import java.awt.TrayIcon;
+import java.awt.*;
 import java.awt.TrayIcon.MessageType;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Enumeration;
@@ -75,7 +60,7 @@ import org.apache.log4j.Logger;
 import com.rarchives.ripme.ripper.AbstractRipper;
 import com.rarchives.ripme.utils.RipUtils;
 import com.rarchives.ripme.utils.Utils;
-import java.awt.AWTException;
+
 import javax.swing.UnsupportedLookAndFeelException;
 
 /**
@@ -96,11 +81,14 @@ public final class MainWindow implements Runnable, RipStatusHandler {
     private static JButton openButton;
     private static JProgressBar statusProgress;
 
+    // Put an empty JPanel on the bottom of the window to keep components
+    // anchored to the top when there is no open lower panel
+    private static JPanel emptyPanel;
+
     // Log
     private static JButton optionLog;
     private static JPanel logPanel;
     private static JTextPane logText;
-    private static JScrollPane logTextScroll;
 
     // History
     private static JButton optionHistory;
@@ -108,8 +96,6 @@ public final class MainWindow implements Runnable, RipStatusHandler {
     private static JPanel historyPanel;
     private static JTable historyTable;
     private static AbstractTableModel historyTableModel;
-    private static JScrollPane historyTableScrollPane;
-    private static JPanel historyButtonPanel;
     private static JButton historyButtonRemove,
                            historyButtonClear,
                            historyButtonRerip;
@@ -117,9 +103,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
     // Queue
     public static JButton optionQueue;
     private static JPanel queuePanel;
-    private static JList queueList;
     private static DefaultListModel queueListModel;
-    private static JScrollPane queueListScroll;
 
     // Configuration
     private static JButton optionConfiguration;
@@ -134,6 +118,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
     private static JTextField configRetriesText;
     private static JCheckBox configAutoupdateCheckbox;
     private static JComboBox configLogLevelCombobox;
+    private static JCheckBox configURLHistoryCheckbox;
     private static JCheckBox configPlaySound;
     private static JCheckBox configSaveOrderCheckbox;
     private static JCheckBox configShowPopup;
@@ -147,30 +132,39 @@ public final class MainWindow implements Runnable, RipStatusHandler {
 
     private static TrayIcon trayIcon;
     private static MenuItem trayMenuMain;
-    private static MenuItem trayMenuAbout;
-    private static MenuItem trayMenuExit;
     private static CheckboxMenuItem trayMenuAutorip;
 
     private static Image mainIcon;
 
     private static AbstractRipper ripper;
 
+    private static void addCheckboxListener(JCheckBox checkBox, String configString) {
+        checkBox.addActionListener(arg0 -> {
+            Utils.setConfigBoolean(configString, checkBox.isSelected());
+            Utils.configureLogger();
+        });
+
+    }
+
+    private static JCheckBox addNewCheckbox(String text, String configString, Boolean configBool) {
+        JCheckBox checkbox = new JCheckBox(text, Utils.getConfigBoolean(configString, configBool));
+        checkbox.setHorizontalAlignment(JCheckBox.RIGHT);
+        checkbox.setHorizontalTextPosition(JCheckBox.LEFT);
+        return checkbox;
+    }
+
     public MainWindow() {
         mainFrame = new JFrame("RipMe v" + UpdateUtils.getThisJarVersion());
         mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        mainFrame.setResizable(false);
         mainFrame.setLayout(new GridBagLayout());
 
         createUI(mainFrame.getContentPane());
+        pack();
+
         loadHistory();
         setupHandlers();
 
-        Thread shutdownThread = new Thread() {
-            @Override
-            public void run() {
-                shutdownCleanup();
-            }
-        };
+        Thread shutdownThread = new Thread(this::shutdownCleanup);
         Runtime.getRuntime().addShutdownHook(shutdownThread);
 
         if (Utils.getConfigBoolean("auto.update", true)) {
@@ -182,16 +176,11 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         trayMenuAutorip.setState(autoripEnabled);
     }
 
-    public void upgradeProgram() {
+    private void upgradeProgram() {
         if (!configurationPanel.isVisible()) {
             optionConfiguration.doClick();
         }
-        Runnable r = new Runnable() {
-            @Override
-            public void run() {
-                UpdateUtils.updateProgram(configUpdateLabel);
-            }
-        };
+        Runnable r = () -> UpdateUtils.updateProgram(configUpdateLabel);
         new Thread(r).start();
     }
 
@@ -201,7 +190,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         mainFrame.setVisible(true);
     }
 
-    public void shutdownCleanup() {
+    private void shutdownCleanup() {
         Utils.setConfigBoolean("file.overwrite", configOverwriteCheckbox.isSelected());
         Utils.setConfigInteger("threads.size", Integer.parseInt(configThreadsText.getText()));
         Utils.setConfigInteger("download.retries", Integer.parseInt(configRetriesText.getText()));
@@ -218,6 +207,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         Utils.setConfigBoolean("clipboard.autorip", configClipboardAutorip.isSelected());
         Utils.setConfigBoolean("descriptions.save", configSaveDescriptions.isSelected());
         Utils.setConfigBoolean("prefer.mp4", configPreferMp4.isSelected());
+        Utils.setConfigBoolean("remember.url_history", configURLHistoryCheckbox.isSelected());
         saveWindowPosition(mainFrame);
         saveHistory();
         Utils.saveConfig();
@@ -238,32 +228,39 @@ public final class MainWindow implements Runnable, RipStatusHandler {
     }
 
     private void pack() {
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                mainFrame.pack();
+        SwingUtilities.invokeLater(() -> {
+            Dimension preferredSize = mainFrame.getPreferredSize();
+            mainFrame.setMinimumSize(preferredSize);
+            if (isCollapsed()) {
+                mainFrame.setSize(preferredSize);
             }
         });
     }
 
+    private boolean isCollapsed() {
+        return (!logPanel.isVisible() &&
+                !historyPanel.isVisible() &&
+                !queuePanel.isVisible() &&
+                !configurationPanel.isVisible()
+        );
+    }
+
     private void createUI(Container pane) {
-        setupTrayIcon();
+        //If creating the tray icon fails, ignore it.
+        try {
+            setupTrayIcon();
+        } catch (Exception e) { }
 
         EmptyBorder emptyBorder = new EmptyBorder(5, 5, 5, 5);
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.fill = GridBagConstraints.BOTH;
-        gbc.weightx = 2; gbc.ipadx = 2; gbc.gridx = 0;
-        gbc.weighty = 2; gbc.ipady = 2; gbc.gridy = 0;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.weightx = 1; gbc.ipadx = 2; gbc.gridx = 0;
+        gbc.weighty = 0; gbc.ipady = 2; gbc.gridy = 0;
+        gbc.anchor = GridBagConstraints.PAGE_START;
 
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        } catch (ClassNotFoundException e) {
-            logger.error("[!] Exception setting system theme:", e);
-        } catch (InstantiationException e) {
-            logger.error("[!] Exception setting system theme:", e);
-        } catch (IllegalAccessException e) {
-            logger.error("[!] Exception setting system theme:", e);
-        } catch (UnsupportedLookAndFeelException e) {
+        } catch (ClassNotFoundException | InstantiationException | UnsupportedLookAndFeelException | IllegalAccessException e) {
             logger.error("[!] Exception setting system theme:", e);
         }
 
@@ -276,17 +273,23 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         try {
             Image stopIcon = ImageIO.read(getClass().getClassLoader().getResource("stop.png"));
             stopButton.setIcon(new ImageIcon(stopIcon));
-        } catch (Exception e) { }
+        } catch (Exception ignored) { }
         JPanel ripPanel = new JPanel(new GridBagLayout());
         ripPanel.setBorder(emptyBorder);
 
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.weightx = 0;
         gbc.gridx = 0; ripPanel.add(new JLabel("URL:", JLabel.RIGHT), gbc);
+        gbc.weightx = 1;
+        gbc.weighty = 1;
         gbc.gridx = 1; ripPanel.add(ripTextfield, gbc);
+        gbc.weighty = 0;
+        gbc.weightx = 0;
         gbc.gridx = 2; ripPanel.add(ripButton, gbc);
         gbc.gridx = 3; ripPanel.add(stopButton, gbc);
-        gbc.fill = GridBagConstraints.BOTH;
+        gbc.weightx = 1;
 
-        statusLabel  = new JLabel("Inactive");
+        statusLabel = new JLabel("Inactive");
         statusLabel.setHorizontalAlignment(JLabel.CENTER);
         openButton = new JButton();
         openButton.setVisible(false);
@@ -299,7 +302,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
 
         JPanel progressPanel = new JPanel(new GridBagLayout());
         progressPanel.setBorder(emptyBorder);
-        statusProgress = new JProgressBar(0,  100);
+        statusProgress = new JProgressBar(0, 100);
         progressPanel.add(statusProgress, gbc);
 
         JPanel optionsPanel = new JPanel(new GridBagLayout());
@@ -308,6 +311,10 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         optionHistory = new JButton("History");
         optionQueue = new JButton("Queue");
         optionConfiguration = new JButton("Configuration");
+        optionLog.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
+        optionHistory.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
+        optionQueue.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
+        optionConfiguration.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
         try {
             Image icon;
             icon = ImageIO.read(getClass().getClassLoader().getResource("comment.png"));
@@ -326,11 +333,17 @@ public final class MainWindow implements Runnable, RipStatusHandler {
 
         logPanel = new JPanel(new GridBagLayout());
         logPanel.setBorder(emptyBorder);
-        logText = new JTextPaneNoWrap();
-        logTextScroll = new JScrollPane(logText);
+        logText = new JTextPane();
+        logText.setEditable(false);
+        JScrollPane logTextScroll = new JScrollPane(logText);
+        logTextScroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
         logPanel.setVisible(false);
         logPanel.setPreferredSize(new Dimension(300, 250));
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.weighty = 1;
         logPanel.add(logTextScroll, gbc);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.weighty = 0;
 
         historyPanel = new JPanel(new GridBagLayout());
         historyPanel.setBorder(emptyBorder);
@@ -343,7 +356,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
                 return HISTORY.getColumnName(col);
             }
             @Override
-            public Class<? extends Object> getColumnClass(int c) {
+            public Class<?> getColumnClass(int c) {
                 return getValueAt(0, c).getClass();
             }
             @Override
@@ -388,24 +401,29 @@ public final class MainWindow implements Runnable, RipStatusHandler {
             }
             historyTable.getColumnModel().getColumn(i).setPreferredWidth(width);
         }
-        historyTableScrollPane = new JScrollPane(historyTable);
+        JScrollPane historyTableScrollPane = new JScrollPane(historyTable);
         historyButtonRemove = new JButton("Remove");
         historyButtonClear  = new JButton("Clear");
         historyButtonRerip  = new JButton("Re-rip Checked");
         gbc.gridx = 0;
         // History List Panel
         JPanel historyTablePanel = new JPanel(new GridBagLayout());
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.weighty = 1;
         historyTablePanel.add(historyTableScrollPane, gbc);
         gbc.ipady = 180;
+        gbc.gridy = 0;
         historyPanel.add(historyTablePanel, gbc);
         gbc.ipady = 0;
-        historyButtonPanel = new JPanel(new GridBagLayout());
+        JPanel historyButtonPanel = new JPanel(new GridBagLayout());
         historyButtonPanel.setPreferredSize(new Dimension(300, 10));
         historyButtonPanel.setBorder(emptyBorder);
         gbc.gridx = 0; historyButtonPanel.add(historyButtonRemove, gbc);
         gbc.gridx = 1; historyButtonPanel.add(historyButtonClear, gbc);
         gbc.gridx = 2; historyButtonPanel.add(historyButtonRerip, gbc);
         gbc.gridy = 1; gbc.gridx = 0;
+        gbc.weighty = 0;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
         historyPanel.add(historyButtonPanel, gbc);
 
         queuePanel = new JPanel(new GridBagLayout());
@@ -413,10 +431,10 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         queuePanel.setVisible(false);
         queuePanel.setPreferredSize(new Dimension(300, 250));
         queueListModel  = new DefaultListModel();
-        queueList       = new JList(queueListModel);
+        JList queueList = new JList(queueListModel);
         queueList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         queueList.addMouseListener(new QueueMenuMouseListener());
-        queueListScroll = new JScrollPane(queueList,
+        JScrollPane queueListScroll = new JScrollPane(queueList,
                 JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
                 JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         for (String item : Utils.getConfigList("queue")) {
@@ -429,14 +447,17 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         }
         gbc.gridx = 0;
         JPanel queueListPanel = new JPanel(new GridBagLayout());
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.weighty = 1;
         queueListPanel.add(queueListScroll, gbc);
         queuePanel.add(queueListPanel, gbc);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.weighty = 0;
         gbc.ipady = 0;
 
         configurationPanel = new JPanel(new GridBagLayout());
         configurationPanel.setBorder(emptyBorder);
         configurationPanel.setVisible(false);
-        configurationPanel.setPreferredSize(new Dimension(300, 250));
         // TODO Configuration components
         configUpdateButton = new JButton("Check for updates");
         configUpdateLabel = new JLabel("Current version: " + UpdateUtils.getThisJarVersion(), JLabel.RIGHT);
@@ -446,45 +467,23 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         configThreadsText = new JTextField(Integer.toString(Utils.getConfigInteger("threads.size", 3)));
         configTimeoutText = new JTextField(Integer.toString(Utils.getConfigInteger("download.timeout", 60000)));
         configRetriesText = new JTextField(Integer.toString(Utils.getConfigInteger("download.retries", 3)));
-        configOverwriteCheckbox = new JCheckBox("Overwrite existing files?", Utils.getConfigBoolean("file.overwrite", false));
-        configOverwriteCheckbox.setHorizontalAlignment(JCheckBox.RIGHT);
-        configOverwriteCheckbox.setHorizontalTextPosition(JCheckBox.LEFT);
-        configAutoupdateCheckbox = new JCheckBox("Auto-update?", Utils.getConfigBoolean("auto.update", true));
-        configAutoupdateCheckbox.setHorizontalAlignment(JCheckBox.RIGHT);
-        configAutoupdateCheckbox.setHorizontalTextPosition(JCheckBox.LEFT);
+        configOverwriteCheckbox = addNewCheckbox("Overwrite existing files?", "file.overwrite", false);
+        configAutoupdateCheckbox = addNewCheckbox("Auto-update?", "auto.update", true);
+        configPlaySound = addNewCheckbox("Sound when rip completes", "play.sound", false);
+        configShowPopup = addNewCheckbox("Notification when rip starts", "download.show_popup", false);
+        configSaveOrderCheckbox = addNewCheckbox("Preserve order", "download.save_order", true);
+        configSaveLogs = addNewCheckbox("Save logs", "log.save", false);
+        configSaveURLsOnly = addNewCheckbox("Save URLs only", "urls_only.save", false);
+        configSaveAlbumTitles = addNewCheckbox("Save album titles", "album_titles.save", true);
+        configClipboardAutorip = addNewCheckbox("Autorip from Clipboard", "clipboard.autorip", false);
+        configSaveDescriptions = addNewCheckbox("Save descriptions", "descriptions.save", true);
+        configPreferMp4 = addNewCheckbox("Prefer MP4 over GIF","prefer.mp4", false);
+        configWindowPosition = addNewCheckbox("Restore window position", "window.position", true);
+        configURLHistoryCheckbox = addNewCheckbox("Remember URL history", "remember.url_history", true);
+
         configLogLevelCombobox = new JComboBox(new String[] {"Log level: Error", "Log level: Warn", "Log level: Info", "Log level: Debug"});
         configLogLevelCombobox.setSelectedItem(Utils.getConfigString("log.level", "Log level: Debug"));
         setLogLevel(configLogLevelCombobox.getSelectedItem().toString());
-        configPlaySound = new JCheckBox("Sound when rip completes", Utils.getConfigBoolean("play.sound", false));
-        configPlaySound.setHorizontalAlignment(JCheckBox.RIGHT);
-        configPlaySound.setHorizontalTextPosition(JCheckBox.LEFT);
-        configSaveOrderCheckbox = new JCheckBox("Preserve order", Utils.getConfigBoolean("download.save_order", true));
-        configSaveOrderCheckbox.setHorizontalAlignment(JCheckBox.RIGHT);
-        configSaveOrderCheckbox.setHorizontalTextPosition(JCheckBox.LEFT);
-        configShowPopup = new JCheckBox("Notification when rip starts", Utils.getConfigBoolean("download.show_popup", false));
-        configShowPopup.setHorizontalAlignment(JCheckBox.RIGHT);
-        configShowPopup.setHorizontalTextPosition(JCheckBox.LEFT);
-        configSaveLogs = new JCheckBox("Save logs", Utils.getConfigBoolean("log.save", false));
-        configSaveLogs.setHorizontalAlignment(JCheckBox.RIGHT);
-        configSaveLogs.setHorizontalTextPosition(JCheckBox.LEFT);
-        configSaveURLsOnly = new JCheckBox("Save URLs only", Utils.getConfigBoolean("urls_only.save", false));
-        configSaveURLsOnly.setHorizontalAlignment(JCheckBox.RIGHT);
-        configSaveURLsOnly.setHorizontalTextPosition(JCheckBox.LEFT);
-        configSaveAlbumTitles = new JCheckBox("Save album titles", Utils.getConfigBoolean("album_titles.save", true));
-        configSaveAlbumTitles.setHorizontalAlignment(JCheckBox.RIGHT);
-        configSaveAlbumTitles.setHorizontalTextPosition(JCheckBox.LEFT);
-        configClipboardAutorip = new JCheckBox("Autorip from Clipboard", Utils.getConfigBoolean("clipboard.autorip", false));
-        configClipboardAutorip.setHorizontalAlignment(JCheckBox.RIGHT);
-        configClipboardAutorip.setHorizontalTextPosition(JCheckBox.LEFT);
-        configSaveDescriptions = new JCheckBox("Save descriptions", Utils.getConfigBoolean("descriptions.save", true));
-        configSaveDescriptions.setHorizontalAlignment(JCheckBox.RIGHT);
-        configSaveDescriptions.setHorizontalTextPosition(JCheckBox.LEFT);
-        configPreferMp4 = new JCheckBox("Prefer MP4 over GIF", Utils.getConfigBoolean("prefer.mp4", false));
-        configPreferMp4.setHorizontalAlignment(JCheckBox.RIGHT);
-        configPreferMp4.setHorizontalTextPosition(JCheckBox.LEFT);
-        configWindowPosition = new JCheckBox("Restore window position", Utils.getConfigBoolean("window.position", true));
-        configWindowPosition.setHorizontalAlignment(JCheckBox.RIGHT);
-        configWindowPosition.setHorizontalTextPosition(JCheckBox.LEFT);
         configSaveDirLabel = new JLabel();
         try {
             String workingDir = (Utils.shortenPath(Utils.getWorkingDirectory()));
@@ -516,17 +515,29 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         gbc.gridy = 9; gbc.gridx = 0; configurationPanel.add(configSaveDescriptions, gbc);
                        gbc.gridx = 1; configurationPanel.add(configPreferMp4, gbc);
         gbc.gridy = 10; gbc.gridx = 0; configurationPanel.add(configWindowPosition, gbc);
+                        gbc.gridx = 1; configurationPanel.add(configURLHistoryCheckbox, gbc);
         gbc.gridy = 11; gbc.gridx = 0; configurationPanel.add(configSaveDirLabel, gbc);
                         gbc.gridx = 1; configurationPanel.add(configSaveDirButton, gbc);
 
+
+        emptyPanel = new JPanel();
+        emptyPanel.setPreferredSize(new Dimension(0, 0));
+        emptyPanel.setSize(0, 0);
+
+        gbc.anchor = GridBagConstraints.PAGE_START;
         gbc.gridy = 0; pane.add(ripPanel, gbc);
         gbc.gridy = 1; pane.add(statusPanel, gbc);
         gbc.gridy = 2; pane.add(progressPanel, gbc);
         gbc.gridy = 3; pane.add(optionsPanel, gbc);
+        gbc.weighty = 1;
+        gbc.fill = GridBagConstraints.BOTH;
         gbc.gridy = 4; pane.add(logPanel, gbc);
         gbc.gridy = 5; pane.add(historyPanel, gbc);
         gbc.gridy = 5; pane.add(queuePanel, gbc);
         gbc.gridy = 5; pane.add(configurationPanel, gbc);
+        gbc.gridy = 5; pane.add(emptyPanel, gbc);
+        gbc.weighty = 0;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
     }
 
     private void setupHandlers() {
@@ -558,152 +569,172 @@ public final class MainWindow implements Runnable, RipStatusHandler {
                     AbstractRipper ripper = AbstractRipper.getRipper(url);
                     statusWithColor(ripper.getHost() + " album detected", Color.GREEN);
                 } catch (Exception e) {
-                    statusWithColor("Can't rip this URL: "+e.getMessage(), Color.RED);
+                    statusWithColor("Can't rip this URL: " + e.getMessage(), Color.RED);
                 }
             }
         });
-        stopButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent event) {
-                if (ripper != null) {
-                    ripper.stop();
-                    isRipping = false;
-                    stopButton.setEnabled(false);
-                    statusProgress.setValue(0);
-                    statusProgress.setVisible(false);
-                    pack();
-                    statusProgress.setValue(0);
-                    status("Ripping interrupted");
-                    appendLog("Ripper interrupted", Color.RED);
-                }
+        stopButton.addActionListener(event -> {
+            if (ripper != null) {
+                ripper.stop();
+                isRipping = false;
+                stopButton.setEnabled(false);
+                statusProgress.setValue(0);
+                statusProgress.setVisible(false);
+                pack();
+                statusProgress.setValue(0);
+                status("Ripping interrupted");
+                appendLog("Ripper interrupted", Color.RED);
             }
         });
-        optionLog.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent event) {
-                logPanel.setVisible(!logPanel.isVisible());
-                historyPanel.setVisible(false);
-                queuePanel.setVisible(false);
-                configurationPanel.setVisible(false);
+        optionLog.addActionListener(event -> {
+            logPanel.setVisible(!logPanel.isVisible());
+            emptyPanel.setVisible(!logPanel.isVisible());
+            historyPanel.setVisible(false);
+            queuePanel.setVisible(false);
+            configurationPanel.setVisible(false);
+            if (logPanel.isVisible()) {
                 optionLog.setFont(optionLog.getFont().deriveFont(Font.BOLD));
-                optionHistory.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
-                optionQueue.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
-                optionConfiguration.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
-                pack();
-            }
-        });
-        optionHistory.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent event) {
-                logPanel.setVisible(false);
-                historyPanel.setVisible(!historyPanel.isVisible());
-                queuePanel.setVisible(false);
-                configurationPanel.setVisible(false);
+            } else {
                 optionLog.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
+            }
+            optionHistory.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
+            optionQueue.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
+            optionConfiguration.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
+            pack();
+        });
+        optionHistory.addActionListener(event -> {
+            logPanel.setVisible(false);
+            historyPanel.setVisible(!historyPanel.isVisible());
+            emptyPanel.setVisible(!historyPanel.isVisible());
+            queuePanel.setVisible(false);
+            configurationPanel.setVisible(false);
+            optionLog.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
+            if (historyPanel.isVisible()) {
                 optionHistory.setFont(optionLog.getFont().deriveFont(Font.BOLD));
-                optionQueue.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
-                optionConfiguration.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
-                pack();
-            }
-        });
-        optionQueue.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent event) {
-                logPanel.setVisible(false);
-                historyPanel.setVisible(false);
-                queuePanel.setVisible(!queuePanel.isVisible());
-                configurationPanel.setVisible(false);
-                optionLog.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
+            } else {
                 optionHistory.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
+            }
+            optionQueue.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
+            optionConfiguration.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
+            pack();
+        });
+        optionQueue.addActionListener(event -> {
+            logPanel.setVisible(false);
+            historyPanel.setVisible(false);
+            queuePanel.setVisible(!queuePanel.isVisible());
+            emptyPanel.setVisible(!queuePanel.isVisible());
+            configurationPanel.setVisible(false);
+            optionLog.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
+            optionHistory.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
+            if (queuePanel.isVisible()) {
                 optionQueue.setFont(optionLog.getFont().deriveFont(Font.BOLD));
-                optionConfiguration.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
-                pack();
-            }
-        });
-        optionConfiguration.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent event) {
-                logPanel.setVisible(false);
-                historyPanel.setVisible(false);
-                queuePanel.setVisible(false);
-                configurationPanel.setVisible(!configurationPanel.isVisible());
-                optionLog.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
-                optionHistory.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
+            } else {
                 optionQueue.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
+            }
+            optionConfiguration.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
+            pack();
+        });
+        optionConfiguration.addActionListener(event -> {
+            logPanel.setVisible(false);
+            historyPanel.setVisible(false);
+            queuePanel.setVisible(false);
+            configurationPanel.setVisible(!configurationPanel.isVisible());
+            emptyPanel.setVisible(!configurationPanel.isVisible());
+            optionLog.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
+            optionHistory.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
+            optionQueue.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
+            if (configurationPanel.isVisible()) {
                 optionConfiguration.setFont(optionLog.getFont().deriveFont(Font.BOLD));
-                pack();
+            } else {
+                optionConfiguration.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
             }
+            pack();
         });
-        historyButtonRemove.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent event) {
-                int[] indices = historyTable.getSelectedRows();
-                for (int i = indices.length - 1; i >= 0; i--) {
-                    int modelIndex = historyTable.convertRowIndexToModel(indices[i]);
-                    HISTORY.remove(modelIndex);
-                }
-                try {
-                    historyTableModel.fireTableDataChanged();
-                } catch (Exception e) { }
-                saveHistory();
+        historyButtonRemove.addActionListener(event -> {
+            int[] indices = historyTable.getSelectedRows();
+            for (int i = indices.length - 1; i >= 0; i--) {
+                int modelIndex = historyTable.convertRowIndexToModel(indices[i]);
+                HISTORY.remove(modelIndex);
             }
+            try {
+                historyTableModel.fireTableDataChanged();
+            } catch (Exception e) { }
+            saveHistory();
         });
-        historyButtonClear.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent event) {
+        historyButtonClear.addActionListener(event -> {
+            if (Utils.getConfigBoolean("history.warn_before_delete", true)) {
+
+                JPanel checkChoise = new JPanel();
+                checkChoise.setLayout(new FlowLayout());
+                JButton yesButton = new JButton("YES");
+                JButton noButton = new JButton("NO");
+                yesButton.setPreferredSize(new Dimension(70, 30));
+                noButton.setPreferredSize(new Dimension(70, 30));
+                checkChoise.add(yesButton);
+                checkChoise.add(noButton);
+                JFrame.setDefaultLookAndFeelDecorated(true);
+                JFrame frame = new JFrame("Are you sure?");
+                frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                frame.add(checkChoise);
+                frame.setSize(405, 70);
+                frame.setVisible(true);
+                frame.setLocationRelativeTo(null);
+                noButton.addActionListener(e -> {
+                    frame.setVisible(false);
+                });
+                yesButton.addActionListener(ed -> {
+                    frame.setVisible(false);
+                    Utils.clearURLHistory();
+                    HISTORY.clear();
+                    try {
+                        historyTableModel.fireTableDataChanged();
+                    } catch (Exception e) {
+                    }
+                    saveHistory();
+                });
+            }
+            else {
+                Utils.clearURLHistory();
                 HISTORY.clear();
                 try {
                     historyTableModel.fireTableDataChanged();
-                } catch (Exception e) { }
+                } catch (Exception e) {
+                }
                 saveHistory();
             }
         });
 
         // Re-rip all history
-        historyButtonRerip.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent event) {
-                if (HISTORY.isEmpty()) {
-                    JOptionPane.showMessageDialog(null,
-                                                  "There are no history entries to re-rip. Rip some albums first",
-                                                  "RipMe Error",
-                                                  JOptionPane.ERROR_MESSAGE);
-                    return;
+        historyButtonRerip.addActionListener(event -> {
+            if (HISTORY.isEmpty()) {
+                JOptionPane.showMessageDialog(null,
+                        "There are no history entries to re-rip. Rip some albums first",
+                        "RipMe Error",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            int added = 0;
+            for (HistoryEntry entry : HISTORY.toList()) {
+                if (entry.selected) {
+                    added++;
+                    queueListModel.addElement(entry.url);
                 }
-                int added = 0;
-                for (HistoryEntry entry : HISTORY.toList()) {
-                    if (entry.selected) {
-                        added++;
-                        queueListModel.addElement(entry.url);
-                    }
-                }
-                if (added == 0) {
-                    JOptionPane.showMessageDialog(null,
-                                                  "No history entries have been 'Checked'\n" +
-                                                  "Check an entry by clicking the checkbox to the right of the URL or Right-click a URL to check/uncheck all items",
-                                                  "RipMe Error",
-                                                  JOptionPane.ERROR_MESSAGE);
-                }
+            }
+            if (added == 0) {
+                JOptionPane.showMessageDialog(null,
+                        "No history entries have been 'Checked'\n" +
+                                "Check an entry by clicking the checkbox to the right of the URL or Right-click a URL to check/uncheck all items",
+                        "RipMe Error",
+                        JOptionPane.ERROR_MESSAGE);
             }
         });
-        configUpdateButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent arg0) {
-                Thread t = new Thread() {
-                    @Override
-                    public void run() {
-                        UpdateUtils.updateProgram(configUpdateLabel);
-                    }
-                };
-                t.start();
-            }
+        configUpdateButton.addActionListener(arg0 -> {
+            Thread t = new Thread(() -> UpdateUtils.updateProgram(configUpdateLabel));
+            t.start();
         });
-        configLogLevelCombobox.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent arg0) {
-                String level = ((JComboBox) arg0.getSource()).getSelectedItem().toString();
-                setLogLevel(level);
-            }
+        configLogLevelCombobox.addActionListener(arg0 -> {
+            String level = ((JComboBox) arg0.getSource()).getSelectedItem().toString();
+            setLogLevel(level);
         });
         configSaveDirLabel.addMouseListener(new MouseAdapter() {
             @Override
@@ -715,91 +746,42 @@ public final class MainWindow implements Runnable, RipStatusHandler {
                 } catch (Exception e1) { }
             }
         });
-        configSaveDirButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent arg0) {
-                UIManager.put("FileChooser.useSystemExtensionHiding", false);
-                JFileChooser jfc = new JFileChooser(Utils.getWorkingDirectory());
-                jfc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-                int returnVal = jfc.showDialog(null, "select directory");
-                if (returnVal != JFileChooser.APPROVE_OPTION) {
-                    return;
-                }
-                File chosenFile = jfc.getSelectedFile();
-                String chosenPath = null;
-                try {
-                    chosenPath = chosenFile.getCanonicalPath();
-                } catch (Exception e) {
-                    logger.error("Error while getting selected path: ", e);
-                    return;
-                }
-                configSaveDirLabel.setText(Utils.shortenPath(chosenPath));
-                Utils.setConfigString("rips.directory", chosenPath);
+        configSaveDirButton.addActionListener(arg0 -> {
+            UIManager.put("FileChooser.useSystemExtensionHiding", false);
+            JFileChooser jfc = new JFileChooser(Utils.getWorkingDirectory());
+            jfc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+            int returnVal = jfc.showDialog(null, "select directory");
+            if (returnVal != JFileChooser.APPROVE_OPTION) {
+                return;
             }
-        });
-        configOverwriteCheckbox.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent arg0) {
-                Utils.setConfigBoolean("file.overwrite", configOverwriteCheckbox.isSelected());
+            File chosenFile = jfc.getSelectedFile();
+            String chosenPath = null;
+            try {
+                chosenPath = chosenFile.getCanonicalPath();
+            } catch (Exception e) {
+                logger.error("Error while getting selected path: ", e);
+                return;
             }
+            configSaveDirLabel.setText(Utils.shortenPath(chosenPath));
+            Utils.setConfigString("rips.directory", chosenPath);
         });
-        configSaveOrderCheckbox.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent arg0) {
-                Utils.setConfigBoolean("download.save_order", configSaveOrderCheckbox.isSelected());
-            }
+        addCheckboxListener(configSaveOrderCheckbox, "download.save_order");
+        addCheckboxListener(configOverwriteCheckbox, "file.overwrite");
+        addCheckboxListener(configSaveLogs, "log.save");
+        addCheckboxListener(configSaveURLsOnly, "urls_only.save");
+        addCheckboxListener(configURLHistoryCheckbox, "remember.url_history");
+        addCheckboxListener(configSaveAlbumTitles, "album_titles.save");
+        addCheckboxListener(configSaveDescriptions, "descriptions.save");
+        addCheckboxListener(configPreferMp4, "prefer.mp4");
+        addCheckboxListener(configWindowPosition, "window.position");
+        
+        configClipboardAutorip.addActionListener(arg0 -> {
+            Utils.setConfigBoolean("clipboard.autorip", configClipboardAutorip.isSelected());
+            ClipboardUtils.setClipboardAutoRip(configClipboardAutorip.isSelected());
+            trayMenuAutorip.setState(configClipboardAutorip.isSelected());
+            Utils.configureLogger();
         });
-        configSaveLogs.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent arg0) {
-                Utils.setConfigBoolean("log.save", configSaveLogs.isSelected());
-                Utils.configureLogger();
-            }
-        });
-        configSaveURLsOnly.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent arg0) {
-                Utils.setConfigBoolean("urls_only.save", configSaveURLsOnly.isSelected());
-                Utils.configureLogger();
-            }
-        });
-        configSaveAlbumTitles.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent arg0) {
-                Utils.setConfigBoolean("album_titles.save", configSaveAlbumTitles.isSelected());
-                Utils.configureLogger();
-            }
-        });
-        configClipboardAutorip.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent arg0) {
-                Utils.setConfigBoolean("clipboard.autorip", configClipboardAutorip.isSelected());
-                ClipboardUtils.setClipboardAutoRip(configClipboardAutorip.isSelected());
-                trayMenuAutorip.setState(configClipboardAutorip.isSelected());
-                Utils.configureLogger();
-            }
-        });
-        configSaveDescriptions.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent arg0) {
-                Utils.setConfigBoolean("descriptions.save", configSaveDescriptions.isSelected());
-                Utils.configureLogger();
-            }
-        });
-        configPreferMp4.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent arg0) {
-                Utils.setConfigBoolean("prefer.mp4", configPreferMp4.isSelected());
-                Utils.configureLogger();
-            }
-        });
-        configWindowPosition.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent arg0) {
-                Utils.setConfigBoolean("window.position", configWindowPosition.isSelected());
-                Utils.configureLogger();
-            }
-        });
+
         queueListModel.addListDataListener(new ListDataListener() {
             @Override
             public void intervalAdded(ListDataEvent arg0) {
@@ -822,17 +804,19 @@ public final class MainWindow implements Runnable, RipStatusHandler {
     private void setLogLevel(String level) {
         Level newLevel = Level.ERROR;
         level = level.substring(level.lastIndexOf(' ') + 1);
-        if (level.equals("Debug")) {
-            newLevel = Level.DEBUG;
-        }
-        else if (level.equals("Info")) {
-            newLevel = Level.INFO;
-        }
-        else if (level.equals("Warn")) {
-            newLevel = Level.WARN;
-        }
-        else if (level.equals("Error")) {
-            newLevel = Level.ERROR;
+        switch (level) {
+            case "Debug":
+                newLevel = Level.DEBUG;
+                break;
+            case "Info":
+                newLevel = Level.INFO;
+                break;
+            case "Warn":
+                newLevel = Level.WARN;
+                break;
+            case "Error":
+                newLevel = Level.ERROR;
+                break;
         }
         Logger.getRootLogger().setLevel(newLevel);
         logger.setLevel(newLevel);
@@ -859,82 +843,66 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         });
         PopupMenu trayMenu = new PopupMenu();
         trayMenuMain = new MenuItem("Hide");
-        trayMenuMain.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent arg0) {
-                toggleTrayClick();
-            }
-        });
-        trayMenuAbout = new MenuItem("About " + mainFrame.getTitle());
-        trayMenuAbout.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent arg0) {
-                StringBuilder about = new StringBuilder();
-                about.append("<html><h1>")
-                     .append(mainFrame.getTitle())
-                     .append("</h1>");
-                about.append("Download albums from various websites:");
-                try {
-                    List<String> rippers = Utils.getListOfAlbumRippers();
-                    about.append("<ul>");
-                    for (String ripper : rippers) {
-                        about.append("<li>");
-                        ripper = ripper.substring(ripper.lastIndexOf('.') + 1);
-                        if (ripper.contains("Ripper")) {
-                            ripper = ripper.substring(0, ripper.indexOf("Ripper"));
-                        }
-                        about.append(ripper);
-                        about.append("</li>");
+        trayMenuMain.addActionListener(arg0 -> toggleTrayClick());
+        MenuItem trayMenuAbout = new MenuItem("About " + mainFrame.getTitle());
+        trayMenuAbout.addActionListener(arg0 -> {
+            StringBuilder about = new StringBuilder();
+            about.append("<html><h1>")
+                 .append(mainFrame.getTitle())
+                 .append("</h1>");
+            about.append("Download albums from various websites:");
+            try {
+                List<String> rippers = Utils.getListOfAlbumRippers();
+                about.append("<ul>");
+                for (String ripper : rippers) {
+                    about.append("<li>");
+                    ripper = ripper.substring(ripper.lastIndexOf('.') + 1);
+                    if (ripper.contains("Ripper")) {
+                        ripper = ripper.substring(0, ripper.indexOf("Ripper"));
                     }
-                    about.append("</ul>");
-                } catch (Exception e) { }
-               about.append("<br>And download videos from video sites:");
-                try {
-                    List<String> rippers = Utils.getListOfVideoRippers();
-                    about.append("<ul>");
-                    for (String ripper : rippers) {
-                        about.append("<li>");
-                        ripper = ripper.substring(ripper.lastIndexOf('.') + 1);
-                        if (ripper.contains("Ripper")) {
-                            ripper = ripper.substring(0, ripper.indexOf("Ripper"));
-                        }
-                        about.append(ripper);
-                        about.append("</li>");
+                    about.append(ripper);
+                    about.append("</li>");
+                }
+                about.append("</ul>");
+            } catch (Exception e) { }
+           about.append("<br>And download videos from video sites:");
+            try {
+                List<String> rippers = Utils.getListOfVideoRippers();
+                about.append("<ul>");
+                for (String ripper : rippers) {
+                    about.append("<li>");
+                    ripper = ripper.substring(ripper.lastIndexOf('.') + 1);
+                    if (ripper.contains("Ripper")) {
+                        ripper = ripper.substring(0, ripper.indexOf("Ripper"));
                     }
-                    about.append("</ul>");
-                } catch (Exception e) { }
+                    about.append(ripper);
+                    about.append("</li>");
+                }
+                about.append("</ul>");
+            } catch (Exception e) { }
 
-                about.append("Do you want to visit the project homepage on Github?");
-                about.append("</html>");
-                int response = JOptionPane.showConfirmDialog(null,
-                        about.toString(),
-                        mainFrame.getTitle(),
-                        JOptionPane.YES_NO_OPTION,
-                        JOptionPane.PLAIN_MESSAGE,
-                        new ImageIcon(mainIcon));
-                if (response == JOptionPane.YES_OPTION) {
-                    try {
-                        Desktop.getDesktop().browse(URI.create("http://github.com/4pr0n/ripme"));
-                    } catch (IOException e) {
-                        logger.error("Exception while opening project home page", e);
-                    }
+            about.append("Do you want to visit the project homepage on Github?");
+            about.append("</html>");
+            int response = JOptionPane.showConfirmDialog(null,
+                    about.toString(),
+                    mainFrame.getTitle(),
+                    JOptionPane.YES_NO_OPTION,
+                    JOptionPane.PLAIN_MESSAGE,
+                    new ImageIcon(mainIcon));
+            if (response == JOptionPane.YES_OPTION) {
+                try {
+                    Desktop.getDesktop().browse(URI.create("http://github.com/4pr0n/ripme"));
+                } catch (IOException e) {
+                    logger.error("Exception while opening project home page", e);
                 }
             }
         });
-        trayMenuExit = new MenuItem("Exit");
-        trayMenuExit.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent arg0) {
-                System.exit(0);
-            }
-        });
+        MenuItem trayMenuExit = new MenuItem("Exit");
+        trayMenuExit.addActionListener(arg0 -> System.exit(0));
         trayMenuAutorip = new CheckboxMenuItem("Clipboard Autorip");
-        trayMenuAutorip.addItemListener(new ItemListener() {
-            @Override
-            public void itemStateChanged(ItemEvent arg0) {
-                ClipboardUtils.setClipboardAutoRip(trayMenuAutorip.getState());
-                configClipboardAutorip.setSelected(trayMenuAutorip.getState());
-            }
+        trayMenuAutorip.addItemListener(arg0 -> {
+            ClipboardUtils.setClipboardAutoRip(trayMenuAutorip.getState());
+            configClipboardAutorip.setSelected(trayMenuAutorip.getState());
         });
         trayMenu.add(trayMenuMain);
         trayMenu.add(trayMenuAbout);
@@ -960,10 +928,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
                     mainFrame.setAlwaysOnTop(false);
                 }
             });
-        } catch (IOException e) {
-            //TODO implement proper stack trace handling this is really just intented as a placeholder until you implement proper error handling
-            e.printStackTrace();
-        } catch (AWTException e) {
+        } catch (IOException | AWTException e) {
             //TODO implement proper stack trace handling this is really just intented as a placeholder until you implement proper error handling
             e.printStackTrace();
         }
@@ -977,8 +942,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
             mainFrame.setAlwaysOnTop(true);
             mainFrame.setAlwaysOnTop(false);
             trayMenuMain.setLabel("Hide");
-        }
-        else {
+        } else {
             mainFrame.setVisible(false);
             trayMenuMain.setLabel("Show");
         }
@@ -998,12 +962,12 @@ public final class MainWindow implements Runnable, RipStatusHandler {
     }
 
     private void loadHistory() {
-        File historyFile = new File("history.json");
+        File historyFile = new File(Utils.getConfigDir() + File.separator + "history.json");
         HISTORY.clear();
         if (historyFile.exists()) {
             try {
-                logger.info("Loading history from history.json");
-                HISTORY.fromFile("history.json");
+                logger.info("Loading history from " + historyFile.getCanonicalPath());
+                HISTORY.fromFile(historyFile.getCanonicalPath());
             } catch (IOException e) {
                 logger.error("Failed to load history from file " + historyFile, e);
                 JOptionPane.showMessageDialog(null,
@@ -1014,19 +978,13 @@ public final class MainWindow implements Runnable, RipStatusHandler {
                         "RipMe - history load failure",
                         JOptionPane.ERROR_MESSAGE);
             }
-        }
-        else {
+        } else {
             logger.info("Loading history from configuration");
             HISTORY.fromList(Utils.getConfigList("download.history"));
             if (HISTORY.toList().size() == 0) {
                 // Loaded from config, still no entries.
                 // Guess rip history based on rip folder
-                String[] dirs = Utils.getWorkingDirectory().list(new FilenameFilter() {
-                    @Override
-                    public boolean accept(File dir, String file) {
-                        return new File(dir.getAbsolutePath() + File.separator + file).isDirectory();
-                    }
-                });
+                String[] dirs = Utils.getWorkingDirectory().list((dir, file) -> new File(dir.getAbsolutePath() + File.separator + file).isDirectory());
                 for (String dir : dirs) {
                     String url = RipUtils.urlFromDirectoryName(dir);
                     if (url != null) {
@@ -1041,11 +999,17 @@ public final class MainWindow implements Runnable, RipStatusHandler {
     }
 
     private void saveHistory() {
+        Path historyFile = Paths.get(Utils.getConfigDir() + File.separator + "history.json");
         try {
-            HISTORY.toFile("history.json");
+            if (!Files.exists(historyFile)) {
+                Files.createDirectories(historyFile.getParent());
+                Files.createFile(historyFile);
+            }
+
+            HISTORY.toFile(historyFile.toString());
             Utils.setConfigList("download.history", Collections.emptyList());
         } catch (IOException e) {
-            logger.error("Failed to save history to file history.json", e);
+            logger.error("Failed to save history to file " + historyFile, e);
         }
     }
 
@@ -1063,8 +1027,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         String nextAlbum = (String) queueListModel.remove(0);
         if (queueListModel.isEmpty()) {
             optionQueue.setText("Queue");
-        }
-        else {
+        } else {
             optionQueue.setText("Queue (" + queueListModel.size() + ")");
         }
         Thread t = ripAlbum(nextAlbum);
@@ -1075,8 +1038,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
                 logger.error("Interrupted while waiting to rip next album", ie);
             }
             ripNextAlbum();
-        }
-        else {
+        } else {
             t.start();
         }
     }
@@ -1119,7 +1081,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
             try {
                 mainFrame.setTitle("Ripping - RipMe v" + UpdateUtils.getThisJarVersion());
                 status("Starting rip...");
-                ripper.setObserver((RipStatusHandler) this);
+                ripper.setObserver(this);
                 Thread t = new Thread(ripper);
                 if (configShowPopup.isSelected() &&
                         (!mainFrame.isVisible() || !mainFrame.isActive())) {
@@ -1145,8 +1107,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
             if (!queueListModel.contains(ripTextfield.getText()) && !ripTextfield.getText().equals("")) {
                 queueListModel.add(queueListModel.size(), ripTextfield.getText());
                 ripTextfield.setText("");
-            }
-            else {
+            } else {
                 if (!isRipping) {
                     ripNextAlbum();
                 }
@@ -1158,7 +1119,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         private final AbstractRipper ripper;
         private final RipStatusMessage msg;
 
-        public StatusEvent(AbstractRipper ripper, RipStatusMessage msg) {
+        StatusEvent(AbstractRipper ripper, RipStatusMessage msg) {
             this.ripper = ripper;
             this.msg = msg;
         }
@@ -1183,11 +1144,13 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         case LOADING_RESOURCE:
         case DOWNLOAD_STARTED:
             if (logger.isEnabledFor(Level.INFO)) {
-                appendLog( "Downloading " + (String) msg.getObject(), Color.BLACK);
+                appendLog("Downloading " + msg.getObject(), Color.BLACK);
             }
             break;
         case DOWNLOAD_COMPLETE:
-            appendLog( "Downloaded " + (String) msg.getObject(), Color.GREEN);
+            if (logger.isEnabledFor(Level.INFO)) {
+                appendLog("Downloaded " + msg.getObject(), Color.GREEN);
+            }
             break;
         case DOWNLOAD_ERRORED:
             if (logger.isEnabledFor(Level.ERROR)) {
@@ -1195,7 +1158,9 @@ public final class MainWindow implements Runnable, RipStatusHandler {
             }
             break;
         case DOWNLOAD_WARN:
-            appendLog((String) msg.getObject(), Color.ORANGE);
+            if (logger.isEnabledFor(Level.WARN)) {
+                appendLog((String) msg.getObject(), Color.ORANGE);
+            }
             break;
 
         case RIP_ERRORED:
@@ -1207,7 +1172,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
             statusProgress.setVisible(false);
             openButton.setVisible(false);
             pack();
-            statusWithColor("Error: " + (String) msg.getObject(), Color.RED);
+            statusWithColor("Error: " + msg.getObject(), Color.RED);
             break;
 
         case RIP_COMPLETE:
@@ -1218,8 +1183,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
                 HistoryEntry entry = HISTORY.getEntryByURL(url);
                 entry.count = rsc.count;
                 entry.modifiedDate = new Date();
-            }
-            else {
+            } else {
                 HistoryEntry entry = new HistoryEntry();
                 entry.url = url;
                 entry.dir = rsc.getDir();
@@ -1246,16 +1210,13 @@ public final class MainWindow implements Runnable, RipStatusHandler {
                 Image folderIcon = ImageIO.read(getClass().getClassLoader().getResource("folder.png"));
                 openButton.setIcon(new ImageIcon(folderIcon));
             } catch (Exception e) { }
-            appendLog( "Rip complete, saved to " + f.getAbsolutePath(), Color.GREEN);
+            appendLog("Rip complete, saved to " + f.getAbsolutePath(), Color.GREEN);
             openButton.setActionCommand(f.toString());
-            openButton.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent event) {
-                    try {
-                        Desktop.getDesktop().open(new File(event.getActionCommand()));
-                    } catch (Exception e) {
-                        logger.error(e);
-                    }
+            openButton.addActionListener(event -> {
+                try {
+                    Desktop.getDesktop().open(new File(event.getActionCommand()));
+                } catch (Exception e) {
+                    logger.error(e);
                 }
             });
             pack();
@@ -1275,16 +1236,6 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         SwingUtilities.invokeLater(event);
     }
 
-    /** Simple TextPane that allows horizontal scrolling. */
-    class JTextPaneNoWrap extends JTextPane {
-        private static final long serialVersionUID = 1L;
-
-        @Override
-        public boolean getScrollableTracksViewportWidth() {
-            return false;
-        }
-    }
-
     public static void ripAlbumStatic(String url) {
         ripTextfield.setText(url.trim());
         ripButton.doClick();
@@ -1298,15 +1249,24 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         Utils.setConfigBoolean("window.position", false);
     }
 
-    public static boolean isWindowPositioningEnabled() {
-        boolean isEnabled = Utils.getConfigBoolean("window.position", true);
-        return isEnabled;
+    private static boolean hasWindowPositionBug() {
+        String osName = System.getProperty("os.name");
+        // Java on Windows has a bug where if we try to manually set the position of the Window,
+        // javaw.exe will not close itself down when the application is closed.
+        // Therefore, even if isWindowPositioningEnabled, if we are on Windows, we ignore it.
+        return osName == null || osName.startsWith("Windows");
     }
 
-    public static void saveWindowPosition(Frame frame) {
+    private static boolean isWindowPositioningEnabled() {
+        boolean isEnabled = Utils.getConfigBoolean("window.position", true);
+        return isEnabled && !hasWindowPositionBug();
+    }
+
+    private static void saveWindowPosition(Frame frame) {
         if (!isWindowPositioningEnabled()) {
             return;
         }
+
         Point point;
         try {
             point = frame.getLocationOnScreen();
@@ -1330,11 +1290,12 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         logger.debug("Saved window position (x=" + x + ", y=" + y + ", w=" + w + ", h=" + h + ")");
     }
 
-    public static void restoreWindowPosition(Frame frame) {
+    private static void restoreWindowPosition(Frame frame) {
         if (!isWindowPositioningEnabled()) {
             mainFrame.setLocationRelativeTo(null); // default to middle of screen
             return;
         }
+
         try {
             int x = Utils.getConfigInteger("window.x", -1);
             int y = Utils.getConfigInteger("window.y", -1);
