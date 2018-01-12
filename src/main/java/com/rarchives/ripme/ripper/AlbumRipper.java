@@ -13,13 +13,17 @@ import com.rarchives.ripme.ui.RipStatusMessage;
 import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
 import com.rarchives.ripme.utils.Utils;
 
+
+/**'
+ * For ripping delicious albums off the interwebz.
+ */
 public abstract class AlbumRipper extends AbstractRipper {
 
-    protected Map<URL, File> itemsPending = Collections.synchronizedMap(new HashMap<URL, File>());
-    protected Map<URL, File> itemsCompleted = Collections.synchronizedMap(new HashMap<URL, File>());
-    protected Map<URL, String> itemsErrored = Collections.synchronizedMap(new HashMap<URL, String>());
+    private Map<URL, File> itemsPending = Collections.synchronizedMap(new HashMap<URL, File>());
+    private Map<URL, File> itemsCompleted = Collections.synchronizedMap(new HashMap<URL, File>());
+    private Map<URL, String> itemsErrored = Collections.synchronizedMap(new HashMap<URL, String>());
 
-    public AlbumRipper(URL url) throws IOException {
+    protected AlbumRipper(URL url) throws IOException {
         super(url);
     }
 
@@ -29,15 +33,22 @@ public abstract class AlbumRipper extends AbstractRipper {
     public abstract String getHost();
     public abstract String getGID(URL url) throws MalformedURLException;
 
-    public boolean allowDuplicates() {
+    protected boolean allowDuplicates() {
         return false;
     }
 
     @Override
+    /**
+     * Returns total amount of files attempted.
+     */
     public int getCount() {
         return itemsCompleted.size() + itemsErrored.size();
     }
 
+    @Override
+    /**
+     * Queues multiple URLs of single images to download from a single Album URL
+     */
     public boolean addURLToDownload(URL url, File saveAs, String referrer, Map<String,String> cookies) {
         // Only download one file if this is a test.
         if (super.isThisATest() &&
@@ -95,12 +106,15 @@ public abstract class AlbumRipper extends AbstractRipper {
      * @return
      *      True on success
      */
-    public boolean addURLToDownload(URL url) {
+    protected boolean addURLToDownload(URL url) {
         // Use empty prefix and empty subdirectory
         return addURLToDownload(url, "", "");
     }
 
     @Override
+    /**
+     * Cleans up & tells user about successful download
+     */
     public void downloadCompleted(URL url, File saveAs) {
         if (observer == null) {
             return;
@@ -119,6 +133,9 @@ public abstract class AlbumRipper extends AbstractRipper {
     }
 
     @Override
+    /**
+     * Cleans up & tells user about failed download.
+     */
     public void downloadErrored(URL url, String reason) {
         if (observer == null) {
             return;
@@ -131,6 +148,10 @@ public abstract class AlbumRipper extends AbstractRipper {
     }
 
     @Override
+    /**
+     * Tells user that a single file in the album they wish to download has
+     * already been downloaded in the past.
+     */
     public void downloadExists(URL url, File file) {
         if (observer == null) {
             return;

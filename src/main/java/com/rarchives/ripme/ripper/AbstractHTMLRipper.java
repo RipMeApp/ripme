@@ -17,27 +17,27 @@ import com.rarchives.ripme.utils.Utils;
  */
 public abstract class AbstractHTMLRipper extends AlbumRipper {
 
-    public AbstractHTMLRipper(URL url) throws IOException {
+    protected AbstractHTMLRipper(URL url) throws IOException {
         super(url);
     }
 
-    public abstract String getDomain();
+    protected abstract String getDomain();
     public abstract String getHost();
 
-    public abstract Document getFirstPage() throws IOException;
+    protected abstract Document getFirstPage() throws IOException;
     public Document getNextPage(Document doc) throws IOException {
         return null;
     }
-    public abstract List<String> getURLsFromPage(Document page);
-    public List<String> getDescriptionsFromPage(Document doc) throws IOException {
+    protected abstract List<String> getURLsFromPage(Document page);
+    protected List<String> getDescriptionsFromPage(Document doc) throws IOException {
         throw new IOException("getDescriptionsFromPage not implemented"); // Do I do this or make an abstract function?
     }
-    public abstract void downloadURL(URL url, int index);
-    public DownloadThreadPool getThreadPool() {
+    protected abstract void downloadURL(URL url, int index);
+    protected DownloadThreadPool getThreadPool() {
         return null;
     }
 
-    public boolean keepSortOrder() {
+    protected boolean keepSortOrder() {
         return true;
     }
 
@@ -50,13 +50,13 @@ public abstract class AbstractHTMLRipper extends AlbumRipper {
     public URL sanitizeURL(URL url) throws MalformedURLException {
         return url;
     }
-    public boolean hasDescriptionSupport() {
+    protected boolean hasDescriptionSupport() {
         return false;
     }
-    public String[] getDescription(String url,Document page) throws IOException {
+    protected String[] getDescription(String url, Document page) throws IOException {
         throw new IOException("getDescription not implemented"); // Do I do this or make an abstract function?
     }
-    public int descSleepTime() {
+    protected int descSleepTime() {
         return 100;
     }
     @Override
@@ -140,7 +140,15 @@ public abstract class AbstractHTMLRipper extends AlbumRipper {
         }
         waitForThreads();
     }
-    public String fileNameFromURL(URL url) {
+    
+    /**
+     * Gets the file name from the URL
+     * @param url 
+     *      URL that you want to get the filename from
+     * @return 
+     *      Filename of the URL
+     */
+    private String fileNameFromURL(URL url) {
         String saveAs = url.toExternalForm();
         if (saveAs.substring(saveAs.length() - 1) == "/") { saveAs = saveAs.substring(0,saveAs.length() - 1) ;}
         saveAs = saveAs.substring(saveAs.lastIndexOf('/')+1);
@@ -150,11 +158,25 @@ public abstract class AbstractHTMLRipper extends AlbumRipper {
         if (saveAs.indexOf(':') >= 0) { saveAs = saveAs.substring(0, saveAs.indexOf(':')); }
         return saveAs;
     }
+    /**
+     * 
+     * @param url
+     *      Target URL
+     * @param subdirectory
+     *      Path to subdirectory where you want to save it
+     * @param text
+     *      Text you want to save
+     * @param index
+     *      Index in something like an album
+     * @return 
+     *      True if ripped successfully
+     *      False if failed
+     */
     public boolean saveText(URL url, String subdirectory, String text, int index) {
         String saveAs = fileNameFromURL(url);
         return saveText(url,subdirectory,text,index,saveAs);
     }
-    public boolean saveText(URL url, String subdirectory, String text, int index, String fileName) {
+    private boolean saveText(URL url, String subdirectory, String text, int index, String fileName) {
         // Not the best for some cases, like FurAffinity. Overridden there.
         try {
             stopCheck();
@@ -189,7 +211,15 @@ public abstract class AbstractHTMLRipper extends AlbumRipper {
         }
         return true;
     }
-    public String getPrefix(int index) {
+    
+    /**
+     * Gets prefix based on where in the index it is
+     * @param index 
+     *      The index in question
+     * @return 
+     *      Returns prefix for a file. (?)
+     */
+    protected String getPrefix(int index) {
         String prefix = "";
         if (keepSortOrder() && Utils.getConfigBoolean("download.save_order", true)) {
             prefix = String.format("%03d_", index);

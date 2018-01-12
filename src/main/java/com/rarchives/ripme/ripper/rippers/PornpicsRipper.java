@@ -1,5 +1,10 @@
 package com.rarchives.ripme.ripper.rippers;
 
+import com.rarchives.ripme.ripper.AbstractHTMLRipper;
+import com.rarchives.ripme.utils.Http;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -8,54 +13,47 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
 
-import com.rarchives.ripme.ripper.AbstractHTMLRipper;
-import com.rarchives.ripme.utils.Http;
+public class PornpicsRipper extends AbstractHTMLRipper {
 
-public class DatwinRipper extends AbstractHTMLRipper {
-
-    public DatwinRipper(URL url) throws IOException {
+    public PornpicsRipper(URL url) throws IOException {
         super(url);
     }
 
     @Override
     public String getHost() {
-        return "datwin";
+        return "pornpics";
     }
+
     @Override
     public String getDomain() {
-        return "datw.in";
+        return "pornpics.com";
     }
 
     @Override
     public String getGID(URL url) throws MalformedURLException {
-        Pattern p = Pattern.compile("^.*datw.in/([a-zA-Z0-9\\-_]+).*$");
+        Pattern p = Pattern.compile("https?://www.pornpics.com/galleries/([a-zA-Z0-9_-]*)/?");
         Matcher m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             return m.group(1);
         }
-        throw new MalformedURLException(
-                "Expected datw.in gallery formats: "
-                        + "datw.in/..."
-                        + " Got: " + url);
+        throw new MalformedURLException("Expected pornpics URL format: " +
+                "www.pornpics.com/galleries/ID - got " + url + " instead");
     }
 
     @Override
     public Document getFirstPage() throws IOException {
+        // "url" is an instance field of the superclass
         return Http.url(url).get();
     }
 
     @Override
     public List<String> getURLsFromPage(Document doc) {
-        List<String> imageURLs = new ArrayList<String>();
-        for (Element thumb : doc.select("img.attachment-thumbnail")) {
-            String image = thumb.attr("src");
-            image = image.replaceAll("-\\d{1,3}x\\d{1,3}", "");
-            imageURLs.add(image);
+        List<String> result = new ArrayList<>();
+        for (Element el : doc.select("a.rel-link")) {
+            result.add(el.attr("href"));
         }
-        return imageURLs;
+        return result;
     }
 
     @Override

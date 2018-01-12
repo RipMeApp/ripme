@@ -256,7 +256,7 @@ public class FivehundredpxRipper extends AbstractJSONRipper {
 
     @Override
     public List<String> getURLsFromJSON(JSONObject json) {
-        List<String> imageURLs = new ArrayList<String>();
+        List<String> imageURLs = new ArrayList<>();
         JSONArray photos = json.getJSONArray("photos");
         for (int i = 0; i < photos.length(); i++) {
             if (super.isStopped()) {

@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -16,14 +15,13 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import com.rarchives.ripme.ripper.AbstractHTMLRipper;
-import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
 import com.rarchives.ripme.utils.Http;
 import java.util.HashMap;
 
 public class AerisdiesRipper extends AbstractHTMLRipper {
 
     private Document albumDoc = null;
-    private Map<String,String> cookies = new HashMap<String,String>();
+    private Map<String,String> cookies = new HashMap<>();
 
 
     public AerisdiesRipper(URL url) throws IOException {
@@ -41,20 +39,20 @@ public class AerisdiesRipper extends AbstractHTMLRipper {
 
     @Override
     public String getGID(URL url) throws MalformedURLException {
-        Pattern p = Pattern.compile("^https?://www.aerisdies.com/html/lb/([a-z]*_[0-9]*_\\d)\\.html");
+        Pattern p = Pattern.compile("^https?://www.aerisdies.com/html/lb/[a-z]*_(\\d+)_\\d\\.html");
         Matcher m = p.matcher(url.toExternalForm());
         if (!m.matches()) {
             throw new MalformedURLException("Expected URL format: http://www.aerisdies.com/html/lb/albumDIG, got: " + url);
         }
-        return m.group(m.groupCount());
+        return m.group(1);
     }
 
     @Override
     public String getAlbumTitle(URL url) throws MalformedURLException {
         try {
             // Attempt to use album title as GID
-            String title = getFirstPage().select("title").first().text();
-            return getHost() + "_" + title.trim();
+            String title = getFirstPage().select("div > div > span[id=albumname] > a").first().text();
+            return getHost() + "_" + getGID(url) + "_" + title.trim();
         } catch (IOException e) {
             // Fall back to default album naming convention
             logger.info("Unable to find title at " + url);
@@ -74,7 +72,7 @@ public class AerisdiesRipper extends AbstractHTMLRipper {
 
     @Override
     public List<String> getURLsFromPage(Document page) {
-        List<String> imageURLs = new ArrayList<String>();
+        List<String> imageURLs = new ArrayList<>();
         Elements albumElements = page.select("div.imgbox > a > img");
             for (Element imageBox : albumElements) {
                 String imageUrl = imageBox.attr("src");

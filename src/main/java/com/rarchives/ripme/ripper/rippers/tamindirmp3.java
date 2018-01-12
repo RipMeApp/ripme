@@ -48,7 +48,7 @@ public class tamindirmp3 extends AbstractHTMLRipper {
 
     @Override
     public List<String> getURLsFromPage(Document doc) {
-        List<String> music = new ArrayList<String>();
+        List<String> music = new ArrayList<>();
         for (Element el : doc.select("mp3")) {
             music.add(el.attr("src"));
         }

@@ -20,7 +20,7 @@ import com.rarchives.ripme.utils.Http;
 public class ZizkiRipper extends AbstractHTMLRipper {
 
     private Document albumDoc = null;
-    private Map<String,String> cookies = new HashMap<String,String>();
+    private Map<String,String> cookies = new HashMap<>();
 
     public ZizkiRipper(URL url) throws IOException {
         super(url);
@@ -76,7 +76,7 @@ public class ZizkiRipper extends AbstractHTMLRipper {
 
     @Override
     public List<String> getURLsFromPage(Document page) {
-        List<String> imageURLs = new ArrayList<String>();
+        List<String> imageURLs = new ArrayList<>();
         // Page contains images
         logger.info("Look for images.");
         for (Element thumb : page.select("img")) {
@@ -99,7 +99,6 @@ public class ZizkiRipper extends AbstractHTMLRipper {
                      src = thumb.attr("src");
                      logger.debug("Found url with " + src);
                      if (!src.contains("zizki.com")) {
-                       continue;
                      } else {
                        imageURLs.add(src.replace("/styles/medium/public/","/styles/large/public/"));
                      }

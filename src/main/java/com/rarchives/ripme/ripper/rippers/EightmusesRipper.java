@@ -23,7 +23,12 @@ import com.rarchives.ripme.utils.Http;
 public class EightmusesRipper extends AbstractHTMLRipper {
 
     private Document albumDoc = null;
-    private Map<String,String> cookies = new HashMap<String,String>();
+    private Map<String,String> cookies = new HashMap<>();
+    // TODO put up a wiki page on using maps to store titles
+    // the map for storing the title of each album when downloading sub albums
+    private Map<URL,String> urlTitles = new HashMap<>();
+
+    private Boolean rippingSubalbums = false;
 
     public EightmusesRipper(URL url) throws IOException {
         super(url);
@@ -76,33 +81,62 @@ public class EightmusesRipper extends AbstractHTMLRipper {
 
     @Override
     public List<String> getURLsFromPage(Document page) {
-        List<String> imageURLs = new ArrayList<String>();
-        if (page.select(".preview > span").size() > 0) {
+        List<String> imageURLs = new ArrayList<>();
+        // get the first image link on the page and check if the last char in it is a number
+        // if it is a number then we're ripping a comic if not it's a subalbum
+        String firstImageLink = page.select("div.gallery > a.t-hover").first().attr("href");
+        Pattern p = Pattern.compile("/comix/picture/([a-zA-Z0-9\\-_/]*/)?\\d+");
+        Matcher m = p.matcher(firstImageLink);
+        if (!m.matches()) {
+            logger.info("Ripping subalbums");
             // Page contains subalbums (not images)
-            Elements albumElements = page.select("a.preview");
+            Elements albumElements = page.select("div.gallery > a.t-hover");
             List<Element> albumsList = albumElements.subList(0, albumElements.size());
             Collections.reverse(albumsList);
             // Iterate over elements in reverse order
             for (Element subalbum : albumsList) {
                 String subUrl = subalbum.attr("href");
-                subUrl = subUrl.replaceAll("\\.\\./", "");
-                if (subUrl.startsWith("//")) {
-                    subUrl = "http:";
-                }
-                else if (!subUrl.startsWith("http://")) {
-                    subUrl = "http://www.8muses.com/" + subUrl;
-                }
-                try {
-                    logger.info("Retrieving " + subUrl);
-                    sendUpdate(STATUS.LOADING_RESOURCE, subUrl);
-                    Document subPage = Http.url(subUrl).get();
-                    // Get all images in subalbum, add to list.
-                    List<String> subalbumImages = getURLsFromPage(subPage);
-                    logger.info("Found " + subalbumImages.size() + " images in subalbum");
-                    imageURLs.addAll(subalbumImages);
-                } catch (IOException e) {
-                    logger.warn("Error while loading subalbum " + subUrl, e);
-                    continue;
+                // This if is to skip ads which don't have a href
+                if (subUrl != "") {
+                    subUrl = subUrl.replaceAll("\\.\\./", "");
+                    if (subUrl.startsWith("//")) {
+                        subUrl = "https:";
+                    }
+                    else if (!subUrl.startsWith("http://")) {
+                        subUrl = "https://www.8muses.com" + subUrl;
+                    }
+                    try {
+                        logger.info("Retrieving " + subUrl);
+                        sendUpdate(STATUS.LOADING_RESOURCE, subUrl);
+                        Document subPage = Http.url(subUrl).get();
+                        // Get all images in subalbum, add to list.
+                        List<String> subalbumImages = getURLsFromPage(subPage);
+                        String albumTitle = subPage.select("meta[name=description]").attr("content");
+                        albumTitle = albumTitle.replace("A huge collection of free porn comics for adults. Read ", "");
+                        albumTitle = albumTitle.replace(" online for free at 8muses.com", "");
+                        albumTitle = albumTitle.replace(" ", "_");
+                        // albumTitle = albumTitle.replace("Sex and Porn Comics", "");
+                        // albumTitle = albumTitle.replace("|", "");
+                        // albumTitle = albumTitle.replace("8muses", "");
+                        // albumTitle = albumTitle.replaceAll("-", "_");
+                        // albumTitle = albumTitle.replaceAll(" ", "_");
+                        // albumTitle = albumTitle.replaceAll("___", "_");
+                        // albumTitle = albumTitle.replaceAll("__", "_");
+                        // // This is here to remove the trailing __ from folder names
+                        // albumTitle = albumTitle.replaceAll("__", "");
+                        logger.info("Found " + subalbumImages.size() + " images in subalbum");
+                        int prefix = 1;
+                        for (String image : subalbumImages) {
+                            URL imageUrl = new URL(image);
+                            // urlTitles.put(imageUrl, albumTitle);
+                            addURLToDownload(imageUrl, getPrefix(prefix), albumTitle, this.url.toExternalForm(), cookies);
+                            prefix = prefix + 1;
+                        }
+                        rippingSubalbums = true;
+                        imageURLs.addAll(subalbumImages);
+                    } catch (IOException e) {
+                        logger.warn("Error while loading subalbum " + subUrl, e);
+                    }
                 }
             }
         }
@@ -142,10 +176,10 @@ public class EightmusesRipper extends AbstractHTMLRipper {
 
     private String getFullSizeImage(String imageUrl) throws IOException {
         sendUpdate(STATUS.LOADING_RESOURCE, imageUrl);
+        logger.info("Getting full sized image from " + imageUrl);
         Document doc = new Http(imageUrl).get(); // Retrieve the webpage  of the image URL
-        Element fullSizeImage = doc.select(".photo").first(); // Select the "photo" element from the page (there should only be 1)
-        String path = "https://cdn.ampproject.org/i/s/www.8muses.com/data/ufu/small/" + fullSizeImage.children().select("#imageName").attr("value"); // Append the path to the fullsize image file to the standard prefix
-        return path;
+        String imageName = doc.select("input[id=imageName]").attr("value"); // Select the "input" element from the page
+        return "https://www.8muses.com/image/fm/" + imageName;
     }
 
     @Override

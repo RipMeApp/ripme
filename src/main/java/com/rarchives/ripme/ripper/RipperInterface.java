@@ -7,8 +7,10 @@ import java.net.URL;
 /**
  * I have no idea why I made this interface. Everything is captured within the AbstractRipper.
  * Oh well, here's to encapsulation and abstraction! (raises glass)
+ * 
+ * (cheers!)
  */
-public interface RipperInterface {
+interface RipperInterface {
     void rip() throws IOException;
     boolean canRip(URL url);
     URL sanitizeURL(URL url) throws MalformedURLException;

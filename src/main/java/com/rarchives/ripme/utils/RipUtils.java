@@ -27,7 +27,7 @@ public class RipUtils {
     private static final Logger logger = Logger.getLogger(RipUtils.class);
 
     public static List<URL> getFilesFromURL(URL url) {
-        List<URL> result = new ArrayList<URL>();
+        List<URL> result = new ArrayList<>();
 
         logger.debug("Checking " + url);
         // Imgur album
@@ -94,7 +94,7 @@ public class RipUtils {
         Pattern p = Pattern.compile("https?://i.reddituploads.com/([a-zA-Z0-9]+)\\?.*");
         Matcher m = p.matcher(url.toExternalForm());
         if (m.matches()) {
-            System.out.println("URL: " + url.toExternalForm());
+            logger.info("URL: " + url.toExternalForm());
             String u = url.toExternalForm().replaceAll("&amp;", "&");
             try {
                 result.add(new URL(u));
@@ -104,7 +104,7 @@ public class RipUtils {
         }
 
         // Direct link to image
-        p = Pattern.compile("(https?://[a-zA-Z0-9\\-\\.]+\\.[a-zA-Z]{2,3}(/\\S*)\\.(jpg|jpeg|gif|png|mp4)(\\?.*)?)");
+        p = Pattern.compile("(https?://[a-zA-Z0-9\\-.]+\\.[a-zA-Z]{2,3}(/\\S*)\\.(jpg|jpeg|gif|png|mp4)(\\?.*)?)");
         m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             try {
@@ -145,7 +145,7 @@ public class RipUtils {
     }
 
     public static Pattern getURLRegex() {
-        return Pattern.compile("(https?://[a-zA-Z0-9\\-\\.]+\\.[a-zA-Z]{2,3}(/\\S*))");
+        return Pattern.compile("(https?://[a-zA-Z0-9\\-.]+\\.[a-zA-Z]{2,3}(/\\S*))");
     }
 
     public static String urlFromDirectoryName(String dir) {
@@ -155,12 +155,8 @@ public class RipUtils {
         if (url == null) url = urlFromDeviantartDirectoryName(dir);
         if (url == null) url = urlFromRedditDirectoryName(dir);
         if (url == null) url = urlFromSiteDirectoryName(dir, "bfcakes",     "http://www.bcfakes.com/celebritylist/", "");
-        if (url == null) url = urlFromSiteDirectoryName(dir, "butttoucher", "http://butttoucher.com/users/", "");
-        if (url == null) url = urlFromSiteDirectoryName(dir, "cheeby",      "http://cheeby.com/u/", "");
-        if (url == null) url = urlFromSiteDirectoryName(dir, "datwin",      "http://datw.in/", "");
         if (url == null) url = urlFromSiteDirectoryName(dir, "drawcrowd",   "http://drawcrowd.com/", "");
         if (url == null) url = urlFromSiteDirectoryName(dir.replace("-", "/"), "ehentai", "http://g.e-hentai.org/g/", "");
-        if (url == null) url = urlFromSiteDirectoryName(dir, "fapproved", "http://fapproved.com/users/", "");
         if (url == null) url = urlFromSiteDirectoryName(dir, "vinebox", "http://finebox.co/u/", "");
         if (url == null) url = urlFromSiteDirectoryName(dir, "imgbox", "http://imgbox.com/g/", "");
         if (url == null) url = urlFromSiteDirectoryName(dir, "modelmayhem", "http://www.modelmayhem.com/", "");
@@ -182,14 +178,16 @@ public class RipUtils {
         }
         String url = null;
         String[] fields = dir.split("_");
-        if (fields[0].equals("sub")) {
-            url = "http://reddit.com/r/" + dir;
-        }
-        else if (fields[0].equals("user")) {
-            url = "http://reddit.com/user/" + dir;
-        }
-        else if (fields[0].equals("post")) {
-            url = "http://reddit.com/comments/" + dir;
+        switch (fields[0]) {
+            case "sub":
+                url = "http://reddit.com/r/" + dir;
+                break;
+            case "user":
+                url = "http://reddit.com/user/" + dir;
+                break;
+            case "post":
+                url = "http://reddit.com/comments/" + dir;
+                break;
         }
         return url;
     }

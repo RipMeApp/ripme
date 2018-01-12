@@ -37,11 +37,7 @@ public class VkRipper extends AlbumRipper {
         }
         // Ignore /video pages (but not /videos pages)
         String u = url.toExternalForm();
-        if (u.contains("/video") && !u.contains("videos")) {
-            // Single video page
-            return false;
-        }
-        return true;
+        return !u.contains("/video") || u.contains("videos");
     }
 
     @Override
@@ -62,7 +58,7 @@ public class VkRipper extends AlbumRipper {
     private void ripVideos() throws IOException {
         String oid = getGID(this.url).replace("videos", "");
         String u = "http://vk.com/al_video.php";
-        Map<String,String> postData = new HashMap<String,String>();
+        Map<String,String> postData = new HashMap<>();
         postData.put("al", "1");
         postData.put("act", "load_videos_silent");
         postData.put("offset", "0");
@@ -97,13 +93,13 @@ public class VkRipper extends AlbumRipper {
     }
 
     private void ripImages() throws IOException {
-        Map<String,String> photoIDsToURLs = new HashMap<String,String>();
+        Map<String,String> photoIDsToURLs = new HashMap<>();
         int offset = 0;
         while (true) {
             logger.info("    Retrieving " + this.url);
 
             // al=1&offset=80&part=1
-            Map<String,String> postData = new HashMap<String,String>();
+            Map<String,String> postData = new HashMap<>();
             postData.put("al", "1");
             postData.put("offset", Integer.toString(offset));
             postData.put("part", "1");
@@ -120,7 +116,7 @@ public class VkRipper extends AlbumRipper {
             body = body.substring(body.indexOf("<div"));
             doc = Jsoup.parseBodyFragment(body);
             List<Element> elements = doc.select("a");
-            Set<String> photoIDsToGet = new HashSet<String>();
+            Set<String> photoIDsToGet = new HashSet<>();
             for (Element a : elements) {
                 if (!a.attr("onclick").contains("showPhoto('")) {
                     logger.error("a: " + a);
@@ -162,8 +158,8 @@ public class VkRipper extends AlbumRipper {
     }
 
     private Map<String,String> getPhotoIDsToURLs(String photoID) throws IOException {
-        Map<String,String> photoIDsToURLs = new HashMap<String,String>();
-        Map<String,String> postData = new HashMap<String,String>();
+        Map<String,String> photoIDsToURLs = new HashMap<>();
+        Map<String,String> postData = new HashMap<>();
         // act=show&al=1&list=album45506334_172415053&module=photos&photo=45506334_304658196
         postData.put("list", getGID(this.url));
         postData.put("act", "show");
@@ -202,7 +198,7 @@ public class VkRipper extends AlbumRipper {
 
     @Override
     public String getGID(URL url) throws MalformedURLException {
-        Pattern p = Pattern.compile("^https?://(www\\.)?vk\\.com/(photos|album|videos)-?([a-zA-Z0-9_]{1,}).*$");
+        Pattern p = Pattern.compile("^https?://(www\\.)?vk\\.com/(photos|album|videos)-?([a-zA-Z0-9_]+).*$");
         Matcher m = p.matcher(url.toExternalForm());
         if (!m.matches()) {
             throw new MalformedURLException("Expected format: http://vk.com/album#### or vk.com/photos####");

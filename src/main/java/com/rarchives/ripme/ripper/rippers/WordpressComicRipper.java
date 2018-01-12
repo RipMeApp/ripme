@@ -16,25 +16,25 @@ import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 import com.rarchives.ripme.utils.Http;
 
 public class WordpressComicRipper extends AbstractHTMLRipper {
-    String pageTitle = "";
+    private String pageTitle = "";
 
     public WordpressComicRipper(URL url) throws IOException {
         super(url);
     }
 
-    // Test links:
+    // Test links (see also WordpressComicRipperTest.java)
     // http://www.totempole666.com/comic/first-time-for-everything-00-cover/
     // http://buttsmithy.com/archives/comic/p1
     // http://themonsterunderthebed.net/?comic=test-post
     // http://prismblush.com/comic/hella-trap-pg-01/
-    // http://www.konradokonski.com/sawdust/
-    // http://www.konradokonski.com/wiory/
+    // http://www.konradokonski.com/sawdust/comic/get-up/
+    // http://www.konradokonski.com/wiory/comic/08182008/
     // http://freeadultcomix.com/finders-feepaid-in-full-sparrow/
-    // http://comics-xxx.com/republic-rendezvous-palcomix-star-wars-xxx/
+    // http://thisis.delvecomic.com/NewWP/comic/in-too-deep/
     // http://tnbtu.com/comic/01-00/
     // http://shipinbottle.pepsaga.com/?p=281
 
-    public static List<String> explicit_domains = Arrays.asList(
+    private static List<String> explicit_domains = Arrays.asList(
         "www.totempole666.com",
         "buttsmithy.com",
         "themonsterunderthebed.net",
@@ -42,21 +42,18 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
         "www.konradokonski.com",
         "freeadultcomix.com",
         "thisis.delvecomic.com",
-        "comics-xxx.com",
         "tnbtu.com",
         "shipinbottle.pepsaga.com"
     );
 
     @Override
     public String getHost() {
-        String host = url.toExternalForm().split("/")[2];
-        return host;
+        return url.toExternalForm().split("/")[2];
     }
 
     @Override
     public String getDomain() {
-        String host = url.toExternalForm().split("/")[2];
-        return host;
+        return url.toExternalForm().split("/")[2];
     }
 
     @Override
@@ -70,8 +67,16 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
                 return true;
             }
 
-            Pattern konradokonskiPat = Pattern.compile("https?://www.konradokonski.com/sawdust/comic/([a-zA-Z0-9_-]*)/?$");
+            Pattern konradokonskiPat = Pattern.compile("https?://www.konradokonski.com/([a-zA-Z0-9_-]*)/comic/([a-zA-Z0-9_-]*)/?$");
             Matcher konradokonskiMat = konradokonskiPat.matcher(url.toExternalForm());
+            if (konradokonskiMat.matches()) {
+                return true;
+            }
+
+            // This is hardcoded because it starts on the first page, unlike all the other
+            // konradokonski which start on the last page
+            konradokonskiPat = Pattern.compile("https?://www.konradokonski.com/aquartzbead/?$");
+            konradokonskiMat = konradokonskiPat.matcher(url.toExternalForm());
             if (konradokonskiMat.matches()) {
                 return true;
             }
@@ -125,12 +130,13 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
             }
         }
 
+
         return false;
     }
 
     @Override
     public String getAlbumTitle(URL url) throws MalformedURLException {
-        Pattern totempole666Pat = Pattern.compile("(?:https?://)?(?:www\\.)?totempole666.com\\/comic/([a-zA-Z0-9_-]*)/?$");
+        Pattern totempole666Pat = Pattern.compile("(?:https?://)?(?:www\\.)?totempole666.com/comic/([a-zA-Z0-9_-]*)/?$");
         Matcher totempole666Mat = totempole666Pat.matcher(url.toExternalForm());
         if (totempole666Mat.matches()) {
             return "totempole666.com" + "_" + "The_cummoner";
@@ -142,16 +148,16 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
             return "buttsmithy.com" + "_" + "Alfie";
         }
 
-        Pattern konradokonskiSawdustPat = Pattern.compile("http://www.konradokonski.com/sawdust/comic/([a-zA-Z0-9_-]*)/?$");
-        Matcher konradokonskiSawdustMat = konradokonskiSawdustPat.matcher(url.toExternalForm());
-        if (konradokonskiSawdustMat.matches()) {
-            return "konradokonski.com_sawdust";
+        Pattern konradokonskiPat = Pattern.compile("http://www.konradokonski.com/([a-zA-Z]+)/comic/([a-zA-Z0-9_-]*)/?$");
+        Matcher konradokonskiMat = konradokonskiPat.matcher(url.toExternalForm());
+        if (konradokonskiMat.matches()) {
+            return "konradokonski.com_" + konradokonskiMat.group(1);
         }
 
-        Pattern konradokonskiWioryPat = Pattern.compile("http://www.konradokonski.com/wiory/comic/([a-zA-Z0-9_-]*)/?$");
-        Matcher konradokonskiWioryMat = konradokonskiWioryPat.matcher(url.toExternalForm());
-        if (konradokonskiWioryMat.matches()) {
-            return "konradokonski.com_wiory";
+        konradokonskiPat = Pattern.compile("https?://www.konradokonski.com/aquartzbead/?$");
+        konradokonskiMat = konradokonskiPat.matcher(url.toExternalForm());
+        if (konradokonskiMat.matches()) {
+            return "konradokonski.com_aquartzbead";
         }
 
         Pattern freeadultcomixPat = Pattern.compile("https?://freeadultcomix.com/([a-zA-Z0-9_\\-]*)/?$");
@@ -237,7 +243,7 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
 
     @Override
     public List<String> getURLsFromPage(Document doc) {
-        List<String> result = new ArrayList<String>();
+        List<String> result = new ArrayList<>();
         if (getHost().contains("www.totempole666.com")
                 || getHost().contains("buttsmithy.com")
                 || getHost().contains("themonsterunderthebed.net")
@@ -277,9 +283,10 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
         }
 
         // freeadultcomix gets it own if because it needs to add http://freeadultcomix.com to the start of each link
+        // TODO review the above comment which no longer applies -- see if there's a refactoring we should do here.
         if (url.toExternalForm().contains("freeadultcomix.com")) {
             for (Element elem : doc.select("div.single-post > p > img.aligncenter")) {
-                result.add("http://freeadultcomix.com" + elem.attr("src"));
+                result.add(elem.attr("src"));
             }
         }
 

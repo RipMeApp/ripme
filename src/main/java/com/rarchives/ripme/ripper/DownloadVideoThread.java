@@ -20,7 +20,7 @@ import com.rarchives.ripme.utils.Utils;
  * Thread for downloading files.
  * Includes retry logic, observer notifications, and other goodies.
  */
-public class DownloadVideoThread extends Thread {
+class DownloadVideoThread extends Thread {
 
     private static final Logger logger = Logger.getLogger(DownloadVideoThread.class);
 
@@ -136,6 +136,12 @@ public class DownloadVideoThread extends Thread {
         logger.info("[+] Saved " + url + " as " + this.prettySaveAs);
     }
 
+    /**
+     * @param url
+     *      Target URL
+     * @return 
+     *      Returns connection length
+     */
     private int getTotalBytes(URL url) throws IOException {
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestMethod("HEAD");

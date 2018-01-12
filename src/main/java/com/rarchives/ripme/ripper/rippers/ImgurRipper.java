@@ -31,14 +31,15 @@ public class ImgurRipper extends AlbumRipper {
 
     private Document albumDoc;
 
-    static enum ALBUM_TYPE {
+    enum ALBUM_TYPE {
         ALBUM,
         USER,
         USER_ALBUM,
         USER_IMAGES,
         SERIES_OF_IMAGES,
         SUBREDDIT
-    };
+    }
+
     private ALBUM_TYPE albumType;
 
     public ImgurRipper(URL url) throws IOException {
@@ -104,7 +105,8 @@ public class ImgurRipper extends AlbumRipper {
                 */
 
                 String title = null;
-                final String defaultTitle = "Imgur: The most awesome images on the Internet";
+                final String defaultTitle1 = "Imgur: The most awesome images on the Internet";
+                final String defaultTitle2 = "Imgur: The magic of the Internet";
                 logger.info("Trying to get album title");
                 elems = albumDoc.select("meta[property=og:title]");
                 if (elems != null) {
@@ -113,7 +115,7 @@ public class ImgurRipper extends AlbumRipper {
                 }
                 // This is here encase the album is unnamed, to prevent
                 // Imgur: The most awesome images on the Internet from being added onto the album name
-                if (title.contains(defaultTitle)) {
+                if (title.contains(defaultTitle1) || title.contains(defaultTitle2)) {
                     logger.debug("Album is untitled or imgur is returning the default title");
                     // We set the title to "" here because if it's found in the next few attempts it will be changed
                     // but if it's nto found there will be no reason to set it later
@@ -121,7 +123,7 @@ public class ImgurRipper extends AlbumRipper {
                     logger.debug("Trying to use title tag to get title");
                     elems = albumDoc.select("title");
                     if (elems != null) {
-                        if (elems.text().contains(defaultTitle)) {
+                        if (elems.text().contains(defaultTitle1) || elems.text().contains(defaultTitle2)) {
                             logger.debug("Was unable to get album title or album was untitled");
                         }
                         else {
@@ -223,7 +225,7 @@ public class ImgurRipper extends AlbumRipper {
             String[] imageIds = m.group(1).split(",");
             for (String imageId : imageIds) {
                 // TODO: Fetch image with ID imageId
-                logger.debug("Fetching image info for ID " + imageId);;
+                logger.debug("Fetching image info for ID " + imageId);
                 try {
                     JSONObject json = Http.url("https://api.imgur.com/2/image/" + imageId + ".json").getJSON();
                     if (!json.has("image")) {
@@ -350,7 +352,6 @@ public class ImgurRipper extends AlbumRipper {
                 Thread.sleep(SLEEP_BETWEEN_ALBUMS * 1000);
             } catch (Exception e) {
                 logger.error("Error while ripping album: " + e.getMessage(), e);
-                continue;
             }
         }
     }
@@ -448,6 +449,15 @@ public class ImgurRipper extends AlbumRipper {
             this.url = new URL("http://imgur.com/a/" + gid);
             return gid;
         }
+        p = Pattern.compile("^https?://(www\\.|m\\.)?imgur\\.com/(a|gallery|t)/[a-zA-Z0-9]*/([a-zA-Z0-9]{5,}).*$");
+        m = p.matcher(url.toExternalForm());
+        if (m.matches()) {
+            // Imgur album or gallery
+            albumType = ALBUM_TYPE.ALBUM;
+            String gid = m.group(m.groupCount());
+            this.url = new URL("http://imgur.com/a/" + gid);
+            return gid;
+        }
         p = Pattern.compile("^https?://([a-zA-Z0-9\\-]{3,})\\.imgur\\.com/?$");
         m = p.matcher(url.toExternalForm());
         if (m.matches()) {
@@ -515,12 +525,12 @@ public class ImgurRipper extends AlbumRipper {
     }
 
     public static class ImgurImage {
-        public String title = "",
-                description = "",
-                extension   = "";
+        String title = "";
+        String description = "";
+        String extension   = "";
         public URL url = null;
 
-        public ImgurImage(URL url) {
+        ImgurImage(URL url) {
             this.url = url;
             String tempUrl = url.toExternalForm();
             this.extension = tempUrl.substring(tempUrl.lastIndexOf('.'));
@@ -528,7 +538,7 @@ public class ImgurRipper extends AlbumRipper {
                 this.extension = this.extension.substring(0, this.extension.indexOf("?"));
             }
         }
-        public ImgurImage(URL url, String title) {
+        ImgurImage(URL url, String title) {
             this(url);
             this.title = title;
         }
@@ -536,7 +546,7 @@ public class ImgurRipper extends AlbumRipper {
             this(url, title);
             this.description = description;
         }
-        public String getSaveAs() {
+        String getSaveAs() {
             String saveAs = this.title;
             String u = url.toExternalForm();
             if (u.contains("?")) {
@@ -554,17 +564,17 @@ public class ImgurRipper extends AlbumRipper {
     }
 
     public static class ImgurAlbum {
-        public String title = null;
+        String title = null;
         public URL    url = null;
-        public List<ImgurImage> images = new ArrayList<ImgurImage>();
-        public ImgurAlbum(URL url) {
+        public List<ImgurImage> images = new ArrayList<>();
+        ImgurAlbum(URL url) {
             this.url = url;
         }
         public ImgurAlbum(URL url, String title) {
             this(url);
             this.title = title;
         }
-        public void addImage(ImgurImage image) {
+        void addImage(ImgurImage image) {
             images.add(image);
         }
     }

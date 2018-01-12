@@ -5,18 +5,13 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.log4j.ConsoleAppender;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-
 import com.rarchives.ripme.ripper.rippers.ImgurRipper;
 import com.rarchives.ripme.ripper.rippers.ImgurRipper.ImgurAlbum;
-import com.rarchives.ripme.utils.Utils;
 
 public class ImgurRipperTest extends RippersTest {
 
     public void testImgurURLFailures() throws IOException {
-        List<URL> failURLs = new ArrayList<URL>();
+        List<URL> failURLs = new ArrayList<>();
         // Imgur urls that should not work
         failURLs.add(new URL("http://imgur.com"));
         failURLs.add(new URL("http://imgur.com/"));
@@ -31,13 +26,12 @@ public class ImgurRipperTest extends RippersTest {
                 fail("Instantiated ripper for URL that should not work: " + url);
             } catch (Exception e) {
                 // Expected
-                continue;
             }
         }
     }
 
     public void testImgurAlbums() throws IOException {
-        List<URL> contentURLs = new ArrayList<URL>();
+        List<URL> contentURLs = new ArrayList<>();
         // URLs that should return more than 1 image
         contentURLs.add(new URL("http://imgur.com/a/dS9OQ#0")); // Horizontal layout
         contentURLs.add(new URL("http://imgur.com/a/YpsW9#0")); // Grid layout

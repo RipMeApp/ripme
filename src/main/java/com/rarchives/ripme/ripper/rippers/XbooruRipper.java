@@ -10,14 +10,15 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.apache.log4j.Logger;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
 public class XbooruRipper extends AbstractHTMLRipper {
+    private static final Logger logger = Logger.getLogger(XbooruRipper.class);
+
     private static Pattern gidPattern = null;
 
     public XbooruRipper(URL url) throws IOException {
@@ -57,7 +58,7 @@ public class XbooruRipper extends AbstractHTMLRipper {
 
     @Override
     public List<String> getURLsFromPage(Document page) {
-        List<String> res = new ArrayList<String>(100);
+        List<String> res = new ArrayList<>(100);
         for (Element e : page.getElementsByTag("post")) {
             res.add(e.absUrl("file_url") + "#" + e.attr("id"));
         }
@@ -71,7 +72,7 @@ public class XbooruRipper extends AbstractHTMLRipper {
 
     private String getTerm(URL url) throws MalformedURLException {
         if (gidPattern == null) {
-            gidPattern = Pattern.compile("^https?://(www\\.)?xbooru\\.com/(index.php)?.*([?&]tags=([a-zA-Z0-9$_.+!*'(),%-]+))(\\&|(#.*)?$)");
+            gidPattern = Pattern.compile("^https?://(www\\.)?xbooru\\.com/(index.php)?.*([?&]tags=([a-zA-Z0-9$_.+!*'(),%-]+))(&|(#.*)?$)");
         }
 
         Matcher m = gidPattern.matcher(url.toExternalForm());
@@ -87,7 +88,7 @@ public class XbooruRipper extends AbstractHTMLRipper {
         try {
             return Utils.filesystemSafe(new URI(getTerm(url)).getPath());
         } catch (URISyntaxException ex) {
-            Logger.getLogger(PahealRipper.class.getName()).log(Level.SEVERE, null, ex);
+            logger.error(ex);
         }
 
         throw new MalformedURLException("Expected xbooru.com URL format: xbooru.com/index.php?tags=searchterm - got " + url + " instead");

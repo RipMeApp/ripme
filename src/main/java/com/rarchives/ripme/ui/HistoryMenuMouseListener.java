@@ -10,17 +10,13 @@ import javax.swing.Action;
 import javax.swing.JPopupMenu;
 import javax.swing.JTable;
 
-public class HistoryMenuMouseListener extends MouseAdapter {
+class HistoryMenuMouseListener extends MouseAdapter {
     private JPopupMenu popup = new JPopupMenu();
-    private Action checkAllAction,
-                   uncheckAllAction,
-                   checkSelected,
-                   uncheckSelected;
     private JTable tableComponent;
 
     @SuppressWarnings("serial")
     public HistoryMenuMouseListener() {
-        checkAllAction = new AbstractAction("Check All") {
+        Action checkAllAction = new AbstractAction("Check All") {
             @Override
             public void actionPerformed(ActionEvent ae) {
                 for (int row = 0; row < tableComponent.getRowCount(); row++) {
@@ -30,7 +26,7 @@ public class HistoryMenuMouseListener extends MouseAdapter {
         };
         popup.add(checkAllAction);
 
-        uncheckAllAction = new AbstractAction("Check None") {
+        Action uncheckAllAction = new AbstractAction("Check None") {
             @Override
             public void actionPerformed(ActionEvent ae) {
                 for (int row = 0; row < tableComponent.getRowCount(); row++) {
@@ -42,7 +38,7 @@ public class HistoryMenuMouseListener extends MouseAdapter {
 
         popup.addSeparator();
 
-        checkSelected = new AbstractAction("Check Selected") {
+        Action checkSelected = new AbstractAction("Check Selected") {
             @Override
             public void actionPerformed(ActionEvent ae) {
                 for (int row : tableComponent.getSelectedRows()) {
@@ -52,7 +48,7 @@ public class HistoryMenuMouseListener extends MouseAdapter {
         };
         popup.add(checkSelected);
 
-        uncheckSelected = new AbstractAction("Uncheck Selected") {
+        Action uncheckSelected = new AbstractAction("Uncheck Selected") {
             @Override
             public void actionPerformed(ActionEvent ae) {
                 for (int row : tableComponent.getSelectedRows()) {

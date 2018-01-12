@@ -86,7 +86,7 @@ public class NatalieMuRipper extends AbstractHTMLRipper {
 
     @Override
     public List<String> getURLsFromPage(Document page) {
-        List<String> imageURLs = new ArrayList<String>();
+        List<String> imageURLs = new ArrayList<>();
         Pattern p; Matcher m;
         //select all album thumbnails
         for (Element span : page.select(".NA_articleGallery span")) {

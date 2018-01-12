@@ -36,35 +36,41 @@ public class VideoRippersTest extends RippersTest {
     }
 
     public void testXvideosRipper() throws IOException {
-        List<URL> contentURLs = new ArrayList<URL>();
-        contentURLs.add(new URL("http://www.xvideos.com/video1428195/stephanie_first_time_anal"));
-        contentURLs.add(new URL("http://www.xvideos.com/video7136868/vid-20140205-wa0011"));
+        List<URL> contentURLs = new ArrayList<>();
+        contentURLs.add(new URL("https://www.xvideos.com/video19719109/ziggy_star_ultra_hard_anal_pounding"));
+        contentURLs.add(new URL("https://www.xvideos.com/video23515878/dee_s_pool_toys"));
         for (URL url : contentURLs) {
             XvideosRipper ripper = new XvideosRipper(url);
             videoTestHelper(ripper);
         }
     }
 
+    // https://github.com/RipMeApp/ripme/issues/187
+    /*
     public void testPornhubRipper() throws IOException {
-        List<URL> contentURLs = new ArrayList<URL>();
+        List<URL> contentURLs = new ArrayList<>();
         contentURLs.add(new URL("http://www.pornhub.com/view_video.php?viewkey=993166542"));
         for (URL url : contentURLs) {
             PornhubRipper ripper = new PornhubRipper(url);
             videoTestHelper(ripper);
         }
     }
+    */
 
+    // https://github.com/RipMeApp/ripme/issues/186
+    /*
     public void testVineRipper() throws IOException {
-        List<URL> contentURLs = new ArrayList<URL>();
+        List<URL> contentURLs = new ArrayList<>();
         contentURLs.add(new URL("https://vine.co/v/hiqQrP0eUZx"));
         for (URL url : contentURLs) {
             VineRipper ripper = new VineRipper(url);
             videoTestHelper(ripper);
         }
     }
+    */
 
     public void testYoupornRipper() throws IOException {
-        List<URL> contentURLs = new ArrayList<URL>();
+        List<URL> contentURLs = new ArrayList<>();
         contentURLs.add(new URL("http://www.youporn.com/watch/7669155/mrs-li-amateur-69-orgasm/?from=categ"));
         for (URL url : contentURLs) {
             YoupornRipper ripper = new YoupornRipper(url);

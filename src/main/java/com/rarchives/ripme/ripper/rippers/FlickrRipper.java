@@ -28,9 +28,9 @@ import com.rarchives.ripme.utils.Utils;
 public class FlickrRipper extends AbstractHTMLRipper {
 
     private int page = 1;
-    private Set<String> attempted = new HashSet<String>();
+    private Set<String> attempted = new HashSet<>();
     private Document albumDoc = null;
-    private DownloadThreadPool flickrThreadPool;
+    private final DownloadThreadPool flickrThreadPool;
     @Override
     public DownloadThreadPool getThreadPool() {
         return flickrThreadPool;
@@ -162,7 +162,7 @@ public class FlickrRipper extends AbstractHTMLRipper {
 
     @Override
     public List<String> getURLsFromPage(Document page) {
-        List<String> imageURLs = new ArrayList<String>();
+        List<String> imageURLs = new ArrayList<>();
         for (Element thumb : page.select("a[data-track=photo-click]")) {
             /* TODO find a way to persist the image title
             String imageTitle = null;
@@ -215,7 +215,7 @@ public class FlickrRipper extends AbstractHTMLRipper {
                             .method(Method.GET)
                             .execute();
         Document doc = resp.parse();
-        Map<String,String> postData = new HashMap<String,String>();
+        Map<String,String> postData = new HashMap<>();
         for (Element input : doc.select("input[type=hidden]")) {
             postData.put(input.attr("name"),  input.attr("value"));
         }
@@ -239,7 +239,7 @@ public class FlickrRipper extends AbstractHTMLRipper {
         private URL    url;
         private int    index;
 
-        public FlickrImageThread(URL url, int index) {
+        FlickrImageThread(URL url, int index) {
             super();
             this.url = url;
             this.index = index;
@@ -252,7 +252,6 @@ public class FlickrRipper extends AbstractHTMLRipper {
                 Elements fullsizeImages = doc.select("div#allsizes-photo img");
                 if (fullsizeImages.size() == 0) {
                     logger.error("Could not find flickr image at " + doc.location() + " - missing 'div#allsizes-photo img'");
-                    return;
                 }
                 else {
                     String prefix = "";

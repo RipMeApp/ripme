@@ -81,7 +81,7 @@ public class ImagebamRipper extends AbstractHTMLRipper {
 
     @Override
     public List<String> getURLsFromPage(Document doc) {
-        List<String> imageURLs = new ArrayList<String>();
+        List<String> imageURLs = new ArrayList<>();
         for (Element thumb : doc.select("div > a[target=_blank]:not(.footera)")) {
             imageURLs.add(thumb.attr("href"));
         }
@@ -124,7 +124,7 @@ public class ImagebamRipper extends AbstractHTMLRipper {
         private URL url;
         private int index;
 
-        public ImagebamImageThread(URL url, int index) {
+        ImagebamImageThread(URL url, int index) {
             super();
             this.url = url;
             this.index = index;

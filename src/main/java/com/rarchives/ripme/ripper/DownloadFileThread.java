@@ -24,12 +24,12 @@ import com.rarchives.ripme.utils.Utils;
  * Thread for downloading files.
  * Includes retry logic, observer notifications, and other goodies.
  */
-public class DownloadFileThread extends Thread {
+class DownloadFileThread extends Thread {
 
     private static final Logger logger = Logger.getLogger(DownloadFileThread.class);
 
     private String referrer = "";
-    private Map<String,String> cookies = new HashMap<String,String>();
+    private Map<String,String> cookies = new HashMap<>();
 
     private URL url;
     private File saveAs;

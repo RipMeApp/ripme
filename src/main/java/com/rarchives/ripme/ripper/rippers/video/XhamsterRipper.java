@@ -27,7 +27,7 @@ public class XhamsterRipper extends VideoRipper {
 
     @Override
     public boolean canRip(URL url) {
-        Pattern p = Pattern.compile("^https?://.*xhamster\\.com/movies/[0-9]+.*$");
+        Pattern p = Pattern.compile("^https?://.*xhamster\\.com/(movies|videos)/.*$");
         Matcher m = p.matcher(url.toExternalForm());
         return m.matches();
     }
@@ -39,7 +39,7 @@ public class XhamsterRipper extends VideoRipper {
 
     @Override
     public String getGID(URL url) throws MalformedURLException {
-        Pattern p = Pattern.compile("^https?://.*xhamster\\.com/movies/([0-9]+).*$");
+        Pattern p = Pattern.compile("^https?://.*xhamster\\.com/(movies|videos)/.*$");
         Matcher m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             return m.group(1);
@@ -47,7 +47,8 @@ public class XhamsterRipper extends VideoRipper {
 
         throw new MalformedURLException(
                 "Expected xhamster format:"
-                        + "xhamster.com/movies/####"
+                        + "xhamster.com/movies/#### or"
+                        + "xhamster.com/videos/####"
                         + " Got: " + url);
     }
 

@@ -61,7 +61,7 @@ public class NhentaiRipper extends AbstractHTMLRipper {
         if (title == null) {
             return getAlbumTitle(url);
         }
-        return title;
+        return "nhentai" + title;
     }
 
     @Override
@@ -87,7 +87,7 @@ public class NhentaiRipper extends AbstractHTMLRipper {
 
     @Override
     public List<String> getURLsFromPage(Document page) {
-        List<String> imageURLs = new ArrayList<String>();
+        List<String> imageURLs = new ArrayList<>();
         Elements thumbs = page.select(".gallerythumb");
         for (Element el : thumbs) {
             String imageUrl = el.attr("href");
