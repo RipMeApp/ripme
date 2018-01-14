@@ -10,6 +10,7 @@ import com.rarchives.ripme.ripper.rippers.video.PornhubRipper;
 import com.rarchives.ripme.ripper.rippers.video.VineRipper;
 import com.rarchives.ripme.ripper.rippers.video.XvideosRipper;
 import com.rarchives.ripme.ripper.rippers.video.YoupornRipper;
+import com.rarchives.ripme.ripper.rippers.video.YuvutuRipper;
 
 public class VideoRippersTest extends RippersTest {
 
@@ -74,6 +75,15 @@ public class VideoRippersTest extends RippersTest {
         contentURLs.add(new URL("http://www.youporn.com/watch/7669155/mrs-li-amateur-69-orgasm/?from=categ"));
         for (URL url : contentURLs) {
             YoupornRipper ripper = new YoupornRipper(url);
+            videoTestHelper(ripper);
+        }
+    }
+    
+    public void testYuvutuRipper() throws IOException {
+        List<URL> contentURLs = new ArrayList<>();
+        contentURLs.add(new URL("http://www.yuvutu.com/video/828499/female-reader-armpit-job/"));
+        for (URL url : contentURLs) {
+            YuvutuRipper ripper = new YuvutuRipper(url);
             videoTestHelper(ripper);
         }
     }
