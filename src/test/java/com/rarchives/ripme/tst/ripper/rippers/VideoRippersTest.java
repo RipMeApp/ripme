@@ -7,6 +7,7 @@ import java.util.List;
 
 import com.rarchives.ripme.ripper.VideoRipper;
 import com.rarchives.ripme.ripper.rippers.video.PornhubRipper;
+import com.rarchives.ripme.ripper.rippers.video.TwitchVideoRipper;
 import com.rarchives.ripme.ripper.rippers.video.VineRipper;
 import com.rarchives.ripme.ripper.rippers.video.XvideosRipper;
 import com.rarchives.ripme.ripper.rippers.video.YoupornRipper;
@@ -35,6 +36,15 @@ public class VideoRippersTest extends RippersTest {
         }
     }
 
+    public void testTwitchVideoRipper() throws IOException {
+        List<URL> contentURLs = new ArrayList<>();
+        contentURLs.add(new URL("https://clips.twitch.tv/FaithfulIncredulousPotTBCheesePull"));
+        for (URL url : contentURLs) {
+            TwitchVideoRipper ripper = new TwitchVideoRipper(url);
+            videoTestHelper(ripper);
+        }
+    }
+    
     public void testXvideosRipper() throws IOException {
         List<URL> contentURLs = new ArrayList<>();
         contentURLs.add(new URL("https://www.xvideos.com/video19719109/ziggy_star_ultra_hard_anal_pounding"));
