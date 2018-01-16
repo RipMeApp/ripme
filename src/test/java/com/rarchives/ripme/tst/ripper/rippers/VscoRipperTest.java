@@ -6,12 +6,19 @@ import java.net.URL;
 
 public class VscoRipperTest extends RippersTest {
     
-    
+    /**
+     * Testing Rip.
+     * @throws IOException 
+     */
     public void testSingleImageRip() throws IOException{
         VscoRipper ripper = new VscoRipper(new URL("https://vsco.co/minijello/media/571cd612542220261a123441"));
         testRipper(ripper);
     }
     
+    /**
+     * Make sure it names the folder something sensible.
+     * @throws IOException 
+     */
     public void testGetGID() throws IOException{
         URL url = new URL("https://vsco.co/minijello/media/571cd612542220261a123441");
         
