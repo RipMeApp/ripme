@@ -8,6 +8,7 @@ import java.util.List;
 import com.rarchives.ripme.ripper.VideoRipper;
 import com.rarchives.ripme.ripper.rippers.video.PornhubRipper;
 import com.rarchives.ripme.ripper.rippers.video.VineRipper;
+import com.rarchives.ripme.ripper.rippers.video.XhamsterRipper;
 import com.rarchives.ripme.ripper.rippers.video.XvideosRipper;
 import com.rarchives.ripme.ripper.rippers.video.YoupornRipper;
 
@@ -32,6 +33,15 @@ public class VideoRippersTest extends RippersTest {
             e.printStackTrace();
         } finally {
             deleteDir(ripper.getWorkingDir());
+        }
+    }
+
+    public void testXhamsterRipper() throws IOException {
+        List<URL> contentURLs = new ArrayList<>();
+        contentURLs.add(new URL("https://xhamster.com/videos/brazzers-busty-big-booty-milf-lisa-ann-fucks-her-masseur-1492828"));
+        for (URL url : contentURLs) {
+            XhamsterRipper ripper = new XhamsterRipper(url);
+            videoTestHelper(ripper);
         }
     }
 
