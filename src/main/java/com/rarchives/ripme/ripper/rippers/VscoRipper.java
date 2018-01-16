@@ -7,10 +7,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.jsoup.Jsoup;
@@ -20,7 +17,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 /**
- * For ripping VSCO members' pages.
+ * For ripping VSCO pictures.
  */
 public class VscoRipper extends AbstractHTMLRipper{
 
@@ -31,6 +28,12 @@ public class VscoRipper extends AbstractHTMLRipper{
         super(url);
     }
     
+    /**
+     * Checks to see if VscoRipper can Rip specified url.
+     * @param url
+     * @return True if can rip.
+     *         False if cannot rip.
+     */
     @Override
     public boolean canRip(URL url) {
         if (!url.getHost().endsWith(DOMAIN)) {
@@ -44,7 +47,7 @@ public class VscoRipper extends AbstractHTMLRipper{
                !u.contains("/feed/")     ||
                !u.contains("/login/")    ||
                !u.contains("/journal/")   ||
-               !u.contains("/collection")||
+               !u.contains("/collection/")||
                !u.contains("/images/")    ||
                 u.contains("/media/");   
         
@@ -57,7 +60,8 @@ public class VscoRipper extends AbstractHTMLRipper{
     }
 
     /**
-     * Recursion FTW
+     * <p>Gets the direct URL of full-sized image through the <meta> tag.</p>
+     * When expanding future functionality (e.g. support from journals), put everything into this method.
      * @param page
      * @return 
      */
@@ -65,14 +69,14 @@ public class VscoRipper extends AbstractHTMLRipper{
     public List<String> getURLsFromPage(Document page){
         List<String> toRip = new ArrayList<>();
         //If user wanted to rip single image
-        if(url.toString().contains("/media/")){
+        if (url.toString().contains("/media/")){
             try {
                 toRip.add(vscoImageToURL(url.toExternalForm()));
             } catch (IOException ex) {
                 logger.debug("Failed to convert " + url.toString() + " to external form.");
             }
             
-        }else{//want to rip a member profile
+        } else {//want to rip a member profile
             /*
             String baseURL = "https://vsco.co";
 
@@ -85,7 +89,7 @@ public class VscoRipper extends AbstractHTMLRipper{
             for(Element link : links){
                 System.out.println(link.toString());
                 //if link includes "/media/", add it to the list
-                if(link.attr("href").contains("/media")){
+                if (link.attr("href").contains("/media")) {
                     try {
                         String relativeURL = vscoImageToURL(link.attr("href"));
                         toRip.add(baseURL + relativeURL);
@@ -112,7 +116,7 @@ public class VscoRipper extends AbstractHTMLRipper{
 
         for(Element metaTag : metaTags){
             //find URL inside meta-tag with property of "og:image"
-            if(metaTag.attr("property").equals("og:image")){
+            if (metaTag.attr("property").equals("og:image")){
                 String givenURL = metaTag.attr("content");
                 givenURL = givenURL.replaceAll("\\?h=[0-9]+", "");//replace the "?h=xxx" tag at the end of the URL (where each x is a number)
                 
@@ -123,7 +127,7 @@ public class VscoRipper extends AbstractHTMLRipper{
         }
         
         //Means website changed, things need to be fixed.
-        if(result.isEmpty()){
+        if (result.isEmpty()){
             logger.error("Could not find image URL at: " + url);
         }
         
@@ -154,7 +158,7 @@ public class VscoRipper extends AbstractHTMLRipper{
         p = Pattern.compile("^https?://vsco.co/([a-zA-Z0-9]+)/images/[0-9]+");
         m = p.matcher(url.toExternalForm());
         
-        if(m.matches()){
+        if (m.matches()){
             String user = m.group(1);
             return user;
         }
