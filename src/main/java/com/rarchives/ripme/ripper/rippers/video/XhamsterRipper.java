@@ -39,10 +39,10 @@ public class XhamsterRipper extends VideoRipper {
 
     @Override
     public String getGID(URL url) throws MalformedURLException {
-        Pattern p = Pattern.compile("^https?://.*xhamster\\.com/(movies|videos)/.*$");
+        Pattern p = Pattern.compile("^https?://.*xhamster\\.com/(movies|videos)/(.*)$");
         Matcher m = p.matcher(url.toExternalForm());
         if (m.matches()) {
-            return m.group(1);
+            return m.group(2);
         }
 
         throw new MalformedURLException(
@@ -56,7 +56,7 @@ public class XhamsterRipper extends VideoRipper {
     public void rip() throws IOException {
         logger.info("Retrieving " + this.url);
         Document doc = Http.url(url).get();
-        Elements videos = doc.select("a.mp4Thumb");
+        Elements videos = doc.select("div.player-container > a");
         if (videos.size() == 0) {
             throw new IOException("Could not find Embed code at " + url);
         }
