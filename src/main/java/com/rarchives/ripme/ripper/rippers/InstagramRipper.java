@@ -161,6 +161,8 @@ public class InstagramRipper extends AbstractHTMLRipper {
     }
 
     private String getOriginalUrl(String imageURL) {
+        // Without this regex most images will return a 403 error
+        imageURL = imageURL.replaceAll("vp/[a-zA-Z0-9]*/", "");
         imageURL = imageURL.replaceAll("scontent.cdninstagram.com/hphotos-", "igcdn-photos-d-a.akamaihd.net/hphotos-ak-");
         // TODO replace this with a single regex
         imageURL = imageURL.replaceAll("p150x150/", "");
@@ -177,6 +179,7 @@ public class InstagramRipper extends AbstractHTMLRipper {
         imageURL = imageURL.replaceAll("s720x720/", "");
         imageURL = imageURL.replaceAll("s1080x1080/", "");
         imageURL = imageURL.replaceAll("s2048x2048/", "");
+
         
         // Instagram returns cropped images to unauthenticated applications to maintain legacy support. 
         // To retrieve the uncropped image, remove this segment from the URL. 
@@ -232,7 +235,7 @@ public class InstagramRipper extends AbstractHTMLRipper {
                         if (imageURLs.size() == 0) {
                             // We add this one item to the array because either wise
                             // the ripper will error out because we returned an empty array
-                            imageURLs.add(data.getString("thumbnail_src"));
+                            imageURLs.add(getOriginalUrl(data.getString("thumbnail_src")));
                         }
                         addURLToDownload(new URL(getOriginalUrl(data.getString("thumbnail_src"))), image_date);
                     } else {
