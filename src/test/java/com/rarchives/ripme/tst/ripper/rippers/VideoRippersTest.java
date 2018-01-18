@@ -7,6 +7,7 @@ import java.util.List;
 
 import com.rarchives.ripme.ripper.VideoRipper;
 import com.rarchives.ripme.ripper.rippers.video.PornhubRipper;
+import com.rarchives.ripme.ripper.rippers.video.TwitchVideoRipper;
 import com.rarchives.ripme.ripper.rippers.video.VineRipper;
 import com.rarchives.ripme.ripper.rippers.video.XhamsterRipper;
 import com.rarchives.ripme.ripper.rippers.video.XvideosRipper;
@@ -37,6 +38,15 @@ public class VideoRippersTest extends RippersTest {
         }
     }
 
+    public void testTwitchVideoRipper() throws IOException {
+        List<URL> contentURLs = new ArrayList<>();
+        contentURLs.add(new URL("https://clips.twitch.tv/FaithfulIncredulousPotTBCheesePull"));
+        for (URL url : contentURLs) {
+            TwitchVideoRipper ripper = new TwitchVideoRipper(url);
+            videoTestHelper(ripper);
+        }
+    }
+    
     public void testXhamsterRipper() throws IOException {
         List<URL> contentURLs = new ArrayList<>();
         contentURLs.add(new URL("https://xhamster.com/videos/brazzers-busty-big-booty-milf-lisa-ann-fucks-her-masseur-1492828"));
