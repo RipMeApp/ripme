@@ -56,8 +56,6 @@ public class VideoRippersTest extends RippersTest {
         }
     }
 
-    // https://github.com/RipMeApp/ripme/issues/187
-    /*
     public void testPornhubRipper() throws IOException {
         List<URL> contentURLs = new ArrayList<>();
         contentURLs.add(new URL("http://www.pornhub.com/view_video.php?viewkey=993166542"));
@@ -66,7 +64,6 @@ public class VideoRippersTest extends RippersTest {
             videoTestHelper(ripper);
         }
     }
-    */
 
     // https://github.com/RipMeApp/ripme/issues/186
     /*
