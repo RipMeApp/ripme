@@ -1,6 +1,7 @@
 {
-    "latestVersion": "1.7.11",
+    "latestVersion": "1.7.12",
     "changeList": [
+        "1.7.12: Instagram ripper no longer 403s on certain images",
         "1.7.11: Added gwarchives support to the cheveretoRipper; Gfycat Tests & Fix for bad reddit submissions; instagram ripper can now be made to skip videos",
         "1.7.10: Added basic pornpics.com ripper; Fixed hentai.cafe regex",
         "1.7.9: FuraffinityRipper can now rip non-public albums; Added 2 new api keys, ripper can now download raw images from tumblr; Erome ripper now matchs links without the www; Tumblr ripper now tells the user if it hits the rate limit",
