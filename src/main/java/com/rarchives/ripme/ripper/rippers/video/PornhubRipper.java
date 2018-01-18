@@ -68,11 +68,11 @@ public class PornhubRipper extends VideoRipper {
                 title = title.replaceAll("\\+", " ");
 
                 vidUrl = null;
-                for (String quality : new String[] {"quality_1080p", "quality_720p", "quality_480p", "quality_240p"}) {
-                    Pattern pv = Pattern.compile("^.*var player_" + quality + " = '([^']*)'.*$", Pattern.DOTALL);
+                for (String quality : new String[] {"1080", "720", "480", "240"}) {
+                    Pattern pv = Pattern.compile("\"quality\":\"" + quality + "\",\"videoUrl\":\"(.*?)\"");
                     Matcher mv = pv.matcher(html);
-                    if (mv.matches()) {
-                        vidUrl = mv.group(1);
+                    if (mv.find()) {
+                        vidUrl = mv.group(1).replace("\\/", "/");
                         break;
                     }
                 }
