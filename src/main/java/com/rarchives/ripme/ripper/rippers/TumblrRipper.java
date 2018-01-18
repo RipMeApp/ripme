@@ -34,23 +34,30 @@ public class TumblrRipper extends AlbumRipper {
     private ALBUM_TYPE albumType;
     private String subdomain, tagName, postNumber;
 
-    private static String TUMBLR_AUTH_CONFIG_KEY = "tumblr.auth";
+    private static final String TUMBLR_AUTH_CONFIG_KEY = "tumblr.auth";
 
     private static boolean useDefaultApiKey = false; // fall-back for bad user-specified key
-    private static final List<String> apiKeys = Arrays.asList("JFNLu3CbINQjRdUvZibXW9VpSEVYYtiPJ86o8YmvgLZIoKyuNX",
-            "FQrwZMCxVnzonv90rgNUJcAk4FpnoS0mYuSuGYqIpM2cFgp9L4",
-            "qpdkY6nMknksfvYAhf2xIHp0iNRLkMlcWShxqzXyFJRxIsZ1Zz");
-    private static final String API_KEY = apiKeys.get(new Random().nextInt(apiKeys.size()));
+    private static final List<String> APIKEYS = Arrays.asList("JFNLu3CbINQjRdUvZibXW9VpSEVYYtiPJ86o8YmvgLZIoKyuNX",
+                                                              "FQrwZMCxVnzonv90rgNUJcAk4FpnoS0mYuSuGYqIpM2cFgp9L4",
+                                                              "qpdkY6nMknksfvYAhf2xIHp0iNRLkMlcWShxqzXyFJRxIsZ1Zz");
+    private static int genNum = new Random().nextInt(APIKEYS.size());
+    private static final String API_KEY = APIKEYS.get(genNum); // Select random API key from APIKEYS
 
-
-    private static String getApiKey() {
+    /**
+     * Gets the API key. 
+     * Chooses between default/included keys & user specified ones (from the config file).
+     * @return Tumblr API key
+     */
+    public static String getApiKey() {
         if (useDefaultApiKey || Utils.getConfigString(TUMBLR_AUTH_CONFIG_KEY, "JFNLu3CbINQjRdUvZibXW9VpSEVYYtiPJ86o8YmvgLZIoKyuNX").equals("JFNLu3CbINQjRdUvZibXW9VpSEVYYtiPJ86o8YmvgLZIoKyuNX")) {
             logger.info("Using api key: " + API_KEY);
             return API_KEY;
         } else {
-            logger.info("Using user tumblr.auth api key");
-            return Utils.getConfigString(TUMBLR_AUTH_CONFIG_KEY, "JFNLu3CbINQjRdUvZibXW9VpSEVYYtiPJ86o8YmvgLZIoKyuNX");
+            String userDefinedAPIKey = Utils.getConfigString(TUMBLR_AUTH_CONFIG_KEY, "JFNLu3CbINQjRdUvZibXW9VpSEVYYtiPJ86o8YmvgLZIoKyuNX");
+            logger.info("Using user tumblr.auth api key: " + userDefinedAPIKey);
+            return userDefinedAPIKey;
         }
+       
     }
 
     public TumblrRipper(URL url) throws IOException {
@@ -64,7 +71,13 @@ public class TumblrRipper extends AlbumRipper {
     public boolean canRip(URL url) {
         return url.getHost().endsWith(DOMAIN);
     }
-
+    
+    /**
+     * Sanitizes URL.
+     * @param url URL to be sanitized.
+     * @return Sanitized URL
+     * @throws MalformedURLException 
+     */
     @Override
     public URL sanitizeURL(URL url) throws MalformedURLException {
         String u = url.toExternalForm();
