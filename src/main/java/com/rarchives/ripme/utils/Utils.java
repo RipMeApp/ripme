@@ -398,11 +398,11 @@ public class Utils {
         }
 
         // At last, check if the File with the original exists
-        File f = new File(original);
+        File f = new File(lowerCaseOriginal);
         if(f.exists()) {
-            return original;
-        } else {
             return lowerCaseOriginal;
+        } else {
+            return original;
         }
     }
 
