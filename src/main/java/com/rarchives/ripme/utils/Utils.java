@@ -8,11 +8,7 @@ import java.lang.reflect.Constructor;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLDecoder;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
@@ -388,22 +384,20 @@ public class Utils {
 
         String original = path;                                         // needs to be checked if lowercase exists
         String lastPart = original.substring(index+1).toLowerCase();    // setting lowercase to check if it exists
-        String lowerCaseOriginal = path.substring(0, index)
-                + File.separator
-                + lastPart;
 
-        if(original.equals(lowerCaseOriginal)) {
-            // same name, nothing to do
-            return original;
+        // Get a List of all Directories and check its lowercase
+        // if file exists return it
+        File f = new File(path.substring(0, index));
+        ArrayList<String> names = new ArrayList<String>(Arrays.asList(f.list()));
+
+        for (String s : names) {
+            if(s.toLowerCase().equals(lastPart)) {
+                // Building Path of existing file
+                return path.substring(0, index) + File.separator + s;
+            }
         }
 
-        // At last, check if the File with the original exists
-        File f = new File(lowerCaseOriginal);
-        if(f.exists()) {
-            return lowerCaseOriginal;
-        } else {
-            return original;
-        }
+        return original;
     }
 
     public static String bytesToHumanReadable(int bytes) {
