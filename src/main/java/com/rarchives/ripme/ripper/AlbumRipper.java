@@ -197,8 +197,11 @@ public abstract class AlbumRipper extends AbstractRipper {
             title = super.getAlbumTitle(this.url);
         }
         logger.debug("Using album title '" + title + "'");
+
         title = Utils.filesystemSafe(title);
-        path += title + File.separator;
+        path += title;
+        path = Utils.getOriginalDirectory(path) + File.separator;   // check for case sensitive (unix only)
+
         this.workingDir = new File(path);
         if (!this.workingDir.exists()) {
             logger.info("[+] Creating directory: " + Utils.removeCWD(this.workingDir));

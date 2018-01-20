@@ -370,6 +370,42 @@ public class Utils {
         return text;
     }
 
+    /**
+     * Checks if given path already exists as lowercase
+     *
+     * @param path - original path entered to be ripped
+     * @return path of existing folder or the original path if not present
+     */
+    public static String getOriginalDirectory(String path) {
+
+        int index;
+        if(isUnix() || isMacOS()) {
+            index = path.lastIndexOf('/');
+        } else {
+            // current OS is windows - nothing to do here
+            return path;
+        }
+
+        String original = path;                                         // needs to be checked if lowercase exists
+        String lastPart = original.substring(index+1).toLowerCase();    // setting lowercase to check if it exists
+        String lowerCaseOriginal = path.substring(0, index)
+                + File.separator
+                + lastPart;
+
+        if(original.equals(lowerCaseOriginal)) {
+            // same name, nothing to do
+            return original;
+        }
+
+        // At last, check if the File with the original exists
+        File f = new File(original);
+        if(f.exists()) {
+            return original;
+        } else {
+            return lowerCaseOriginal;
+        }
+    }
+
     public static String bytesToHumanReadable(int bytes) {
         float fbytes = (float) bytes;
         String[] mags = new String[] {"", "K", "M", "G", "T"};
