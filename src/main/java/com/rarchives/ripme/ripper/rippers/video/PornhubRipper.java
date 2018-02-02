@@ -1,17 +1,15 @@
 package com.rarchives.ripme.ripper.rippers.video;
 
+import com.rarchives.ripme.ripper.VideoRipper;
+import com.rarchives.ripme.utils.Http;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.jsoup.nodes.Document;
-
-import com.rarchives.ripme.ripper.VideoRipper;
-import com.rarchives.ripme.utils.Http;
 
 public class PornhubRipper extends VideoRipper {
 
@@ -28,7 +26,7 @@ public class PornhubRipper extends VideoRipper {
 
     @Override
     public boolean canRip(URL url) {
-        Pattern p = Pattern.compile("^https?://[wm.]*pornhub\\.com/view_video.php\\?viewkey=[0-9]+.*$");
+        Pattern p = Pattern.compile("^https?://[wm.]*pornhub.com/view_video.php\\?viewkey=[a-z0-9]+");
         Matcher m = p.matcher(url.toExternalForm());
         return m.matches();
     }
@@ -40,7 +38,7 @@ public class PornhubRipper extends VideoRipper {
 
     @Override
     public String getGID(URL url) throws MalformedURLException {
-        Pattern p = Pattern.compile("^https?://[wm.]*pornhub\\.com/view_video.php\\?viewkey=([0-9]+).*$");
+        Pattern p = Pattern.compile("^https?://[wm.]*pornhub.com/view_video.php\\?viewkey=([a-z0-9]+)");
         Matcher m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             return m.group(1);
