@@ -35,9 +35,15 @@ public class EightmusesRipper extends AbstractHTMLRipper {
     }
 
     @Override
+    public boolean hasASAPRipping() {
+        return true;
+    }
+
+    @Override
     public String getHost() {
         return "8muses";
     }
+
     @Override
     public String getDomain() {
         return "8muses.com";
@@ -109,31 +115,9 @@ public class EightmusesRipper extends AbstractHTMLRipper {
                         logger.info("Retrieving " + subUrl);
                         sendUpdate(STATUS.LOADING_RESOURCE, subUrl);
                         Document subPage = Http.url(subUrl).get();
-                        // Get all images in subalbum, add to list.
+                        // If the page below this one has images this line will download them
                         List<String> subalbumImages = getURLsFromPage(subPage);
-                        String albumTitle = subPage.select("meta[name=description]").attr("content");
-                        albumTitle = albumTitle.replace("A huge collection of free porn comics for adults. Read ", "");
-                        albumTitle = albumTitle.replace(" online for free at 8muses.com", "");
-                        albumTitle = albumTitle.replace(" ", "_");
-                        // albumTitle = albumTitle.replace("Sex and Porn Comics", "");
-                        // albumTitle = albumTitle.replace("|", "");
-                        // albumTitle = albumTitle.replace("8muses", "");
-                        // albumTitle = albumTitle.replaceAll("-", "_");
-                        // albumTitle = albumTitle.replaceAll(" ", "_");
-                        // albumTitle = albumTitle.replaceAll("___", "_");
-                        // albumTitle = albumTitle.replaceAll("__", "_");
-                        // // This is here to remove the trailing __ from folder names
-                        // albumTitle = albumTitle.replaceAll("__", "");
                         logger.info("Found " + subalbumImages.size() + " images in subalbum");
-                        int prefix = 1;
-                        for (String image : subalbumImages) {
-                            URL imageUrl = new URL(image);
-                            // urlTitles.put(imageUrl, albumTitle);
-                            addURLToDownload(imageUrl, getPrefix(prefix), albumTitle, this.url.toExternalForm(), cookies);
-                            prefix = prefix + 1;
-                        }
-                        rippingSubalbums = true;
-                        imageURLs.addAll(subalbumImages);
                     } catch (IOException e) {
                         logger.warn("Error while loading subalbum " + subUrl, e);
                     }
@@ -142,6 +126,8 @@ public class EightmusesRipper extends AbstractHTMLRipper {
         }
         else {
             // Page contains images
+            // X is our page index
+            int x = 1;
             for (Element thumb : page.select(".image")) {
                 if (super.isStopped()) break;
                 // Find thumbnail image source
@@ -158,6 +144,11 @@ public class EightmusesRipper extends AbstractHTMLRipper {
                     try {
                         logger.info("Retrieving full-size image location from " + parentHref);
                         image = getFullSizeImage(parentHref);
+                        URL imageUrl = new URL(image);
+                        addURLToDownload(imageUrl, getPrefix(x), getSubdir(page.select("title").text()), this.url.toExternalForm(), cookies);
+                        // X is our page index
+                        x++;
+
                     } catch (IOException e) {
                         logger.error("Failed to get full-size image from " + parentHref);
                         continue;
@@ -180,6 +171,25 @@ public class EightmusesRipper extends AbstractHTMLRipper {
         Document doc = new Http(imageUrl).get(); // Retrieve the webpage  of the image URL
         String imageName = doc.select("input[id=imageName]").attr("value"); // Select the "input" element from the page
         return "https://www.8muses.com/image/fm/" + imageName;
+    }
+
+    private String getTitle(String albumTitle) {
+        albumTitle = albumTitle.replace("A huge collection of free porn comics for adults. Read ", "");
+        albumTitle = albumTitle.replace(" online for free at 8muses.com", "");
+        albumTitle = albumTitle.replace(" ", "_");
+        return albumTitle;
+    }
+
+    private String getSubdir(String rawHref) {
+        logger.info("Raw title: " + rawHref);
+        String title = rawHref;
+        title = title.replaceAll("8muses - Sex and Porn Comics", "");
+        title = title.replaceAll("\t\t", "");
+        title = title.replaceAll("\n", "");
+        title = title.replaceAll("\\| ", "");
+        title = title.replace(" ", "-");
+        logger.info(title);
+        return title;
     }
 
     @Override
