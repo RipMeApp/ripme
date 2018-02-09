@@ -68,7 +68,7 @@ public class VideoRippersTest extends RippersTest {
 
     public void testPornhubRipper() throws IOException {
         List<URL> contentURLs = new ArrayList<>();
-        contentURLs.add(new URL("http://www.pornhub.com/view_video.php?viewkey=993166542"));
+        contentURLs.add(new URL("https://www.pornhub.com/view_video.php?viewkey=ph5a329fa707269"));
         for (URL url : contentURLs) {
             PornhubRipper ripper = new PornhubRipper(url);
             videoTestHelper(ripper);
