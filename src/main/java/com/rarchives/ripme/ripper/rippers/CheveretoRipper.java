@@ -28,7 +28,7 @@ public class CheveretoRipper extends AbstractHTMLRipper {
         super(url);
     }
 
-    private static List<String> explicit_domains_1 = Arrays.asList("hushpix.com", "tag-fox.com", "gwarchives.com");
+    private static List<String> explicit_domains_1 = Arrays.asList("tag-fox.com");
 
     @Override
     public String getHost() {
