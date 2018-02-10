@@ -88,47 +88,26 @@ public class EightmusesRipper extends AbstractHTMLRipper {
     @Override
     public List<String> getURLsFromPage(Document page) {
         List<String> imageURLs = new ArrayList<>();
-        // get the first image link on the page and check if the last char in it is a number
-        // if it is a number then we're ripping a comic if not it's a subalbum
-        String firstImageLink = page.select("div.gallery > a.t-hover").first().attr("href");
-        Pattern p = Pattern.compile("/comix/picture/([a-zA-Z0-9\\-_/]*/)?\\d+");
-        Matcher m = p.matcher(firstImageLink);
-        if (!m.matches()) {
-            logger.info("Ripping subalbums");
-            // Page contains subalbums (not images)
-            Elements albumElements = page.select("div.gallery > a.t-hover");
-            List<Element> albumsList = albumElements.subList(0, albumElements.size());
-            Collections.reverse(albumsList);
-            // Iterate over elements in reverse order
-            for (Element subalbum : albumsList) {
-                String subUrl = subalbum.attr("href");
-                // This if is to skip ads which don't have a href
-                if (subUrl != "") {
-                    subUrl = subUrl.replaceAll("\\.\\./", "");
-                    if (subUrl.startsWith("//")) {
-                        subUrl = "https:";
-                    }
-                    else if (!subUrl.startsWith("http://")) {
-                        subUrl = "https://www.8muses.com" + subUrl;
-                    }
-                    try {
-                        logger.info("Retrieving " + subUrl);
-                        sendUpdate(STATUS.LOADING_RESOURCE, subUrl);
-                        Document subPage = Http.url(subUrl).get();
-                        // If the page below this one has images this line will download them
-                        List<String> subalbumImages = getURLsFromPage(subPage);
-                        logger.info("Found " + subalbumImages.size() + " images in subalbum");
-                    } catch (IOException e) {
-                        logger.warn("Error while loading subalbum " + subUrl, e);
-                    }
+        int x = 1;
+        // This contains the thumbnails of all images on the page
+        Elements pageImages = page.getElementsByClass("c-tile");
+        for (Element thumb : pageImages) {
+            // If true this link is a sub album
+            if (thumb.attr("href").contains("/comix/album/")) {
+                String subUrl = "https://www.8muses.com" + thumb.attr("href");
+                try {
+                    logger.info("Retrieving " + subUrl);
+                    sendUpdate(STATUS.LOADING_RESOURCE, subUrl);
+                    Document subPage = Http.url(subUrl).get();
+                    // If the page below this one has images this line will download them
+                    List<String> subalbumImages = getURLsFromPage(subPage);
+                    logger.info("Found " + subalbumImages.size() + " images in subalbum");
+                } catch (IOException e) {
+                    logger.warn("Error while loading subalbum " + subUrl, e);
                 }
-            }
-        }
-        else {
-            // Page contains images
-            // X is our page index
-            int x = 1;
-            for (Element thumb : page.select(".image")) {
+
+            } else if (thumb.attr("href").contains("/comix/picture/")) {
+                logger.info("Ripping image");
                 if (super.isStopped()) break;
                 // Find thumbnail image source
                 String image = null;
@@ -136,21 +115,21 @@ public class EightmusesRipper extends AbstractHTMLRipper {
                     image = thumb.attr("data-cfsrc");
                 }
                 else {
-                    String parentHref = thumb.parent().attr("href");
-                    if (parentHref.equals("")) continue;
-                    if (parentHref.startsWith("/")) {
-                        parentHref = "https://www.8muses.com" + parentHref;
+                    String imageHref = thumb.attr("href");
+                    if (imageHref.equals("")) continue;
+                    if (imageHref.startsWith("/")) {
+                        imageHref = "https://www.8muses.com" + imageHref;
                     }
                     try {
-                        logger.info("Retrieving full-size image location from " + parentHref);
-                        image = getFullSizeImage(parentHref);
+                        logger.info("Retrieving full-size image location from " + imageHref);
+                        image = getFullSizeImage(imageHref);
                         URL imageUrl = new URL(image);
                         addURLToDownload(imageUrl, getPrefix(x), getSubdir(page.select("title").text()), this.url.toExternalForm(), cookies);
                         // X is our page index
                         x++;
 
                     } catch (IOException e) {
-                        logger.error("Failed to get full-size image from " + parentHref);
+                        logger.error("Failed to get full-size image from " + imageHref);
                         continue;
                     }
                 }
@@ -161,6 +140,7 @@ public class EightmusesRipper extends AbstractHTMLRipper {
                 imageURLs.add(image);
                 if (isThisATest()) break;
             }
+
         }
         return imageURLs;
     }
