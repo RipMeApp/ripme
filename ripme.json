@@ -1,6 +1,7 @@
 {
-    "latestVersion": "1.7.15",
+    "latestVersion": "1.7.16",
     "changeList": [
+        "1.7.16: Eightmuses now supports pages containing both images and subpages",
         "1.7.15: Eigthmuses ripper now uses ASAP ripping; Remove ripper and tests for gwarchives.com and hushpix.com; Remove ripper and tests for imagearn.com; Fixed pornhub video downloader",
         "1.7.14: Tumblr API Key Choosing Fix; Make webtoons ripper download maximum quality images; Added twitch ripper; Added VSCO ripper; Fixed pornhub video ripper",
         "1.7.13: disabled FuskatorRipperTest; Fixes xhamster.com video ripper; Add yuvutu.com ripper",
