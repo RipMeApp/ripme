@@ -57,10 +57,11 @@ class AutoripThread extends Thread {
                 String clipboard = ClipboardUtils.getClipboardString();
                 if (clipboard != null) {
                     Pattern p = Pattern.compile(
+                            // TODO: This regex is a monster and doesn't match all links; It needs to be rewritten
                             "\\b(((ht|f)tp(s?)://|~/|/)|www.)" +
                             "(\\w+:\\w+@)?(([-\\w]+\\.)+(com|org|net|gov" +
                             "|mil|biz|info|mobi|name|aero|jobs|museum" +
-                            "|travel|[a-z]{2}))(:[\\d]{1,5})?" +
+                            "|travel|cafe|[a-z]{2}))(:[\\d]{1,5})?" +
                             "(((/([-\\w~!$+|.,=]|%[a-f\\d]{2})+)+|/)+|\\?|#)?" +
                             "((\\?([-\\w~!$+|.,*:]|%[a-f\\d{2}])+=?" +
                             "([-\\w~!$+|.,*:=]|%[a-f\\d]{2})*)" +
