@@ -213,6 +213,7 @@ public class ImgurRipper extends AlbumRipper {
                 saveAs += String.format("%03d_", index);
             }
             saveAs += imgurImage.getSaveAs();
+            saveAs = saveAs.replaceAll("\\?\\d", "");
             addURLToDownload(imgurImage.url, new File(saveAs));
         }
     }
