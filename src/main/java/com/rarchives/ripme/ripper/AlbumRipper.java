@@ -13,6 +13,7 @@ import com.rarchives.ripme.ui.RipStatusMessage;
 import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
 import com.rarchives.ripme.utils.Utils;
 
+// Should this file even exist? It does the same thing as abstractHTML ripper
 
 /**'
  * For ripping delicious albums off the interwebz.
@@ -50,6 +51,14 @@ public abstract class AlbumRipper extends AbstractRipper {
      * Queues multiple URLs of single images to download from a single Album URL
      */
     public boolean addURLToDownload(URL url, File saveAs, String referrer, Map<String,String> cookies) {
+        // TODO fix this hack
+        // Sanitize the saveAs file
+        String fileName = saveAs.getPath();
+        if (fileName.indexOf('?') >= 0) { fileName = fileName.substring(0, fileName.indexOf('?')); }
+        if (fileName.indexOf('&') >= 0) { fileName = fileName.substring(0, fileName.indexOf('&')); }
+        if (fileName.indexOf(':') >= 0) { fileName = fileName.substring(0, fileName.indexOf(':')); }
+        if (fileName.indexOf('#') >= 0) { fileName = fileName.substring(0, fileName.indexOf('#')); }
+        saveAs = new File(fileName);
         // Only download one file if this is a test.
         if (super.isThisATest() &&
                 (itemsPending.size() > 0 || itemsCompleted.size() > 0 || itemsErrored.size() > 0)) {
