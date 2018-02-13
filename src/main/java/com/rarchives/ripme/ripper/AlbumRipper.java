@@ -13,6 +13,7 @@ import com.rarchives.ripme.ui.RipStatusMessage;
 import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
 import com.rarchives.ripme.utils.Utils;
 
+// Should this file even exist? It does the same thing as abstractHTML ripper
 
 /**'
  * For ripping delicious albums off the interwebz.
@@ -197,8 +198,11 @@ public abstract class AlbumRipper extends AbstractRipper {
             title = super.getAlbumTitle(this.url);
         }
         logger.debug("Using album title '" + title + "'");
+
         title = Utils.filesystemSafe(title);
-        path += title + File.separator;
+        path += title;
+        path = Utils.getOriginalDirectory(path) + File.separator;   // check for case sensitive (unix only)
+
         this.workingDir = new File(path);
         if (!this.workingDir.exists()) {
             logger.info("[+] Creating directory: " + Utils.removeCWD(this.workingDir));
