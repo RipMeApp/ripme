@@ -7,9 +7,12 @@ import java.util.List;
 
 import com.rarchives.ripme.ripper.VideoRipper;
 import com.rarchives.ripme.ripper.rippers.video.PornhubRipper;
+import com.rarchives.ripme.ripper.rippers.video.TwitchVideoRipper;
 import com.rarchives.ripme.ripper.rippers.video.VineRipper;
+import com.rarchives.ripme.ripper.rippers.video.XhamsterRipper;
 import com.rarchives.ripme.ripper.rippers.video.XvideosRipper;
 import com.rarchives.ripme.ripper.rippers.video.YoupornRipper;
+import com.rarchives.ripme.ripper.rippers.video.YuvutuRipper;
 
 public class VideoRippersTest extends RippersTest {
 
@@ -35,6 +38,24 @@ public class VideoRippersTest extends RippersTest {
         }
     }
 
+    public void testTwitchVideoRipper() throws IOException {
+        List<URL> contentURLs = new ArrayList<>();
+        contentURLs.add(new URL("https://clips.twitch.tv/FaithfulIncredulousPotTBCheesePull"));
+        for (URL url : contentURLs) {
+            TwitchVideoRipper ripper = new TwitchVideoRipper(url);
+            videoTestHelper(ripper);
+        }
+    }
+    
+    public void testXhamsterRipper() throws IOException {
+        List<URL> contentURLs = new ArrayList<>();
+        contentURLs.add(new URL("https://xhamster.com/videos/brazzers-busty-big-booty-milf-lisa-ann-fucks-her-masseur-1492828"));
+        for (URL url : contentURLs) {
+            XhamsterRipper ripper = new XhamsterRipper(url);
+            videoTestHelper(ripper);
+        }
+    }
+
     public void testXvideosRipper() throws IOException {
         List<URL> contentURLs = new ArrayList<>();
         contentURLs.add(new URL("https://www.xvideos.com/video19719109/ziggy_star_ultra_hard_anal_pounding"));
@@ -45,17 +66,14 @@ public class VideoRippersTest extends RippersTest {
         }
     }
 
-    // https://github.com/RipMeApp/ripme/issues/187
-    /*
     public void testPornhubRipper() throws IOException {
         List<URL> contentURLs = new ArrayList<>();
-        contentURLs.add(new URL("http://www.pornhub.com/view_video.php?viewkey=993166542"));
+        contentURLs.add(new URL("https://www.pornhub.com/view_video.php?viewkey=ph5a329fa707269"));
         for (URL url : contentURLs) {
             PornhubRipper ripper = new PornhubRipper(url);
             videoTestHelper(ripper);
         }
     }
-    */
 
     // https://github.com/RipMeApp/ripme/issues/186
     /*
@@ -74,6 +92,15 @@ public class VideoRippersTest extends RippersTest {
         contentURLs.add(new URL("http://www.youporn.com/watch/7669155/mrs-li-amateur-69-orgasm/?from=categ"));
         for (URL url : contentURLs) {
             YoupornRipper ripper = new YoupornRipper(url);
+            videoTestHelper(ripper);
+        }
+    }
+    
+    public void testYuvutuRipper() throws IOException {
+        List<URL> contentURLs = new ArrayList<>();
+        contentURLs.add(new URL("http://www.yuvutu.com/video/828499/female-reader-armpit-job/"));
+        for (URL url : contentURLs) {
+            YuvutuRipper ripper = new YuvutuRipper(url);
             videoTestHelper(ripper);
         }
     }
