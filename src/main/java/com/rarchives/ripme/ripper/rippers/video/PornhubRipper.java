@@ -28,7 +28,7 @@ public class PornhubRipper extends VideoRipper {
 
     @Override
     public boolean canRip(URL url) {
-        Pattern p = Pattern.compile("^https?://[wm.]*pornhub\\.com/view_video.php\\?viewkey=[0-9]+.*$");
+        Pattern p = Pattern.compile("^https?://[wm.]*pornhub\\.com/view_video.php\\?viewkey=[a-z0-9]+$");
         Matcher m = p.matcher(url.toExternalForm());
         return m.matches();
     }
@@ -40,7 +40,7 @@ public class PornhubRipper extends VideoRipper {
 
     @Override
     public String getGID(URL url) throws MalformedURLException {
-        Pattern p = Pattern.compile("^https?://[wm.]*pornhub\\.com/view_video.php\\?viewkey=([0-9]+).*$");
+        Pattern p = Pattern.compile("^https?://[wm.]*pornhub\\.com/view_video.php\\?viewkey=([a-z0-9]+)$");
         Matcher m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             return m.group(1);
@@ -68,11 +68,11 @@ public class PornhubRipper extends VideoRipper {
                 title = title.replaceAll("\\+", " ");
 
                 vidUrl = null;
-                for (String quality : new String[] {"quality_1080p", "quality_720p", "quality_480p", "quality_240p"}) {
-                    Pattern pv = Pattern.compile("^.*var player_" + quality + " = '([^']*)'.*$", Pattern.DOTALL);
+                for (String quality : new String[] {"1080", "720", "480", "240"}) {
+                    Pattern pv = Pattern.compile("\"format\":\"\",\"quality\":\"" + quality + "\",\"videoUrl\":\"(.*?)\"");
                     Matcher mv = pv.matcher(html);
-                    if (mv.matches()) {
-                        vidUrl = mv.group(1);
+                    if (mv.find()) {
+                        vidUrl = mv.group(1).replace("\\/", "/");
                         break;
                     }
                 }

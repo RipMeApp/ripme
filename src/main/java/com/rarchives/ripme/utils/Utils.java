@@ -8,11 +8,7 @@ import java.lang.reflect.Constructor;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLDecoder;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
@@ -368,6 +364,40 @@ public class Utils {
             text = text.substring(0, 99);
         }
         return text;
+    }
+
+    /**
+     * Checks if given path already exists as lowercase
+     *
+     * @param path - original path entered to be ripped
+     * @return path of existing folder or the original path if not present
+     */
+    public static String getOriginalDirectory(String path) {
+
+        int index;
+        if(isUnix() || isMacOS()) {
+            index = path.lastIndexOf('/');
+        } else {
+            // current OS is windows - nothing to do here
+            return path;
+        }
+
+        String original = path;                                         // needs to be checked if lowercase exists
+        String lastPart = original.substring(index+1).toLowerCase();    // setting lowercase to check if it exists
+
+        // Get a List of all Directories and check its lowercase
+        // if file exists return it
+        File f = new File(path.substring(0, index));
+        ArrayList<String> names = new ArrayList<String>(Arrays.asList(f.list()));
+
+        for (String s : names) {
+            if(s.toLowerCase().equals(lastPart)) {
+                // Building Path of existing file
+                return path.substring(0, index) + File.separator + s;
+            }
+        }
+
+        return original;
     }
 
     public static String bytesToHumanReadable(int bytes) {
