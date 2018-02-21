@@ -37,6 +37,7 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
     private static List<String> explicit_domains = Arrays.asList(
         "www.totempole666.com",
         "buttsmithy.com",
+        "incase.buttsmithy.com",
         "themonsterunderthebed.net",
         "prismblush.com",
         "www.konradokonski.com",
@@ -84,6 +85,12 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
             Pattern buttsmithyPat = Pattern.compile("https?://buttsmithy.com/archives/comic/([a-zA-Z0-9_-]*)/?$");
             Matcher buttsmithyMat = buttsmithyPat.matcher(url.toExternalForm());
             if (buttsmithyMat.matches()) {
+                return true;
+            }
+
+            Pattern buttsmithyIncasePat = Pattern.compile("https?://incase.buttsmithy.com/comic/([a-zA-Z0-9_-]*)/?$");
+            Matcher buttsmithyIncaseMat = buttsmithyIncasePat.matcher(url.toExternalForm());
+            if (buttsmithyIncaseMat.matches()) {
                 return true;
             }
 
@@ -176,6 +183,12 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
         Matcher prismblushMat = prismblushPat.matcher(url.toExternalForm());
         if (prismblushMat.matches()) {
             return getHost() + "_" + prismblushMat.group(1);
+        }
+
+        Pattern buttsmithyIncasePat = Pattern.compile("https?://incase.buttsmithy.com/comic/([a-zA-Z0-9_-]*)/?$");
+        Matcher buttsmithyIncaseMat = buttsmithyIncasePat.matcher(url.toExternalForm());
+        if (buttsmithyIncaseMat.matches()) {
+            return getHost() + "_" + buttsmithyIncaseMat.group(1).replaceAll("-page-\\d", "").replaceAll("-pg-\\d", "");
         }
 
         Pattern comicsxxxPat = Pattern.compile("https?://comics-xxx.com/([a-zA-Z0-9_\\-]*)/?$");
