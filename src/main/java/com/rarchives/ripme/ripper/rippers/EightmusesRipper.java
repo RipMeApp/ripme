@@ -93,7 +93,7 @@ public class EightmusesRipper extends AbstractHTMLRipper {
         Elements pageImages = page.getElementsByClass("c-tile");
         for (Element thumb : pageImages) {
             // If true this link is a sub album
-            if (thumb.attr("href").contains("/comix/album/")) {
+            if (thumb.attr("href").contains("/comics/album/")) {
                 String subUrl = "https://www.8muses.com" + thumb.attr("href");
                 try {
                     logger.info("Retrieving " + subUrl);
@@ -106,7 +106,8 @@ public class EightmusesRipper extends AbstractHTMLRipper {
                     logger.warn("Error while loading subalbum " + subUrl, e);
                 }
 
-            } else if (thumb.attr("href").contains("/comix/picture/")) {
+            } else if (thumb.attr("href").contains("/comics/picture/")) {
+                logger.info("This page is a album");
                 logger.info("Ripping image");
                 if (super.isStopped()) break;
                 // Find thumbnail image source
