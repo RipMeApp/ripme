@@ -1,6 +1,7 @@
 {
-    "latestVersion": "1.7.20",
+    "latestVersion": "1.7.21",
     "changeList": [
+        "1.7.21: Fixed last seen feature",
         "1.7.20: Fixed 8muses ripper; Added last seen feature; disabled 500px test",
         "1.7.19: imgurRipper no longer tries to add ?1 to file names",
         "1.7.18: AlbumRipper now removes bad chars from file names",
