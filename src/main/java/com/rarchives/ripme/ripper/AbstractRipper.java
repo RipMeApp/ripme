@@ -44,7 +44,8 @@ public abstract class AbstractRipper
     public abstract String getHost();
     public abstract String getGID(URL url) throws MalformedURLException;
     public boolean hasASAPRipping() { return false; }
-
+    // Everytime addUrlToDownload skips a already downloaded url this increases by 1
+    public int alreadyDownloadedUrls = 0;
     private boolean shouldStop = false;
     private boolean thisIsATest = false;
 
@@ -194,9 +195,11 @@ public abstract class AbstractRipper
      *      False if failed to download
      */
     protected boolean addURLToDownload(URL url, String prefix, String subdirectory, String referrer, Map<String, String> cookies) {
+        // Don't re-add the url if it was downloaded in a previous rip
         if (Utils.getConfigBoolean("remember.url_history", true) && !isThisATest()) {
             if (hasDownloadedURL(url.toExternalForm())) {
                 sendUpdate(STATUS.DOWNLOAD_WARN, "Already downloaded " + url.toExternalForm());
+                alreadyDownloadedUrls += 1;
                 return false;
             }
         }
