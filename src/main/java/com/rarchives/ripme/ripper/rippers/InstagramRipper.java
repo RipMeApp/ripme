@@ -52,6 +52,12 @@ public class InstagramRipper extends AbstractHTMLRipper {
         return san_url;
     }
 
+    @Override
+    public String normalizeUrl(String url) {
+        // Remove the date sig from the url
+        return url.replaceAll("/[A-Z0-9]{8}/", "/");
+    }
+
     private List<String> getPostsFromSinglePage(Document Doc) {
         List<String> imageURLs = new ArrayList<>();
         JSONArray datas;
