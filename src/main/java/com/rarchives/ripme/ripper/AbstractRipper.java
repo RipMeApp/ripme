@@ -61,7 +61,13 @@ public abstract class AbstractRipper
         }
     }
 
+
+    /**
+     * Adds a URL to the url history file
+     * @param downloadedURL URL to check if downloaded
+     */
     private void writeDownloadedURL(String downloadedURL) throws IOException {
+        downloadedURL = normalizeUrl(downloadedURL);
         BufferedWriter bw = null;
         FileWriter fw = null;
         try {
@@ -86,6 +92,15 @@ public abstract class AbstractRipper
             }
         }
     }
+
+
+    /**
+     * Normalize a URL
+     * @param url URL to check if downloaded
+     */
+    public String normalizeUrl(String url) {
+        return url;
+    }
     
     /**
      * Checks to see if Ripme has already downloaded a URL
@@ -96,6 +111,7 @@ public abstract class AbstractRipper
      */
     private boolean hasDownloadedURL(String url) {
         File file = new File(URLHistoryFile);
+        url = normalizeUrl(url);
         try {
             Scanner scanner = new Scanner(file);
             while (scanner.hasNextLine()) {
