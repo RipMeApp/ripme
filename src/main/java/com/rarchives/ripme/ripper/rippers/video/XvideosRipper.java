@@ -57,19 +57,21 @@ public class XvideosRipper extends VideoRipper {
     public void rip() throws IOException {
         logger.info("    Retrieving " + this.url);
         Document doc = Http.url(this.url).get();
-        Elements embeds = doc.select("embed");
-        if (embeds.size() == 0) {
-            throw new IOException("Could not find Embed code at " + url);
-        }
-        Element embed = embeds.get(0);
-        String vars = embed.attr("flashvars");
-        for (String var : vars.split("&")) {
-            if (var.startsWith("flv_url=")) {
-                String vidUrl = var.substring("flv_url=".length());
-                vidUrl = URLDecoder.decode(vidUrl, "UTF-8");
-                addURLToDownload(new URL(vidUrl), HOST + "_" + getGID(this.url));
+        Elements scripts = doc.select("script");
+        for (Element e : scripts) {
+            if (e.html().contains("html5player.setVideoUrlHigh")) {
+                logger.info("Found the right script");
+                String[] lines = e.html().split("\n");
+                for (String line: lines) {
+                    if (line.contains("html5player.setVideoUrlHigh")) {
+                        String videoURL = line.replaceAll("\t", "").replaceAll("html5player.setVideoUrlHigh\\(", "").replaceAll("\'", "").replaceAll("\\);", "");
+                        addURLToDownload(new URL(videoURL), HOST + "_" + getGID(this.url));
+                        waitForThreads();
+                        return;
+                    }
+                }
             }
         }
-        waitForThreads();
+        throw new IOException("Unable to find video url at " + this.url.toExternalForm());
     }
 }
