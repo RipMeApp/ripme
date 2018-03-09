@@ -271,39 +271,64 @@ public class InstagramRipper extends AbstractHTMLRipper {
     }
 
     @Override
-    public Document getNextPage(Document doc) {
+    public Document getNextPage(Document doc) throws IOException {
+        Document toreturn;
         if (!nextPageID.equals("") && !isThisATest()) {
             if (url.toExternalForm().contains("/tags/")) {
                 try {
                     // Sleep for a while to avoid a ban
                     sleep(2500);
                     if (url.toExternalForm().substring(url.toExternalForm().length() - 1).equals("/")) {
-                        return Http.url(url.toExternalForm() + "?max_id=" + nextPageID).get();
+                        toreturn = Http.url(url.toExternalForm() + "?max_id=" + nextPageID).get();
                     } else {
-                        return Http.url(url.toExternalForm() + "/?max_id=" + nextPageID).get();
+                        toreturn = Http.url(url.toExternalForm() + "/?max_id=" + nextPageID).get();
                     }
+                    logger.info(toreturn.html());
+                    if (!hasImage(toreturn)) {
+                        throw new IOException("No more pages");
+                    }
+                    return toreturn;
 
                 } catch (IOException e) {
-                    return null;
+                    throw new IOException("No more pages");
                 }
 
             }
             try {
                 // Sleep for a while to avoid a ban
                 sleep(2500);
-                return Http.url("https://www.instagram.com/" + userID + "/?max_id=" + nextPageID).get();
+                toreturn = Http.url("https://www.instagram.com/" + userID + "/?max_id=" + nextPageID).get();
+                if (!hasImage(toreturn)) {
+                    throw new IOException("No more pages");
+                }
+                return toreturn;
             } catch (IOException e) {
                 return null;
             }
         } else {
-            logger.warn("Can't get net page");
+            throw new IOException("No more pages");
         }
-        return null;
     }
 
     @Override
     public void downloadURL(URL url, int index) {
         addURLToDownload(url);
+    }
+
+    private boolean hasImage(Document doc) {
+        try {
+            JSONObject json = getJSONFromPage(doc);
+            JSONArray profilePage = json.getJSONObject("entry_data").getJSONArray("ProfilePage");
+            JSONArray datas = profilePage.getJSONObject(0).getJSONObject("user").getJSONObject("media").getJSONArray("nodes");
+            logger.info(datas.length());
+            if (datas.length() == 0) {
+                return false;
+            }
+            return true;
+        } catch (IOException e) {
+            return false;
+        }
+
     }
 
 }
