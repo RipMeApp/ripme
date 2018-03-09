@@ -24,6 +24,7 @@ import com.rarchives.ripme.utils.Utils;
 
 
 public class InstagramRipper extends AbstractHTMLRipper {
+    String nextPageID = "";
 
     private String userID;
 
@@ -198,7 +199,6 @@ public class InstagramRipper extends AbstractHTMLRipper {
 
     @Override
     public List<String> getURLsFromPage(Document doc) {
-        String nextPageID = "";
         List<String> imageURLs = new ArrayList<>();
         JSONObject json = new JSONObject();
         try {
@@ -261,39 +261,44 @@ public class InstagramRipper extends AbstractHTMLRipper {
                     break;
                 }
             }
-            // Rip the next page
-            if (!nextPageID.equals("") && !isThisATest()) {
-                if (url.toExternalForm().contains("/tags/")) {
-                    try {
-                        // Sleep for a while to avoid a ban
-                        sleep(2500);
-                        if (url.toExternalForm().substring(url.toExternalForm().length() - 1).equals("/")) {
-                            getURLsFromPage(Http.url(url.toExternalForm() + "?max_id=" + nextPageID).get());
-                        } else {
-                            getURLsFromPage(Http.url(url.toExternalForm() + "/?max_id=" + nextPageID).get());
-                        }
 
-                    } catch (IOException e) {
-                        return imageURLs;
-                    }
-
-                }
-                try {
-                    // Sleep for a while to avoid a ban
-                    sleep(2500);
-                    getURLsFromPage(Http.url("https://www.instagram.com/" + userID + "/?max_id=" + nextPageID).get());
-                } catch (IOException e) {
-                    return imageURLs;
-                }
-            } else {
-                logger.warn("Can't get net page");
-            }
         } else { // We're ripping from a single page
             logger.info("Ripping from single page");
             imageURLs = getPostsFromSinglePage(doc);
         }
 
         return imageURLs;
+    }
+
+    @Override
+    public Document getNextPage(Document doc) {
+        if (!nextPageID.equals("") && !isThisATest()) {
+            if (url.toExternalForm().contains("/tags/")) {
+                try {
+                    // Sleep for a while to avoid a ban
+                    sleep(2500);
+                    if (url.toExternalForm().substring(url.toExternalForm().length() - 1).equals("/")) {
+                        return Http.url(url.toExternalForm() + "?max_id=" + nextPageID).get();
+                    } else {
+                        return Http.url(url.toExternalForm() + "/?max_id=" + nextPageID).get();
+                    }
+
+                } catch (IOException e) {
+                    return null;
+                }
+
+            }
+            try {
+                // Sleep for a while to avoid a ban
+                sleep(2500);
+                return Http.url("https://www.instagram.com/" + userID + "/?max_id=" + nextPageID).get();
+            } catch (IOException e) {
+                return null;
+            }
+        } else {
+            logger.warn("Can't get net page");
+        }
+        return null;
     }
 
     @Override
