@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.rarchives.ripme.ui.RipStatusMessage;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.jsoup.Connection;
@@ -44,6 +45,8 @@ public class TsuminoRipper extends AbstractHTMLRipper {
             return json.getJSONArray("reader_page_urls");
         } catch (IOException e) {
             logger.info(e);
+            sendUpdate(RipStatusMessage.STATUS.DOWNLOAD_ERRORED, "Unable to download album, please compete the captcha at http://www.tsumino.com/Read/Auth/"
+                    + getAlbumID() + " and try again");
             return null;
         }
     }
@@ -82,10 +85,7 @@ public class TsuminoRipper extends AbstractHTMLRipper {
     public Document getFirstPage() throws IOException {
         Connection.Response resp = Http.url(url).response();
         cookies.putAll(resp.cookies());
-        // We need to perform a get on http://www.tsumino.com/Read/View/albumID/1 or else the
-        //www.tsumino.com/Read/Load endpoint 404s
-        resp = Http.url("http://www.tsumino.com/Book/Info/" + getAlbumID()).response();
-        cookies.putAll(resp.cookies());
+        logger.info(resp.parse());
         return resp.parse();
     }
 
