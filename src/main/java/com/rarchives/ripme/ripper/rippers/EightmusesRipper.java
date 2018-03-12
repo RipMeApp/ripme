@@ -125,7 +125,7 @@ public class EightmusesRipper extends AbstractHTMLRipper {
                         logger.info("Retrieving full-size image location from " + imageHref);
                         image = getFullSizeImage(imageHref);
                         URL imageUrl = new URL(image);
-                        addURLToDownload(imageUrl, getPrefix(x), getSubdir(page.select("title").text()), this.url.toExternalForm(), cookies);
+                        addURLToDownload(imageUrl, getPrefix(x), getSubdir(page.select("title").text()), this.url.toExternalForm(), cookies, "");
                         // X is our page index
                         x++;
 
@@ -180,6 +180,6 @@ public class EightmusesRipper extends AbstractHTMLRipper {
 
     @Override
     public String getPrefix(int index) {
-        return String.format("%03d_", index);
+        return String.format("%03d", index);
     }
 }
