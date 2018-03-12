@@ -83,10 +83,10 @@ public class WordpressComicRipperTest extends RippersTest {
                 new URL("http://tnbtu.com/comic/01-00/"));
         testRipper(ripper);
     }
-
-    public void test_pepsaga() throws IOException {
-        WordpressComicRipper ripper = new WordpressComicRipper(
-                new URL("http://shipinbottle.pepsaga.com/?p=281"));
-        testRipper(ripper);
-    }
+    // https://github.com/RipMeApp/ripme/issues/269 - Disabled test - WordpressRipperTest: various domains flaky in CI
+//    public void test_pepsaga() throws IOException {
+//        WordpressComicRipper ripper = new WordpressComicRipper(
+//                new URL("http://shipinbottle.pepsaga.com/?p=281"));
+//        testRipper(ripper);
+//    }
 }
