@@ -51,7 +51,7 @@ public class EightmusesRipper extends AbstractHTMLRipper {
 
     @Override
     public String getGID(URL url) throws MalformedURLException {
-        Pattern p = Pattern.compile("^https?://(www\\.)?8muses\\.com/comix/album/([a-zA-Z0-9\\-_]+).*$");
+        Pattern p = Pattern.compile("^https?://(www\\.)?8muses\\.com/(comix|comics)/album/([a-zA-Z0-9\\-_]+).*$");
         Matcher m = p.matcher(url.toExternalForm());
         if (!m.matches()) {
             throw new MalformedURLException("Expected URL format: http://www.8muses.com/index/category/albumname, got: " + url);
@@ -93,7 +93,7 @@ public class EightmusesRipper extends AbstractHTMLRipper {
         Elements pageImages = page.getElementsByClass("c-tile");
         for (Element thumb : pageImages) {
             // If true this link is a sub album
-            if (thumb.attr("href").contains("/comix/album/")) {
+            if (thumb.attr("href").contains("/comics/album/")) {
                 String subUrl = "https://www.8muses.com" + thumb.attr("href");
                 try {
                     logger.info("Retrieving " + subUrl);
@@ -106,7 +106,8 @@ public class EightmusesRipper extends AbstractHTMLRipper {
                     logger.warn("Error while loading subalbum " + subUrl, e);
                 }
 
-            } else if (thumb.attr("href").contains("/comix/picture/")) {
+            } else if (thumb.attr("href").contains("/comics/picture/")) {
+                logger.info("This page is a album");
                 logger.info("Ripping image");
                 if (super.isStopped()) break;
                 // Find thumbnail image source

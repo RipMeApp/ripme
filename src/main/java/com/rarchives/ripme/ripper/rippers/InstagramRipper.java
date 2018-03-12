@@ -24,6 +24,7 @@ import com.rarchives.ripme.utils.Utils;
 
 
 public class InstagramRipper extends AbstractHTMLRipper {
+    String nextPageID = "";
 
     private String userID;
 
@@ -50,6 +51,12 @@ public class InstagramRipper extends AbstractHTMLRipper {
        URL san_url = new URL(url.toExternalForm().replaceAll("\\?hl=\\S*", ""));
        logger.info("sanitized URL is " + san_url.toExternalForm());
         return san_url;
+    }
+
+    @Override
+    public String normalizeUrl(String url) {
+        // Remove the date sig from the url
+        return url.replaceAll("/[A-Z0-9]{8}/", "/");
     }
 
     private List<String> getPostsFromSinglePage(Document Doc) {
@@ -192,7 +199,6 @@ public class InstagramRipper extends AbstractHTMLRipper {
 
     @Override
     public List<String> getURLsFromPage(Document doc) {
-        String nextPageID = "";
         List<String> imageURLs = new ArrayList<>();
         JSONObject json = new JSONObject();
         try {
@@ -255,33 +261,7 @@ public class InstagramRipper extends AbstractHTMLRipper {
                     break;
                 }
             }
-            // Rip the next page
-            if (!nextPageID.equals("") && !isThisATest()) {
-                if (url.toExternalForm().contains("/tags/")) {
-                    try {
-                        // Sleep for a while to avoid a ban
-                        sleep(2500);
-                        if (url.toExternalForm().substring(url.toExternalForm().length() - 1).equals("/")) {
-                            getURLsFromPage(Http.url(url.toExternalForm() + "?max_id=" + nextPageID).get());
-                        } else {
-                            getURLsFromPage(Http.url(url.toExternalForm() + "/?max_id=" + nextPageID).get());
-                        }
 
-                    } catch (IOException e) {
-                        return imageURLs;
-                    }
-
-                }
-                try {
-                    // Sleep for a while to avoid a ban
-                    sleep(2500);
-                    getURLsFromPage(Http.url("https://www.instagram.com/" + userID + "/?max_id=" + nextPageID).get());
-                } catch (IOException e) {
-                    return imageURLs;
-                }
-            } else {
-                logger.warn("Can't get net page");
-            }
         } else { // We're ripping from a single page
             logger.info("Ripping from single page");
             imageURLs = getPostsFromSinglePage(doc);
@@ -291,8 +271,64 @@ public class InstagramRipper extends AbstractHTMLRipper {
     }
 
     @Override
+    public Document getNextPage(Document doc) throws IOException {
+        Document toreturn;
+        if (!nextPageID.equals("") && !isThisATest()) {
+            if (url.toExternalForm().contains("/tags/")) {
+                try {
+                    // Sleep for a while to avoid a ban
+                    sleep(2500);
+                    if (url.toExternalForm().substring(url.toExternalForm().length() - 1).equals("/")) {
+                        toreturn = Http.url(url.toExternalForm() + "?max_id=" + nextPageID).get();
+                    } else {
+                        toreturn = Http.url(url.toExternalForm() + "/?max_id=" + nextPageID).get();
+                    }
+                    logger.info(toreturn.html());
+                    if (!hasImage(toreturn)) {
+                        throw new IOException("No more pages");
+                    }
+                    return toreturn;
+
+                } catch (IOException e) {
+                    throw new IOException("No more pages");
+                }
+
+            }
+            try {
+                // Sleep for a while to avoid a ban
+                sleep(2500);
+                toreturn = Http.url("https://www.instagram.com/" + userID + "/?max_id=" + nextPageID).get();
+                if (!hasImage(toreturn)) {
+                    throw new IOException("No more pages");
+                }
+                return toreturn;
+            } catch (IOException e) {
+                return null;
+            }
+        } else {
+            throw new IOException("No more pages");
+        }
+    }
+
+    @Override
     public void downloadURL(URL url, int index) {
         addURLToDownload(url);
+    }
+
+    private boolean hasImage(Document doc) {
+        try {
+            JSONObject json = getJSONFromPage(doc);
+            JSONArray profilePage = json.getJSONObject("entry_data").getJSONArray("ProfilePage");
+            JSONArray datas = profilePage.getJSONObject(0).getJSONObject("user").getJSONObject("media").getJSONArray("nodes");
+            logger.info(datas.length());
+            if (datas.length() == 0) {
+                return false;
+            }
+            return true;
+        } catch (IOException e) {
+            return false;
+        }
+
     }
 
 }

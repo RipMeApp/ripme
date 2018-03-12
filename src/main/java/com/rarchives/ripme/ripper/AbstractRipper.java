@@ -44,7 +44,8 @@ public abstract class AbstractRipper
     public abstract String getHost();
     public abstract String getGID(URL url) throws MalformedURLException;
     public boolean hasASAPRipping() { return false; }
-
+    // Everytime addUrlToDownload skips a already downloaded url this increases by 1
+    public int alreadyDownloadedUrls = 0;
     private boolean shouldStop = false;
     private boolean thisIsATest = false;
 
@@ -60,7 +61,13 @@ public abstract class AbstractRipper
         }
     }
 
+
+    /**
+     * Adds a URL to the url history file
+     * @param downloadedURL URL to check if downloaded
+     */
     private void writeDownloadedURL(String downloadedURL) throws IOException {
+        downloadedURL = normalizeUrl(downloadedURL);
         BufferedWriter bw = null;
         FileWriter fw = null;
         try {
@@ -85,6 +92,15 @@ public abstract class AbstractRipper
             }
         }
     }
+
+
+    /**
+     * Normalize a URL
+     * @param url URL to check if downloaded
+     */
+    public String normalizeUrl(String url) {
+        return url;
+    }
     
     /**
      * Checks to see if Ripme has already downloaded a URL
@@ -95,6 +111,7 @@ public abstract class AbstractRipper
      */
     private boolean hasDownloadedURL(String url) {
         File file = new File(URLHistoryFile);
+        url = normalizeUrl(url);
         try {
             Scanner scanner = new Scanner(file);
             while (scanner.hasNextLine()) {
@@ -194,9 +211,11 @@ public abstract class AbstractRipper
      *      False if failed to download
      */
     protected boolean addURLToDownload(URL url, String prefix, String subdirectory, String referrer, Map<String, String> cookies) {
+        // Don't re-add the url if it was downloaded in a previous rip
         if (Utils.getConfigBoolean("remember.url_history", true) && !isThisATest()) {
             if (hasDownloadedURL(url.toExternalForm())) {
                 sendUpdate(STATUS.DOWNLOAD_WARN, "Already downloaded " + url.toExternalForm());
+                alreadyDownloadedUrls += 1;
                 return false;
             }
         }

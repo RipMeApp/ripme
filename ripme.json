@@ -1,6 +1,10 @@
 {
-    "latestVersion": "1.7.19",
+    "latestVersion": "1.7.23",
     "changeList": [
+        "1.7.23: Fixed xvideos ripper; InstagramRipper now works with lastseenfeature",
+        "1.7.22: Added func to normalize urls before reading from/writing to url history file; last seen feature now works with instagram",
+        "1.7.21: Fixed last seen feature",
+        "1.7.20: Fixed 8muses ripper; Added last seen feature; disabled 500px test",
         "1.7.19: imgurRipper no longer tries to add ?1 to file names",
         "1.7.18: AlbumRipper now removes bad chars from file names",
         "1.7.17: Fixed hentai.cafe autorip from clipboard",

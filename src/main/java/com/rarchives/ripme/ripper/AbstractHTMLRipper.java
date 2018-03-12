@@ -68,7 +68,13 @@ public abstract class AbstractHTMLRipper extends AlbumRipper {
         Document doc = getFirstPage();
 
         while (doc != null) {
+            if (alreadyDownloadedUrls >= Utils.getConfigInteger("history.end_rip_after_already_seen", 1000000000) && !isThisATest()) {
+                sendUpdate(STATUS.DOWNLOAD_COMPLETE, "Already seen the last " + alreadyDownloadedUrls + " images ending rip");
+                break;
+            }
             List<String> imageURLs = getURLsFromPage(doc);
+            // If hasASAPRipping() returns true then the ripper will handle downloading the files
+            // if not it's done in the following block of code
             if (!hasASAPRipping()) {
                 // Remove all but 1 image
                 if (isThisATest()) {
