@@ -127,11 +127,11 @@ public class InstagramRipper extends AbstractHTMLRipper {
             return m.group(1);
         }
 
-        p = Pattern.compile("^https?://www.instagram.com/explore/tags/([^/]+)/?");
-        m = p.matcher(url.toExternalForm());
-        if (m.matches()) {
-            return m.group(1);
-        }
+//        p = Pattern.compile("^https?://www.instagram.com/explore/tags/([^/]+)/?");
+//        m = p.matcher(url.toExternalForm());
+//        if (m.matches()) {
+//            return m.group(1);
+//        }
 
         throw new MalformedURLException("Unable to find user in " + url);
     }
