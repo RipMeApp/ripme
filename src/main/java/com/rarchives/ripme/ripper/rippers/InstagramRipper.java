@@ -212,7 +212,8 @@ public class InstagramRipper extends AbstractHTMLRipper {
             JSONArray datas = new JSONArray();
             try {
                 JSONArray profilePage = json.getJSONObject("entry_data").getJSONArray("ProfilePage");
-                datas = profilePage.getJSONObject(0).getJSONObject("user").getJSONObject("media").getJSONArray("nodes");
+                datas = profilePage.getJSONObject(0).getJSONObject("graphql").getJSONObject("user")
+                        .getJSONObject("edge_owner_to_timeline_media").getJSONArray("edges");
             } catch (JSONException e) {
                 // Handle hashtag pages
                 datas = json.getJSONObject("entry_data").getJSONArray("TagPage").getJSONObject(0)
@@ -220,15 +221,16 @@ public class InstagramRipper extends AbstractHTMLRipper {
             }
             for (int i = 0; i < datas.length(); i++) {
                 JSONObject data = (JSONObject) datas.get(i);
-                Long epoch = data.getLong("date");
+                data = data.getJSONObject("node");
+                Long epoch = data.getLong("taken_at_timestamp");
                 Instant instant = Instant.ofEpochSecond(epoch);
                 String image_date = DateTimeFormatter.ofPattern("yyyy_MM_dd_hh:mm_").format(ZonedDateTime.ofInstant(instant, ZoneOffset.UTC));
                 if (data.getString("__typename").equals("GraphSidecar")) {
                     try {
-                        Document slideShowDoc = Http.url(new URL ("https://www.instagram.com/p/" + data.getString("code"))).get();
+                        Document slideShowDoc = Http.url(new URL ("https://www.instagram.com/p/" + data.getString("shortcode"))).get();
                         List<String> toAdd = getPostsFromSinglePage(slideShowDoc);
                         for (int slideShowInt=0; slideShowInt<toAdd.size(); slideShowInt++) {
-                            addURLToDownload(new URL(toAdd.get(slideShowInt)), image_date + data.getString("code"));
+                            addURLToDownload(new URL(toAdd.get(slideShowInt)), image_date + data.getString("shortcode"));
                         }
                     } catch (MalformedURLException e) {
                         logger.error("Unable to download slide show, URL was malformed");
@@ -246,9 +248,9 @@ public class InstagramRipper extends AbstractHTMLRipper {
                         addURLToDownload(new URL(getOriginalUrl(data.getString("thumbnail_src"))), image_date);
                     } else {
                         if (!Utils.getConfigBoolean("instagram.download_images_only", false)) {
-                            addURLToDownload(new URL(getVideoFromPage(data.getString("code"))), image_date);
+                            addURLToDownload(new URL(getVideoFromPage(data.getString("shortcode"))), image_date);
                         } else {
-                            sendUpdate(RipStatusMessage.STATUS.DOWNLOAD_WARN, "Skipping video " + data.getString("code"));
+                            sendUpdate(RipStatusMessage.STATUS.DOWNLOAD_WARN, "Skipping video " + data.getString("shortcode"));
                         }
                     }
                 } catch (MalformedURLException e) {
@@ -319,7 +321,8 @@ public class InstagramRipper extends AbstractHTMLRipper {
         try {
             JSONObject json = getJSONFromPage(doc);
             JSONArray profilePage = json.getJSONObject("entry_data").getJSONArray("ProfilePage");
-            JSONArray datas = profilePage.getJSONObject(0).getJSONObject("user").getJSONObject("media").getJSONArray("nodes");
+            JSONArray datas = profilePage.getJSONObject(0).getJSONObject("graphql").getJSONObject("user")
+                    .getJSONObject("edge_owner_to_timeline_media").getJSONArray("edges");
             logger.info(datas.length());
             if (datas.length() == 0) {
                 return false;
