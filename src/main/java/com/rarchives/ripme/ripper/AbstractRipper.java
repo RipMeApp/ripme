@@ -174,7 +174,7 @@ public abstract class AbstractRipper
      *      URL of the file
      * @param saveAs
      *      Path of the local file to save the content to.
-     * @return True on success, flase on failure.
+     * @return True on success, false on failure.
      */
     public abstract boolean addURLToDownload(URL url, File saveAs);
 
@@ -206,11 +206,13 @@ public abstract class AbstractRipper
      *      The HTTP referrer to use while downloading this file.
      * @param cookies
      *      The cookies to send to the server while downloading this file.
+     * @param fileName
+     *      The name that file will be written to
      * @return 
      *      True if downloaded successfully
      *      False if failed to download
      */
-    protected boolean addURLToDownload(URL url, String prefix, String subdirectory, String referrer, Map<String, String> cookies) {
+    protected boolean addURLToDownload(URL url, String prefix, String subdirectory, String referrer, Map<String, String> cookies, String fileName) {
         // Don't re-add the url if it was downloaded in a previous rip
         if (Utils.getConfigBoolean("remember.url_history", true) && !isThisATest()) {
             if (hasDownloadedURL(url.toExternalForm())) {
@@ -225,9 +227,18 @@ public abstract class AbstractRipper
             logger.debug("Ripper has been stopped");
             return false;
         }
-        logger.debug("url: " + url + ", prefix: " + prefix + ", subdirectory" + subdirectory + ", referrer: " + referrer + ", cookies: " + cookies);
-        String saveAs = url.toExternalForm();
-        saveAs = saveAs.substring(saveAs.lastIndexOf('/')+1);
+        logger.debug("url: " + url + ", prefix: " + prefix + ", subdirectory" + subdirectory + ", referrer: " + referrer + ", cookies: " + cookies + ", fileName: " + fileName);
+        String saveAs;
+        if (fileName != null) {
+            saveAs = fileName;
+            // Get the extension of the file
+            String extension = url.toExternalForm().substring(url.toExternalForm().lastIndexOf(".") + 1);
+            saveAs = saveAs + "." + extension;
+        } else {
+            saveAs = url.toExternalForm();
+            saveAs = saveAs.substring(saveAs.lastIndexOf('/')+1);
+        }
+
         if (saveAs.indexOf('?') >= 0) { saveAs = saveAs.substring(0, saveAs.indexOf('?')); }
         if (saveAs.indexOf('#') >= 0) { saveAs = saveAs.substring(0, saveAs.indexOf('#')); }
         if (saveAs.indexOf('&') >= 0) { saveAs = saveAs.substring(0, saveAs.indexOf('&')); }
@@ -274,7 +285,11 @@ public abstract class AbstractRipper
      * @return True on success, flase on failure.
      */
     protected boolean addURLToDownload(URL url, String prefix, String subdirectory) {
-        return addURLToDownload(url, prefix, subdirectory, null, null);
+        return addURLToDownload(url, prefix, subdirectory, null, null, null);
+    }
+
+    protected boolean addURLToDownload(URL url, String prefix, String subdirectory, String referrer, Map<String, String> cookies) {
+        return addURLToDownload(url, prefix, subdirectory, referrer, cookies, null);
     }
 
     /**
@@ -290,6 +305,8 @@ public abstract class AbstractRipper
         // Use empty subdirectory
         return addURLToDownload(url, prefix, "");
     }
+
+
     /**
      * Waits for downloading threads to complete.
      */
