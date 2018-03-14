@@ -1,6 +1,7 @@
 {
-    "latestVersion": "1.7.24",
+    "latestVersion": "1.7.25",
     "changeList": [
+        "1.7.25: Fixed instagram ripper; Added an option to use short names for 8muses; Added tsuminoRipper; Added support for incase.buttsmithy.com",
         "1.7.24: Added sta.sh ripper; Added sinfest.com ripper; Added femjoyhunter.com ripper; Disabled flaky unit tests",
         "1.7.23: Fixed xvideos ripper; InstagramRipper now works with lastseenfeature",
         "1.7.22: Added func to normalize urls before reading from/writing to url history file; last seen feature now works with instagram",
