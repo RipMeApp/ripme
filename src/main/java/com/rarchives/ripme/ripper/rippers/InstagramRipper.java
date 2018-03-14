@@ -227,7 +227,7 @@ public class InstagramRipper extends AbstractHTMLRipper {
                 String image_date = DateTimeFormatter.ofPattern("yyyy_MM_dd_hh:mm_").format(ZonedDateTime.ofInstant(instant, ZoneOffset.UTC));
                 if (data.getString("__typename").equals("GraphSidecar")) {
                     try {
-                        Document slideShowDoc = Http.url(new URL ("https://www.instagram.com/p/" + data.getString("shortcode"))).get();
+                        Document slideShowDoc = Http.url(new URL("https://www.instagram.com/p/" + data.getString("shortcode"))).get();
                         List<String> toAdd = getPostsFromSinglePage(slideShowDoc);
                         for (int slideShowInt=0; slideShowInt<toAdd.size(); slideShowInt++) {
                             addURLToDownload(new URL(toAdd.get(slideShowInt)), image_date + data.getString("shortcode"));
