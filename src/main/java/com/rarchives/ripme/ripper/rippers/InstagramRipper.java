@@ -150,6 +150,8 @@ public class InstagramRipper extends AbstractHTMLRipper {
                 " <body>", "");
         t.replaceAll("</body>\n" +
                 "</html>", "");
+        t = t.replaceAll("\n", "");
+        t = t.replaceAll("=\"\"", "");
         return t;
     }
 
@@ -352,6 +354,7 @@ public class InstagramRipper extends AbstractHTMLRipper {
     }
 
     private boolean pageHasImages(Document doc) {
+        logger.info("BAD DATA: " + stripHTMLTags(doc.html()));
         JSONObject json = new JSONObject(stripHTMLTags(doc.html()));
         int numberOfImages = json.getJSONObject("data").getJSONObject("user")
                 .getJSONObject("edge_owner_to_timeline_media").getJSONArray("edges").length();
