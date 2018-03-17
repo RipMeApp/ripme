@@ -29,6 +29,8 @@ import com.rarchives.ripme.utils.Utils;
 public class InstagramRipper extends AbstractHTMLRipper {
     String nextPageID = "";
     private String qHash;
+    private  boolean rippingTag = false;
+    private String tagName;
 
     private String userID;
 
@@ -131,11 +133,13 @@ public class InstagramRipper extends AbstractHTMLRipper {
             return m.group(1);
         }
 
-//        p = Pattern.compile("^https?://www.instagram.com/explore/tags/([^/]+)/?");
-//        m = p.matcher(url.toExternalForm());
-//        if (m.matches()) {
-//            return m.group(1);
-//        }
+        p = Pattern.compile("^https?://www.instagram.com/explore/tags/([^/]+)/?");
+        m = p.matcher(url.toExternalForm());
+        if (m.matches()) {
+            rippingTag = true;
+            tagName = m.group(1);
+            return m.group(1);
+        }
 
         throw new MalformedURLException("Unable to find user in " + url);
     }
@@ -146,6 +150,8 @@ public class InstagramRipper extends AbstractHTMLRipper {
                 " <body>", "");
         t.replaceAll("</body>\n" +
                 "</html>", "");
+        t = t.replaceAll("\n", "");
+        t = t.replaceAll("=\"\"", "");
         return t;
     }
 
@@ -230,15 +236,26 @@ public class InstagramRipper extends AbstractHTMLRipper {
 
         if (!url.toExternalForm().contains("/p/")) {
             JSONArray datas = new JSONArray();
-            // This first try only works on data from the first page
-            try {
-                JSONArray profilePage = json.getJSONObject("entry_data").getJSONArray("ProfilePage");
-                userID = profilePage.getJSONObject(0).getString("logging_page_id").replaceAll("profilePage_", "");
-                datas = profilePage.getJSONObject(0).getJSONObject("graphql").getJSONObject("user")
-                        .getJSONObject("edge_owner_to_timeline_media").getJSONArray("edges");
-            } catch (JSONException e) {
-                datas = json.getJSONObject("data").getJSONObject("user")
-                        .getJSONObject("edge_owner_to_timeline_media").getJSONArray("edges");
+            if (!rippingTag) {
+                // This first try only works on data from the first page
+                try {
+                    JSONArray profilePage = json.getJSONObject("entry_data").getJSONArray("ProfilePage");
+                    userID = profilePage.getJSONObject(0).getString("logging_page_id").replaceAll("profilePage_", "");
+                    datas = profilePage.getJSONObject(0).getJSONObject("graphql").getJSONObject("user")
+                            .getJSONObject("edge_owner_to_timeline_media").getJSONArray("edges");
+                } catch (JSONException e) {
+                    datas = json.getJSONObject("data").getJSONObject("user")
+                            .getJSONObject("edge_owner_to_timeline_media").getJSONArray("edges");
+                }
+            } else {
+                try {
+                    JSONArray tagPage = json.getJSONObject("entry_data").getJSONArray("TagPage");
+                    datas = tagPage.getJSONObject(0).getJSONObject("graphql").getJSONObject("hashtag")
+                            .getJSONObject("edge_hashtag_to_media").getJSONArray("edges");
+                } catch (JSONException e) {
+                    datas = json.getJSONObject("data").getJSONObject("hashtag").getJSONObject("edge_hashtag_to_media")
+                            .getJSONArray("edges");
+                }
             }
             for (int i = 0; i < datas.length(); i++) {
                 JSONObject data = (JSONObject) datas.get(i);
@@ -246,17 +263,20 @@ public class InstagramRipper extends AbstractHTMLRipper {
                 Long epoch = data.getLong("taken_at_timestamp");
                 Instant instant = Instant.ofEpochSecond(epoch);
                 String image_date = DateTimeFormatter.ofPattern("yyyy_MM_dd_hh:mm_").format(ZonedDateTime.ofInstant(instant, ZoneOffset.UTC));
-                if (data.getString("__typename").equals("GraphSidecar")) {
-                    try {
-                        Document slideShowDoc = Http.url(new URL("https://www.instagram.com/p/" + data.getString("shortcode"))).get();
-                        List<String> toAdd = getPostsFromSinglePage(slideShowDoc);
-                        for (int slideShowInt=0; slideShowInt<toAdd.size(); slideShowInt++) {
-                            addURLToDownload(new URL(toAdd.get(slideShowInt)), image_date + data.getString("shortcode"));
+                // It looks like tag pages don't have the __typename key
+                if (!rippingTag) {
+                    if (data.getString("__typename").equals("GraphSidecar")) {
+                        try {
+                            Document slideShowDoc = Http.url(new URL("https://www.instagram.com/p/" + data.getString("shortcode"))).get();
+                            List<String> toAdd = getPostsFromSinglePage(slideShowDoc);
+                            for (int slideShowInt = 0; slideShowInt < toAdd.size(); slideShowInt++) {
+                                addURLToDownload(new URL(toAdd.get(slideShowInt)), image_date + data.getString("shortcode"));
+                            }
+                        } catch (MalformedURLException e) {
+                            logger.error("Unable to download slide show, URL was malformed");
+                        } catch (IOException e) {
+                            logger.error("Unable to download slide show");
                         }
-                    } catch (MalformedURLException e) {
-                        logger.error("Unable to download slide show, URL was malformed");
-                    } catch (IOException e) {
-                        logger.error("Unable to download slide show");
                     }
                 }
                 try {
@@ -297,15 +317,12 @@ public class InstagramRipper extends AbstractHTMLRipper {
     public Document getNextPage(Document doc) throws IOException {
         Document toreturn;
         if (!nextPageID.equals("") && !isThisATest()) {
-            if (url.toExternalForm().contains("/tags/")) {
+            if (rippingTag) {
                 try {
-                    // Sleep for a while to avoid a ban
                     sleep(2500);
-                    if (url.toExternalForm().substring(url.toExternalForm().length() - 1).equals("/")) {
-                        toreturn = Http.url(url.toExternalForm() + "?max_id=" + nextPageID).ignoreContentType().get();
-                    } else {
-                        toreturn = Http.url(url.toExternalForm() + "/?max_id=" + nextPageID).ignoreContentType().get();
-                    }
+                     toreturn = Http.url("https://www.instagram.com/graphql/query/?query_hash=" + qHash +
+                                     "&variables={\"tag_name\":\"" + tagName + "\",\"first\":4,\"after\":\"" + nextPageID + "\"}").ignoreContentType().get();
+                    // Sleep for a while to avoid a ban
                     logger.info(toreturn.html());
                     return toreturn;
 
@@ -337,6 +354,7 @@ public class InstagramRipper extends AbstractHTMLRipper {
     }
 
     private boolean pageHasImages(Document doc) {
+        logger.info("BAD DATA: " + stripHTMLTags(doc.html()));
         JSONObject json = new JSONObject(stripHTMLTags(doc.html()));
         int numberOfImages = json.getJSONObject("data").getJSONObject("user")
                 .getJSONObject("edge_owner_to_timeline_media").getJSONArray("edges").length();
@@ -369,10 +387,18 @@ public class InstagramRipper extends AbstractHTMLRipper {
             logger.info(e.getMessage());
             return null;
         }
-        Pattern jsP = Pattern.compile("o},queryId:.([a-zA-Z0-9]+).");
-        Matcher m = jsP.matcher(sb.toString());
-        if (m.find()) {
-            return m.group(1);
+        if (!rippingTag) {
+            Pattern jsP = Pattern.compile("o},queryId:.([a-zA-Z0-9]+).");
+            Matcher m = jsP.matcher(sb.toString());
+            if (m.find()) {
+                return m.group(1);
+            }
+        } else {
+            Pattern jsP = Pattern.compile("return e.tagMedia.byTagName.get\\(t\\).pagination},queryId:.([a-zA-Z0-9]+).");
+            Matcher m = jsP.matcher(sb.toString());
+            if (m.find()) {
+                return m.group(1);
+            }
         }
         logger.info("Could not find query_hash on " + jsFileURL);
         return null;
