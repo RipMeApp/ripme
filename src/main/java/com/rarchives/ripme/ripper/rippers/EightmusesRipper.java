@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.rarchives.ripme.utils.Utils;
 import org.jsoup.Connection.Response;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -125,7 +126,11 @@ public class EightmusesRipper extends AbstractHTMLRipper {
                         logger.info("Retrieving full-size image location from " + imageHref);
                         image = getFullSizeImage(imageHref);
                         URL imageUrl = new URL(image);
-                        addURLToDownload(imageUrl, getPrefix(x), getSubdir(page.select("title").text()), this.url.toExternalForm(), cookies);
+                        if (Utils.getConfigBoolean("8muses.use_short_names", false)) {
+                            addURLToDownload(imageUrl, getPrefixShort(x), getSubdir(page.select("title").text()), this.url.toExternalForm(), cookies, "");
+                        } else {
+                            addURLToDownload(imageUrl, getPrefixLong(x), getSubdir(page.select("title").text()), this.url.toExternalForm(), cookies);
+                        }
                         // X is our page index
                         x++;
 
@@ -178,8 +183,11 @@ public class EightmusesRipper extends AbstractHTMLRipper {
         addURLToDownload(url, getPrefix(index), "", this.url.toExternalForm(), cookies);
     }
 
-    @Override
-    public String getPrefix(int index) {
+    public String getPrefixLong(int index) {
         return String.format("%03d_", index);
+    }
+
+    public String getPrefixShort(int index) {
+        return String.format("%03d", index);
     }
 }
