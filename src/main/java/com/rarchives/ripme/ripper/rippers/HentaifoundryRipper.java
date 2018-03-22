@@ -68,7 +68,8 @@ public class HentaifoundryRipper extends AbstractHTMLRipper {
 
     @Override
     public Document getNextPage(Document doc) throws IOException {
-        if (doc.select("li.next > a").size() == 0) {
+        if (doc.select("li.next.hidden").size() != 0) {
+            // Last page
             throw new IOException("No more pages");
         }
         Elements els = doc.select("li.next > a");
