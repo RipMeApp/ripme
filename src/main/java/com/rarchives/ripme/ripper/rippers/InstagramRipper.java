@@ -284,9 +284,9 @@ public class InstagramRipper extends AbstractHTMLRipper {
                         if (imageURLs.size() == 0) {
                             // We add this one item to the array because either wise
                             // the ripper will error out because we returned an empty array
-                            imageURLs.add(getOriginalUrl(data.getString("thumbnail_src")));
+                            imageURLs.add(getOriginalUrl(data.getString("display_url")));
                         }
-                        addURLToDownload(new URL(getOriginalUrl(data.getString("thumbnail_src"))), image_date);
+                        addURLToDownload(new URL(data.getString("display_url")), image_date);
                     } else {
                         if (!Utils.getConfigBoolean("instagram.download_images_only", false)) {
                             addURLToDownload(new URL(getVideoFromPage(data.getString("shortcode"))), image_date);
