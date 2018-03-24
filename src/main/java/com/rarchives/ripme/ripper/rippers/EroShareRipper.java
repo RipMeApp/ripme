@@ -60,13 +60,13 @@ public class EroShareRipper extends AbstractHTMLRipper {
             return true;
         }
 
-        Pattern p_eroshare = Pattern.compile("^https?://eroshare.com/([a-zA-Z0-9\\-_]+)/?$");
+        Pattern p_eroshare = Pattern.compile("^https?://(www[.])?eroshare.com/([a-zA-Z0-9\\-_]+)/?$");
         Matcher m_eroshare = p_eroshare.matcher(url.toExternalForm());
         if (m_eroshare.matches()) {
             return true;
         }
 
-        Pattern p_eroshare_profile = Pattern.compile("^https?://eroshare.com/u/([a-zA-Z0-9\\-_]+)/?$");
+        Pattern p_eroshare_profile = Pattern.compile("^https?://(www[.])?eroshare.com/u/([a-zA-Z0-9\\-_]+)/?$");
         Matcher m_eroshare_profile = p_eroshare_profile.matcher(url.toExternalForm());
         return m_eroshare_profile.matches();
     }
@@ -119,7 +119,9 @@ public class EroShareRipper extends AbstractHTMLRipper {
         for (Element img : imgs) {
             if (img.hasClass("album-image")) {
                 String imageURL = img.attr("src");
-                imageURL = "https:" + imageURL;
+                if (!imageURL.startsWith("http")) {
+                    imageURL = "https:" + imageURL;
+                }
                 URLs.add(imageURL);
             }
         }
@@ -129,7 +131,10 @@ public class EroShareRipper extends AbstractHTMLRipper {
             if (vid.hasClass("album-video")) {
                 Elements source = vid.getElementsByTag("source");
                 String videoURL = source.first().attr("src");
-                URLs.add("https:" + videoURL);
+                if (!videoURL.startsWith("http")) {
+                    videoURL = "https:" + videoURL;
+                }
+                URLs.add(videoURL);
             }
         }
         // Profile videos
@@ -148,7 +153,10 @@ public class EroShareRipper extends AbstractHTMLRipper {
                 if (vid.hasClass("album-video")) {
                     Elements source = vid.getElementsByTag("source");
                     String videoURL = source.first().attr("src");
-                    URLs.add("https:" + videoURL);
+                    if (!videoURL.startsWith("http")) {
+                        videoURL = "https:" + videoURL;
+                    }
+                    URLs.add(videoURL);
                 }
             }
         }
@@ -159,7 +167,9 @@ public class EroShareRipper extends AbstractHTMLRipper {
     @Override
     public Document getFirstPage() throws IOException {
         String urlToDownload = this.url.toExternalForm();
-        Response resp = Http.url(urlToDownload.replace("eroshare.com", "eroshae.com"))
+        urlToDownload = urlToDownload.replace("eroshare.com", "eroshae.com");
+        urlToDownload = urlToDownload.replace("www.", "");
+        Response resp = Http.url(urlToDownload)
                             .ignoreContentType()
                             .response();
 
@@ -174,7 +184,7 @@ public class EroShareRipper extends AbstractHTMLRipper {
             return m.group(1);
         }
 
-        Pattern p_eroshare = Pattern.compile("^https?://eroshare.com/([a-zA-Z0-9\\-_]+)/?$");
+        Pattern p_eroshare = Pattern.compile("^https?://(www[.])?eroshare.com/([a-zA-Z0-9\\-_]+)/?$");
         Matcher m_eroshare = p_eroshare.matcher(url.toExternalForm());
         if (m_eroshare.matches()) {
             return m_eroshare.group(1);
