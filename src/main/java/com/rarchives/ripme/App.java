@@ -1,5 +1,6 @@
 package com.rarchives.ripme;
 
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.BufferedReader;
@@ -18,6 +19,7 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.apache.commons.lang.SystemUtils;
 import org.apache.log4j.Logger;
 
 import com.rarchives.ripme.ripper.AbstractRipper;
@@ -34,35 +36,34 @@ import com.rarchives.ripme.utils.Utils;
  */
 public class App {
 
-    public static final Logger logger;
+    public static final Logger logger = Logger.getLogger(App.class);
     private static final History HISTORY = new History();
-
-    static {
-        //initialize logger
-        Utils.configureLogger();
-        logger = Logger.getLogger(App.class);
-    }
 
     public static void main(String[] args) throws MalformedURLException {
         CommandLine cl = getArgs(args);
+
         if (args.length > 0 && cl.hasOption('v')){
-            logger.error(UpdateUtils.getThisJarVersion());
+            logger.info(UpdateUtils.getThisJarVersion());
             System.exit(0);
         }
 
-        System.setProperty("apple.laf.useScreenMenuBar", "true");
-        System.setProperty("com.apple.mrj.application.apple.menu.about.name", "RipMe");
-        logger.info("Initialized ripme v" + UpdateUtils.getThisJarVersion());
-
-        if (args.length > 0) {
-            // CLI Mode
+        if (GraphicsEnvironment.isHeadless()) {
             handleArguments(args);
         } else {
-            // GUI Mode
+            if (SystemUtils.IS_OS_MAC_OSX) {
+                System.setProperty("apple.laf.useScreenMenuBar", "true");
+                System.setProperty("com.apple.mrj.application.apple.menu.about.name", "RipMe");
+            }
+
+            Utils.configureLogger();
+
+            logger.info("Initialized ripme v" + UpdateUtils.getThisJarVersion());
+
             MainWindow mw = new MainWindow();
             SwingUtilities.invokeLater(mw);
         }
     }
+
     /**
      * Creates an abstract ripper and instructs it to rip.
      * @param url URL to be ripped
@@ -80,20 +81,28 @@ public class App {
      */
     private static void handleArguments(String[] args) {
         CommandLine cl = getArgs(args);
-        if (cl.hasOption('h')) {
+
+        if (cl.hasOption('h') || args.length == 0) {
             HelpFormatter hf = new HelpFormatter();
             hf.printHelp("java -jar ripme.jar [OPTIONS]", getOptions());
             System.exit(0);
         }
+
+        Utils.configureLogger();
+        logger.info("Initialized ripme v" + UpdateUtils.getThisJarVersion());
+
         if (cl.hasOption('w')) {
             Utils.setConfigBoolean("file.overwrite", true);
         }
+
         if (cl.hasOption('t')) {
             Utils.setConfigInteger("threads.size", Integer.parseInt(cl.getOptionValue('t')));
         }
+
         if (cl.hasOption('4')) {
             Utils.setConfigBoolean("errors.skip404", true);
         }
+
         if (cl.hasOption('r')) {
             // Re-rip all via command-line
             List<String> history = Utils.getConfigList("download.history");
@@ -115,6 +124,7 @@ public class App {
             // Exit
             System.exit(0);
         }
+
         if (cl.hasOption('R')) {
             loadHistory();
             if (HISTORY.toList().isEmpty()) {
@@ -146,20 +156,25 @@ public class App {
                 System.exit(-1);
             }
         }
+
         if (cl.hasOption('d')) {
             Utils.setConfigBoolean("download.save_order", true);
         }
+
         if (cl.hasOption('D')) {
             Utils.setConfigBoolean("download.save_order", false);
         }
+
         if ((cl.hasOption('d'))&&(cl.hasOption('D'))) {
             logger.error("\nCannot specify '-d' and '-D' simultaneously");
             System.exit(-1);
         }
+
         if (cl.hasOption('l')) {
             // change the default rips directory
             Utils.setConfigString("rips.directory", cl.getOptionValue('l'));
         }
+
         if (cl.hasOption('f')) {
             String filename = cl.getOptionValue('f');
             try {
@@ -175,6 +190,7 @@ public class App {
                 logger.error("[!] Failed reading file containing list of URLs. Cannot continue.");
             }
         }
+
         if (cl.hasOption('u')) {
             String url = cl.getOptionValue('u').trim();
             ripURL(url, cl.hasOption("n"));
