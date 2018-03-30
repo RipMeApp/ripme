@@ -10,6 +10,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 import javax.swing.SwingUtilities;
 
@@ -18,6 +19,7 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import com.rarchives.ripme.ripper.AbstractRipper;
@@ -43,8 +45,15 @@ public class App {
         logger = Logger.getLogger(App.class);
     }
 
-    public static void main(String[] args) throws MalformedURLException {
-        CommandLine cl = getArgs(args);
+    public static void main(String[] args) {
+        CommandLine cl = null;
+        try {
+            cl = getArgs(args);
+        } catch (ParseException e) {
+            logger.error("Error while parsing command-line arguments: " + Arrays.toString(args), e);
+            System.exit(-1);
+        }
+
         if (args.length > 0 && cl.hasOption('v')){
             logger.error(UpdateUtils.getThisJarVersion());
             System.exit(0);
@@ -56,30 +65,43 @@ public class App {
 
         if (args.length > 0) {
             // CLI Mode
-            handleArguments(args);
+            handleArguments(cl);
         } else {
             // GUI Mode
             MainWindow mw = new MainWindow();
             SwingUtilities.invokeLater(mw);
         }
     }
+
     /**
      * Creates an abstract ripper and instructs it to rip.
      * @param url URL to be ripped
-     * @throws Exception 
      */
-    private static void rip(URL url) throws Exception {
-        AbstractRipper ripper = AbstractRipper.getRipper(url);
-        ripper.setup();
-        ripper.rip();
+    private static void rip(URL url) {
+        AbstractRipper ripper = null;
+        try {
+            ripper = AbstractRipper.getRipper(url);
+        } catch (NoSuchElementException e) {
+            logger.error("No compatible ripper found.", e);
+        }
+        try {
+            ripper.setup();
+        } catch (IOException e) {
+            logger.error("Working directory not found!", e);
+        }
+        try {
+            ripper.rip();
+        } catch (IOException e) {
+            logger.error("Rip failed!", e);
+        }
+
     }
 
     /**
      * For dealing with command-line arguments.
-     * @param args Array of Command-line arguments
+     * @param cl CommandLine object containing the parsed arguments
      */
-    private static void handleArguments(String[] args) {
-        CommandLine cl = getArgs(args);
+    private static void handleArguments(CommandLine cl) {
         if (cl.hasOption('h')) {
             HelpFormatter hf = new HelpFormatter();
             hf.printHelp("java -jar ripme.jar [OPTIONS]", getOptions());
@@ -101,14 +123,14 @@ public class App {
                 try {
                     URL url = new URL(urlString.trim());
                     rip(url);
-                } catch (Exception e) {
-                    logger.error("[!] Failed to rip URL " + urlString, e);
+                } catch (MalformedURLException e) {
+                    logger.error("Given URL is not valid. Expected URL format is http(s)://(www.)domain.com/", e);
                     continue;
                 }
                 try {
                     Thread.sleep(500);
                 } catch (InterruptedException e) {
-                    logger.warn("[!] Interrupted while re-ripping history");
+                    logger.warn("Interrupted while re-ripping history.");
                     System.exit(-1);
                 }
             }
@@ -128,19 +150,20 @@ public class App {
                     try {
                         URL url = new URL(entry.url);
                         rip(url);
-                    } catch (Exception e) {
-                        logger.error("[!] Failed to rip URL " + entry.url, e);
+                    } catch (MalformedURLException e) {
+                        logger.error("Given URL is not valid. Expected URL format is http(s)://(www.)domain.com/", e);
                         continue;
                     }
                     try {
                         Thread.sleep(500);
                     } catch (InterruptedException e) {
-                        logger.warn("[!] Interrupted while re-ripping history");
+                        logger.warn("Interrupted while re-ripping history");
                         System.exit(-1);
                     }
                 }
             }
             if (added == 0) {
+                // TODO: Find a way to add this to the command-line. As-is, the message doesn't make sense for headless-only users.
                 logger.error("No history entries have been 'Checked'\n" +
                     "Check an entry by clicking the checkbox to the right of the URL or Right-click a URL to check/uncheck all items");
                 System.exit(-1);
@@ -169,10 +192,10 @@ public class App {
                     // loop through each url in the file and proces each url individually.
                     ripURL(url.trim(), cl.hasOption("n"));
                 }
-            } catch (FileNotFoundException fne) {
-                logger.error("[!] File containing list of URLs not found. Cannot continue.");
-            } catch (IOException ioe) {
-                logger.error("[!] Failed reading file containing list of URLs. Cannot continue.");
+            } catch (FileNotFoundException e) {
+                logger.error("File containing list of URLs not found. Cannot continue.", e);
+            } catch (IOException e) {
+                logger.error("Failed reading file containing list of URLs. Cannot continue.", e);
             }
         }
         if (cl.hasOption('u')) {
@@ -191,19 +214,17 @@ public class App {
             URL url = new URL(targetURL);
             rip(url);
             List<String> history = Utils.getConfigList("download.history");
-            if (!history.contains(url.toExternalForm())) {//if you haven't already downloaded the file before
-                history.add(url.toExternalForm());//add it to history so you won't have to redownload
+
+            if (!history.contains(url.toExternalForm())) {
+                history.add(url.toExternalForm());
                 Utils.setConfigList("download.history", Arrays.asList(history.toArray()));
                 if (saveConfig) {
                     Utils.saveConfig();
                 }
             }
         } catch (MalformedURLException e) {
-            logger.error("[!] Given URL is not valid. Expected URL format is http://domain.com/...");
-            // System.exit(-1);
-        } catch (Exception e) {
-            logger.error("[!] Error while ripping URL " + targetURL, e);
-            // System.exit(-1);
+            logger.error("Given URL is not valid. Expected URL format is http(s)://(www.)domain.com/", e);
+            System.exit(-1);
         }
     }
 
@@ -226,6 +247,7 @@ public class App {
         opts.addOption("n", "no-prop-file", false, "Do not create properties file.");
         opts.addOption("f", "urls-file", true, "Rip URLs from a file.");
         opts.addOption("v", "version", false, "Show current version");
+        opts.addOption(null, "verbose", false, "Show additional information in the log");
         return opts;
     }
 
@@ -234,15 +256,9 @@ public class App {
      * @param args Array of commandline arguments.
      * @return CommandLine object containing arguments.
      */
-    private static CommandLine getArgs(String[] args) {
+    private static CommandLine getArgs(String[] args) throws ParseException {
         BasicParser parser = new BasicParser();
-        try {
-            return parser.parse(getOptions(), args, false);
-        } catch (ParseException e) {
-            logger.error("[!] Error while parsing command-line arguments: " + Arrays.toString(args), e);
-            System.exit(-1);
-            return null;
-        }
+        return parser.parse(getOptions(), args, false);
     }
     
     /**
@@ -266,20 +282,7 @@ public class App {
         } else {
             logger.info("Loading history from configuration");
             HISTORY.fromList(Utils.getConfigList("download.history"));
-            if (HISTORY.toList().size() == 0) {
-                // Loaded from config, still no entries.
-                // Guess rip history based on rip folder
-                String[] dirs = Utils.getWorkingDirectory().list((dir, file) -> new File(dir.getAbsolutePath() + File.separator + file).isDirectory());
-                for (String dir : dirs) {
-                    String url = RipUtils.urlFromDirectoryName(dir);
-                    if (url != null) {
-                        // We found one, add it to history
-                        HistoryEntry entry = new HistoryEntry();
-                        entry.url = url;
-                        HISTORY.add(entry);
-                    }
-                }
-            }
+            MainWindow.guessHistoryFromRipFolder(HISTORY);
         }
     }
 }

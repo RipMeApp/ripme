@@ -411,14 +411,14 @@ public class Utils {
         return String.format("%.2f%siB", fbytes, mags[magIndex]);
     }
 
-    public static List<String> getListOfAlbumRippers() throws Exception {
+    public static List<String> getListOfAlbumRippers() {
         List<String> list = new ArrayList<>();
         for (Constructor<?> ripper : AbstractRipper.getRipperConstructors("com.rarchives.ripme.ripper.rippers")) {
             list.add(ripper.getName());
         }
         return list;
     }
-    public static List<String> getListOfVideoRippers() throws Exception {
+    public static List<String> getListOfVideoRippers() {
         List<String> list = new ArrayList<>();
         for (Constructor<?> ripper : AbstractRipper.getRipperConstructors("com.rarchives.ripme.ripper.rippers.video")) {
             list.add(ripper.getName());
@@ -463,7 +463,9 @@ public class Utils {
         logger.info("Loaded " + logFile);
         try {
             stream.close();
-        } catch (IOException e) { }
+        } catch (IOException e) {
+            logger.error("Error while closing resource file.", e);
+        }
     }
 
     /**
