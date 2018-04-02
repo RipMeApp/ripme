@@ -1,12 +1,12 @@
 package com.rarchives.ripme.tst.ripper.rippers;
 
+import com.rarchives.ripme.ripper.rippers.ImgurRipper;
+import com.rarchives.ripme.ripper.rippers.ImgurRipper.ImgurAlbum;
+
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-
-import com.rarchives.ripme.ripper.rippers.ImgurRipper;
-import com.rarchives.ripme.ripper.rippers.ImgurRipper.ImgurAlbum;
 
 public class ImgurRipperTest extends RippersTest {
 
@@ -17,7 +17,6 @@ public class ImgurRipperTest extends RippersTest {
         failURLs.add(new URL("http://imgur.com/"));
         failURLs.add(new URL("http://i.imgur.com"));
         failURLs.add(new URL("http://i.imgur.com/"));
-        failURLs.add(new URL("http://imgur.com/image"));
         failURLs.add(new URL("http://imgur.com/image.jpg"));
         failURLs.add(new URL("http://i.imgur.com/image.jpg"));
         for (URL url : failURLs) {
@@ -50,6 +49,15 @@ public class ImgurRipperTest extends RippersTest {
         }
     }
 
+    public void testImgurSingleImage() throws IOException {
+        List<URL> contentURLs = new ArrayList<>();
+        contentURLs.add(new URL("http://imgur.com/qbfcLyG")); // Single image URL
+        contentURLs.add(new URL("https://imgur.com/KexUO")); // Single image URL
+        for (URL url : contentURLs) {
+            ImgurRipper ripper = new ImgurRipper(url);
+            testRipper(ripper);
+        }
+    }
 
     public void testImgurAlbumWithMoreThan20Pictures() throws IOException {
         ImgurAlbum album = ImgurRipper.getImgurAlbum(new URL("http://imgur.com/a/HUMsq"));
