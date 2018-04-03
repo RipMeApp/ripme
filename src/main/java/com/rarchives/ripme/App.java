@@ -47,7 +47,7 @@ public class App {
             System.exit(0);
         }
 
-        if (GraphicsEnvironment.isHeadless()) {
+        if (GraphicsEnvironment.isHeadless() || args.length > 0) {
             handleArguments(args);
         } else {
             if (SystemUtils.IS_OS_MAC_OSX) {
