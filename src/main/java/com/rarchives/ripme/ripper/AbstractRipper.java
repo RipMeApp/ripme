@@ -3,12 +3,10 @@ package com.rarchives.ripme.ripper;
 import java.awt.Desktop;
 import java.io.*;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Observable;
+import java.util.*;
 
 import org.apache.log4j.FileAppender;
 import org.apache.log4j.Logger;
@@ -21,7 +19,6 @@ import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
 import com.rarchives.ripme.utils.Utils;
 
 import java.io.File;
-import java.util.Scanner;
 
 public abstract class AbstractRipper
                 extends Observable
@@ -438,26 +435,38 @@ public abstract class AbstractRipper
      * @throws Exception
      *      If no compatible rippers can be found.
      */
-    public static AbstractRipper getRipper(URL url) throws Exception {
+    public static AbstractRipper getRipper(URL url) throws NoSuchElementException {
         for (Constructor<?> constructor : getRipperConstructors("com.rarchives.ripme.ripper.rippers")) {
             try {
-                AlbumRipper ripper = (AlbumRipper) constructor.newInstance(url); // by design: can throw ClassCastException
+                AlbumRipper ripper = (AlbumRipper) constructor.newInstance(url);
                 logger.debug("Found album ripper: " + ripper.getClass().getName());
                 return ripper;
-            } catch (Exception e) {
-                // Incompatible rippers *will* throw exceptions during instantiation.
+            } catch (ClassCastException e) {
+                logger.error("Incompatible ripper found.", e);
+            } catch (IllegalAccessException e) {
+                logger.error("Illegal access to ripper.", e);
+            } catch (InstantiationException e) {
+                logger.error("Error while instantiating ripper.", e);
+            } catch (InvocationTargetException e) {
+                logger.error("Error while invoking ripper.", e);
             }
         }
         for (Constructor<?> constructor : getRipperConstructors("com.rarchives.ripme.ripper.rippers.video")) {
             try {
-                VideoRipper ripper = (VideoRipper) constructor.newInstance(url); // by design: can throw ClassCastException
+                VideoRipper ripper = (VideoRipper) constructor.newInstance(url);
                 logger.debug("Found video ripper: " + ripper.getClass().getName());
                 return ripper;
-            } catch (Exception e) {
-                // Incompatible rippers *will* throw exceptions during instantiation.
+            } catch (ClassCastException e) {
+                logger.error("Incompatible ripper found.", e);
+            } catch (IllegalAccessException e) {
+                logger.error("Illegal access to ripper.", e);
+            } catch (InstantiationException e) {
+                logger.error("Error while instantiating ripper.", e);
+            } catch (InvocationTargetException e) {
+                logger.error("Error while invoking ripper.", e);
             }
         }
-        throw new Exception("No compatible ripper found");
+        throw new NoSuchElementException("No compatible ripper found.");
     }
 
     /**
@@ -467,11 +476,15 @@ public abstract class AbstractRipper
      *      List of constructors for all eligible Rippers.
      * @throws Exception
      */
-    public static List<Constructor<?>> getRipperConstructors(String pkg) throws Exception {
+    public static List<Constructor<?>> getRipperConstructors(String pkg) {
         List<Constructor<?>> constructors = new ArrayList<>();
         for (Class<?> clazz : Utils.getClassesForPackage(pkg)) {
             if (AbstractRipper.class.isAssignableFrom(clazz)) {
-                constructors.add(clazz.getConstructor(URL.class));
+                try {
+                    constructors.add(clazz.getConstructor(URL.class));
+                } catch (NoSuchMethodException e) {
+                    logger.warn(e);
+                }
             }
         }
         return constructors;

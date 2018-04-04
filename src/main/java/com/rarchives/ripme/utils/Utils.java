@@ -12,13 +12,11 @@ import java.util.*;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.Clip;
-import javax.sound.sampled.Line;
-import javax.sound.sampled.LineEvent;
+import javax.sound.sampled.*;
 
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
+import org.apache.commons.lang.SystemUtils;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
@@ -36,36 +34,41 @@ public class Utils {
 
     private static PropertiesConfiguration config;
     static {
+        String configPath = getConfigFilePath();
+        File f = new File(configPath);
+        if (!f.exists()) {
+            // Use default bundled with .jar
+            configPath = configFile;
+        }
         try {
-            String configPath = getConfigFilePath();
-            File f = new File(configPath);
-            if (!f.exists()) {
-                // Use default bundled with .jar
-                configPath = configFile;
-            }
             config = new PropertiesConfiguration(configPath);
-            logger.info("Loaded " + config.getPath());
-            if (f.exists()) {
-                // Config was loaded from file
-                if ( !config.containsKey("twitter.auth")
-                  || !config.containsKey("twitter.max_requests")
-                  || !config.containsKey("tumblr.auth")
-                  || !config.containsKey("error.skip404")
-                  || !config.containsKey("gw.api")
-                  || !config.containsKey("page.timeout")
-                  || !config.containsKey("download.max_size")
-                  ) {
-                    // Config is missing key fields
-                    // Need to reload the default config
-                    // See https://github.com/4pr0n/ripme/issues/158
-                    logger.warn("Config does not contain key fields, deleting old config");
-                    f.delete();
+        } catch (ConfigurationException e) {
+            logger.error("Error loading user configuration.", e);
+        }
+        logger.info("Loaded " + config.getPath());
+        if (f.exists()) {
+            // Config was loaded from file
+            if (!config.containsKey("twitter.auth")
+                    || !config.containsKey("twitter.max_requests")
+                    || !config.containsKey("tumblr.auth")
+                    || !config.containsKey("error.skip404")
+                    || !config.containsKey("gw.api")
+                    || !config.containsKey("page.timeout")
+                    || !config.containsKey("download.max_size")
+                    ) {
+                // Config is missing key fields
+                // Need to reload the default config
+                // See https://github.com/4pr0n/ripme/issues/158
+                logger.warn("Config does not contain key fields, deleting old config");
+                f.delete();
+                try {
                     config = new PropertiesConfiguration(configFile);
-                    logger.info("Loaded " + config.getPath());
+                } catch (ConfigurationException e) {
+                    logger.error("Error loading default configutation file.", e);
+                    System.exit(-1);
                 }
+                logger.info("Loaded " + config.getPath());
             }
-        } catch (Exception e) {
-            logger.error("[!] Failed to load properties file from " + configFile, e);
         }
     }
 
@@ -131,18 +134,21 @@ public class Utils {
             config.save(getConfigFilePath());
             logger.info("Saved configuration to " + getConfigFilePath());
         } catch (ConfigurationException e) {
-            logger.error("Error while saving configuration: ", e);
+            logger.error("Error while saving user configuration.", e);
         }
     }
 
+    // TODO: Remove this and use SystemUtils instead.
     private static boolean isWindows() {
         return OS.contains("win");
     }
 
+    // TODO: Remove this and use SystemUtils instead.
     private static boolean isMacOS() {
         return OS.contains("mac");
     }
 
+    // TODO: Remove this and use SystemUtils instead.
     private static boolean isUnix() {
         return OS.contains("nix") || OS.contains("nux") || OS.contains("bsd");
     }
@@ -164,9 +170,11 @@ public class Utils {
         try {
             File f = new File(new File(".").getCanonicalPath() + File.separator + configFile);
             if(f.exists() && !f.isDirectory()) {
+                logger.debug("Running in portable mode.");
                 return true;
             }
         } catch (IOException e) {
+            logger.debug("Running in non-portable mode.");
             return false;
         }
         return false;
@@ -177,32 +185,41 @@ public class Utils {
         if (portableMode()) {
             try {
                 return new File(".").getCanonicalPath();
-            } catch (Exception e) {
-                return ".";
+            } catch (IOException e) {
+                logger.error("Failed to get portable configuration file.", e);
             }
         }
 
-        if (isWindows()) return getWindowsConfigDir();
-        if (isMacOS()) return getMacOSConfigDir();
-        if (isUnix()) return getUnixConfigDir();
+        if (SystemUtils.IS_OS_WINDOWS) return getWindowsConfigDir();
+        if (SystemUtils.IS_OS_MAC_OSX) return getMacOSConfigDir();
+        // Testing for Linux, as IS_OS_UNIX would return true for Mac OS as well.
+        if (SystemUtils.IS_OS_LINUX) return getUnixConfigDir();
         
         try {
             return new File(".").getCanonicalPath();
-        } catch (Exception e) {
-            return ".";
+        } catch (IOException e) {
+            logger.error("Failed to get current path.", e);
         }
     }
-    // Delete the url history file
+
+    /**
+     * Deletes the url history file.
+     */
     public static void clearURLHistory() {
         File file = new File(getURLHistoryFile());
         file.delete();
     }
 
-    // Return the path of the url history file
+    /**
+     * Return the path of the url history file
+      */
     public static String getURLHistoryFile() {
         return getConfigDir() + File.separator + "url_history.txt";
     }
 
+    /**
+     * Return the path of the configuration file
+     */
     private static String getConfigFilePath() {
         return getConfigDir() + File.separator + configFile;
     }
@@ -222,8 +239,8 @@ public class Utils {
             prettySaveAs = prettySaveAs.replace(
                     cwd,
                     "." + File.separator);
-        } catch (Exception e) {
-            logger.error("Exception: ", e);
+        } catch (IOException e) {
+            logger.error("Error while removing current working directory from path.", e);
         }
         return prettySaveAs;
     }
@@ -341,6 +358,7 @@ public class Utils {
     public static String shortenPath(String path) {
         return shortenPath(new File(path));
     }
+
     public static String shortenPath(File file) {
         String path = removeCWD(file);
         if (path.length() < SHORTENED_PATH_LENGTH * 2) {
@@ -411,14 +429,14 @@ public class Utils {
         return String.format("%.2f%siB", fbytes, mags[magIndex]);
     }
 
-    public static List<String> getListOfAlbumRippers() throws Exception {
+    public static List<String> getListOfAlbumRippers() {
         List<String> list = new ArrayList<>();
         for (Constructor<?> ripper : AbstractRipper.getRipperConstructors("com.rarchives.ripme.ripper.rippers")) {
             list.add(ripper.getName());
         }
         return list;
     }
-    public static List<String> getListOfVideoRippers() throws Exception {
+    public static List<String> getListOfVideoRippers() {
         List<String> list = new ArrayList<>();
         for (Constructor<?> ripper : AbstractRipper.getRipperConstructors("com.rarchives.ripme.ripper.rippers.video")) {
             list.add(ripper.getName());
@@ -428,8 +446,9 @@ public class Utils {
 
     public static void playSound(String filename) {
         URL resource = ClassLoader.getSystemClassLoader().getResource(filename);
+        final Clip clip;
         try {
-            final Clip clip = (Clip) AudioSystem.getLine(new Line.Info(Clip.class));
+            clip = (Clip) AudioSystem.getLine(new Line.Info(Clip.class));
             clip.addLineListener(event -> {
                 if (event.getType() == LineEvent.Type.STOP) {
                     clip.close();
@@ -437,8 +456,12 @@ public class Utils {
             });
             clip.open(AudioSystem.getAudioInputStream(resource));
             clip.start();
-        } catch (Exception e) {
-            logger.error("Failed to play sound " + filename, e);
+        } catch (LineUnavailableException e) {
+            logger.error("Line unavailable.", e);
+        } catch (IOException e) {
+            logger.error("Error opening audio file.", e);
+        } catch (UnsupportedAudioFileException e) {
+            logger.error("Unsupported audio file format.", e);
         }
     }
 
@@ -463,7 +486,9 @@ public class Utils {
         logger.info("Loaded " + logFile);
         try {
             stream.close();
-        } catch (IOException e) { }
+        } catch (IOException e) {
+            logger.error("Error while closing resource file.", e);
+        }
     }
 
     /**
