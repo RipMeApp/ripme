@@ -20,7 +20,11 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+<<<<<<< HEAD
 import org.apache.commons.lang.SystemUtils;
+=======
+import org.apache.log4j.Level;
+>>>>>>> 23433dab09d0413390c684d9250d6afbfa7a5ca4
 import org.apache.log4j.Logger;
 
 import com.rarchives.ripme.ripper.AbstractRipper;
@@ -49,12 +53,33 @@ public class App {
             System.exit(-1);
         }
 
+<<<<<<< HEAD
+=======
+    public static void main(String[] args) {
+        CommandLine cl = null;
+        try {
+            cl = getArgs(args);
+        } catch (ParseException e) {
+            logger.error("Error while parsing command-line arguments: " + Arrays.toString(args), e);
+            System.exit(-1);
+        }
+
+>>>>>>> 23433dab09d0413390c684d9250d6afbfa7a5ca4
         if (args.length > 0 && cl.hasOption('v')){
             logger.info(UpdateUtils.getThisJarVersion());
             System.exit(0);
         }
 
+<<<<<<< HEAD
         if (GraphicsEnvironment.isHeadless() || args.length > 0) {
+=======
+        System.setProperty("apple.laf.useScreenMenuBar", "true");
+        System.setProperty("com.apple.mrj.application.apple.menu.about.name", "RipMe");
+        logger.info("Initialized ripme v" + UpdateUtils.getThisJarVersion());
+
+        if (args.length > 0) {
+            // CLI Mode
+>>>>>>> 23433dab09d0413390c684d9250d6afbfa7a5ca4
             handleArguments(cl);
         } else {
             if (SystemUtils.IS_OS_MAC_OSX) {
