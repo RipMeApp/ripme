@@ -24,6 +24,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import com.rarchives.ripme.ui.RipStatusMessage;
 import com.rarchives.ripme.utils.Utils;
+import java.util.HashMap;
 
 
 public class InstagramRipper extends AbstractHTMLRipper {
@@ -316,12 +317,15 @@ public class InstagramRipper extends AbstractHTMLRipper {
     @Override
     public Document getNextPage(Document doc) throws IOException {
         Document toreturn;
+        java.util.Map<String, String> cookies = new HashMap<String, String>();
+//        This shouldn't be hardcoded and will break one day
+        cookies.put("ig_pr", "1");
         if (!nextPageID.equals("") && !isThisATest()) {
             if (rippingTag) {
                 try {
                     sleep(2500);
                      toreturn = Http.url("https://www.instagram.com/graphql/query/?query_hash=" + qHash +
-                                     "&variables={\"tag_name\":\"" + tagName + "\",\"first\":4,\"after\":\"" + nextPageID + "\"}").ignoreContentType().get();
+                                     "&variables={\"tag_name\":\"" + tagName + "\",\"first\":4,\"after\":\"" + nextPageID + "\"}").cookies(cookies).ignoreContentType().get();
                     // Sleep for a while to avoid a ban
                     logger.info(toreturn.html());
                     return toreturn;
@@ -335,7 +339,7 @@ public class InstagramRipper extends AbstractHTMLRipper {
                 // Sleep for a while to avoid a ban
                 sleep(2500);
                 toreturn = Http.url("https://www.instagram.com/graphql/query/?query_hash=" + qHash + "&variables=" +
-                        "{\"id\":\"" + userID + "\",\"first\":100,\"after\":\"" + nextPageID + "\"}").ignoreContentType().get();
+                        "{\"id\":\"" + userID + "\",\"first\":100,\"after\":\"" + nextPageID + "\"}").cookies(cookies).ignoreContentType().get();
                 if (!pageHasImages(toreturn)) {
                     throw new IOException("No more pages");
                 }
