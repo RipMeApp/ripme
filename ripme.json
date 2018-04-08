@@ -1,6 +1,7 @@
 {
-    "latestVersion": "1.7.30",
+    "latestVersion": "1.7.31",
     "changeList": [
+        "1.7.31: InstaGram ripper no longer errors out when getting next page",
         "1.7.30: Fixed usage of command-line on non-headless systems",
         "1.7.29: Cano now download single images from imgur; Improved handling of headless mode & OS-specific config; Added modelx ripper; Fixed eroshae ripper",
         "1.7.28: IG ripper now uses display_url when downloading images; Reddit ripper now gets erome links; Hentaifoundry Ripper no longer errors out when there is no next page",
