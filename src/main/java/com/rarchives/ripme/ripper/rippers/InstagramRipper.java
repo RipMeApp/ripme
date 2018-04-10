@@ -3,6 +3,7 @@ package com.rarchives.ripme.ripper.rippers;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
@@ -12,6 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.security.*;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -20,6 +22,7 @@ import org.json.JSONObject;
 import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 import com.rarchives.ripme.utils.Http;
 
+import org.jsoup.Connection;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import com.rarchives.ripme.ui.RipStatusMessage;
@@ -34,6 +37,10 @@ public class InstagramRipper extends AbstractHTMLRipper {
     private String tagName;
 
     private String userID;
+    private String rhx_gis = null;
+    private String csrftoken;
+
+
 
     public InstagramRipper(URL url) throws IOException {
         super(url);
@@ -178,7 +185,10 @@ public class InstagramRipper extends AbstractHTMLRipper {
 
     @Override
     public Document getFirstPage() throws IOException {
-        Document p = Http.url(url).get();
+        Connection.Response resp = Http.url(url).response();
+        logger.info(resp.cookies());
+        csrftoken = resp.cookie("csrftoken");
+        Document p = resp.parse();
         // Get the query hash so we can download the next page
         qHash = getQHash(p);
         return p;
@@ -234,7 +244,10 @@ public class InstagramRipper extends AbstractHTMLRipper {
             logger.warn("Unable to exact json from page");
         }
 
-
+        // get the rhx_gis value so we can get the next page later on
+        if (rhx_gis == null) {
+            rhx_gis = json.getString("rhx_gis");
+        }
         if (!url.toExternalForm().contains("/p/")) {
             JSONArray datas = new JSONArray();
             if (!rippingTag) {
@@ -314,12 +327,33 @@ public class InstagramRipper extends AbstractHTMLRipper {
         return imageURLs;
     }
 
+    private String getIGGis(String variables) {
+        String stringToMD5 = rhx_gis + ":" + csrftoken + ":" + USER_AGENT + ":" + variables;
+        logger.debug("String to md5 is \"" + stringToMD5 + "\"");
+        try {
+            byte[] bytesOfMessage = stringToMD5.getBytes("UTF-8");
+
+            MessageDigest md = MessageDigest.getInstance("MD5");
+            byte[] hash = md.digest(bytesOfMessage);
+            StringBuffer sb = new StringBuffer();
+            for (int i = 0; i < hash.length; ++i) {
+                sb.append(Integer.toHexString((hash[i] & 0xFF) | 0x100).substring(1,3));
+            }
+            return sb.toString();
+        } catch(UnsupportedEncodingException e) {
+            return null;
+        } catch(NoSuchAlgorithmException e) {
+            return null;
+        }
+    }
+
     @Override
     public Document getNextPage(Document doc) throws IOException {
         Document toreturn;
         java.util.Map<String, String> cookies = new HashMap<String, String>();
 //        This shouldn't be hardcoded and will break one day
         cookies.put("ig_pr", "1");
+        cookies.put("csrftoken", csrftoken);
         if (!nextPageID.equals("") && !isThisATest()) {
             if (rippingTag) {
                 try {
@@ -338,8 +372,11 @@ public class InstagramRipper extends AbstractHTMLRipper {
             try {
                 // Sleep for a while to avoid a ban
                 sleep(2500);
-                toreturn = Http.url("https://www.instagram.com/graphql/query/?query_hash=" + qHash + "&variables=" +
-                        "{\"id\":\"" + userID + "\",\"first\":100,\"after\":\"" + nextPageID + "\"}").cookies(cookies).ignoreContentType().get();
+                String vars = "{\"id\":\"" + userID + "\",\"first\":100,\"after\":\"" + nextPageID + "\"}";
+                String ig_gis = getIGGis(vars);
+                logger.info(ig_gis);
+                toreturn = Http.url("https://www.instagram.com/graphql/query/?query_hash=" + qHash + "&variables=" + vars
+                        ).header("x-instagram-gis", ig_gis).cookies(cookies).ignoreContentType().get();
                 if (!pageHasImages(toreturn)) {
                     throw new IOException("No more pages");
                 }
@@ -358,7 +395,6 @@ public class InstagramRipper extends AbstractHTMLRipper {
     }
 
     private boolean pageHasImages(Document doc) {
-        logger.info("BAD DATA: " + stripHTMLTags(doc.html()));
         JSONObject json = new JSONObject(stripHTMLTags(doc.html()));
         int numberOfImages = json.getJSONObject("data").getJSONObject("user")
                 .getJSONObject("edge_owner_to_timeline_media").getJSONArray("edges").length();
