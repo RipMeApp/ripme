@@ -358,8 +358,10 @@ public class InstagramRipper extends AbstractHTMLRipper {
             if (rippingTag) {
                 try {
                     sleep(2500);
+                    String vars = "{\"tag_name\":\"" + tagName + "\",\"first\":4,\"after\":\"" + nextPageID + "\"}";
+                    String ig_gis = getIGGis(vars);
                      toreturn = Http.url("https://www.instagram.com/graphql/query/?query_hash=" + qHash +
-                                     "&variables={\"tag_name\":\"" + tagName + "\",\"first\":4,\"after\":\"" + nextPageID + "\"}").cookies(cookies).ignoreContentType().get();
+                                     "&variables=" + vars).header("x-instagram-gis", ig_gis).cookies(cookies).ignoreContentType().get();
                     // Sleep for a while to avoid a ban
                     logger.info(toreturn.html());
                     return toreturn;
