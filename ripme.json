@@ -1,6 +1,7 @@
 {
-    "latestVersion": "1.7.32",
+    "latestVersion": "1.7.33",
     "changeList": [
+        "1.7.33: Instagram ripper no longer errors out when downloading from more than 1 page",
         "1.7.32: Instagram ripper update to use new enpoints",
         "1.7.31: InstaGram ripper no longer errors out when getting next page",
         "1.7.30: Fixed usage of command-line on non-headless systems",
