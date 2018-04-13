@@ -14,9 +14,9 @@ import org.jsoup.nodes.Element;
 import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 import com.rarchives.ripme.utils.Http;
 
-public class Blackbrickroadofoz extends AbstractHTMLRipper {
+public class BlackbrickroadofozRipper extends AbstractHTMLRipper {
 
-    public Blackbrickroadofoz(URL url) throws IOException {
+    public BlackbrickroadofozRipper(URL url) throws IOException {
         super(url);
     }
 
