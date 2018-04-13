@@ -328,7 +328,7 @@ public class InstagramRipper extends AbstractHTMLRipper {
     }
 
     private String getIGGis(String variables) {
-        String stringToMD5 = rhx_gis + ":" + csrftoken + ":" + USER_AGENT + ":" + variables;
+        String stringToMD5 = rhx_gis + ":" + csrftoken + ":" + variables;
         logger.debug("String to md5 is \"" + stringToMD5 + "\"");
         try {
             byte[] bytesOfMessage = stringToMD5.getBytes("UTF-8");
