@@ -22,12 +22,12 @@ public class Blackbrickroadofoz extends AbstractHTMLRipper {
 
     @Override
     public String getHost() {
-        return "cfake";
+        return "blackbrickroadofoz";
     }
 
     @Override
     public String getDomain() {
-        return "cfake.com";
+        return "blackbrickroadofoz.com";
     }
 
     @Override
@@ -49,7 +49,8 @@ public class Blackbrickroadofoz extends AbstractHTMLRipper {
 
     @Override
     public Document getNextPage(Document doc) throws IOException {
-        Element elem = doc.select("nav.cc-nav > a.cc-next").first();
+        sleep(1000);
+        Element elem = doc.select("div[id=topnav] > nav.cc-nav > a.cc-next").first();
         if (elem == null) {
             throw new IOException("No more pages");
         }
@@ -67,8 +68,9 @@ public class Blackbrickroadofoz extends AbstractHTMLRipper {
     @Override
     public List<String> getURLsFromPage(Document doc) {
         List<String> result = new ArrayList<>();
-        Element elem = doc.select("img[id=cc-comic]").first();
-        result.add(elem.attr("src"));
+        Element elem = doc.select("div[id=cc-comicbody] > a > img[id=cc-comic]").first();
+        // The site doesn't return properly encoded urls we replace all spaces ( ) with %20
+        result.add(elem.attr("src").replaceAll(" ", "%20"));
 
         return result;
     }
