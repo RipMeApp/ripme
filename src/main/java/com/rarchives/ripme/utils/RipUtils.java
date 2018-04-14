@@ -9,19 +9,18 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.rarchives.ripme.ripper.AbstractRipper;
+import com.rarchives.ripme.ripper.rippers.EroShareRipper;
+import com.rarchives.ripme.ripper.rippers.EromeRipper;
+import com.rarchives.ripme.ripper.rippers.ImgurRipper;
+import com.rarchives.ripme.ripper.rippers.VidbleRipper;
+import com.rarchives.ripme.ripper.rippers.video.GfycatRipper;
 import org.apache.commons.lang.math.NumberUtils;
 import org.apache.log4j.Logger;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
-import com.rarchives.ripme.ripper.AbstractRipper;
-import com.rarchives.ripme.ripper.rippers.ImgurRipper;
-import com.rarchives.ripme.ripper.rippers.ImgurRipper.ImgurAlbum;
-import com.rarchives.ripme.ripper.rippers.ImgurRipper.ImgurImage;
-import com.rarchives.ripme.ripper.rippers.VidbleRipper;
-import com.rarchives.ripme.ripper.rippers.video.GfycatRipper;
-import com.rarchives.ripme.ripper.rippers.EroShareRipper;
 
 public class RipUtils {
     private static final Logger logger = Logger.getLogger(RipUtils.class);
@@ -35,8 +34,8 @@ public class RipUtils {
                 && url.toExternalForm().contains("imgur.com/a/")) {
             try {
                 logger.debug("Fetching imgur album at " + url);
-                ImgurAlbum imgurAlbum = ImgurRipper.getImgurAlbum(url);
-                for (ImgurImage imgurImage : imgurAlbum.images) {
+                ImgurRipper.ImgurAlbum imgurAlbum = ImgurRipper.getImgurAlbum(url);
+                for (ImgurRipper.ImgurImage imgurImage : imgurAlbum.images) {
                     logger.debug("Got imgur image: " + imgurImage.url);
                     result.add(imgurImage.url);
                 }
@@ -49,8 +48,8 @@ public class RipUtils {
             // Imgur image series.
             try {
                 logger.debug("Fetching imgur series at " + url);
-                ImgurAlbum imgurAlbum = ImgurRipper.getImgurSeries(url);
-                for (ImgurImage imgurImage : imgurAlbum.images) {
+                ImgurRipper.ImgurAlbum imgurAlbum = ImgurRipper.getImgurSeries(url);
+                for (ImgurRipper.ImgurImage imgurImage : imgurAlbum.images) {
                     logger.debug("Got imgur image: " + imgurImage.url);
                     result.add(imgurImage.url);
                 }
@@ -91,6 +90,21 @@ public class RipUtils {
             return result;
         }
 
+        else if (url.toExternalForm().contains("erome.com")) {
+            try {
+                logger.info("Getting eroshare album " + url);
+                EromeRipper r = new EromeRipper(url);
+                Document tempDoc = r.getFirstPage();
+                for (String u : r.getURLsFromPage(tempDoc)) {
+                    result.add(new URL(u));
+                }
+            } catch (IOException e) {
+                // Do nothing
+                logger.warn("Exception while retrieving eroshare page:", e);
+            }
+            return result;
+        }
+
         Pattern p = Pattern.compile("https?://i.reddituploads.com/([a-zA-Z0-9]+)\\?.*");
         Matcher m = p.matcher(url.toExternalForm());
         if (m.matches()) {
@@ -122,8 +136,8 @@ public class RipUtils {
             try {
                 // Fetch the page
                 Document doc = Jsoup.connect(url.toExternalForm())
-                                    .userAgent(AbstractRipper.USER_AGENT)
-                                    .get();
+                        .userAgent(AbstractRipper.USER_AGENT)
+                        .get();
                 for (Element el : doc.select("meta")) {
                     if (el.attr("name").equals("twitter:image:src")) {
                         result.add(new URL(el.attr("content")));
