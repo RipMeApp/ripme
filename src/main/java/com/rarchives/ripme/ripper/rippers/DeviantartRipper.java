@@ -128,7 +128,7 @@ public class DeviantartRipper extends AbstractHTMLRipper {
             // Attempt Login
             try {
                 cookies = loginToDeviantart();
-            } catch (Exception e) {
+            } catch (IOException e) {
                 logger.warn("Failed to login: ", e);
                 cookies.put("agegate_state","1"); // Bypasses the age gate
             }
