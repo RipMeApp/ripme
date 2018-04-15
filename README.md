@@ -30,8 +30,6 @@ For information about running the `.jar` file, see [the How To Run wiki](https:/
 
 ## [Changelog](https://github.com/ripmeapp/ripme/blob/master/ripme.json) (ripme.json)
 
-## [Website](http://rip.rarchives.com/)
-
 # Features
 
 * Quickly downloads all images in an online album (see supported sites below)
