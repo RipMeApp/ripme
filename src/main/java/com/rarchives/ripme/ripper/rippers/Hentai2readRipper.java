@@ -33,7 +33,7 @@ public class Hentai2readRipper extends AbstractHTMLRipper {
 
         @Override
         public String getGID(URL url) throws MalformedURLException {
-            Pattern p = Pattern.compile("https://hentai2read\\.com/([a-zA-Z0-9_-]*)/?");
+            Pattern p = Pattern.compile("https?://hentai2read\\.com/([a-zA-Z0-9_-]*)/\\d/?");
             Matcher m = p.matcher(url.toExternalForm());
             if (m.matches()) {
                 return m.group(1);
@@ -63,9 +63,7 @@ public class Hentai2readRipper extends AbstractHTMLRipper {
         @Override
         public String getAlbumTitle(URL url) throws MalformedURLException {
             try {
-                Document doc = getFirstPage();
-                String title = doc.select("span[itemprop=title]").text();
-                return getHost() + "_" + title;
+                return getHost() + "_" + getGID(url);
             } catch (Exception e) {
                 // Fall back to default album naming convention
                 logger.warn("Failed to get album title from " + url, e);
