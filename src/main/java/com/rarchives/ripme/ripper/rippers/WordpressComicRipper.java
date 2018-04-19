@@ -247,7 +247,7 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
             nextPage = elem.attr("href");
         }
 
-        if (nextPage == "") {
+        if (nextPage.equals("")) {
             throw new IOException("No more pages");
         } else {
             return Http.url(nextPage).get();
