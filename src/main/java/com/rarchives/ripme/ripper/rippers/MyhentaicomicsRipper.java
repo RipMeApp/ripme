@@ -73,7 +73,7 @@ public class MyhentaicomicsRipper extends AbstractHTMLRipper {
             if (m.matches()) {
                 nextUrl = "http://myhentaicomics.com" + m.group(0);
                 }
-            if (nextUrl == "") {
+            if (nextUrl.equals("")) {
                 throw new IOException("No more pages");
             }
             // Sleep for half a sec to avoid getting IP banned
@@ -100,7 +100,7 @@ public class MyhentaicomicsRipper extends AbstractHTMLRipper {
                 Element elem = nextAlbumPage.select("a.ui-icon-right").first();
                 String nextPage = elem.attr("href");
                 pageNumber = pageNumber + 1;
-                if (nextPage == "") {
+                if (nextPage.equals("")) {
                     logger.info("Got " + pageNumber + " pages");
                     break;
                 }
@@ -220,7 +220,7 @@ public class MyhentaicomicsRipper extends AbstractHTMLRipper {
         // If true the page is a page of albums
         if (doc.toString().contains("class=\"g-item g-album\"")) {
             // This if checks that there is more than 1 page
-            if (doc.select("a.ui-icon-right").last().attr("href") != "") {
+            if (!doc.select("a.ui-icon-right").last().attr("href").equals("")) {
                 // There is more than one page so we call getListOfPages
                 List<String> pagesToRip = getListOfPages(doc);
                 logger.debug("Pages to rip = " + pagesToRip);
