@@ -374,7 +374,7 @@ public class InstagramRipper extends AbstractHTMLRipper {
             try {
                 // Sleep for a while to avoid a ban
                 sleep(2500);
-                String vars = "{\"id\":\"" + userID + "\",\"first\":100,\"after\":\"" + nextPageID + "\"}";
+                String vars = "{\"id\":\"" + userID + "\",\"first\":50,\"after\":\"" + nextPageID + "\"}";
                 String ig_gis = getIGGis(vars);
                 logger.info(ig_gis);
                 toreturn = Http.url("https://www.instagram.com/graphql/query/?query_hash=" + qHash + "&variables=" + vars
