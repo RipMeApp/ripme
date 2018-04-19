@@ -327,8 +327,14 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
                 || getHost().contains("themonsterunderthebed.net")) {
             addURLToDownload(url, pageTitle + "_");
         }
-        // If we're ripping a site where we can't get the page number/title we just rip normally
-        addURLToDownload(url, getPrefix(index));
+        if (getHost().contains("tnbtu.com")) {
+            // We need to set the referrer header for tnbtu
+            addURLToDownload(url, getPrefix(index), "","http://www.tnbtu.com/comic", null);
+        } else {
+            // If we're ripping a site where we can't get the page number/title we just rip normally
+            addURLToDownload(url, getPrefix(index));
+        }
+
     }
 
     @Override
