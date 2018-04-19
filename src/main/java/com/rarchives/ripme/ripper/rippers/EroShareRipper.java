@@ -86,7 +86,7 @@ public class EroShareRipper extends AbstractHTMLRipper {
             throw new IOException("No more pages");
         }
             nextUrl = elem.attr("href");
-            if (nextUrl == "") {
+            if (nextUrl.equals("")) {
                 throw new IOException("No more pages");
             }
             return Http.url("eroshae.com" + nextUrl).get();

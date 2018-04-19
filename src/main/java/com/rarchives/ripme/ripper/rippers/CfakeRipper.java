@@ -59,7 +59,7 @@ public class CfakeRipper extends AbstractHTMLRipper {
                 String nextPage = elem.attr("href");
                 // Some times this returns a empty string
                 // This for stops that
-                if (nextPage == "") {
+                if (nextPage.equals("")) {
                     return null;
                 }
                 else {
