@@ -52,16 +52,16 @@ public class HentaifoundryRipper extends AbstractHTMLRipper {
         Response resp = Http.url("http://www.hentai-foundry.com/").response();
         cookies = resp.cookies();
         resp = Http.url("http://www.hentai-foundry.com/?enterAgree=1&size=1500")
-                   .referrer("http://www.hentai-foundry.com/")
-                   .cookies(cookies)
-                   .response();
+                .referrer("http://www.hentai-foundry.com/")
+                .cookies(cookies)
+                .response();
         // The only cookie that seems to matter in getting around the age wall is the phpsession cookie
         cookies.putAll(resp.cookies());
         sleep(500);
         resp = Http.url(url)
-                   .referrer("http://www.hentai-foundry.com/")
-                   .cookies(cookies)
-                   .response();
+                .referrer("http://www.hentai-foundry.com/")
+                .cookies(cookies)
+                .response();
         cookies.putAll(resp.cookies());
         return resp.parse();
     }
@@ -74,12 +74,16 @@ public class HentaifoundryRipper extends AbstractHTMLRipper {
         }
         Elements els = doc.select("li.next > a");
         Element first = els.first();
-        String nextURL = first.attr("href");
-        nextURL = "http://www.hentai-foundry.com" + nextURL;
-        return Http.url(nextURL)
-                   .referrer(url)
-                   .cookies(cookies)
-                   .get();
+        try {
+            String nextURL = first.attr("href");
+            nextURL = "http://www.hentai-foundry.com" + nextURL;
+            return Http.url(nextURL)
+                    .referrer(url)
+                    .cookies(cookies)
+                    .get();
+        } catch (NullPointerException e) {
+            throw new IOException("No more pages");
+        }
     }
 
     @Override
@@ -97,13 +101,6 @@ public class HentaifoundryRipper extends AbstractHTMLRipper {
             }
             Document imagePage;
             try {
-                Response resp = Http.url("http://www.hentai-foundry.com/").response();
-                cookies = resp.cookies();
-                resp = Http.url("http://www.hentai-foundry.com/?enterAgree=1&size=1500")
-                           .referrer("http://www.hentai-foundry.com/")
-                           .cookies(cookies)
-                           .response();
-                cookies.putAll(resp.cookies());
 
                 logger.info("grabbing " + "http://www.hentai-foundry.com" + thumb.attr("href"));
                 imagePage = Http.url("http://www.hentai-foundry.com" + thumb.attr("href")).cookies(cookies).get();
