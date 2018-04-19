@@ -33,7 +33,7 @@ public class Hentai2readRipper extends AbstractHTMLRipper {
 
         @Override
         public String getGID(URL url) throws MalformedURLException {
-            Pattern p = Pattern.compile("https?://hentai2read\\.com/([a-zA-Z0-9_-]*)/\\d/?");
+            Pattern p = Pattern.compile("https?://hentai2read\\.com/([a-zA-Z0-9_-]*)/(\\d)?/?");
             Matcher m = p.matcher(url.toExternalForm());
             if (m.matches()) {
                 return m.group(1);
