@@ -101,13 +101,6 @@ public class HentaifoundryRipper extends AbstractHTMLRipper {
             }
             Document imagePage;
             try {
-                Response resp = Http.url("http://www.hentai-foundry.com/").response();
-                cookies = resp.cookies();
-                resp = Http.url("http://www.hentai-foundry.com/?enterAgree=1&size=1500")
-                        .referrer("http://www.hentai-foundry.com/")
-                        .cookies(cookies)
-                        .response();
-                cookies.putAll(resp.cookies());
 
                 logger.info("grabbing " + "http://www.hentai-foundry.com" + thumb.attr("href"));
                 imagePage = Http.url("http://www.hentai-foundry.com" + thumb.attr("href")).cookies(cookies).get();
