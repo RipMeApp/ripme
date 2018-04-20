@@ -83,6 +83,12 @@ public class WordpressComicRipperTest extends RippersTest {
                 new URL("http://tnbtu.com/comic/01-00/"));
         testRipper(ripper);
     }
+
+    public void test_Eightmuses_download() throws IOException {
+        WordpressComicRipper ripper = new WordpressComicRipper(
+                new URL("https://8muses.download/lustomic-playkittens-josh-samuel-porn-comics-8-muses/"));
+        testRipper(ripper);
+    }
     // https://github.com/RipMeApp/ripme/issues/269 - Disabled test - WordpressRipperTest: various domains flaky in CI
 //    public void test_pepsaga() throws IOException {
 //        WordpressComicRipper ripper = new WordpressComicRipper(

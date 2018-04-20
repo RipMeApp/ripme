@@ -57,7 +57,7 @@ public class SinfestRipper extends AbstractHTMLRipper {
         String nextPage = elem.parent().attr("href");
         // Some times this returns a empty string
         // This for stops that
-        if (nextPage == "") {
+        if (nextPage.equals("")) {
             return null;
         }
         else {

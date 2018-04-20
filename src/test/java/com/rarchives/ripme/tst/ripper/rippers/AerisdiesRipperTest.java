@@ -3,7 +3,7 @@ package com.rarchives.ripme.tst.ripper.rippers;
 import java.io.IOException;
 import java.net.URL;
 
-import com.rarchives.ripme.ripper.rippers.AerisdiesRipper;;
+import com.rarchives.ripme.ripper.rippers.AerisdiesRipper;
 
 public class AerisdiesRipperTest extends RippersTest {
     public void testAlbum() throws IOException {
