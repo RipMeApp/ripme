@@ -3,7 +3,6 @@ package com.rarchives.ripme.ripper.rippers.video;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLDecoder;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 

@@ -55,14 +55,8 @@ public class BlackbrickroadofozRipper extends AbstractHTMLRipper {
             throw new IOException("No more pages");
         }
         String nextPage = elem.attr("href");
-        // Some times this returns a empty string
-        // This for stops that
-        if (nextPage == "") {
-            throw new IOException("No more pages");
-        }
-        else {
-            return Http.url(nextPage).get();
-        }
+        return Http.url(nextPage).get();
+
     }
 
     @Override
