@@ -48,6 +48,12 @@ public class App {
             System.exit(0);
         }
 
+        if (Utils.getConfigString("proxy.http", null) != null) {
+            Proxy.setHTTPProxy(Utils.getConfigString("proxy.http", null));
+        } else if (Utils.getConfigString("proxy.socks", null) != null) {
+            Proxy.setSocks(Utils.getConfigString("proxy.socks", null));
+        }
+
         if (GraphicsEnvironment.isHeadless() || args.length > 0) {
             handleArguments(args);
         } else {
