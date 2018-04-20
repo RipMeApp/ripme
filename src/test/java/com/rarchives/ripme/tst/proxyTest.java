@@ -9,8 +9,14 @@ import com.rarchives.ripme.utils.Http;
 
 
 public class proxyTest  extends TestCase {
+
+
     // This test will only run on machines where the user has added a entry for proxy.socks
     public void testSocksProxy() throws IOException {
+        // Unset proxy before testing
+        System.setProperty("http.proxyHost", "");
+        System.setProperty("https.proxyHost", "");
+        System.setProperty("socksProxyHost", "");
         URL url = new URL("https://icanhazip.com");
         String proxyConfig = Utils.getConfigString("proxy.socks", "");
         if (!proxyConfig.equals("")) {
@@ -26,6 +32,10 @@ public class proxyTest  extends TestCase {
 
     // This test will only run on machines where the user has added a entry for proxy.http
     public void testHTTPProxy() throws IOException {
+        // Unset proxy before testing
+        System.setProperty("http.proxyHost", "");
+        System.setProperty("https.proxyHost", "");
+        System.setProperty("socksProxyHost", "");
         URL url = new URL("https://icanhazip.com");
         String proxyConfig = Utils.getConfigString("proxy.http", "");
         if (!proxyConfig.equals("")) {
