@@ -7,7 +7,9 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.FileNotFoundException;
 
+import java.net.Authenticator;
 import java.net.MalformedURLException;
+import java.net.PasswordAuthentication;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
@@ -93,6 +95,30 @@ public class App {
 
         if (cl.hasOption('w')) {
             Utils.setConfigBoolean("file.overwrite", true);
+        }
+        
+        if (cl.hasOption('s')) {
+            String sservfull = cl.getOptionValue('s').trim();
+            if (sservfull.lastIndexOf("@") != -1) {
+                int sservli = sservfull.lastIndexOf("@");
+                String userpw = sservfull.substring(0, sservli);
+                String[] usersplit = userpw.split(":");
+                String user = usersplit[0];
+                String password = usersplit[1];
+                Authenticator.setDefault(new Authenticator(){
+                    protected  PasswordAuthentication  getPasswordAuthentication(){
+                        PasswordAuthentication p = new PasswordAuthentication(user, password.toCharArray());
+                        return p;
+                    }
+                });
+                
+                sservfull = sservfull.substring(sservli + 1);
+            }
+            String[] servsplit = sservfull.split(":");
+            if (servsplit.length == 2) {
+                System.setProperty("socksProxyPort", servsplit[1]);
+            }
+            System.setProperty("socksProxyHost", servsplit[0]);
         }
 
         if (cl.hasOption('t')) {
@@ -195,6 +221,7 @@ public class App {
             String url = cl.getOptionValue('u').trim();
             ripURL(url, cl.hasOption("n"));
         }
+        
     }
 
     /**
@@ -242,6 +269,7 @@ public class App {
         opts.addOption("n", "no-prop-file", false, "Do not create properties file.");
         opts.addOption("f", "urls-file", true, "Rip URLs from a file.");
         opts.addOption("v", "version", false, "Show current version");
+        opts.addOption("s", "socks-server", true, "Use socks server ([user:password]@host[:port]");
         return opts;
     }
 

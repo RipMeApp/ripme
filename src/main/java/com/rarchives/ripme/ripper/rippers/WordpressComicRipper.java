@@ -44,7 +44,8 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
         "freeadultcomix.com",
         "thisis.delvecomic.com",
         "tnbtu.com",
-        "shipinbottle.pepsaga.com"
+        "shipinbottle.pepsaga.com",
+            "8muses.download"
     );
 
     @Override
@@ -135,6 +136,12 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
             if (shipinbottleMat.matches()) {
                 return true;
             }
+
+            Pattern eight_musesPat = Pattern.compile("https?://8muses.download/([a-zA-Z0-9_-]+)/?$");
+            Matcher eight_musesMat = eight_musesPat.matcher(url.toExternalForm());
+            if (eight_musesMat.matches()) {
+                return true;
+            }
         }
 
 
@@ -209,6 +216,11 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
             return getHost() + "_" + "Ship_in_bottle";
         }
 
+        Pattern eight_musesPat = Pattern.compile("https?://8muses.download/([a-zA-Z0-9_-]+)/?$");
+        Matcher eight_musesMat = eight_musesPat.matcher(url.toExternalForm());
+        if (eight_musesMat.matches()) {
+            return getHost() + "_" + eight_musesMat.group(1);
+        }
         return super.getAlbumTitle(url);
     }
 
@@ -247,7 +259,7 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
             nextPage = elem.attr("href");
         }
 
-        if (nextPage == "") {
+        if (nextPage.equals("")) {
             throw new IOException("No more pages");
         } else {
             return Http.url(nextPage).get();
@@ -315,6 +327,12 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
             }
         }
 
+        if (url.toExternalForm().contains("8muses.download")) {
+            for (Element elem : doc.select("div.popup-gallery > figure > a")) {
+                result.add(elem.attr("href"));
+            }
+        }
+
         return result;
     }
 
@@ -327,8 +345,14 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
                 || getHost().contains("themonsterunderthebed.net")) {
             addURLToDownload(url, pageTitle + "_");
         }
-        // If we're ripping a site where we can't get the page number/title we just rip normally
-        addURLToDownload(url, getPrefix(index));
+        if (getHost().contains("tnbtu.com")) {
+            // We need to set the referrer header for tnbtu
+            addURLToDownload(url, getPrefix(index), "","http://www.tnbtu.com/comic", null);
+        } else {
+            // If we're ripping a site where we can't get the page number/title we just rip normally
+            addURLToDownload(url, getPrefix(index));
+        }
+
     }
 
     @Override
