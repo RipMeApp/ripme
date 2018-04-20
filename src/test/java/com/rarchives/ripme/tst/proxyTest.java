@@ -9,13 +9,13 @@ import com.rarchives.ripme.utils.Http;
 
 
 public class proxyTest  extends TestCase {
-    // This test will only run on machines where the user has added a entry for socks.server
+    // This test will only run on machines where the user has added a entry for proxy.socks
     public void testSocksProxy() throws IOException {
         URL url = new URL("https://icanhazip.com");
-        String proxyConfig = Utils.getConfigString("socks.server", "");
+        String proxyConfig = Utils.getConfigString("proxy.socks", "");
         if (!proxyConfig.equals("")) {
             String ip1 = Http.url(url).ignoreContentType().get().text();
-            Proxy.setSocks(Utils.getConfigString("socks.server", ""));
+            Proxy.setSocks(Utils.getConfigString("proxy.socks", ""));
             String ip2 = Http.url(url).ignoreContentType().get().text();
             assertFalse(ip1.equals(ip2));
         } else {
@@ -24,13 +24,13 @@ public class proxyTest  extends TestCase {
         }
     }
 
-    // This test will only run on machines where the user has added a entry for proxy.server
+    // This test will only run on machines where the user has added a entry for proxy.http
     public void testHTTPProxy() throws IOException {
         URL url = new URL("https://icanhazip.com");
-        String proxyConfig = Utils.getConfigString("proxy.server", "");
+        String proxyConfig = Utils.getConfigString("proxy.http", "");
         if (!proxyConfig.equals("")) {
             String ip1 = Http.url(url).ignoreContentType().get().text();
-            Proxy.setHTTPProxy(Utils.getConfigString("proxy.server", ""));
+            Proxy.setHTTPProxy(Utils.getConfigString("proxy.http", ""));
             String ip2 = Http.url(url).ignoreContentType().get().text();
             assertFalse(ip1.equals(ip2));
         } else {
