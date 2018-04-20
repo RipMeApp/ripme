@@ -5,9 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Constructor;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.net.URLDecoder;
+import java.net.*;
 import java.util.*;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -90,6 +88,34 @@ public class Utils {
             workingDir.mkdirs();
         }
         return workingDir;
+    }
+
+    /**
+     * Set the socks proxy to use
+     * @param proxyString proxy to use in format [user:password]@host[:port]
+     */
+    public static void setProxy(String proxyString) {
+        String sservfull = proxyString.trim();
+        if (sservfull.lastIndexOf("@") != -1) {
+            int sservli = sservfull.lastIndexOf("@");
+            String userpw = sservfull.substring(0, sservli);
+            String[] usersplit = userpw.split(":");
+            String user = usersplit[0];
+            String password = usersplit[1];
+            Authenticator.setDefault(new Authenticator(){
+                protected PasswordAuthentication getPasswordAuthentication(){
+                    PasswordAuthentication p = new PasswordAuthentication(user, password.toCharArray());
+                    return p;
+                }
+            });
+
+            sservfull = sservfull.substring(sservli + 1);
+        }
+        String[] servsplit = sservfull.split(":");
+        if (servsplit.length == 2) {
+            System.setProperty("socksProxyPort", servsplit[1]);
+        }
+        System.setProperty("socksProxyHost", servsplit[0]);
     }
 
     public static String getConfigString(String key, String defaultValue) {
