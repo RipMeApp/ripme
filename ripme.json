@@ -1,6 +1,7 @@
 {
-    "latestVersion": "1.7.37",
+    "latestVersion": "1.7.38",
     "changeList": [
+        "1.7.38: Added http and socks proxy support; Extended some unit tests to include getGid; Added HitomiRipper; hentaifoundry ripper now can rip all images from accounts",
         "1.7.37: MInor code clean up; Added socks proxy support; Added support for 8muses.download; Hentaifoundry no longer errors when there are no more pages; Fix bug that causes tumblr to replace https with httpss when downloading resized images",
         "1.7.36: Fixed Instagram ripper; Fixed hentai2read ripper test; Fixed tnbtu.com ripper",
         "1.7.35: Fixed instagram ripper; hentai2read ripper now properly names folders",
