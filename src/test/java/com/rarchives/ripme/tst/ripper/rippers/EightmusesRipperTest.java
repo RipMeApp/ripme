@@ -17,4 +17,9 @@ public class EightmusesRipperTest extends RippersTest {
         ripper = new EightmusesRipper(new URL("https://www.8muses.com/comix/album/Blacknwhitecomics_com-Comix/BlacknWhiteComics/The-Mayor"));
         testRipper(ripper);
     }
+
+    public void testGID() throws IOException {
+        EightmusesRipper ripper = new EightmusesRipper(new URL("https://www.8muses.com/comix/album/Affect3D-Comics/TheDude3DX/Lust-Unleashed-The-Urge-To-Explore"));
+        assertEquals("Affect3D-Comics", ripper.getGID(new URL("https://www.8muses.com/comics/album/Affect3D-Comics/TheDude3DX/Lust-Unleashed-The-Urge-To-Explore")));
+    }
 }
