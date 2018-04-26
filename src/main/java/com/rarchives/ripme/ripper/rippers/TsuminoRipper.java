@@ -17,7 +17,6 @@ import org.json.JSONObject;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
 
 
 import com.rarchives.ripme.ripper.AbstractHTMLRipper;
@@ -35,13 +34,10 @@ public class TsuminoRipper extends AbstractHTMLRipper {
         try {
             // This sessionId will expire and need to be replaced
             cookies.put("ASP.NET_SessionId","c4rbzccf0dvy3e0cloolmlkq");
-            logger.info(cookies);
             Document doc = Jsoup.connect(postURL).data("q", getAlbumID()).userAgent(USER_AGENT).cookies(cookies).referrer("http://www.tsumino.com/Read/View/" + getAlbumID()).post();
             String jsonInfo = doc.html().replaceAll("<html>","").replaceAll("<head></head>", "").replaceAll("<body>", "").replaceAll("</body>", "")
                     .replaceAll("</html>", "").replaceAll("\n", "");
-            logger.info(jsonInfo);
             JSONObject json = new JSONObject(jsonInfo);
-            logger.info(json.getJSONArray("reader_page_urls"));
             return json.getJSONArray("reader_page_urls");
         } catch (IOException e) {
             logger.info(e);
@@ -85,7 +81,6 @@ public class TsuminoRipper extends AbstractHTMLRipper {
     public Document getFirstPage() throws IOException {
         Connection.Response resp = Http.url(url).response();
         cookies.putAll(resp.cookies());
-        logger.info(resp.parse());
         return resp.parse();
     }
 
@@ -103,6 +98,6 @@ public class TsuminoRipper extends AbstractHTMLRipper {
     @Override
     public void downloadURL(URL url, int index) {
         sleep(1000);
-        addURLToDownload(url, getPrefix(index));
+        addURLToDownload(url, getPrefix(index), "", null, null, null, "png");
     }
 }
