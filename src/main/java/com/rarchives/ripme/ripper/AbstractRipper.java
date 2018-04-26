@@ -212,7 +212,7 @@ public abstract class AbstractRipper
      *      True if downloaded successfully
      *      False if failed to download
      */
-    protected boolean addURLToDownload(URL url, String prefix, String subdirectory, String referrer, Map<String, String> cookies, String fileName) {
+    protected boolean addURLToDownload(URL url, String prefix, String subdirectory, String referrer, Map<String, String> cookies, String fileName, String extension) {
         // Don't re-add the url if it was downloaded in a previous rip
         if (Utils.getConfigBoolean("remember.url_history", true) && !isThisATest()) {
             if (hasDownloadedURL(url.toExternalForm())) {
@@ -228,21 +228,7 @@ public abstract class AbstractRipper
             return false;
         }
         logger.debug("url: " + url + ", prefix: " + prefix + ", subdirectory" + subdirectory + ", referrer: " + referrer + ", cookies: " + cookies + ", fileName: " + fileName);
-        String saveAs;
-        if (fileName != null) {
-            saveAs = fileName;
-            // Get the extension of the file
-            String extension = url.toExternalForm().substring(url.toExternalForm().lastIndexOf(".") + 1);
-            saveAs = saveAs + "." + extension;
-        } else {
-            saveAs = url.toExternalForm();
-            saveAs = saveAs.substring(saveAs.lastIndexOf('/')+1);
-        }
-
-        if (saveAs.indexOf('?') >= 0) { saveAs = saveAs.substring(0, saveAs.indexOf('?')); }
-        if (saveAs.indexOf('#') >= 0) { saveAs = saveAs.substring(0, saveAs.indexOf('#')); }
-        if (saveAs.indexOf('&') >= 0) { saveAs = saveAs.substring(0, saveAs.indexOf('&')); }
-        if (saveAs.indexOf(':') >= 0) { saveAs = saveAs.substring(0, saveAs.indexOf(':')); }
+        String saveAs = getFileName(url, fileName, extension);
         File saveFileAs;
         try {
             if (!subdirectory.equals("")) {
@@ -272,6 +258,10 @@ public abstract class AbstractRipper
             }
         }
         return addURLToDownload(url, saveFileAs, referrer, cookies);
+    }
+
+    protected boolean addURLToDownload(URL url, String prefix, String subdirectory, String referrer, Map<String, String> cookies, String fileName) {
+        return addURLToDownload(url, prefix, subdirectory, referrer, cookies, fileName, null);
     }
 
     /**
@@ -304,6 +294,35 @@ public abstract class AbstractRipper
     protected boolean addURLToDownload(URL url, String prefix) {
         // Use empty subdirectory
         return addURLToDownload(url, prefix, "");
+    }
+
+    public static String getFileName(URL url, String fileName, String extension) {
+        String saveAs;
+        if (fileName != null) {
+            saveAs = fileName;
+        } else {
+            saveAs = url.toExternalForm();
+            saveAs = saveAs.substring(saveAs.lastIndexOf('/')+1);
+        }
+        if (extension == null) {
+            // Get the extension of the file
+            String[] lastBitOfURL = url.toExternalForm().split("/");
+
+            String[] lastBit = lastBitOfURL[lastBitOfURL.length - 1].split(".");
+            if (lastBit.length != 0) {
+                extension = lastBit[lastBit.length - 1];
+                saveAs = saveAs + "." + extension;
+            }
+        }
+
+        if (saveAs.indexOf('?') >= 0) { saveAs = saveAs.substring(0, saveAs.indexOf('?')); }
+        if (saveAs.indexOf('#') >= 0) { saveAs = saveAs.substring(0, saveAs.indexOf('#')); }
+        if (saveAs.indexOf('&') >= 0) { saveAs = saveAs.substring(0, saveAs.indexOf('&')); }
+        if (saveAs.indexOf(':') >= 0) { saveAs = saveAs.substring(0, saveAs.indexOf(':')); }
+        if (extension != null) {
+            saveAs = saveAs + "." + extension;
+        }
+        return saveAs;
     }
 
 
