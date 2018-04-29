@@ -1,6 +1,7 @@
 {
-    "latestVersion": "1.7.39",
+    "latestVersion": "1.7.40",
     "changeList": [
+        "1.7.40: Added hypnohub.net ripper; Fixed rule34.xxx ripper; Tsumino Ripper now add .png to filenames",
         "1.7.39: Added rule34.xxx ripper; Added Gfycatporntube.com ripper; Fixed AbstractRipper subdir bug; Added AbstractRipper unit tests",
         "1.7.38: Added http and socks proxy support; Extended some unit tests to include getGid; Added HitomiRipper; hentaifoundry ripper now can rip all images from accounts",
         "1.7.37: MInor code clean up; Added socks proxy support; Added support for 8muses.download; Hentaifoundry no longer errors when there are no more pages; Fix bug that causes tumblr to replace https with httpss when downloading resized images",
