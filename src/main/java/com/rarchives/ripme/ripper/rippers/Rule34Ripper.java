@@ -34,6 +34,16 @@ public class Rule34Ripper extends AbstractHTMLRipper {
     }
 
     @Override
+    public boolean canRip(URL url){
+        Pattern p = Pattern.compile("https?://rule34.xxx/index.php\\?page=post&s=list&tags=([\\S]+)");
+        Matcher m = p.matcher(url.toExternalForm());
+        if (m.matches()) {
+            return true;
+        }
+        return false;
+    }
+
+    @Override
     public String getGID(URL url) throws MalformedURLException {
         Pattern p = Pattern.compile("https?://rule34.xxx/index.php\\?page=post&s=list&tags=([\\S]+)");
         Matcher m = p.matcher(url.toExternalForm());
@@ -41,7 +51,7 @@ public class Rule34Ripper extends AbstractHTMLRipper {
             return m.group(1);
         }
         throw new MalformedURLException("Expected rule34.xxx URL format: " +
-                "rule34.xxx/index.php\\?page=post&s=list&tags=TAG - got " + url + " instead");
+                "rule34.xxx/index.php?page=post&s=list&tags=TAG - got " + url + " instead");
     }
 
     public URL getAPIUrl() throws MalformedURLException {
