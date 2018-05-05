@@ -10,6 +10,7 @@ import java.util.Map;
 import com.rarchives.ripme.ui.RipStatusMessage;
 import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
 import com.rarchives.ripme.utils.Utils;
+import com.sun.org.apache.xpath.internal.operations.Bool;
 
 public abstract class VideoRipper extends AbstractRipper {
 
@@ -70,7 +71,7 @@ public abstract class VideoRipper extends AbstractRipper {
     }
 
     @Override
-    public boolean addURLToDownload(URL url, File saveAs, String referrer, Map<String,String> cookies) {
+    public boolean addURLToDownload(URL url, File saveAs, String referrer, Map<String,String> cookies, Boolean getFileExtFromMIME) {
         return addURLToDownload(url, saveAs);
     }
 
