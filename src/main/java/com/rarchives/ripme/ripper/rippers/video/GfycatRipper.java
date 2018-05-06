@@ -71,9 +71,9 @@ public class GfycatRipper extends VideoRipper {
         url = new URL(url.toExternalForm().replace("/gifs/detail", ""));
         
         Document doc = Http.url(url).get();
-        Elements videos = doc.select("source#mp4Source");
+        Elements videos = doc.select("source[type='video/mp4']");
         if (videos.size() == 0) {
-            throw new IOException("Could not find source#mp4source at " + url);
+            throw new IOException("Could not find source[type='video/mp4'] at " + url);
         }
         String vidUrl = videos.first().attr("src");
         if (vidUrl.startsWith("//")) {
