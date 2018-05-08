@@ -192,7 +192,8 @@ public abstract class AbstractRipper
      *      True if downloaded successfully
      *      False if failed to download
      */
-    protected abstract boolean addURLToDownload(URL url, File saveAs, String referrer, Map<String, String> cookies);
+    protected abstract boolean addURLToDownload(URL url, File saveAs, String referrer, Map<String, String> cookies,
+                                                Boolean getFileExtFromMIME);
 
     /**
      * Queues image to be downloaded and saved.
@@ -212,7 +213,7 @@ public abstract class AbstractRipper
      *      True if downloaded successfully
      *      False if failed to download
      */
-    protected boolean addURLToDownload(URL url, String prefix, String subdirectory, String referrer, Map<String, String> cookies, String fileName, String extension) {
+    protected boolean addURLToDownload(URL url, String prefix, String subdirectory, String referrer, Map<String, String> cookies, String fileName, String extension, Boolean getFileExtFromMIME) {
         // Don't re-add the url if it was downloaded in a previous rip
         if (Utils.getConfigBoolean("remember.url_history", true) && !isThisATest()) {
             if (hasDownloadedURL(url.toExternalForm())) {
@@ -257,7 +258,11 @@ public abstract class AbstractRipper
                 logger.debug("Unable to write URL history file");
             }
         }
-        return addURLToDownload(url, saveFileAs, referrer, cookies);
+        return addURLToDownload(url, saveFileAs, referrer, cookies, getFileExtFromMIME);
+    }
+
+    protected boolean addURLToDownload(URL url, String prefix, String subdirectory, String referrer, Map<String,String> cookies, String fileName, String extension) {
+        return addURLToDownload(url, prefix, subdirectory, referrer, cookies, fileName, extension, false);
     }
 
     protected boolean addURLToDownload(URL url, String prefix, String subdirectory, String referrer, Map<String, String> cookies, String fileName) {
