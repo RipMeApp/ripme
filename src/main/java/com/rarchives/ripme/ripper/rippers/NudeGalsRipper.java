@@ -33,23 +33,6 @@ public class NudeGalsRipper extends AbstractHTMLRipper {
         return "nude-gals.com";
     }
 
-    public String getAlbumTitle(URL url) throws MalformedURLException {
-        try {
-            Document doc = getFirstPage();
-            Elements elems = doc.select("#left_col > #grid_title > .right");
-
-            String girl = elems.get(3).text();
-            String magazine = elems.get(2).text();
-            String title = elems.get(0).text();
-
-            return getHost() + "_" + girl + "-" + magazine + "-" + title;
-        } catch (Exception e) {
-            // Fall back to default album naming convention
-            logger.warn("Failed to get album title from " + url, e);
-        }
-        return super.getAlbumTitle(url);
-    }
-
     @Override
     public String getGID(URL url) throws MalformedURLException {
         Pattern p;
@@ -79,9 +62,9 @@ public class NudeGalsRipper extends AbstractHTMLRipper {
     public List<String> getURLsFromPage(Document doc) {
         List<String> imageURLs = new ArrayList<>();
 
-        Elements thumbs = doc.select("#grid_container .grid > .grid_box");
+        Elements thumbs = doc.select("img.thumbnail");
         for (Element thumb : thumbs) {
-            String link = thumb.select("a").get(1).attr("href");
+            String link = thumb.attr("src").replaceAll("thumbs/th_", "");
             String imgSrc = "http://nude-gals.com/" + link;
             imageURLs.add(imgSrc);
         }
