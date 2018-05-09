@@ -10,4 +10,10 @@ public class GfycatporntubeRipperTest extends RippersTest {
         GfycatporntubeRipper ripper = new GfycatporntubeRipper(new URL("https://gfycatporntube.com/blowjob-bunny-puts-on-a-show/"));
         testRipper(ripper);
     }
+
+    public void testGetGID() throws IOException {
+        URL url = new URL("https://gfycatporntube.com/blowjob-bunny-puts-on-a-show/");
+        GfycatporntubeRipper ripper = new GfycatporntubeRipper(url);
+        assertEquals("blowjob-bunny-puts-on-a-show", ripper.getGID(url));
+    }
 }
