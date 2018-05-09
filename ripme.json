@@ -1,6 +1,7 @@
 {
-    "latestVersion": "1.7.42",
+    "latestVersion": "1.7.43",
     "changeList": [
+        "1.7.43: Fixed queryId regex in instagram ripper",
         "1.7.42: Added user support to SmuttyRipper; Removed vine ripper; Fixed NudeGalsRipper; addURLToDownload improvments; Fixed Instagram ripper",
         "1.7.41: Added support for spyingwithlana.com; Added ManganeloRipper; Added support for dynasty-scans.com",
         "1.7.40: Added hypnohub.net ripper; Fixed rule34.xxx ripper; Tsumino Ripper now add .png to filenames",
