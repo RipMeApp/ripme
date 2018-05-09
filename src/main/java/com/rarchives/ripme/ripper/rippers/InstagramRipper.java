@@ -430,7 +430,7 @@ public class InstagramRipper extends AbstractHTMLRipper {
             return null;
         }
         if (!rippingTag) {
-            Pattern jsP = Pattern.compile("\\?n.pagination:n},queryId:.([a-zA-Z0-9]+).");
+            Pattern jsP = Pattern.compile("o},queryId:.([a-zA-Z0-9]+).");
             Matcher m = jsP.matcher(sb.toString());
             if (m.find()) {
                 return m.group(1);
