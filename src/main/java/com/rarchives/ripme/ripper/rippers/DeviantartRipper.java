@@ -43,14 +43,17 @@ public class DeviantartRipper extends AbstractHTMLRipper {
     public String getHost() {
         return "deviantart";
     }
+
     @Override
     public String getDomain() {
         return "deviantart.com";
     }
+
     @Override
     public boolean hasDescriptionSupport() {
         return true;
     }
+
     @Override
     public URL sanitizeURL(URL url) throws MalformedURLException {
         String u = url.toExternalForm();
@@ -121,6 +124,7 @@ public class DeviantartRipper extends AbstractHTMLRipper {
                    .cookies(cookies)
                    .get();
     }
+
     private String jsonToImage(Document page, String id) {
         Elements js = page.select("script[type=\"text/javascript\"]");
         for (Element tag : js) {
@@ -142,6 +146,7 @@ public class DeviantartRipper extends AbstractHTMLRipper {
         }
         return null;
     }
+
     @Override
     public List<String> getURLsFromPage(Document page) {
         List<String> imageURLs = new ArrayList<>();
@@ -192,6 +197,7 @@ public class DeviantartRipper extends AbstractHTMLRipper {
         }
         return imageURLs;
     }
+
     @Override
     public List<String> getDescriptionsFromPage(Document page) {
         List<String> textURLs = new ArrayList<>();
@@ -210,6 +216,7 @@ public class DeviantartRipper extends AbstractHTMLRipper {
         }
         return textURLs;
     }
+
     @Override
     public Document getNextPage(Document page) throws IOException {
         if (isThisATest()) {
