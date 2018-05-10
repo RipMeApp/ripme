@@ -16,9 +16,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Collections;
-import java.util.Date;
-import java.util.Enumeration;
+import java.util.*;
 import java.util.List;
 
 import javax.imageio.ImageIO;
@@ -137,6 +135,8 @@ public final class MainWindow implements Runnable, RipStatusHandler {
     private static Image mainIcon;
 
     private static AbstractRipper ripper;
+
+    private ResourceBundle rb = Utils.getResourceBundle();
 
     private static void addCheckboxListener(JCheckBox checkBox, String configString) {
         checkBox.addActionListener(arg0 -> {
@@ -462,17 +462,17 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         configUpdateButton = new JButton("Check for updates");
         configUpdateLabel = new JLabel("Current version: " + UpdateUtils.getThisJarVersion(), JLabel.RIGHT);
         JLabel configThreadsLabel = new JLabel("Maximum download threads:", JLabel.RIGHT);
-        JLabel configTimeoutLabel = new JLabel("Timeout (in milliseconds):", JLabel.RIGHT);
-        JLabel configRetriesLabel = new JLabel("Retry download count:", JLabel.RIGHT);
+        JLabel configTimeoutLabel = new JLabel(rb.getString("timeout.mill"), JLabel.RIGHT);
+        JLabel configRetriesLabel = new JLabel(rb.getString("retry.download.count"), JLabel.RIGHT);
         configThreadsText = new JTextField(Integer.toString(Utils.getConfigInteger("threads.size", 3)));
         configTimeoutText = new JTextField(Integer.toString(Utils.getConfigInteger("download.timeout", 60000)));
         configRetriesText = new JTextField(Integer.toString(Utils.getConfigInteger("download.retries", 3)));
-        configOverwriteCheckbox = addNewCheckbox("Overwrite existing files?", "file.overwrite", false);
-        configAutoupdateCheckbox = addNewCheckbox("Auto-update?", "auto.update", true);
-        configPlaySound = addNewCheckbox("Sound when rip completes", "play.sound", false);
+        configOverwriteCheckbox = addNewCheckbox(rb.getString("overwrite.existing.files"), "file.overwrite", false);
+        configAutoupdateCheckbox = addNewCheckbox(rb.getString("auto.update"), "auto.update", true);
+        configPlaySound = addNewCheckbox(rb.getString("sound.when.rip.completes"), "play.sound", false);
         configShowPopup = addNewCheckbox("Notification when rip starts", "download.show_popup", false);
-        configSaveOrderCheckbox = addNewCheckbox("Preserve order", "download.save_order", true);
-        configSaveLogs = addNewCheckbox("Save logs", "log.save", false);
+        configSaveOrderCheckbox = addNewCheckbox(rb.getString("preserve.order"), "download.save_order", true);
+        configSaveLogs = addNewCheckbox(rb.getString("save.logs"), "log.save", false);
         configSaveURLsOnly = addNewCheckbox("Save URLs only", "urls_only.save", false);
         configSaveAlbumTitles = addNewCheckbox("Save album titles", "album_titles.save", true);
         configClipboardAutorip = addNewCheckbox("Autorip from Clipboard", "clipboard.autorip", false);
