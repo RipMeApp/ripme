@@ -50,7 +50,7 @@ public class LusciousRipper extends AbstractHTMLRipper {
         // This is here for pages with mp4s instead of images
         String video_image = "";
         video_image = page.select("div > video > source").attr("src");
-        if (video_image != "") {
+        if (!video_image.equals("")) {
             urls.add(video_image);
         }
         return urls;

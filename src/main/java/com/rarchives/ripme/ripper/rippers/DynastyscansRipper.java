@@ -8,37 +8,38 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.json.JSONArray;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
 import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 import com.rarchives.ripme.utils.Http;
 
-public class SinfestRipper extends AbstractHTMLRipper {
+public class DynastyscansRipper extends AbstractHTMLRipper {
 
-    public SinfestRipper(URL url) throws IOException {
+    public DynastyscansRipper(URL url) throws IOException {
         super(url);
     }
 
     @Override
     public String getHost() {
-        return "sinfest";
+        return "dynasty-scans";
     }
 
     @Override
     public String getDomain() {
-        return "sinfest.net";
+        return "dynasty-scans.com";
     }
 
     @Override
     public String getGID(URL url) throws MalformedURLException {
-        Pattern p = Pattern.compile("https?://sinfest.net/view.php\\?date=([0-9-]*)/?");
+        Pattern p = Pattern.compile("https?://dynasty-scans.com/chapters/([\\S]+)/?$");
         Matcher m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             return m.group(1);
         }
-        throw new MalformedURLException("Expected sinfest URL format: " +
-                "sinfest.net/view.php?date=XXXX-XX-XX/ - got " + url + " instead");
+        throw new MalformedURLException("Expected dynasty-scans URL format: " +
+                "dynasty-scans.com/chapters/ID - got " + url + " instead");
     }
 
     @Override
@@ -49,27 +50,30 @@ public class SinfestRipper extends AbstractHTMLRipper {
 
     @Override
     public Document getNextPage(Document doc) throws IOException {
-        Element elem = doc.select("td.style5 > a > img").last();
-        logger.info(elem.parent().attr("href"));
-        if (elem == null || elem.parent().attr("href").equals("view.php?date=")) {
+        Element elem = doc.select("a[id=next_link]").first();
+        if (elem == null || elem.attr("href").equals("#")) {
             throw new IOException("No more pages");
         }
-        String nextPage = elem.parent().attr("href");
-        // Some times this returns a empty string
-        // This for stops that
-        if (nextPage.equals("")) {
-            return null;
-        }
-        else {
-            return Http.url("http://sinfest.net/" + nextPage).get();
-        }
+        return Http.url("https://dynasty-scans.com" + elem.attr("href")).get();
+
     }
 
     @Override
     public List<String> getURLsFromPage(Document doc) {
         List<String> result = new ArrayList<>();
-        Element elem = doc.select("tbody > tr > td > img").last();
-        result.add("http://sinfest.net/" + elem.attr("src"));
+        String jsonText = null;
+        for (Element script : doc.select("script")) {
+            if (script.data().contains("var pages")) {
+                jsonText = script.data().replaceAll("var pages = ", "");
+                jsonText = jsonText.replaceAll("//<!\\[CDATA\\[", "");
+                jsonText = jsonText.replaceAll("//]]>", "");
+            }
+        }
+        JSONArray imageArray = new JSONArray(jsonText);
+        for (int i = 0; i < imageArray.length(); i++) {
+            result.add("https://dynasty-scans.com" + imageArray.getJSONObject(i).getString("image"));
+        }
+
         return result;
     }
 

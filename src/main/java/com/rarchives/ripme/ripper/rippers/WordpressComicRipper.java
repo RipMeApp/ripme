@@ -44,7 +44,20 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
         "freeadultcomix.com",
         "thisis.delvecomic.com",
         "tnbtu.com",
-        "shipinbottle.pepsaga.com"
+        "shipinbottle.pepsaga.com",
+        "8muses.download",
+        "spyingwithlana.com"
+    );
+
+    private static List<String> theme1 = Arrays.asList(
+            "www.totempole666.com",
+            "buttsmithy.com",
+            "themonsterunderthebed.net",
+            "prismblush.com",
+            "www.konradokonski.com",
+            "thisis.delvecomic.com",
+            "tnbtu.com",
+            "spyingwithlana.com"
     );
 
     @Override
@@ -135,6 +148,18 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
             if (shipinbottleMat.matches()) {
                 return true;
             }
+
+            Pattern eight_musesPat = Pattern.compile("https?://8muses.download/([a-zA-Z0-9_-]+)/?$");
+            Matcher eight_musesMat = eight_musesPat.matcher(url.toExternalForm());
+            if (eight_musesMat.matches()) {
+                return true;
+            }
+
+            Pattern spyingwithlanaPat = Pattern.compile("https?://spyingwithlana.com/comic/([a-zA-Z0-9_-]+)/?$");
+            Matcher spyingwithlanaMat = spyingwithlanaPat.matcher(url.toExternalForm());
+            if (spyingwithlanaMat.matches()) {
+                return true;
+            }
         }
 
 
@@ -209,6 +234,18 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
             return getHost() + "_" + "Ship_in_bottle";
         }
 
+        Pattern eight_musesPat = Pattern.compile("https?://8muses.download/([a-zA-Z0-9_-]+)/?$");
+        Matcher eight_musesMat = eight_musesPat.matcher(url.toExternalForm());
+        if (eight_musesMat.matches()) {
+            return getHost() + "_" + eight_musesMat.group(1);
+        }
+
+        Pattern spyingwithlanaPat = Pattern.compile("https?://spyingwithlana.com/comic/([a-zA-Z0-9_-]+)/?$");
+        Matcher spyingwithlanaMat = spyingwithlanaPat.matcher(url.toExternalForm());
+        if (spyingwithlanaMat.matches()) {
+            return "spyingwithlana_" + spyingwithlanaMat.group(1).replaceAll("-page-\\d", "");
+        }
+
         return super.getAlbumTitle(url);
     }
 
@@ -227,13 +264,7 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
         // Find next page
         String nextPage = "";
         Element elem = null;
-        if (getHost().contains("www.totempole666.com")
-                || getHost().contains("buttsmithy.com")
-                || getHost().contains("themonsterunderthebed.net")
-                || getHost().contains("prismblush.com")
-                || getHost().contains("www.konradokonski.com")
-                || getHost().contains("thisis.delvecomic.com")
-                || getHost().contains("tnbtu.com")) {
+        if (theme1.contains(getHost())) {
             elem = doc.select("a.comic-nav-next").first();
             if (elem == null) {
                 throw new IOException("No more pages");
@@ -247,7 +278,7 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
             nextPage = elem.attr("href");
         }
 
-        if (nextPage == "") {
+        if (nextPage.equals("")) {
             throw new IOException("No more pages");
         } else {
             return Http.url(nextPage).get();
@@ -257,13 +288,7 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
     @Override
     public List<String> getURLsFromPage(Document doc) {
         List<String> result = new ArrayList<>();
-        if (getHost().contains("www.totempole666.com")
-                || getHost().contains("buttsmithy.com")
-                || getHost().contains("themonsterunderthebed.net")
-                || getHost().contains("prismblush.com")
-                || getHost().contains("www.konradokonski.com")
-                || getHost().contains("thisis.delvecomic.com")
-                || getHost().contains("tnbtu.com")) {
+        if (theme1.contains(getHost())) {
             Element elem = doc.select("div.comic-table > div#comic > a > img").first();
             // If doc is the last page in the comic then elem.attr("src") returns null
             // because there is no link <a> to the next page
@@ -315,6 +340,12 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
             }
         }
 
+        if (url.toExternalForm().contains("8muses.download")) {
+            for (Element elem : doc.select("div.popup-gallery > figure > a")) {
+                result.add(elem.attr("href"));
+            }
+        }
+
         return result;
     }
 
@@ -327,8 +358,14 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
                 || getHost().contains("themonsterunderthebed.net")) {
             addURLToDownload(url, pageTitle + "_");
         }
-        // If we're ripping a site where we can't get the page number/title we just rip normally
-        addURLToDownload(url, getPrefix(index));
+        if (getHost().contains("tnbtu.com")) {
+            // We need to set the referrer header for tnbtu
+            addURLToDownload(url, getPrefix(index), "","http://www.tnbtu.com/comic", null);
+        } else {
+            // If we're ripping a site where we can't get the page number/title we just rip normally
+            addURLToDownload(url, getPrefix(index));
+        }
+
     }
 
     @Override

@@ -1,6 +1,16 @@
 {
-    "latestVersion": "1.7.34",
+    "latestVersion": "1.7.44",
     "changeList": [
+        "1.7.44: Fixed instagram ripper regex",
+        "1.7.43: Fixed queryId regex in instagram ripper",
+        "1.7.42: Added user support to SmuttyRipper; Removed vine ripper; Fixed NudeGalsRipper; addURLToDownload improvments; Fixed Instagram ripper",
+        "1.7.41: Added support for spyingwithlana.com; Added ManganeloRipper; Added support for dynasty-scans.com",
+        "1.7.40: Added hypnohub.net ripper; Fixed rule34.xxx ripper; Tsumino Ripper now add .png to filenames",
+        "1.7.39: Added rule34.xxx ripper; Added Gfycatporntube.com ripper; Fixed AbstractRipper subdir bug; Added AbstractRipper unit tests",
+        "1.7.38: Added http and socks proxy support; Extended some unit tests to include getGid; Added HitomiRipper; hentaifoundry ripper now can rip all images from accounts",
+        "1.7.37: MInor code clean up; Added socks proxy support; Added support for 8muses.download; Hentaifoundry no longer errors when there are no more pages; Fix bug that causes tumblr to replace https with httpss when downloading resized images",
+        "1.7.36: Fixed Instagram ripper; Fixed hentai2read ripper test; Fixed tnbtu.com ripper",
+        "1.7.35: Fixed instagram ripper; hentai2read ripper now properly names folders",
         "1.7.34: Added Blackbrickroadofoz Ripper; Fixed webtoons regex",
         "1.7.33: Instagram ripper no longer errors out when downloading from more than 1 page",
         "1.7.32: Instagram ripper update to use new enpoints",
