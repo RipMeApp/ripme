@@ -121,7 +121,7 @@ public class DeviantartRipper extends AbstractHTMLRipper {
         String username = Utils.getConfigString("deviantart.username", new String(Base64.decode("Z3JhYnB5")));
         String password = Utils.getConfigString("deviantart.password", new String(Base64.decode("ZmFrZXJz")));
         
-        if(username == null || password == null) {
+        if (username == null || password == null) {
             logger.debug("No DeviantArt login provided.");
             cookies.put("agegate_state","1"); // Bypasses the age gate
         } else {
