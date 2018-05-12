@@ -146,7 +146,7 @@ public class ImagebamRipper extends AbstractHTMLRipper {
                 
                 for (Element metaTag: metaTags) {
                     //the direct link to the image seems to always be linked in the <meta> part of the html.
-                    if(metaTag.attr("property").equals("og:image")) {
+                    if (metaTag.attr("property").equals("og:image")) {
                         imgsrc = metaTag.attr("content");
                         logger.info("Found URL " + imgsrc);
                         break;//only one (useful) image possible for an "image page".
