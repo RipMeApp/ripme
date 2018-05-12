@@ -1,5 +1,9 @@
 package com.rarchives.ripme.ripper.rippers;
 
+import com.rarchives.ripme.ripper.AbstractHTMLRipper;
+import com.rarchives.ripme.utils.Base64;
+import com.rarchives.ripme.utils.Http;
+import com.rarchives.ripme.utils.Utils;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -13,7 +17,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import org.jsoup.Connection.Method;
 import org.jsoup.Connection.Response;
 import org.jsoup.Jsoup;
@@ -21,11 +24,6 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.safety.Whitelist;
 import org.jsoup.select.Elements;
-
-import com.rarchives.ripme.ripper.AbstractHTMLRipper;
-import com.rarchives.ripme.utils.Base64;
-import com.rarchives.ripme.utils.Http;
-import com.rarchives.ripme.utils.Utils;
 
 public class DeviantartRipper extends AbstractHTMLRipper {
 
@@ -108,19 +106,46 @@ public class DeviantartRipper extends AbstractHTMLRipper {
         throw new MalformedURLException("Expected URL format: http://username.deviantart.com/[/gallery/#####], got: " + url);
     }
 
+    /**
+     * Gets first page.
+     * Will determine if login is supplied,
+     * if there is a login, then login and add that login cookies.
+     * Otherwise, just bypass the age gate with an anonymous flag.
+     * @return
+     * @throws IOException 
+     */
     @Override
     public Document getFirstPage() throws IOException {
-        // Login
-        try {
-            cookies = loginToDeviantart();
-        } catch (Exception e) {
-            logger.warn("Failed to login: ", e);
+        
+        //Test to see if there is a login:
+        String username = Utils.getConfigString("deviantart.username", new String(Base64.decode("Z3JhYnB5")));
+        String password = Utils.getConfigString("deviantart.password", new String(Base64.decode("ZmFrZXJz")));
+        
+        if (username == null || password == null) {
+            logger.debug("No DeviantArt login provided.");
             cookies.put("agegate_state","1"); // Bypasses the age gate
+        } else {
+            // Attempt Login
+            try {
+                cookies = loginToDeviantart();
+            } catch (IOException e) {
+                logger.warn("Failed to login: ", e);
+                cookies.put("agegate_state","1"); // Bypasses the age gate
+            }
         }
+        
+        
         return Http.url(this.url)
                    .cookies(cookies)
                    .get();
     }
+    
+    /**
+     * 
+     * @param page
+     * @param id
+     * @return 
+     */
     private String jsonToImage(Document page, String id) {
         Elements js = page.select("script[type=\"text/javascript\"]");
         for (Element tag : js) {
