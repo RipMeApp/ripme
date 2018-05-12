@@ -328,7 +328,7 @@ public class InstagramRipper extends AbstractHTMLRipper {
     }
 
     private String getIGGis(String variables) {
-        String stringToMD5 = rhx_gis + ":" + csrftoken + ":" + variables;
+        String stringToMD5 = rhx_gis + ":" + variables;
         logger.debug("String to md5 is \"" + stringToMD5 + "\"");
         try {
             byte[] bytesOfMessage = stringToMD5.getBytes("UTF-8");
@@ -374,7 +374,7 @@ public class InstagramRipper extends AbstractHTMLRipper {
             try {
                 // Sleep for a while to avoid a ban
                 sleep(2500);
-                String vars = "{\"id\":\"" + userID + "\",\"first\":100,\"after\":\"" + nextPageID + "\"}";
+                String vars = "{\"id\":\"" + userID + "\",\"first\":50,\"after\":\"" + nextPageID + "\"}";
                 String ig_gis = getIGGis(vars);
                 logger.info(ig_gis);
                 toreturn = Http.url("https://www.instagram.com/graphql/query/?query_hash=" + qHash + "&variables=" + vars
@@ -435,6 +435,12 @@ public class InstagramRipper extends AbstractHTMLRipper {
             if (m.find()) {
                 return m.group(1);
             }
+            jsP = Pattern.compile("n.pagination:n},queryId:.([a-zA-Z0-9]+).");
+            m = jsP.matcher(sb.toString());
+            if (m.find()) {
+                return m.group(1);
+            }
+
         } else {
             Pattern jsP = Pattern.compile("return e.tagMedia.byTagName.get\\(t\\).pagination},queryId:.([a-zA-Z0-9]+).");
             Matcher m = jsP.matcher(sb.toString());
@@ -442,7 +448,7 @@ public class InstagramRipper extends AbstractHTMLRipper {
                 return m.group(1);
             }
         }
-        logger.info("Could not find query_hash on " + jsFileURL);
+        logger.error("Could not find query_hash on " + jsFileURL);
         return null;
 
     }

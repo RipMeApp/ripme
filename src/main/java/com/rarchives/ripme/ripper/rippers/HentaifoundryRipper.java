@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.jsoup.Connection.Method;
 import org.jsoup.Connection.Response;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -49,19 +50,61 @@ public class HentaifoundryRipper extends AbstractHTMLRipper {
 
     @Override
     public Document getFirstPage() throws IOException {
-        Response resp = Http.url("http://www.hentai-foundry.com/").response();
-        cookies = resp.cookies();
+        Response resp;
+        Document doc;
+
         resp = Http.url("http://www.hentai-foundry.com/?enterAgree=1&size=1500")
-                   .referrer("http://www.hentai-foundry.com/")
-                   .cookies(cookies)
-                   .response();
+                .referrer("http://www.hentai-foundry.com/")
+                .cookies(cookies)
+                .response();
         // The only cookie that seems to matter in getting around the age wall is the phpsession cookie
         cookies.putAll(resp.cookies());
-        sleep(500);
+
+        doc = resp.parse();
+        String csrf_token = doc.select("input[name=YII_CSRF_TOKEN]")
+                               .first().attr("value");
+        if (csrf_token != null) {
+            Map<String,String> data = new HashMap<>();
+            data.put("YII_CSRF_TOKEN"  , csrf_token);
+            data.put("rating_nudity"   , "3");
+            data.put("rating_violence" , "3");
+            data.put("rating_profanity", "3");
+            data.put("rating_racism"   , "3");
+            data.put("rating_sex"      , "3");
+            data.put("rating_spoilers" , "3");
+            data.put("rating_yaoi"     , "1");
+            data.put("rating_yuri"     , "1");
+            data.put("rating_teen"     , "1");
+            data.put("rating_guro"     , "1");
+            data.put("rating_furry"    , "1");
+            data.put("rating_beast"    , "1");
+            data.put("rating_male"     , "1");
+            data.put("rating_female"   , "1");
+            data.put("rating_futa"     , "1");
+            data.put("rating_other"    , "1");
+            data.put("rating_scat"     , "1");
+            data.put("rating_incest"   , "1");
+            data.put("rating_rape"     , "1");
+            data.put("filter_media"    , "A");
+            data.put("filter_order"    , "date_new");
+            data.put("filter_type"     , "0");
+
+            resp = Http.url("http://www.hentai-foundry.com/site/filters")
+                       .referrer("http://www.hentai-foundry.com/")
+                       .cookies(cookies)
+                       .data(data)
+                       .method(Method.POST)
+                       .response();
+            cookies.putAll(resp.cookies());
+        }
+        else {
+            logger.info("unable to find csrf_token and set filter");
+        }
+
         resp = Http.url(url)
-                   .referrer("http://www.hentai-foundry.com/")
-                   .cookies(cookies)
-                   .response();
+                .referrer("http://www.hentai-foundry.com/")
+                .cookies(cookies)
+                .response();
         cookies.putAll(resp.cookies());
         return resp.parse();
     }
@@ -74,12 +117,16 @@ public class HentaifoundryRipper extends AbstractHTMLRipper {
         }
         Elements els = doc.select("li.next > a");
         Element first = els.first();
-        String nextURL = first.attr("href");
-        nextURL = "http://www.hentai-foundry.com" + nextURL;
-        return Http.url(nextURL)
-                   .referrer(url)
-                   .cookies(cookies)
-                   .get();
+        try {
+            String nextURL = first.attr("href");
+            nextURL = "http://www.hentai-foundry.com" + nextURL;
+            return Http.url(nextURL)
+                    .referrer(url)
+                    .cookies(cookies)
+                    .get();
+        } catch (NullPointerException e) {
+            throw new IOException("No more pages");
+        }
     }
 
     @Override
@@ -97,13 +144,6 @@ public class HentaifoundryRipper extends AbstractHTMLRipper {
             }
             Document imagePage;
             try {
-                Response resp = Http.url("http://www.hentai-foundry.com/").response();
-                cookies = resp.cookies();
-                resp = Http.url("http://www.hentai-foundry.com/?enterAgree=1&size=1500")
-                           .referrer("http://www.hentai-foundry.com/")
-                           .cookies(cookies)
-                           .response();
-                cookies.putAll(resp.cookies());
 
                 logger.info("grabbing " + "http://www.hentai-foundry.com" + thumb.attr("href"));
                 imagePage = Http.url("http://www.hentai-foundry.com" + thumb.attr("href")).cookies(cookies).get();

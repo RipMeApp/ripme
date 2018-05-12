@@ -14,31 +14,31 @@ import org.jsoup.nodes.Element;
 import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 import com.rarchives.ripme.utils.Http;
 
-public class BlackbrickroadofozRipper extends AbstractHTMLRipper {
+public class GfycatporntubeRipper extends AbstractHTMLRipper {
 
-    public BlackbrickroadofozRipper(URL url) throws IOException {
+    public GfycatporntubeRipper(URL url) throws IOException {
         super(url);
     }
 
     @Override
     public String getHost() {
-        return "blackbrickroadofoz";
+        return "gfycatporntube";
     }
 
     @Override
     public String getDomain() {
-        return "blackbrickroadofoz.com";
+        return "gfycatporntube.com";
     }
 
     @Override
     public String getGID(URL url) throws MalformedURLException {
-        Pattern p = Pattern.compile("https?://www.blackbrickroadofoz.com/comic/([a-zA-Z0-9_-]*)/?$");
+        Pattern p = Pattern.compile("https?://gfycatporntube.com/([a-zA-Z1-9_-]*)/?$");
         Matcher m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             return m.group(1);
         }
-        throw new MalformedURLException("Expected blackbrickroadofoz URL format: " +
-                "www.blackbrickroadofoz.com/comic/PAGE - got " + url + " instead");
+        throw new MalformedURLException("Expected gfycatporntube URL format: " +
+                "gfycatporntube.com/NAME - got " + url + " instead");
     }
 
     @Override
@@ -48,24 +48,9 @@ public class BlackbrickroadofozRipper extends AbstractHTMLRipper {
     }
 
     @Override
-    public Document getNextPage(Document doc) throws IOException {
-        sleep(1000);
-        Element elem = doc.select("div[id=topnav] > nav.cc-nav > a.cc-next").first();
-        if (elem == null) {
-            throw new IOException("No more pages");
-        }
-        String nextPage = elem.attr("href");
-        return Http.url(nextPage).get();
-
-    }
-
-    @Override
     public List<String> getURLsFromPage(Document doc) {
         List<String> result = new ArrayList<>();
-        Element elem = doc.select("div[id=cc-comicbody] > a > img[id=cc-comic]").first();
-        // The site doesn't return properly encoded urls we replace all spaces ( ) with %20
-        result.add(elem.attr("src").replaceAll(" ", "%20"));
-
+        result.add(doc.select("source[id=mp4Source]").attr("src"));
         return result;
     }
 
