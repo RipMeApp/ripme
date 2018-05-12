@@ -138,6 +138,15 @@ public final class MainWindow implements Runnable, RipStatusHandler {
 
     private ResourceBundle rb = Utils.getResourceBundle();
 
+    private void updateQueueLabel() {
+        if (queueListModel.size() > 0) {
+            optionQueue.setText( rb.getString("Queue") + " (" + queueListModel.size() + ")");
+        } else {
+            optionQueue.setText(rb.getString("Queue"));
+        }
+    }
+
+
     private static void addCheckboxListener(JCheckBox checkBox, String configString) {
         checkBox.addActionListener(arg0 -> {
             Utils.setConfigBoolean(configString, checkBox.isSelected());
@@ -307,10 +316,10 @@ public final class MainWindow implements Runnable, RipStatusHandler {
 
         JPanel optionsPanel = new JPanel(new GridBagLayout());
         optionsPanel.setBorder(emptyBorder);
-        optionLog = new JButton("Log");
-        optionHistory = new JButton("History");
-        optionQueue = new JButton("Queue");
-        optionConfiguration = new JButton("Configuration");
+        optionLog = new JButton(rb.getString("Log"));
+        optionHistory = new JButton(rb.getString("History"));
+        optionQueue = new JButton(rb.getString("Queue"));
+        optionConfiguration = new JButton(rb.getString("Configuration"));
         optionLog.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
         optionHistory.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
         optionQueue.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
@@ -440,11 +449,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         for (String item : Utils.getConfigList("queue")) {
             queueListModel.addElement(item);
         }
-        if (queueListModel.size() > 0) {
-            optionQueue.setText("Queue (" + queueListModel.size() + ")");
-        } else {
-            optionQueue.setText("Queue");
-        }
+        updateQueueLabel();
         gbc.gridx = 0;
         JPanel queueListPanel = new JPanel(new GridBagLayout());
         gbc.fill = GridBagConstraints.BOTH;
@@ -785,11 +790,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         queueListModel.addListDataListener(new ListDataListener() {
             @Override
             public void intervalAdded(ListDataEvent arg0) {
-                if (queueListModel.size() > 0) {
-                    optionQueue.setText("Queue (" + queueListModel.size() + ")");
-                } else {
-                    optionQueue.setText("Queue");
-                }
+                updateQueueLabel();
                 if (!isRipping) {
                     ripNextAlbum();
                 }
@@ -1025,11 +1026,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
             return;
         }
         String nextAlbum = (String) queueListModel.remove(0);
-        if (queueListModel.isEmpty()) {
-            optionQueue.setText("Queue");
-        } else {
-            optionQueue.setText("Queue (" + queueListModel.size() + ")");
-        }
+        updateQueueLabel();
         Thread t = ripAlbum(nextAlbum);
         if (t == null) {
             try {
