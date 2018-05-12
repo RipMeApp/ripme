@@ -579,7 +579,7 @@ public class Utils {
 
     public static ResourceBundle getResourceBundle() {
         try {
-            ResourceBundle rb = ResourceBundle.getBundle("LabelsBundle", Locale.getDefault());
+            ResourceBundle rb = ResourceBundle.getBundle("LabelsBundle", Locale.getDefault(), new UTF8Control());
             return rb;
         } catch (MissingResourceException e) {
             ResourceBundle rb = ResourceBundle.getBundle("LabelsBundle", Locale.ROOT);
