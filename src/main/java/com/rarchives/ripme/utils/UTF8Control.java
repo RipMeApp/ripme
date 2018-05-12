@@ -9,6 +9,8 @@ import java.util.Locale;
 import java.util.PropertyResourceBundle;
 import java.util.ResourceBundle;
 
+// Code taken from https://stackoverflow.com/questions/4659929/how-to-use-utf-8-in-resource-properties-with-resourcebundle/4660195#4660195
+
 public class UTF8Control extends ResourceBundle.Control {
     public ResourceBundle newBundle
             (String baseName, Locale locale, String format, ClassLoader loader, boolean reload)
