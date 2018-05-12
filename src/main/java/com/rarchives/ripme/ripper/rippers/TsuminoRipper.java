@@ -59,10 +59,15 @@ public class TsuminoRipper extends AbstractHTMLRipper {
 
     @Override
     public String getGID(URL url) throws MalformedURLException {
-        Pattern p = Pattern.compile("https?://www.tsumino.com/Book/Info/([0-9]+)/([a-zA-Z0-9_-]*)");
+        Pattern p = Pattern.compile("https?://www.tsumino.com/Book/Info/([0-9]+)/([a-zA-Z0-9_-]*)/?");
         Matcher m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             return m.group(1) + "_" + m.group(2);
+        }
+        p = Pattern.compile("https?://www.tsumino.com/Book/Info/([0-9]+)/?");
+        m = p.matcher(url.toExternalForm());
+        if (m.matches()) {
+            return m.group(1);
         }
         throw new MalformedURLException("Expected tsumino URL format: " +
                 "tsumino.com/Book/Info/ID/TITLE - got " + url + " instead");
