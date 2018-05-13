@@ -1,9 +1,6 @@
 package com.rarchives.ripme.utils;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.lang.reflect.Constructor;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -578,5 +575,20 @@ public class Utils {
             cookieCache.put(host, domainCookies);
         }
         return domainCookies;
+    }
+
+    public static ResourceBundle getResourceBundle() {
+        if (!getConfigString("lang", "").equals("")) {
+            String[] langCode = getConfigString("lang", "").split("_");
+            logger.info("Setting locale to " + getConfigString("lang", ""));
+            return ResourceBundle.getBundle("LabelsBundle", new Locale(langCode[0], langCode[1]), new UTF8Control());
+        }
+        try {
+            ResourceBundle rb = ResourceBundle.getBundle("LabelsBundle", Locale.getDefault(), new UTF8Control());
+            return rb;
+        } catch (MissingResourceException e) {
+            ResourceBundle rb = ResourceBundle.getBundle("LabelsBundle", Locale.ROOT);
+            return rb;
+        }
     }
 }
