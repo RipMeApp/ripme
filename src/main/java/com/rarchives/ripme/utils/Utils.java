@@ -92,6 +92,16 @@ public class Utils {
     public static String getConfigString(String key, String defaultValue) {
         return config.getString(key, defaultValue);
     }
+
+    public static String[] getConfigStringArray(String key) {
+        String[] s = config.getStringArray(key);
+        if (s.length == 0) {
+            return null;
+        } else {
+            return s;
+        }
+    }
+
     public static int getConfigInteger(String key, int defaultValue) {
         return config.getInt(key, defaultValue);
     }
