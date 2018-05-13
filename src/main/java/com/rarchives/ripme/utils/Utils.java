@@ -578,6 +578,11 @@ public class Utils {
     }
 
     public static ResourceBundle getResourceBundle() {
+        if (!getConfigString("lang", "").equals("")) {
+            String[] langCode = getConfigString("lang", "").split("_");
+            logger.info("Setting locale to " + getConfigString("lang", ""));
+            return ResourceBundle.getBundle("LabelsBundle", new Locale(langCode[0], langCode[1]), new UTF8Control());
+        }
         try {
             ResourceBundle rb = ResourceBundle.getBundle("LabelsBundle", Locale.getDefault(), new UTF8Control());
             return rb;
