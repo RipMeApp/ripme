@@ -126,9 +126,9 @@ public class EightmusesRipper extends AbstractHTMLRipper {
                         image = getFullSizeImage(imageHref);
                         URL imageUrl = new URL(image);
                         if (Utils.getConfigBoolean("8muses.use_short_names", false)) {
-                            addURLToDownload(imageUrl, getPrefixShort(x), getSubdir(page.select("title").text()), this.url.toExternalForm(), cookies, "");
+                            addURLToDownload(imageUrl, getPrefixShort(x), getSubdir(page.select("title").text()), this.url.toExternalForm(), cookies, "", null, true);
                         } else {
-                            addURLToDownload(imageUrl, getPrefixLong(x), getSubdir(page.select("title").text()), this.url.toExternalForm(), cookies);
+                            addURLToDownload(imageUrl, getPrefixLong(x), getSubdir(page.select("title").text()), this.url.toExternalForm(), cookies, "", null, true);
                         }
                         // X is our page index
                         x++;
