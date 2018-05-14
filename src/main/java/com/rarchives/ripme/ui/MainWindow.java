@@ -162,6 +162,11 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         return checkbox;
     }
 
+
+    public static void addUrlToQueue(String url) {
+        queueListModel.addElement(url);
+    }
+
     public MainWindow() {
         mainFrame = new JFrame("RipMe v" + UpdateUtils.getThisJarVersion());
         mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
