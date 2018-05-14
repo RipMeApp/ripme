@@ -79,8 +79,7 @@ public class NhentaiRipper extends AbstractHTMLRipper {
      * @param doc
      * @return String
      */
-    private String checkTags(Document doc) {
-        String[] blackListedTags = Utils.getConfigStringArray("nhentai.blacklist.tags");
+    public String checkTags(Document doc, String[] blackListedTags) {
         // If the user hasn't blacklisted any tags we return false;
         if (blackListedTags == null) {
             return null;
@@ -89,8 +88,9 @@ public class NhentaiRipper extends AbstractHTMLRipper {
         List<String> tagsOnPage = getTags(doc);
         for (String tag : blackListedTags) {
             for (String pageTag : tagsOnPage) {
-                logger.info("tag: " + tag + " pageTag: " + pageTag);
-                if (tag.trim().toLowerCase().equals(pageTag.toLowerCase())) {
+                // We replace all dashes in the tag with spaces because the tags we get from the site are separated using
+                // dashes
+                if (tag.trim().toLowerCase().equals(pageTag.replaceAll("-", " ").toLowerCase())) {
                     return tag;
                 }
             }
@@ -117,7 +117,7 @@ public class NhentaiRipper extends AbstractHTMLRipper {
             firstPage = Http.url(url).get();
         }
 
-        String blacklistedTag = checkTags(firstPage);
+        String blacklistedTag = checkTags(firstPage, Utils.getConfigStringArray("nhentai.blacklist.tags"));
         if (blacklistedTag != null) {
             sendUpdate(RipStatusMessage.STATUS.DOWNLOAD_WARN, "Skipping " + url.toExternalForm() + " as it " +
                     "contains the blacklisted tag \"" + blacklistedTag + "\"");
