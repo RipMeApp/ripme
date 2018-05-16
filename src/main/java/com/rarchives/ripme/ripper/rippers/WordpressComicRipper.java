@@ -172,6 +172,12 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
             if (mat.matches()) {
                 return true;
             }
+
+            pat = Pattern.compile("https://8muses.download/category/([a-zA-Z0-9-]*)/?");
+            mat = pat.matcher(url.toExternalForm());
+            if (mat.matches()) {
+                return true;
+            }
         }
 
 
@@ -196,6 +202,13 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
         if (mat.matches()) {
             return true;
         }
+
+        pat = Pattern.compile("https://8muses.download/category/([a-zA-Z0-9-]*)/?");
+        mat = pat.matcher(url.toExternalForm());
+        if (mat.matches()) {
+            return true;
+        }
+
         return false;
     }
 
