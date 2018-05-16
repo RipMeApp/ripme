@@ -66,7 +66,7 @@ public abstract class AbstractHTMLRipper extends AlbumRipper {
         return null;
     }
 
-    // If a page has Queue support than it has no images we want to download, just a list of urls we want to add to
+    // If a page has Queue support then it has no images we want to download, just a list of urls we want to add to
     // the queue
     protected boolean hasQueueSupport() {
         return false;
@@ -91,6 +91,7 @@ public abstract class AbstractHTMLRipper extends AlbumRipper {
                 MainWindow.addUrlToQueue(url);
             }
 
+            // We set doc to null here so the while loop below this doesn't fire
             doc = null;
         }
 
