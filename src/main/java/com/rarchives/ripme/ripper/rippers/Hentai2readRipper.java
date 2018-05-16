@@ -50,7 +50,7 @@ public class Hentai2readRipper extends AbstractHTMLRipper {
                 tempDoc = Http.url(url).get();
                 // Get the thumbnail page so we can rip all images without loading every page in the comic
                 thumbnailLink = tempDoc.select("div.col-xs-12 > div.reader-controls > div.controls-block > button > a").attr("href");
-                if (thumbnailLink != null) {
+                if (!thumbnailLink.equals("")) {
                     return Http.url(thumbnailLink).get();
                 } else {
                     return Http.url(tempDoc.select("a[data-original-title=Thumbnails").attr("href")).get();
