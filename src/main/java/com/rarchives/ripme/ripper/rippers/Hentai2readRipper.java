@@ -44,12 +44,17 @@ public class Hentai2readRipper extends AbstractHTMLRipper {
 
         @Override
         public Document getFirstPage() throws IOException {
+            String thumbnailLink;
             try {
                 Document tempDoc;
                 tempDoc = Http.url(url).get();
                 // Get the thumbnail page so we can rip all images without loading every page in the comic
-                String thumbnailLink = tempDoc.select("a[data-original-title=Thumbnails").attr("href");
-                return Http.url(thumbnailLink).get();
+                thumbnailLink = tempDoc.select("div.col-xs-12 > div.reader-controls > div.controls-block > button > a").attr("href");
+                if (!thumbnailLink.equals("")) {
+                    return Http.url(thumbnailLink).get();
+                } else {
+                    return Http.url(tempDoc.select("a[data-original-title=Thumbnails").attr("href")).get();
+                }
             } catch (IOException e) {
                 throw new IOException("Unable to get first page");
             }
