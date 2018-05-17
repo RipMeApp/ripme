@@ -43,6 +43,18 @@ public class BatoRipper extends AbstractHTMLRipper {
     }
 
     @Override
+    public String getAlbumTitle(URL url) throws MalformedURLException {
+        try {
+            // Attempt to use album title as GID
+            return getHost() + "_" + getGID(url) + "_" + getFirstPage().select("title").first().text().replaceAll(" ", "_");
+        } catch (IOException e) {
+            // Fall back to default album naming convention
+            logger.info("Unable to find title at " + url);
+        }
+        return super.getAlbumTitle(url);
+    }
+
+    @Override
     public boolean canRip(URL url) {
         Pattern p = Pattern.compile("https?://bato.to/series/([\\d]+)/?");
         Matcher m = p.matcher(url.toExternalForm());
