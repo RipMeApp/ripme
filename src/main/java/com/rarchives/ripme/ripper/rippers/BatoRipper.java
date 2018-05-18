@@ -38,8 +38,38 @@ public class BatoRipper extends AbstractHTMLRipper {
         if (m.matches()) {
             return m.group(1);
         }
+        // As this is just for quick queue support it does matter what this if returns
+        p = Pattern.compile("https?://bato.to/series/([\\d]+)/?");
+        m = p.matcher(url.toExternalForm());
+        if (m.matches()) {
+            return "";
+        }
         throw new MalformedURLException("Expected bato.to URL format: " +
                 "bato.to/chapter/ID - got " + url + " instead");
+    }
+
+    @Override
+    public boolean hasQueueSupport() {
+        return true;
+    }
+
+    @Override
+    public boolean pageContainsAlbums(URL url) {
+        Pattern p = Pattern.compile("https?://bato.to/series/([\\d]+)/?");
+        Matcher m = p.matcher(url.toExternalForm());
+        if (m.matches()) {
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public List<String> getAlbumsToQueue(Document doc) {
+        List<String> urlsToAddToQueue = new ArrayList<>();
+        for (Element elem : doc.select("div.main > div > a")) {
+            urlsToAddToQueue.add("https://" + getDomain() + elem.attr("href"));
+        }
+        return urlsToAddToQueue;
     }
 
     @Override
@@ -74,20 +104,6 @@ public class BatoRipper extends AbstractHTMLRipper {
     public Document getFirstPage() throws IOException {
         // "url" is an instance field of the superclass
         return Http.url(url).get();
-    }
-
-    @Override
-    public Document getNextPage(Document doc) throws IOException {
-        // Find next page
-        String nextUrl = "";
-        // We use comic-nav-next to the find the next page
-        Element elem = doc.select("div.nav-next > a").first();
-        // If there are no more chapters to download the last chapter will link to bato.to/series/ID
-        if (elem == null || elem.attr("href").contains("/series/")) {
-            throw new IOException("No more pages");
-        }
-        String nextPage = elem.attr("href");
-        return Http.url("https://bato.to" + nextPage).get();
     }
 
     @Override
