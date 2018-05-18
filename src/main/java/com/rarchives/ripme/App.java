@@ -33,13 +33,22 @@ import com.rarchives.ripme.utils.Utils;
 
 /**
  * Entry point to application.
+ * This is where all the fun happens, with the main method.
  * Decides to display UI or to run silently via command-line.
+ * 
+ * As the "controller" to all other classes, it parses command line parameters and loads the history.
  */
 public class App {
 
     public static final Logger logger = Logger.getLogger(App.class);
     private static final History HISTORY = new History();
 
+    /**
+     * Where everything starts. Takes in, and tries to parse as many commandline arguments as possible.
+     * Otherwise, it launches a GUI.
+     * 
+     * @param args Array of command line arguments.
+     */
     public static void main(String[] args) throws MalformedURLException {
         CommandLine cl = getArgs(args);
 
@@ -74,7 +83,8 @@ public class App {
     /**
      * Creates an abstract ripper and instructs it to rip.
      * @param url URL to be ripped
-     * @throws Exception
+     * @throws Exception Nothing too specific here, just a catch-all.
+     * 
      */
     private static void rip(URL url) throws Exception {
         AbstractRipper ripper = AbstractRipper.getRipper(url);
@@ -89,6 +99,7 @@ public class App {
     private static void handleArguments(String[] args) {
         CommandLine cl = getArgs(args);
 
+        //Help (list commands)
         if (cl.hasOption('h') || args.length == 0) {
             HelpFormatter hf = new HelpFormatter();
             hf.printHelp("java -jar ripme.jar [OPTIONS]", getOptions());
@@ -98,28 +109,34 @@ public class App {
         Utils.configureLogger();
         logger.info("Initialized ripme v" + UpdateUtils.getThisJarVersion());
 
+        //Allow file overwriting
         if (cl.hasOption('w')) {
             Utils.setConfigBoolean("file.overwrite", true);
         }
 
+        //SOCKS proxy server
         if (cl.hasOption('s')) {
             String sservfull = cl.getOptionValue('s').trim();
             Proxy.setSocks(sservfull);
         }
 
+        //HTTP proxy server
         if (cl.hasOption('p')) {
             String proxyserverfull = cl.getOptionValue('p').trim();
             Proxy.setHTTPProxy(proxyserverfull);
         }
 
+        //Number of threads
         if (cl.hasOption('t')) {
             Utils.setConfigInteger("threads.size", Integer.parseInt(cl.getOptionValue('t')));
         }
 
+        //Ignore 404
         if (cl.hasOption('4')) {
             Utils.setConfigBoolean("errors.skip404", true);
         }
 
+        //Re-rip <i>all</i> previous albums
         if (cl.hasOption('r')) {
             // Re-rip all via command-line
             List<String> history = Utils.getConfigList("download.history");
@@ -142,6 +159,7 @@ public class App {
             System.exit(0);
         }
 
+        //Re-rip all <i>selected</i> albums
         if (cl.hasOption('R')) {
             loadHistory();
             if (HISTORY.toList().isEmpty()) {
@@ -174,24 +192,29 @@ public class App {
             }
         }
 
+        //Save the order of images in album
         if (cl.hasOption('d')) {
             Utils.setConfigBoolean("download.save_order", true);
         }
 
+        //Don't save the order of images in album
         if (cl.hasOption('D')) {
             Utils.setConfigBoolean("download.save_order", false);
         }
 
+        //In case specify both, break and exit since it isn't possible.
         if ((cl.hasOption('d'))&&(cl.hasOption('D'))) {
             logger.error("\nCannot specify '-d' and '-D' simultaneously");
             System.exit(-1);
         }
 
+        //Destination directory
         if (cl.hasOption('l')) {
             // change the default rips directory
             Utils.setConfigString("rips.directory", cl.getOptionValue('l'));
         }
 
+        //Read URLs from File
         if (cl.hasOption('f')) {
             String filename = cl.getOptionValue('f');
             try {
@@ -208,6 +231,7 @@ public class App {
             }
         }
 
+        //The URL to rip.
         if (cl.hasOption('u')) {
             String url = cl.getOptionValue('u').trim();
             ripURL(url, cl.hasOption("n"));
