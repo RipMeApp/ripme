@@ -16,4 +16,10 @@ public class DeviantartRipperTest extends RippersTest {
         DeviantartRipper ripper = new DeviantartRipper(new URL("http://faterkcx.deviantart.com/gallery/"));
         testRipper(ripper);
     }
+
+    public void testGetGID() throws IOException {
+        URL url = new URL("http://airgee.deviantart.com/gallery/");
+        DeviantartRipper ripper = new DeviantartRipper(url);
+        assertEquals("airgee", ripper.getGID(url));
+    }
 }
