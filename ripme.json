@@ -1,6 +1,9 @@
 {
-    "latestVersion": "1.7.43",
+    "latestVersion": "1.7.46",
     "changeList": [
+        "1.7.46: Fixed hentai2read ripper; Rewrote the myhentaicomics ripper to use the new getAlbumsToQueue func; Can now blacklist nhentai tags; SinnercomicsRipper no longer adds -page-01 to folder names; EightmusesRipper now adds file extension to filename; disbaled test for twitch ripper",
+        "1.7.45: Fixed hentai2read ripper; ImageBam album fixed; Added various translations; TsuminoRipper no longer requires album name to download",
+        "1.7.44: Fixed instagram ripper regex",
         "1.7.43: Fixed queryId regex in instagram ripper",
         "1.7.42: Added user support to SmuttyRipper; Removed vine ripper; Fixed NudeGalsRipper; addURLToDownload improvments; Fixed Instagram ripper",
         "1.7.41: Added support for spyingwithlana.com; Added ManganeloRipper; Added support for dynasty-scans.com",
