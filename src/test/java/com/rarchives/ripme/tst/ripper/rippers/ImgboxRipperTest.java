@@ -10,4 +10,10 @@ public class ImgboxRipperTest extends RippersTest {
         ImgboxRipper ripper = new ImgboxRipper(new URL("https://imgbox.com/g/FJPF7t26FD"));
         testRipper(ripper);
     }
+
+    public void testGetGID() throws IOException {
+        URL url = new URL("https://imgbox.com/g/FJPF7t26FD");
+        ImgboxRipper ripper = new ImgboxRipper(url);
+        assertEquals("FJPF7t26FD", ripper.getGID(url));
+    }
 }
