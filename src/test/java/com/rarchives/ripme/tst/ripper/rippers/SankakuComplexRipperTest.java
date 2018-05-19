@@ -17,4 +17,15 @@ public class SankakuComplexRipperTest extends RippersTest {
         testRipper(ripper);
     }
     */
+    public void testgetGID() throws IOException {
+        URL url = new URL("https://idol.sankakucomplex.com/?tags=meme_%28me%21me%21me%21%29_%28cosplay%29");
+        SankakuComplexRipper ripper = new SankakuComplexRipper(url);
+        assertEquals("idol._meme_(me!me!me!)_(cosplay)", ripper.getGID(url));
+    }
+
+    public void testgetSubDomain() throws IOException {
+        URL url = new URL("https://idol.sankakucomplex.com/?tags=meme_%28me%21me%21me%21%29_%28cosplay%29");
+        SankakuComplexRipper ripper = new SankakuComplexRipper(url);
+        assertEquals("idol.", ripper.getSubDomain(url));
+    }
 }
