@@ -16,4 +16,10 @@ public class YuvutuRipperTest extends RippersTest {
         YuvutuRipper ripper = new YuvutuRipper(new URL("http://www.yuvutu.com/modules.php?name=YuGallery&action=view&set_id=420333"));
         testRipper(ripper);
     }
+
+    public void testGetGID() throws IOException {
+        URL url = new URL("http://www.yuvutu.com/modules.php?name=YuGallery&action=view&set_id=420333");
+        YuvutuRipper ripper = new YuvutuRipper(url);
+        assertEquals("420333", ripper.getGID(url));
+    }
 }
