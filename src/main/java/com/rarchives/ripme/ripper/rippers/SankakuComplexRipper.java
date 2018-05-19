@@ -43,7 +43,7 @@ public class SankakuComplexRipper extends AbstractHTMLRipper {
         Matcher m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             try {
-                return URLDecoder.decode(m.group(2), "UTF-8");
+                return URLDecoder.decode(m.group(1) + "_" + m.group(2), "UTF-8");
             } catch (UnsupportedEncodingException e) {
                 throw new MalformedURLException("Cannot decode tag name '" + m.group(1) + "'");
             }
@@ -51,6 +51,20 @@ public class SankakuComplexRipper extends AbstractHTMLRipper {
         throw new MalformedURLException("Expected sankakucomplex.com URL format: " +
                         "idol.sankakucomplex.com?...&tags=something... - got " +
                         url + "instead");
+    }
+
+    public String getSubDomain(URL url){
+        Pattern p = Pattern.compile("^https?://([a-zA-Z0-9]+\\.)?sankakucomplex\\.com/.*tags=([^&]+).*$");
+        Matcher m = p.matcher(url.toExternalForm());
+        if (m.matches()) {
+            try {
+                return URLDecoder.decode(m.group(1), "UTF-8");
+            } catch (UnsupportedEncodingException e) {
+                return null;
+            }
+        }
+        return null;
+
     }
 
     @Override
@@ -71,9 +85,11 @@ public class SankakuComplexRipper extends AbstractHTMLRipper {
         for (Element thumbSpan : doc.select("div.content > div > span.thumb > a")) {
             String postLink = thumbSpan.attr("href");
                 try {
+                    String subDomain = getSubDomain(url);
+                    String siteURL = "https://" + subDomain + "sankakucomplex.com";
                     // Get the page the full sized image is on
-                    Document subPage = Http.url("https://chan.sankakucomplex.com" + postLink).get();
-                    logger.info("Checking page " + "https://chan.sankakucomplex.com" + postLink);
+                    Document subPage = Http.url(siteURL + postLink).get();
+                    logger.info("Checking page " + siteURL + postLink);
                     imageURLs.add("https:" + subPage.select("div[id=stats] > ul > li > a[id=highres]").attr("href"));
                 } catch (IOException e) {
                     logger.warn("Error while loading page " + postLink, e);
