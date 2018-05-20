@@ -23,6 +23,7 @@ import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 import com.rarchives.ripme.utils.Http;
 
 import org.jsoup.Connection;
+import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import com.rarchives.ripme.ui.RipStatusMessage;
@@ -39,6 +40,9 @@ public class InstagramRipper extends AbstractHTMLRipper {
     private String userID;
     private String rhx_gis = null;
     private String csrftoken;
+    // Run into a weird issue with Jsoup cutting some json pages in half, this is a work around
+    // see https://github.com/RipMeApp/ripme/issues/601
+    private String workAroundJsonString;
 
 
 
@@ -242,6 +246,10 @@ public class InstagramRipper extends AbstractHTMLRipper {
             json = getJSONFromPage(doc);
         } catch (IOException e) {
             logger.warn("Unable to exact json from page");
+        } catch (JSONException e) {
+            // IF there's a json error it's almost certianly because our json string got cut off while being turned
+            // into a doc, so we try this work around
+            json = new JSONObject(workAroundJsonString);
         }
 
         // get the rhx_gis value so we can get the next page later on
@@ -377,8 +385,8 @@ public class InstagramRipper extends AbstractHTMLRipper {
                 String vars = "{\"id\":\"" + userID + "\",\"first\":50,\"after\":\"" + nextPageID + "\"}";
                 String ig_gis = getIGGis(vars);
                 logger.info(ig_gis);
-                toreturn = Http.url("https://www.instagram.com/graphql/query/?query_hash=" + qHash + "&variables=" + vars
-                        ).header("x-instagram-gis", ig_gis).cookies(cookies).ignoreContentType().get();
+
+                toreturn = getPage("https://www.instagram.com/graphql/query/?query_hash=" + qHash + "&variables=" + vars, ig_gis);
                 if (!pageHasImages(toreturn)) {
                     throw new IOException("No more pages");
                 }
@@ -397,13 +405,41 @@ public class InstagramRipper extends AbstractHTMLRipper {
     }
 
     private boolean pageHasImages(Document doc) {
-        JSONObject json = new JSONObject(stripHTMLTags(doc.html()));
+        JSONObject json = new JSONObject(workAroundJsonString);
         int numberOfImages = json.getJSONObject("data").getJSONObject("user")
                 .getJSONObject("edge_owner_to_timeline_media").getJSONArray("edges").length();
         if (numberOfImages == 0) {
             return false;
         }
         return true;
+    }
+
+    private Document getPage(String url, String ig_gis) {
+        StringBuilder sb = new StringBuilder();
+        try {
+            // We can't use Jsoup here because it won't download a non-html file larger than a MB
+            // even if you set maxBodySize to 0
+            URLConnection connection = new URL(url).openConnection();
+            connection.setRequestProperty("User-Agent", USER_AGENT);
+            connection.setRequestProperty("x-instagram-gis", ig_gis);
+            BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+            String line;
+            while ((line = in.readLine()) != null) {
+                sb.append(line);
+
+            }
+            in.close();
+            workAroundJsonString = sb.toString();
+            return Jsoup.parse(sb.toString());
+
+        } catch (MalformedURLException e) {
+            logger.info("Unable to get query_hash, " + url + " is a malformed URL");
+            return null;
+        } catch (IOException e) {
+            logger.info("Unable to get query_hash");
+            logger.info(e.getMessage());
+            return null;
+        }
     }
 
     private String getQHash(Document doc) {
