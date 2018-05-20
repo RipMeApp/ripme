@@ -160,10 +160,65 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
             if (spyingwithlanaMat.matches()) {
                 return true;
             }
+
+            Pattern pa = Pattern.compile("^https?://8muses.download/\\?s=([a-zA-Z0-9-]*)");
+            Matcher ma = pa.matcher(url.toExternalForm());
+            if (ma.matches()) {
+                return true;
+            }
+
+            Pattern pat = Pattern.compile("https?://8muses.download/page/\\d+/\\?s=([a-zA-Z0-9-]*)");
+            Matcher mat = pat.matcher(url.toExternalForm());
+            if (mat.matches()) {
+                return true;
+            }
+
+            pat = Pattern.compile("https://8muses.download/category/([a-zA-Z0-9-]*)/?");
+            mat = pat.matcher(url.toExternalForm());
+            if (mat.matches()) {
+                return true;
+            }
         }
 
 
         return false;
+    }
+
+    @Override
+    public boolean hasQueueSupport() {
+        return true;
+    }
+
+    @Override
+    public boolean pageContainsAlbums(URL url) {
+        Pattern pa = Pattern.compile("^https?://8muses.download/\\?s=([a-zA-Z0-9-]*)");
+        Matcher ma = pa.matcher(url.toExternalForm());
+        if (ma.matches()) {
+            return true;
+        }
+
+        Pattern pat = Pattern.compile("https?://8muses.download/page/\\d+/\\?s=([a-zA-Z0-9-]*)");
+        Matcher mat = pat.matcher(url.toExternalForm());
+        if (mat.matches()) {
+            return true;
+        }
+
+        pat = Pattern.compile("https://8muses.download/category/([a-zA-Z0-9-]*)/?");
+        mat = pat.matcher(url.toExternalForm());
+        if (mat.matches()) {
+            return true;
+        }
+
+        return false;
+    }
+
+    @Override
+    public List<String> getAlbumsToQueue(Document doc) {
+        List<String> urlsToAddToQueue = new ArrayList<>();
+        for (Element elem : doc.select("#post_masonry > article > div > figure > a")) {
+            urlsToAddToQueue.add(elem.attr("href"));
+        }
+        return urlsToAddToQueue;
     }
 
     @Override
