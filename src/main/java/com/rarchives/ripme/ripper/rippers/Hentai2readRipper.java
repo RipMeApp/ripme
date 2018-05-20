@@ -31,21 +31,50 @@ public class Hentai2readRipper extends AbstractHTMLRipper {
             return "hentai2read.com";
         }
 
-        @Override
-        public String getGID(URL url) throws MalformedURLException {
-            Pattern p = Pattern.compile("https?://hentai2read\\.com/([a-zA-Z0-9_-]*)/(\\d)?/?");
-            Matcher m = p.matcher(url.toExternalForm());
-            if (m.matches()) {
-                return m.group(1);
-            }
-            throw new MalformedURLException("Expected hentai2read.com URL format: " +
-                            "hbrowse.com/COMICID - got " + url + " instead");
+    @Override
+    public boolean hasQueueSupport() {
+        return true;
+    }
+
+    @Override
+    public boolean pageContainsAlbums(URL url) {
+        logger.info("Page contains albums");
+        Pattern pat = Pattern.compile("https?://hentai2read\\.com/([a-zA-Z0-9_-]*)/?");
+        Matcher mat = pat.matcher(url.toExternalForm());
+        if (mat.matches()) {
+            return true;
         }
+        return false;
+    }
+
+    @Override
+    public List<String> getAlbumsToQueue(Document doc) {
+        List<String> urlsToAddToQueue = new ArrayList<>();
+        for (Element elem : doc.select(".nav-chapters > li > div.media > a")) {
+            urlsToAddToQueue.add(elem.attr("href"));
+        }
+        return urlsToAddToQueue;
+    }
+
+    @Override
+    public String getGID(URL url) throws MalformedURLException {
+        Pattern p = Pattern.compile("https?://hentai2read\\.com/([a-zA-Z0-9_-]*)/(\\d+)?/?");
+        Matcher m = p.matcher(url.toExternalForm());
+        if (m.matches()) {
+            return m.group(1) + "_" + m.group(2);
+        }
+        throw new MalformedURLException("Expected hentai2read.com URL format: " +
+                            "hentai2read.com/COMICID - got " + url + " instead");
+    }
 
         @Override
         public Document getFirstPage() throws IOException {
             String thumbnailLink;
             try {
+                // If the page contains albums we want to load the main page
+                if (pageContainsAlbums(url)) {
+                    return Http.url(url).get();
+                }
                 Document tempDoc;
                 tempDoc = Http.url(url).get();
                 // Get the thumbnail page so we can rip all images without loading every page in the comic
