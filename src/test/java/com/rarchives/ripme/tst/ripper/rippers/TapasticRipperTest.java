@@ -10,4 +10,10 @@ public class TapasticRipperTest extends RippersTest {
         TapasticRipper ripper = new TapasticRipper(new URL("https://tapas.io/series/tsiwbakd-comic"));
         testRipper(ripper);
     }
+
+    public void testGetGID() throws IOException {
+        URL url = new URL("https://tapas.io/series/tsiwbakd-comic");
+        TapasticRipper ripper = new TapasticRipper(url);
+        assertEquals("series_ tsiwbakd-comic", ripper.getGID(url));
+    }
 }

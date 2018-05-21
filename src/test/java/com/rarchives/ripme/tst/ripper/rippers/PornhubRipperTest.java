@@ -10,4 +10,10 @@ public class PornhubRipperTest extends RippersTest {
         PornhubRipper ripper = new PornhubRipper(new URL("https://www.pornhub.com/album/15680522"));
         testRipper(ripper);
     }
+
+    public void testGetGID() throws IOException {
+        URL url = new URL("https://www.pornhub.com/album/15680522");
+        PornhubRipper ripper = new PornhubRipper(url);
+        assertEquals("15680522", ripper.getGID(url));
+    }
 }

@@ -10,4 +10,10 @@ public class SinfestRipperTest extends RippersTest {
         SinfestRipper ripper = new SinfestRipper(new URL("http://sinfest.net/view.php?date=2000-01-17"));
         testRipper(ripper);
     }
+
+    public void testGetGID() throws IOException {
+        URL url = new URL("http://sinfest.net/view.php?date=2000-01-17");
+        SinfestRipper ripper = new SinfestRipper(url);
+        assertEquals("2000-01-17", ripper.getGID(url));
+    }
 }

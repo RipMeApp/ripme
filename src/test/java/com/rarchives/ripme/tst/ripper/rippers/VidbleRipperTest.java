@@ -10,5 +10,11 @@ public class VidbleRipperTest extends RippersTest {
         VidbleRipper ripper = new VidbleRipper(new URL("http://www.vidble.com/album/y1oyh3zd"));
         testRipper(ripper);
     }
+
+    public void testGetGID() throws IOException {
+        URL url = new URL("http://www.vidble.com/album/y1oyh3zd");
+        VidbleRipper ripper = new VidbleRipper(url);
+        assertEquals("y1oyh3zd", ripper.getGID(url));
+    }
 }
 

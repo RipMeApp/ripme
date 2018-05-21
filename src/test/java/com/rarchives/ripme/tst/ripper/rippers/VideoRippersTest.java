@@ -38,14 +38,17 @@ public class VideoRippersTest extends RippersTest {
         }
     }
 
-    public void testTwitchVideoRipper() throws IOException {
-        List<URL> contentURLs = new ArrayList<>();
-        contentURLs.add(new URL("https://clips.twitch.tv/FaithfulIncredulousPotTBCheesePull"));
-        for (URL url : contentURLs) {
-            TwitchVideoRipper ripper = new TwitchVideoRipper(url);
-            videoTestHelper(ripper);
-        }
-    }
+
+//    Test disbaled. See https://github.com/RipMeApp/ripme/issues/574
+    
+//    public void testTwitchVideoRipper() throws IOException {
+//        List<URL> contentURLs = new ArrayList<>();
+//        contentURLs.add(new URL("https://clips.twitch.tv/FaithfulIncredulousPotTBCheesePull"));
+//        for (URL url : contentURLs) {
+//            TwitchVideoRipper ripper = new TwitchVideoRipper(url);
+//            videoTestHelper(ripper);
+//        }
+//    }
     
     public void testXhamsterRipper() throws IOException {
         List<URL> contentURLs = new ArrayList<>();
