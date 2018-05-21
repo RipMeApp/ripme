@@ -16,9 +16,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Collections;
-import java.util.Date;
-import java.util.Enumeration;
+import java.util.*;
 import java.util.List;
 
 import javax.imageio.ImageIO;
@@ -138,6 +136,17 @@ public final class MainWindow implements Runnable, RipStatusHandler {
 
     private static AbstractRipper ripper;
 
+    private ResourceBundle rb = Utils.getResourceBundle();
+
+    private void updateQueueLabel() {
+        if (queueListModel.size() > 0) {
+            optionQueue.setText( rb.getString("Queue") + " (" + queueListModel.size() + ")");
+        } else {
+            optionQueue.setText(rb.getString("Queue"));
+        }
+    }
+
+
     private static void addCheckboxListener(JCheckBox checkBox, String configString) {
         checkBox.addActionListener(arg0 -> {
             Utils.setConfigBoolean(configString, checkBox.isSelected());
@@ -151,6 +160,11 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         checkbox.setHorizontalAlignment(JCheckBox.RIGHT);
         checkbox.setHorizontalTextPosition(JCheckBox.LEFT);
         return checkbox;
+    }
+
+
+    public static void addUrlToQueue(String url) {
+        queueListModel.addElement(url);
     }
 
     public MainWindow() {
@@ -289,7 +303,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         gbc.gridx = 3; ripPanel.add(stopButton, gbc);
         gbc.weightx = 1;
 
-        statusLabel = new JLabel("Inactive");
+        statusLabel = new JLabel(rb.getString("inactive"));
         statusLabel.setHorizontalAlignment(JLabel.CENTER);
         openButton = new JButton();
         openButton.setVisible(false);
@@ -307,10 +321,10 @@ public final class MainWindow implements Runnable, RipStatusHandler {
 
         JPanel optionsPanel = new JPanel(new GridBagLayout());
         optionsPanel.setBorder(emptyBorder);
-        optionLog = new JButton("Log");
-        optionHistory = new JButton("History");
-        optionQueue = new JButton("Queue");
-        optionConfiguration = new JButton("Configuration");
+        optionLog = new JButton(rb.getString("Log"));
+        optionHistory = new JButton(rb.getString("History"));
+        optionQueue = new JButton(rb.getString("Queue"));
+        optionConfiguration = new JButton(rb.getString("Configuration"));
         optionLog.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
         optionHistory.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
         optionQueue.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
@@ -402,9 +416,9 @@ public final class MainWindow implements Runnable, RipStatusHandler {
             historyTable.getColumnModel().getColumn(i).setPreferredWidth(width);
         }
         JScrollPane historyTableScrollPane = new JScrollPane(historyTable);
-        historyButtonRemove = new JButton("Remove");
-        historyButtonClear  = new JButton("Clear");
-        historyButtonRerip  = new JButton("Re-rip Checked");
+        historyButtonRemove = new JButton(rb.getString("remove"));
+        historyButtonClear  = new JButton(rb.getString("clear"));
+        historyButtonRerip  = new JButton(rb.getString("re-rip.checked"));
         gbc.gridx = 0;
         // History List Panel
         JPanel historyTablePanel = new JPanel(new GridBagLayout());
@@ -440,11 +454,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         for (String item : Utils.getConfigList("queue")) {
             queueListModel.addElement(item);
         }
-        if (queueListModel.size() > 0) {
-            optionQueue.setText("Queue (" + queueListModel.size() + ")");
-        } else {
-            optionQueue.setText("Queue");
-        }
+        updateQueueLabel();
         gbc.gridx = 0;
         JPanel queueListPanel = new JPanel(new GridBagLayout());
         gbc.fill = GridBagConstraints.BOTH;
@@ -459,27 +469,27 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         configurationPanel.setBorder(emptyBorder);
         configurationPanel.setVisible(false);
         // TODO Configuration components
-        configUpdateButton = new JButton("Check for updates");
-        configUpdateLabel = new JLabel("Current version: " + UpdateUtils.getThisJarVersion(), JLabel.RIGHT);
-        JLabel configThreadsLabel = new JLabel("Maximum download threads:", JLabel.RIGHT);
-        JLabel configTimeoutLabel = new JLabel("Timeout (in milliseconds):", JLabel.RIGHT);
-        JLabel configRetriesLabel = new JLabel("Retry download count:", JLabel.RIGHT);
+        configUpdateButton = new JButton(rb.getString("check.for.updates"));
+        configUpdateLabel = new JLabel( rb.getString("current.version") + ": " + UpdateUtils.getThisJarVersion(), JLabel.RIGHT);
+        JLabel configThreadsLabel = new JLabel(rb.getString("max.download.threads") + ":", JLabel.RIGHT);
+        JLabel configTimeoutLabel = new JLabel(rb.getString("timeout.mill"), JLabel.RIGHT);
+        JLabel configRetriesLabel = new JLabel(rb.getString("retry.download.count"), JLabel.RIGHT);
         configThreadsText = new JTextField(Integer.toString(Utils.getConfigInteger("threads.size", 3)));
         configTimeoutText = new JTextField(Integer.toString(Utils.getConfigInteger("download.timeout", 60000)));
         configRetriesText = new JTextField(Integer.toString(Utils.getConfigInteger("download.retries", 3)));
-        configOverwriteCheckbox = addNewCheckbox("Overwrite existing files?", "file.overwrite", false);
-        configAutoupdateCheckbox = addNewCheckbox("Auto-update?", "auto.update", true);
-        configPlaySound = addNewCheckbox("Sound when rip completes", "play.sound", false);
-        configShowPopup = addNewCheckbox("Notification when rip starts", "download.show_popup", false);
-        configSaveOrderCheckbox = addNewCheckbox("Preserve order", "download.save_order", true);
-        configSaveLogs = addNewCheckbox("Save logs", "log.save", false);
-        configSaveURLsOnly = addNewCheckbox("Save URLs only", "urls_only.save", false);
-        configSaveAlbumTitles = addNewCheckbox("Save album titles", "album_titles.save", true);
-        configClipboardAutorip = addNewCheckbox("Autorip from Clipboard", "clipboard.autorip", false);
-        configSaveDescriptions = addNewCheckbox("Save descriptions", "descriptions.save", true);
-        configPreferMp4 = addNewCheckbox("Prefer MP4 over GIF","prefer.mp4", false);
-        configWindowPosition = addNewCheckbox("Restore window position", "window.position", true);
-        configURLHistoryCheckbox = addNewCheckbox("Remember URL history", "remember.url_history", true);
+        configOverwriteCheckbox = addNewCheckbox(rb.getString("overwrite.existing.files"), "file.overwrite", false);
+        configAutoupdateCheckbox = addNewCheckbox(rb.getString("auto.update"), "auto.update", true);
+        configPlaySound = addNewCheckbox(rb.getString("sound.when.rip.completes"), "play.sound", false);
+        configShowPopup = addNewCheckbox(rb.getString("notification.when.rip.starts"), "download.show_popup", false);
+        configSaveOrderCheckbox = addNewCheckbox(rb.getString("preserve.order"), "download.save_order", true);
+        configSaveLogs = addNewCheckbox(rb.getString("save.logs"), "log.save", false);
+        configSaveURLsOnly = addNewCheckbox(rb.getString("save.urls.only"), "urls_only.save", false);
+        configSaveAlbumTitles = addNewCheckbox(rb.getString("save.album.titles"), "album_titles.save", true);
+        configClipboardAutorip = addNewCheckbox(rb.getString("autorip.from.clipboard"), "clipboard.autorip", false);
+        configSaveDescriptions = addNewCheckbox(rb.getString("save.descriptions"), "descriptions.save", true);
+        configPreferMp4 = addNewCheckbox(rb.getString("prefer.mp4.over.gif"),"prefer.mp4", false);
+        configWindowPosition = addNewCheckbox(rb.getString("restore.window.position"), "window.position", true);
+        configURLHistoryCheckbox = addNewCheckbox(rb.getString("remember.url.history"), "remember.url_history", true);
 
         configLogLevelCombobox = new JComboBox(new String[] {"Log level: Error", "Log level: Warn", "Log level: Info", "Log level: Debug"});
         configLogLevelCombobox.setSelectedItem(Utils.getConfigString("log.level", "Log level: Debug"));
@@ -785,11 +795,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         queueListModel.addListDataListener(new ListDataListener() {
             @Override
             public void intervalAdded(ListDataEvent arg0) {
-                if (queueListModel.size() > 0) {
-                    optionQueue.setText("Queue (" + queueListModel.size() + ")");
-                } else {
-                    optionQueue.setText("Queue");
-                }
+                updateQueueLabel();
                 if (!isRipping) {
                     ripNextAlbum();
                 }
@@ -966,7 +972,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         HISTORY.clear();
         if (historyFile.exists()) {
             try {
-                logger.info("Loading history from " + historyFile.getCanonicalPath());
+                logger.info(rb.getString("loading.history.from") + " " + historyFile.getCanonicalPath());
                 HISTORY.fromFile(historyFile.getCanonicalPath());
             } catch (IOException e) {
                 logger.error("Failed to load history from file " + historyFile, e);
@@ -979,7 +985,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
                         JOptionPane.ERROR_MESSAGE);
             }
         } else {
-            logger.info("Loading history from configuration");
+            logger.info(rb.getString("loading.history.from.configuration"));
             HISTORY.fromList(Utils.getConfigList("download.history"));
             if (HISTORY.toList().size() == 0) {
                 // Loaded from config, still no entries.
@@ -1025,17 +1031,13 @@ public final class MainWindow implements Runnable, RipStatusHandler {
             return;
         }
         String nextAlbum = (String) queueListModel.remove(0);
-        if (queueListModel.isEmpty()) {
-            optionQueue.setText("Queue");
-        } else {
-            optionQueue.setText("Queue (" + queueListModel.size() + ")");
-        }
+        updateQueueLabel();
         Thread t = ripAlbum(nextAlbum);
         if (t == null) {
             try {
                 Thread.sleep(500);
             } catch (InterruptedException ie) {
-                logger.error("Interrupted while waiting to rip next album", ie);
+                logger.error(rb.getString("interrupted.while.waiting.to.rip.next.album"), ie);
             }
             ripNextAlbum();
         } else {

@@ -13,4 +13,10 @@ public class ShesFreakyRipperTest extends RippersTest {
         testRipper(ripper);
     }
     */
+
+    public void testGetGID() throws IOException {
+        URL url = new URL("http://www.shesfreaky.com/gallery/nicee-snow-bunny-579NbPjUcYa.html");
+        ShesFreakyRipper ripper = new ShesFreakyRipper(url);
+        assertEquals("nicee-snow-bunny-579NbPjUcYa", ripper.getGID(url));
+    }
 }

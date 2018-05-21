@@ -44,7 +44,7 @@ public class TumblrRipper extends AlbumRipper {
     private static final String API_KEY = APIKEYS.get(genNum); // Select random API key from APIKEYS
 
     /**
-     * Gets the API key. 
+     * Gets the API key.
      * Chooses between default/included keys & user specified ones (from the config file).
      * @return Tumblr API key
      */
@@ -57,7 +57,7 @@ public class TumblrRipper extends AlbumRipper {
             logger.info("Using user tumblr.auth api key: " + userDefinedAPIKey);
             return userDefinedAPIKey;
         }
-       
+
     }
 
     public TumblrRipper(URL url) throws IOException {
@@ -71,12 +71,12 @@ public class TumblrRipper extends AlbumRipper {
     public boolean canRip(URL url) {
         return url.getHost().endsWith(DOMAIN);
     }
-    
+
     /**
      * Sanitizes URL.
      * @param url URL to be sanitized.
      * @return Sanitized URL
-     * @throws MalformedURLException 
+     * @throws MalformedURLException
      */
     @Override
     public URL sanitizeURL(URL url) throws MalformedURLException {
@@ -230,7 +230,7 @@ public class TumblrRipper extends AlbumRipper {
                             urlString = urlString.replaceAll("_\\d+\\.", "_raw.");
                             fileURL = new URL(urlString);
                         } else {
-                            fileURL = new URL(photo.getJSONObject("original_size").getString("url").replaceAll("http", "https"));
+                            fileURL = new URL(photo.getJSONObject("original_size").getString("url").replaceAll("http:", "https:"));
                         }
                         m = p.matcher(fileURL.toString());
                         if (m.matches()) {

@@ -10,4 +10,10 @@ public class FuraffinityRipperTest extends RippersTest {
         FuraffinityRipper ripper = new FuraffinityRipper(new URL("https://www.furaffinity.net/gallery/mustardgas/"));
         testRipper(ripper);
     }
+
+    public void testGetGID() throws IOException {
+        URL url = new URL("https://www.furaffinity.net/gallery/mustardgas/");
+        FuraffinityRipper ripper = new FuraffinityRipper(url);
+        assertEquals("mustardgas", ripper.getGID(url));
+    }
 }

@@ -1,5 +1,6 @@
 package com.rarchives.ripme;
 
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.BufferedReader;
@@ -18,6 +19,7 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.apache.commons.lang.SystemUtils;
 import org.apache.log4j.Logger;
 
 import com.rarchives.ripme.ripper.AbstractRipper;
@@ -25,48 +27,64 @@ import com.rarchives.ripme.ui.History;
 import com.rarchives.ripme.ui.HistoryEntry;
 import com.rarchives.ripme.ui.MainWindow;
 import com.rarchives.ripme.ui.UpdateUtils;
+import com.rarchives.ripme.utils.Proxy;
 import com.rarchives.ripme.utils.RipUtils;
 import com.rarchives.ripme.utils.Utils;
 
 /**
  * Entry point to application.
+ * This is where all the fun happens, with the main method.
  * Decides to display UI or to run silently via command-line.
+ * 
+ * As the "controller" to all other classes, it parses command line parameters and loads the history.
  */
 public class App {
 
-    public static final Logger logger;
+    public static final Logger logger = Logger.getLogger(App.class);
     private static final History HISTORY = new History();
 
-    static {
-        //initialize logger
-        Utils.configureLogger();
-        logger = Logger.getLogger(App.class);
-    }
-
+    /**
+     * Where everything starts. Takes in, and tries to parse as many commandline arguments as possible.
+     * Otherwise, it launches a GUI.
+     * 
+     * @param args Array of command line arguments.
+     */
     public static void main(String[] args) throws MalformedURLException {
         CommandLine cl = getArgs(args);
+
         if (args.length > 0 && cl.hasOption('v')){
-            logger.error(UpdateUtils.getThisJarVersion());
+            logger.info(UpdateUtils.getThisJarVersion());
             System.exit(0);
         }
 
-        System.setProperty("apple.laf.useScreenMenuBar", "true");
-        System.setProperty("com.apple.mrj.application.apple.menu.about.name", "RipMe");
-        logger.info("Initialized ripme v" + UpdateUtils.getThisJarVersion());
+        if (Utils.getConfigString("proxy.http", null) != null) {
+            Proxy.setHTTPProxy(Utils.getConfigString("proxy.http", null));
+        } else if (Utils.getConfigString("proxy.socks", null) != null) {
+            Proxy.setSocks(Utils.getConfigString("proxy.socks", null));
+        }
 
-        if (args.length > 0) {
-            // CLI Mode
+        if (GraphicsEnvironment.isHeadless() || args.length > 0) {
             handleArguments(args);
         } else {
-            // GUI Mode
+            if (SystemUtils.IS_OS_MAC_OSX) {
+                System.setProperty("apple.laf.useScreenMenuBar", "true");
+                System.setProperty("com.apple.mrj.application.apple.menu.about.name", "RipMe");
+            }
+
+            Utils.configureLogger();
+
+            logger.info("Initialized ripme v" + UpdateUtils.getThisJarVersion());
+
             MainWindow mw = new MainWindow();
             SwingUtilities.invokeLater(mw);
         }
     }
+
     /**
      * Creates an abstract ripper and instructs it to rip.
      * @param url URL to be ripped
-     * @throws Exception 
+     * @throws Exception Nothing too specific here, just a catch-all.
+     * 
      */
     private static void rip(URL url) throws Exception {
         AbstractRipper ripper = AbstractRipper.getRipper(url);
@@ -80,20 +98,45 @@ public class App {
      */
     private static void handleArguments(String[] args) {
         CommandLine cl = getArgs(args);
-        if (cl.hasOption('h')) {
+
+        //Help (list commands)
+        if (cl.hasOption('h') || args.length == 0) {
             HelpFormatter hf = new HelpFormatter();
             hf.printHelp("java -jar ripme.jar [OPTIONS]", getOptions());
             System.exit(0);
         }
+
+        Utils.configureLogger();
+        logger.info("Initialized ripme v" + UpdateUtils.getThisJarVersion());
+
+        //Allow file overwriting
         if (cl.hasOption('w')) {
             Utils.setConfigBoolean("file.overwrite", true);
         }
+
+        //SOCKS proxy server
+        if (cl.hasOption('s')) {
+            String sservfull = cl.getOptionValue('s').trim();
+            Proxy.setSocks(sservfull);
+        }
+
+        //HTTP proxy server
+        if (cl.hasOption('p')) {
+            String proxyserverfull = cl.getOptionValue('p').trim();
+            Proxy.setHTTPProxy(proxyserverfull);
+        }
+
+        //Number of threads
         if (cl.hasOption('t')) {
             Utils.setConfigInteger("threads.size", Integer.parseInt(cl.getOptionValue('t')));
         }
+
+        //Ignore 404
         if (cl.hasOption('4')) {
             Utils.setConfigBoolean("errors.skip404", true);
         }
+
+        //Re-rip <i>all</i> previous albums
         if (cl.hasOption('r')) {
             // Re-rip all via command-line
             List<String> history = Utils.getConfigList("download.history");
@@ -115,6 +158,8 @@ public class App {
             // Exit
             System.exit(0);
         }
+
+        //Re-rip all <i>selected</i> albums
         if (cl.hasOption('R')) {
             loadHistory();
             if (HISTORY.toList().isEmpty()) {
@@ -146,20 +191,30 @@ public class App {
                 System.exit(-1);
             }
         }
+
+        //Save the order of images in album
         if (cl.hasOption('d')) {
             Utils.setConfigBoolean("download.save_order", true);
         }
+
+        //Don't save the order of images in album
         if (cl.hasOption('D')) {
             Utils.setConfigBoolean("download.save_order", false);
         }
+
+        //In case specify both, break and exit since it isn't possible.
         if ((cl.hasOption('d'))&&(cl.hasOption('D'))) {
             logger.error("\nCannot specify '-d' and '-D' simultaneously");
             System.exit(-1);
         }
+
+        //Destination directory
         if (cl.hasOption('l')) {
             // change the default rips directory
             Utils.setConfigString("rips.directory", cl.getOptionValue('l'));
         }
+
+        //Read URLs from File
         if (cl.hasOption('f')) {
             String filename = cl.getOptionValue('f');
             try {
@@ -175,10 +230,13 @@ public class App {
                 logger.error("[!] Failed reading file containing list of URLs. Cannot continue.");
             }
         }
+
+        //The URL to rip.
         if (cl.hasOption('u')) {
             String url = cl.getOptionValue('u').trim();
             ripURL(url, cl.hasOption("n"));
         }
+
     }
 
     /**
@@ -226,6 +284,8 @@ public class App {
         opts.addOption("n", "no-prop-file", false, "Do not create properties file.");
         opts.addOption("f", "urls-file", true, "Rip URLs from a file.");
         opts.addOption("v", "version", false, "Show current version");
+        opts.addOption("s", "socks-server", true, "Use socks server ([user:password]@host[:port])");
+        opts.addOption("p", "proxy-server", true, "Use HTTP Proxy server ([user:password]@host[:port])");
         return opts;
     }
 
@@ -244,7 +304,7 @@ public class App {
             return null;
         }
     }
-    
+
     /**
      * Loads history from history file into memory.
      */

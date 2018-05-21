@@ -8,6 +8,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLConnection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -36,10 +37,11 @@ class DownloadFileThread extends Thread {
     private String prettySaveAs;
     private AbstractRipper observer;
     private int retries;
+    private Boolean getFileExtFromMIME;
 
     private final int TIMEOUT;
 
-    public DownloadFileThread(URL url, File saveAs, AbstractRipper observer) {
+    public DownloadFileThread(URL url, File saveAs, AbstractRipper observer, Boolean getFileExtFromMIME) {
         super();
         this.url = url;
         this.saveAs = saveAs;
@@ -47,6 +49,7 @@ class DownloadFileThread extends Thread {
         this.observer = observer;
         this.retries = Utils.getConfigInteger("download.retries", 1);
         this.TIMEOUT = Utils.getConfigInteger("download.timeout", 60000);
+        this.getFileExtFromMIME = getFileExtFromMIME;
     }
 
     public void setReferrer(String referrer) {
@@ -143,9 +146,15 @@ class DownloadFileThread extends Thread {
                     observer.downloadErrored(url, "Imgur image is 404: " + url.toExternalForm());
                     return;
                 }
-
                 // Save file
                 bis = new BufferedInputStream(huc.getInputStream());
+
+                // Check if we should get the file ext from the MIME type
+                if (getFileExtFromMIME) {
+                    String fileExt = URLConnection.guessContentTypeFromStream(bis).replaceAll("image/", "");
+                    saveAs = new File(saveAs.toString() + "." + fileExt);
+                }
+
                 fos = new FileOutputStream(saveAs);
                 IOUtils.copy(bis, fos);
                 break; // Download successful: break out of infinite loop

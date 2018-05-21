@@ -55,12 +55,20 @@ public class WordpressComicRipperTest extends RippersTest {
         WordpressComicRipper ripper = new WordpressComicRipper(
                 new URL("http://www.konradokonski.com/sawdust/comic/get-up/"));
         testRipper(ripper);
+
     }
 
     public void test_konradokonski_2() throws IOException {
         WordpressComicRipper ripper = new WordpressComicRipper(
                 new URL("http://www.konradokonski.com/wiory/comic/08182008/"));
         testRipper(ripper);
+    }
+
+    public void test_konradokonski_getAlbumTitle() throws IOException {
+        URL url = new URL("http://www.konradokonski.com/sawdust/comic/get-up/");
+        WordpressComicRipper ripper = new WordpressComicRipper(url);
+        assertEquals("konradokonski.com_sawdust", ripper.getAlbumTitle(url));
+
     }
 
     /*
@@ -83,6 +91,32 @@ public class WordpressComicRipperTest extends RippersTest {
                 new URL("http://tnbtu.com/comic/01-00/"));
         testRipper(ripper);
     }
+
+    public void test_Eightmuses_download() throws IOException {
+        WordpressComicRipper ripper = new WordpressComicRipper(
+                new URL("https://8muses.download/lustomic-playkittens-josh-samuel-porn-comics-8-muses/"));
+        testRipper(ripper);
+    }
+
+    public void test_Eightmuses_getAlbumTitle() throws IOException {
+        URL url = new URL("https://8muses.download/lustomic-playkittens-josh-samuel-porn-comics-8-muses/");
+        WordpressComicRipper ripper = new WordpressComicRipper(url);
+        assertEquals("8muses.download_lustomic-playkittens-josh-samuel-porn-comics-8-muses",
+                ripper.getAlbumTitle(url));
+    }
+
+    public void test_spyingwithlana_download() throws IOException {
+        WordpressComicRipper ripper = new WordpressComicRipper(
+                new URL("http://spyingwithlana.com/comic/the-big-hookup/"));
+        testRipper(ripper);
+    }
+
+    public void test_spyingwithlana_getAlbumTitle() throws IOException {
+        URL url = new URL("http://spyingwithlana.com/comic/the-big-hookup/");
+        WordpressComicRipper ripper = new WordpressComicRipper(url);
+        assertEquals("spyingwithlana_the-big-hookup", ripper.getAlbumTitle(url));
+    }
+
     // https://github.com/RipMeApp/ripme/issues/269 - Disabled test - WordpressRipperTest: various domains flaky in CI
 //    public void test_pepsaga() throws IOException {
 //        WordpressComicRipper ripper = new WordpressComicRipper(

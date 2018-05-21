@@ -10,4 +10,10 @@ public class TheyiffgalleryRipperTest extends RippersTest {
         TheyiffgalleryRipper ripper = new TheyiffgalleryRipper(new URL("https://theyiffgallery.com/index?/category/4303"));
         testRipper(ripper);
     }
+
+    public void testGetGID() throws IOException {
+        URL url = new URL("https://theyiffgallery.com/index?/category/4303");
+        TheyiffgalleryRipper ripper = new TheyiffgalleryRipper(url);
+        assertEquals("4303", ripper.getGID(url));
+    }
 }
