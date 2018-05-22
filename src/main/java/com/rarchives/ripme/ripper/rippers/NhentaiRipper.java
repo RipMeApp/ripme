@@ -20,9 +20,6 @@ import java.util.regex.Pattern;
 
 public class NhentaiRipper extends AbstractHTMLRipper {
 
-    // All sleep times are in milliseconds
-    private static final int IMAGE_SLEEP_TIME = 1500;
-
     private String albumTitle;
     private Document firstPage;
 
@@ -129,84 +126,17 @@ public class NhentaiRipper extends AbstractHTMLRipper {
     @Override
     public List<String> getURLsFromPage(Document page) {
         List<String> imageURLs = new ArrayList<>();
-        Elements thumbs = page.select(".gallerythumb");
+        Elements thumbs = page.select("a.gallerythumb > img");
         for (Element el : thumbs) {
-            String imageUrl = el.attr("href");
-            imageURLs.add("https://nhentai.net" + imageUrl);
+            imageURLs.add(el.attr("data-src").replaceAll("t\\.n", "i.n").replaceAll("t\\.", "."));
         }
         return imageURLs;
     }
 
     @Override
     public void downloadURL(URL url, int index) {
-        NHentaiImageThread t = new NHentaiImageThread(url, index, this.workingDir);
-        nhentaiThreadPool.addThread(t);
-        try {
-            Thread.sleep(IMAGE_SLEEP_TIME);
-        } catch (InterruptedException e) {
-            logger.warn("Interrupted while waiting to load next image", e);
-        }
+        addURLToDownload(url, getPrefix(index), "", this.url.toExternalForm(), null);
     }
 
-    private class NHentaiImageThread extends Thread {
 
-        private URL url;
-        private int index;
-        private File workingDir;
-
-        NHentaiImageThread(URL url, int index, File workingDir) {
-            super();
-            this.url = url;
-            this.index = index;
-            this.workingDir = workingDir;
-        }
-
-        @Override
-        public void run() {
-            fetchImage();
-        }
-
-        private void fetchImage() {
-            try {
-                //Document doc = getPageWithRetries(this.url);
-                Document doc = Http.url(this.url).get();
-
-                // Find image
-                Elements images = doc.select("#image-container > a > img");
-                if (images.size() == 0) {
-                    // Attempt to find image elsewise (Issue #41)
-                    images = doc.select("img#img");
-                    if (images.size() == 0) {
-                        logger.warn("Image not found at " + this.url);
-                        return;
-                    }
-                }
-                Element image = images.first();
-                String imgsrc = image.attr("src");
-                logger.info("Found URL " + imgsrc + " via " + images.get(0));
-
-                Pattern p = Pattern.compile("^https?://i.nhentai.net/galleries/\\d+/(.+)$");
-                Matcher m = p.matcher(imgsrc);
-                if (m.matches()) {
-                    // Manually discover filename from URL
-                    String savePath = this.workingDir + File.separator;
-                    if (Utils.getConfigBoolean("download.save_order", true)) {
-                        savePath += String.format("%03d_", index);
-                    }
-                    savePath += m.group(1);
-                    addURLToDownload(new URL(imgsrc), new File(savePath));
-                } else {
-                    // Provide prefix and let the AbstractRipper "guess" the filename
-                    String prefix = "";
-                    if (Utils.getConfigBoolean("download.save_order", true)) {
-                        prefix = String.format("%03d_", index);
-                    }
-                    addURLToDownload(new URL(imgsrc), prefix);
-                }
-            } catch (IOException e) {
-                logger.error("[!] Exception while loading/parsing " + this.url, e);
-            }
-        }
-
-    }
 }
