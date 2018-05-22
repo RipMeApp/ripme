@@ -99,7 +99,7 @@ public class MyhentaicomicsRipper extends AbstractHTMLRipper {
             Pattern p = Pattern.compile("/index.php/[a-zA-Z0-9_-]*\\?page=\\d");
             Matcher m = p.matcher(nextPage);
             if (m.matches()) {
-                nextUrl = "http://myhentaicomics.com" + m.group(0);
+                nextUrl = "https://myhentaicomics.com" + m.group(0);
                 }
             if (nextUrl.equals("")) {
                 throw new IOException("No more pages");
@@ -120,7 +120,7 @@ public class MyhentaicomicsRipper extends AbstractHTMLRipper {
             if (!imageSource.startsWith("http://") && !imageSource.startsWith("https://")) {
             // We replace thumbs with resizes so we can the full sized images
             imageSource = imageSource.replace("thumbs", "resizes");
-            result.add("http://myhentaicomics.com/" + imageSource);
+            result.add("https://myhentaicomics.com" + imageSource);
                 }
             }
         return result;
