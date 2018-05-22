@@ -221,8 +221,12 @@ public class App {
                 String url;
                 BufferedReader br = new BufferedReader(new FileReader(filename));
                 while ((url = br.readLine()) != null) {
-                    // loop through each url in the file and proces each url individually.
-                    ripURL(url.trim(), cl.hasOption("n"));
+                    if (url.startsWith("//") || url.startsWith("#")) {
+                        logger.debug("Skipping over line \"" + url + "\"because it is a comment");
+                    } else {
+                        // loop through each url in the file and process each url individually.
+                        ripURL(url.trim(), cl.hasOption("n"));
+                    }
                 }
             } catch (FileNotFoundException fne) {
                 logger.error("[!] File containing list of URLs not found. Cannot continue.");
