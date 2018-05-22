@@ -27,6 +27,30 @@ public class NhentaiRipper extends AbstractHTMLRipper {
     private DownloadThreadPool nhentaiThreadPool = new DownloadThreadPool("nhentai");
 
     @Override
+    public boolean hasQueueSupport() {
+        return true;
+    }
+
+    @Override
+    public boolean pageContainsAlbums(URL url) {
+        Pattern pa = Pattern.compile("^https?://nhentai\\.net/tag/([a-zA-Z0-9_\\-]+)/?");
+        Matcher ma = pa.matcher(url.toExternalForm());
+        if (ma.matches()) {
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public List<String> getAlbumsToQueue(Document doc) {
+        List<String> urlsToAddToQueue = new ArrayList<>();
+        for (Element elem : doc.select("a.cover")) {
+            urlsToAddToQueue.add("https://" + getDomain() + elem.attr("href"));
+        }
+        return urlsToAddToQueue;
+    }
+
+    @Override
     public DownloadThreadPool getThreadPool() {
         return nhentaiThreadPool;
     }
