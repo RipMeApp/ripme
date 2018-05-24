@@ -72,6 +72,14 @@ public abstract class AbstractRipper
         FileWriter fw = null;
         try {
             File file = new File(URLHistoryFile);
+            if (!new File(Utils.getConfigDir()).exists()) {
+                logger.error("Config dir doesn't exist");
+                return;
+            }
+            if (!file.canWrite()) {
+                logger.error("Can't write to url history file: " + URLHistoryFile);
+                return;
+            }
             // if file doesnt exists, then create it
             if (!file.exists()) {
                 file.createNewFile();
