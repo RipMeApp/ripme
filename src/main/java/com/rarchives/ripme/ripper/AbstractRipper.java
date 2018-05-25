@@ -72,9 +72,26 @@ public abstract class AbstractRipper
         FileWriter fw = null;
         try {
             File file = new File(URLHistoryFile);
+            if (!new File(Utils.getConfigDir()).exists()) {
+                logger.error("Config dir doesn't exist");
+                logger.info("Making config dir");
+                boolean couldMakeDir = new File(Utils.getConfigDir()).mkdirs();
+                if (!couldMakeDir) {
+                    logger.error("Couldn't make config dir");
+                    return;
+                }
+            }
             // if file doesnt exists, then create it
             if (!file.exists()) {
-                file.createNewFile();
+                boolean couldMakeDir = file.createNewFile();
+                if (!couldMakeDir) {
+                    logger.error("Couldn't url history file");
+                    return;
+                }
+            }
+            if (!file.canWrite()) {
+                logger.error("Can't write to url history file: " + URLHistoryFile);
+                return;
             }
             fw = new FileWriter(file.getAbsoluteFile(), true);
             bw = new BufferedWriter(fw);
