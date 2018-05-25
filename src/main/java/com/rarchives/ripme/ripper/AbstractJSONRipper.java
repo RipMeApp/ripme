@@ -71,6 +71,11 @@ public abstract class AbstractJSONRipper extends AlbumRipper {
                 if (isStopped()) {
                     break;
                 }
+                if (alreadyDownloadedUrls >= Utils.getConfigInteger("history.end_rip_after_already_seen", 1000000000) && !isThisATest()) {
+                sendUpdate(STATUS.DOWNLOAD_COMPLETE, "Already seen the last " + alreadyDownloadedUrls + " images ending rip");
+                break;
+}
+                
                 index += 1;
                 logger.debug("Found image url #" + index+ ": " + imageURL);
                 downloadURL(new URL(imageURL), index);
