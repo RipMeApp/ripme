@@ -686,10 +686,16 @@ public class Utils {
      * 
      * @return Returns the default resource bundle using the language specified in the config file.
      */
-    public static ResourceBundle getResourceBundle() {
-        if (!getConfigString("lang", "").equals("")) {
-            String[] langCode = getConfigString("lang", "").split("_");
-            logger.info("Setting locale to " + getConfigString("lang", ""));
+    public static ResourceBundle getResourceBundle(String langSelect) {
+        if (langSelect == null) {
+            if (!getConfigString("lang", "").equals("")) {
+                String[] langCode = getConfigString("lang", "").split("_");
+                logger.info("Setting locale to " + getConfigString("lang", ""));
+                return ResourceBundle.getBundle("LabelsBundle", new Locale(langCode[0], langCode[1]), new UTF8Control());
+            }
+        } else {
+            String[] langCode = langSelect.split("_");
+            logger.info("Setting locale to " + langSelect);
             return ResourceBundle.getBundle("LabelsBundle", new Locale(langCode[0], langCode[1]), new UTF8Control());
         }
         try {

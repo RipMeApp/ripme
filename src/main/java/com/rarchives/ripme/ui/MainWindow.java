@@ -127,6 +127,10 @@ public final class MainWindow implements Runnable, RipStatusHandler {
     private static JCheckBox configSaveDescriptions;
     private static JCheckBox configPreferMp4;
     private static JCheckBox configWindowPosition;
+    private static JComboBox<String> configSelectLangComboBox;
+    private static JLabel configThreadsLabel;
+    private static JLabel configTimeoutLabel;
+    private static JLabel configRetriesLabel;
 
     private static TrayIcon trayIcon;
     private static MenuItem trayMenuMain;
@@ -136,11 +140,11 @@ public final class MainWindow implements Runnable, RipStatusHandler {
 
     private static AbstractRipper ripper;
 
-    private ResourceBundle rb = Utils.getResourceBundle();
+    private ResourceBundle rb = Utils.getResourceBundle(null);
 
     private void updateQueueLabel() {
         if (queueListModel.size() > 0) {
-            optionQueue.setText( rb.getString("Queue") + " (" + queueListModel.size() + ")");
+            optionQueue.setText(rb.getString("Queue") + " (" + queueListModel.size() + ")");
         } else {
             optionQueue.setText(rb.getString("Queue"));
         }
@@ -471,9 +475,9 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         // TODO Configuration components
         configUpdateButton = new JButton(rb.getString("check.for.updates"));
         configUpdateLabel = new JLabel( rb.getString("current.version") + ": " + UpdateUtils.getThisJarVersion(), JLabel.RIGHT);
-        JLabel configThreadsLabel = new JLabel(rb.getString("max.download.threads") + ":", JLabel.RIGHT);
-        JLabel configTimeoutLabel = new JLabel(rb.getString("timeout.mill"), JLabel.RIGHT);
-        JLabel configRetriesLabel = new JLabel(rb.getString("retry.download.count"), JLabel.RIGHT);
+        configThreadsLabel = new JLabel(rb.getString("max.download.threads") + ":", JLabel.RIGHT);
+        configTimeoutLabel = new JLabel(rb.getString("timeout.mill"), JLabel.RIGHT);
+        configRetriesLabel = new JLabel(rb.getString("retry.download.count"), JLabel.RIGHT);
         configThreadsText = new JTextField(Integer.toString(Utils.getConfigInteger("threads.size", 3)));
         configTimeoutText = new JTextField(Integer.toString(Utils.getConfigInteger("download.timeout", 60000)));
         configRetriesText = new JTextField(Integer.toString(Utils.getConfigInteger("download.retries", 3)));
@@ -492,6 +496,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         configURLHistoryCheckbox = addNewCheckbox(rb.getString("remember.url.history"), "remember.url_history", true);
 
         configLogLevelCombobox = new JComboBox<>(new String[] {"Log level: Error", "Log level: Warn", "Log level: Info", "Log level: Debug"});
+        configSelectLangComboBox = new JComboBox<>(new String[] {"en_US", "de_DE", "es_ES", "fr_CH", "kr_KR", "pt_PT"});
         configLogLevelCombobox.setSelectedItem(Utils.getConfigString("log.level", "Log level: Debug"));
         setLogLevel(configLogLevelCombobox.getSelectedItem().toString());
         configSaveDirLabel = new JLabel();
@@ -517,6 +522,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         addItemToConfigGridBagConstraints(gbc, 9, configSaveDescriptions, configPreferMp4);
         addItemToConfigGridBagConstraints(gbc, 10, configWindowPosition, configURLHistoryCheckbox);
         addItemToConfigGridBagConstraints(gbc, 11, configSaveDirLabel, configSaveDirButton);
+        addItemToConfigGridBagConstraints(gbc, 12, configSelectLangComboBox);
 
 
 
@@ -559,6 +565,36 @@ public final class MainWindow implements Runnable, RipStatusHandler {
     private void addItemToConfigGridBagConstraints(GridBagConstraints gbc, int gbcYValue, JCheckBox thing1ToAdd, JComboBox thing2ToAdd ) {
         gbc.gridy = gbcYValue;  gbc.gridx = 0; configurationPanel.add(thing1ToAdd, gbc);
         gbc.gridx = 1; configurationPanel.add(thing2ToAdd, gbc);
+    }
+
+    private void addItemToConfigGridBagConstraints(GridBagConstraints gbc, int gbcYValue, JComboBox thing1ToAdd ) {
+        gbc.gridy = gbcYValue;  gbc.gridx = 0; configurationPanel.add(thing1ToAdd, gbc);
+    }
+
+    private void changeLocale() {
+        statusLabel.setText(rb.getString("inactive"));
+        configUpdateButton.setText(rb.getString("check.for.updates"));
+        configUpdateLabel.setText(rb.getString("current.version") + ": " + UpdateUtils.getThisJarVersion());
+        configThreadsLabel.setText(rb.getString("max.download.threads"));
+        configTimeoutLabel.setText(rb.getString("timeout.mill"));
+        configRetriesLabel.setText(rb.getString("retry.download.count"));
+        configOverwriteCheckbox.setText(rb.getString("overwrite.existing.files"));
+        configAutoupdateCheckbox.setText(rb.getString("auto.update"));
+        configPlaySound.setText(rb.getString("sound.when.rip.completes"));
+        configShowPopup.setText(rb.getString("notification.when.rip.starts"));
+        configSaveOrderCheckbox.setText(rb.getString("preserve.order"));
+        configSaveLogs.setText(rb.getString("save.logs"));
+        configSaveURLsOnly.setText(rb.getString("save.urls.only"));
+        configSaveAlbumTitles.setText(rb.getString("save.album.titles"));
+        configClipboardAutorip.setText(rb.getString("autorip.from.clipboard"));
+        configSaveDescriptions.setText(rb.getString("save.descriptions"));
+        configPreferMp4.setText(rb.getString("prefer.mp4.over.gif"));
+        configWindowPosition.setText(rb.getString("restore.window.position"));
+        configURLHistoryCheckbox.setText(rb.getString("remember.url.history"));
+        optionLog.setText(rb.getString("Log"));
+        optionHistory.setText(rb.getString("History"));
+        optionQueue.setText(rb.getString("Queue"));
+        optionConfiguration.setText(rb.getString("Configuration"));
     }
 
     private void setupHandlers() {
@@ -756,6 +792,11 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         configLogLevelCombobox.addActionListener(arg0 -> {
             String level = ((JComboBox) arg0.getSource()).getSelectedItem().toString();
             setLogLevel(level);
+        });
+        configSelectLangComboBox.addActionListener(arg0 -> {
+            String level = ((JComboBox) arg0.getSource()).getSelectedItem().toString();
+            rb = Utils.getResourceBundle(level);
+            changeLocale();
         });
         configSaveDirLabel.addMouseListener(new MouseAdapter() {
             @Override
