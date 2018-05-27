@@ -496,7 +496,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         configURLHistoryCheckbox = addNewCheckbox(rb.getString("remember.url.history"), "remember.url_history", true);
 
         configLogLevelCombobox = new JComboBox<>(new String[] {"Log level: Error", "Log level: Warn", "Log level: Info", "Log level: Debug"});
-        configSelectLangComboBox = new JComboBox<>(new String[] {"en_US", "de_DE", "es_ES", "fr_CH", "kr_KR", "pt_PT"});
+        configSelectLangComboBox = new JComboBox<>(new String[] {"en_US", "de_DE", "es_ES", "fr_CH", "kr_KR", "pt_PT", "fi_FI", "in_ID", "porrisavvo_FI"});
         configLogLevelCombobox.setSelectedItem(Utils.getConfigString("log.level", "Log level: Debug"));
         setLogLevel(configLogLevelCombobox.getSelectedItem().toString());
         configSaveDirLabel = new JLabel();

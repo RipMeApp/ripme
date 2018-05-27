@@ -699,11 +699,11 @@ public class Utils {
             return ResourceBundle.getBundle("LabelsBundle", new Locale(langCode[0], langCode[1]), new UTF8Control());
         }
         try {
-            ResourceBundle rb = ResourceBundle.getBundle("LabelsBundle", Locale.getDefault(), new UTF8Control());
-            return rb;
+            logger.info("Setting locale to default");
+            return ResourceBundle.getBundle("LabelsBundle", Locale.getDefault(), new UTF8Control());
         } catch (MissingResourceException e) {
-            ResourceBundle rb = ResourceBundle.getBundle("LabelsBundle", Locale.ROOT);
-            return rb;
+            logger.info("Setting locale to root");
+            return ResourceBundle.getBundle("LabelsBundle", Locale.ROOT);
         }
     }
 }
