@@ -115,7 +115,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
     private static JButton configSaveDirButton;
     private static JTextField configRetriesText;
     private static JCheckBox configAutoupdateCheckbox;
-    private static JComboBox configLogLevelCombobox;
+    private static JComboBox<String> configLogLevelCombobox;
     private static JCheckBox configURLHistoryCheckbox;
     private static JCheckBox configPlaySound;
     private static JCheckBox configSaveOrderCheckbox;
@@ -491,7 +491,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         configWindowPosition = addNewCheckbox(rb.getString("restore.window.position"), "window.position", true);
         configURLHistoryCheckbox = addNewCheckbox(rb.getString("remember.url.history"), "remember.url_history", true);
 
-        configLogLevelCombobox = new JComboBox(new String[] {"Log level: Error", "Log level: Warn", "Log level: Info", "Log level: Debug"});
+        configLogLevelCombobox = new JComboBox<>(new String[] {"Log level: Error", "Log level: Warn", "Log level: Info", "Log level: Debug"});
         configLogLevelCombobox.setSelectedItem(Utils.getConfigString("log.level", "Log level: Debug"));
         setLogLevel(configLogLevelCombobox.getSelectedItem().toString());
         configSaveDirLabel = new JLabel();
@@ -504,30 +504,21 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         configSaveDirLabel.setToolTipText(configSaveDirLabel.getText());
         configSaveDirLabel.setHorizontalAlignment(JLabel.RIGHT);
         configSaveDirButton = new JButton("Select Save Directory...");
-        gbc.gridy = 0; gbc.gridx = 0; configurationPanel.add(configUpdateLabel, gbc);
-                       gbc.gridx = 1; configurationPanel.add(configUpdateButton, gbc);
-        gbc.gridy = 1; gbc.gridx = 0; configurationPanel.add(configAutoupdateCheckbox, gbc);
-                       gbc.gridx = 1; configurationPanel.add(configLogLevelCombobox, gbc);
-        gbc.gridy = 2; gbc.gridx = 0; configurationPanel.add(configThreadsLabel, gbc);
-                       gbc.gridx = 1; configurationPanel.add(configThreadsText, gbc);
-        gbc.gridy = 3; gbc.gridx = 0; configurationPanel.add(configTimeoutLabel, gbc);
-                       gbc.gridx = 1; configurationPanel.add(configTimeoutText, gbc);
-        gbc.gridy = 4; gbc.gridx = 0; configurationPanel.add(configRetriesLabel, gbc);
-                       gbc.gridx = 1; configurationPanel.add(configRetriesText, gbc);
-        gbc.gridy = 5; gbc.gridx = 0; configurationPanel.add(configOverwriteCheckbox, gbc);
-                       gbc.gridx = 1; configurationPanel.add(configSaveOrderCheckbox, gbc);
-        gbc.gridy = 6; gbc.gridx = 0; configurationPanel.add(configPlaySound, gbc);
-                       gbc.gridx = 1; configurationPanel.add(configSaveLogs, gbc);
-        gbc.gridy = 7; gbc.gridx = 0; configurationPanel.add(configShowPopup, gbc);
-                       gbc.gridx = 1; configurationPanel.add(configSaveURLsOnly, gbc);
-        gbc.gridy = 8; gbc.gridx = 0; configurationPanel.add(configClipboardAutorip, gbc);
-                       gbc.gridx = 1; configurationPanel.add(configSaveAlbumTitles, gbc);
-        gbc.gridy = 9; gbc.gridx = 0; configurationPanel.add(configSaveDescriptions, gbc);
-                       gbc.gridx = 1; configurationPanel.add(configPreferMp4, gbc);
-        gbc.gridy = 10; gbc.gridx = 0; configurationPanel.add(configWindowPosition, gbc);
-                        gbc.gridx = 1; configurationPanel.add(configURLHistoryCheckbox, gbc);
-        gbc.gridy = 11; gbc.gridx = 0; configurationPanel.add(configSaveDirLabel, gbc);
-                        gbc.gridx = 1; configurationPanel.add(configSaveDirButton, gbc);
+
+        addItemToConfigGridBagConstraints(gbc, 0, configUpdateLabel, configUpdateButton);
+        addItemToConfigGridBagConstraints(gbc, 1, configAutoupdateCheckbox, configLogLevelCombobox);
+        addItemToConfigGridBagConstraints(gbc, 2, configThreadsLabel, configThreadsText);
+        addItemToConfigGridBagConstraints(gbc, 3, configTimeoutLabel, configTimeoutText);
+        addItemToConfigGridBagConstraints(gbc, 4, configRetriesLabel, configRetriesText);
+        addItemToConfigGridBagConstraints(gbc, 5, configOverwriteCheckbox, configSaveOrderCheckbox);
+        addItemToConfigGridBagConstraints(gbc, 6, configPlaySound, configSaveLogs);
+        addItemToConfigGridBagConstraints(gbc, 7, configShowPopup, configSaveURLsOnly);
+        addItemToConfigGridBagConstraints(gbc, 8, configClipboardAutorip, configSaveAlbumTitles);
+        addItemToConfigGridBagConstraints(gbc, 9, configSaveDescriptions, configPreferMp4);
+        addItemToConfigGridBagConstraints(gbc, 10, configWindowPosition, configURLHistoryCheckbox);
+        addItemToConfigGridBagConstraints(gbc, 11, configSaveDirLabel, configSaveDirButton);
+
+
 
 
         emptyPanel = new JPanel();
@@ -548,6 +539,26 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         gbc.gridy = 5; pane.add(emptyPanel, gbc);
         gbc.weighty = 0;
         gbc.fill = GridBagConstraints.HORIZONTAL;
+    }
+
+    private void addItemToConfigGridBagConstraints(GridBagConstraints gbc, int gbcYValue, JLabel thing1ToAdd, JButton thing2ToAdd ) {
+        gbc.gridy = gbcYValue;  gbc.gridx = 0; configurationPanel.add(thing1ToAdd, gbc);
+                                gbc.gridx = 1; configurationPanel.add(thing2ToAdd, gbc);
+    }
+
+    private void addItemToConfigGridBagConstraints(GridBagConstraints gbc, int gbcYValue, JLabel thing1ToAdd, JTextField thing2ToAdd ) {
+        gbc.gridy = gbcYValue;  gbc.gridx = 0; configurationPanel.add(thing1ToAdd, gbc);
+        gbc.gridx = 1; configurationPanel.add(thing2ToAdd, gbc);
+    }
+
+    private void addItemToConfigGridBagConstraints(GridBagConstraints gbc, int gbcYValue, JCheckBox thing1ToAdd, JCheckBox thing2ToAdd ) {
+        gbc.gridy = gbcYValue;  gbc.gridx = 0; configurationPanel.add(thing1ToAdd, gbc);
+        gbc.gridx = 1; configurationPanel.add(thing2ToAdd, gbc);
+    }
+
+    private void addItemToConfigGridBagConstraints(GridBagConstraints gbc, int gbcYValue, JCheckBox thing1ToAdd, JComboBox thing2ToAdd ) {
+        gbc.gridy = gbcYValue;  gbc.gridx = 0; configurationPanel.add(thing1ToAdd, gbc);
+        gbc.gridx = 1; configurationPanel.add(thing2ToAdd, gbc);
     }
 
     private void setupHandlers() {
@@ -897,7 +908,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
                     new ImageIcon(mainIcon));
             if (response == JOptionPane.YES_OPTION) {
                 try {
-                    Desktop.getDesktop().browse(URI.create("http://github.com/4pr0n/ripme"));
+                    Desktop.getDesktop().browse(URI.create("http://github.com/ripmeapp/ripme"));
                 } catch (IOException e) {
                     logger.error("Exception while opening project home page", e);
                 }
