@@ -521,8 +521,8 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         addItemToConfigGridBagConstraints(gbc, 8, configClipboardAutorip, configSaveAlbumTitles);
         addItemToConfigGridBagConstraints(gbc, 9, configSaveDescriptions, configPreferMp4);
         addItemToConfigGridBagConstraints(gbc, 10, configWindowPosition, configURLHistoryCheckbox);
-        addItemToConfigGridBagConstraints(gbc, 11, configSaveDirLabel, configSaveDirButton);
-        addItemToConfigGridBagConstraints(gbc, 12, configSelectLangComboBox);
+        addItemToConfigGridBagConstraints(gbc, 11, configSelectLangComboBox);
+        addItemToConfigGridBagConstraints(gbc, 12, configSaveDirLabel, configSaveDirButton);
 
 
 
