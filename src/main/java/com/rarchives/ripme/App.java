@@ -35,7 +35,7 @@ import com.rarchives.ripme.utils.Utils;
  * Entry point to application.
  * This is where all the fun happens, with the main method.
  * Decides to display UI or to run silently via command-line.
- * 
+ *
  * As the "controller" to all other classes, it parses command line parameters and loads the history.
  */
 public class App {
@@ -46,7 +46,7 @@ public class App {
     /**
      * Where everything starts. Takes in, and tries to parse as many commandline arguments as possible.
      * Otherwise, it launches a GUI.
-     * 
+     *
      * @param args Array of command line arguments.
      */
     public static void main(String[] args) throws MalformedURLException {
@@ -84,7 +84,7 @@ public class App {
      * Creates an abstract ripper and instructs it to rip.
      * @param url URL to be ripped
      * @throws Exception Nothing too specific here, just a catch-all.
-     * 
+     *
      */
     private static void rip(URL url) throws Exception {
         AbstractRipper ripper = AbstractRipper.getRipper(url);
@@ -217,9 +217,9 @@ public class App {
         //Read URLs from File
         if (cl.hasOption('f')) {
             String filename = cl.getOptionValue('f');
-            try {
+
+            try (BufferedReader br = new BufferedReader(new FileReader(filename))) {
                 String url;
-                BufferedReader br = new BufferedReader(new FileReader(filename));
                 while ((url = br.readLine()) != null) {
                     if (url.startsWith("//") || url.startsWith("#")) {
                         logger.debug("Skipping over line \"" + url + "\"because it is a comment");

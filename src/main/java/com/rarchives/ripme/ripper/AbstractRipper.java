@@ -129,8 +129,8 @@ public abstract class AbstractRipper
     private boolean hasDownloadedURL(String url) {
         File file = new File(URLHistoryFile);
         url = normalizeUrl(url);
-        try {
-            Scanner scanner = new Scanner(file);
+
+        try (Scanner scanner = new Scanner(file)) {
             while (scanner.hasNextLine()) {
                 final String lineFromFile = scanner.nextLine();
                 if (lineFromFile.equals(url)) {
@@ -140,6 +140,7 @@ public abstract class AbstractRipper
         } catch (FileNotFoundException e) {
             return false;
         }
+
         return false;
     }
 
