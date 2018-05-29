@@ -68,11 +68,10 @@ public abstract class AlbumRipper extends AbstractRipper {
         if (Utils.getConfigBoolean("urls_only.save", false)) {
             // Output URL to file
             String urlFile = this.workingDir + File.separator + "urls.txt";
-            try {
-                FileWriter fw = new FileWriter(urlFile, true);
+            try (FileWriter fw = new FileWriter(urlFile, true)) {
                 fw.write(url.toExternalForm());
                 fw.write("\n");
-                fw.close();
+
                 RipStatusMessage msg = new RipStatusMessage(STATUS.DOWNLOAD_COMPLETE, urlFile);
                 itemsCompleted.put(url, new File(urlFile));
                 observer.update(this, msg);
