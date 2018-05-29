@@ -149,9 +149,11 @@ public class UpdateUtils {
                 .timeout(Utils.getConfigInteger("download.timeout", 60 * 1000))
                 .maxBodySize(1024 * 1024 * 100)
                 .execute();
-        FileOutputStream out = new FileOutputStream(updateFileName);
-        out.write(response.bodyAsBytes());
-        out.close();
+
+        try (FileOutputStream out = new FileOutputStream(updateFileName)) {
+            out.write(response.bodyAsBytes());
+        }
+
         logger.info("Download of new version complete; saved to " + updateFileName);
 
         // Setup updater script
@@ -185,11 +187,12 @@ public class UpdateUtils {
                     + "rm -f " + batchPath + "\n";
             batchExec = new String[] { "sh", batchPath };
         }
+
         // Create updater script
-        BufferedWriter bw = new BufferedWriter(new FileWriter(batchFile));
-        bw.write(script);
-        bw.flush();
-        bw.close();
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(batchFile))) {
+            bw.write(script);
+        }
+
         logger.info("Saved update script to " + batchFile);
         // Run updater script on exit
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
