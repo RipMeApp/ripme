@@ -62,7 +62,7 @@ public class TwitchVideoRipper extends VideoRipper {
         String title = doc.title();
         
         Elements script = doc.select("script");
-        if (script.size() == 0) {
+        if (script.isEmpty()) {
             throw new IOException("Could not find script code at " + url);
         }
         //Regex assumes highest quality source is listed first

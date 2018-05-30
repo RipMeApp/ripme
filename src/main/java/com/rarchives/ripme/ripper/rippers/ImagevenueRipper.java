@@ -101,7 +101,7 @@ public class ImagevenueRipper extends AbstractHTMLRipper {
                                    .get();
                 // Find image
                 Elements images = doc.select("a > img");
-                if (images.size() == 0) {
+                if (images.isEmpty()) {
                     logger.warn("Image not found at " + this.url);
                     return;
                 }
