@@ -56,7 +56,7 @@ public class BcfakesRipper extends AbstractHTMLRipper {
     public Document getNextPage(Document doc) throws IOException {
         // Find next page
         Elements hrefs = doc.select("a.next");
-        if (hrefs.size() == 0) {
+        if (hrefs.isEmpty()) {
             throw new IOException("No more pages");
         }
         String nextUrl = "http://www.bcfakes.com" + hrefs.first().attr("href");

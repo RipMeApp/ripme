@@ -304,10 +304,10 @@ public class ImgurRipper extends AlbumRipper {
         ImgurAlbum imgurAlbum = new ImgurAlbum(url);
         for (Element thumb : doc.select("div.image")) {
             String image;
-            if (thumb.select("a.zoom").size() > 0) {
+            if (!thumb.select("a.zoom").isEmpty()) {
                 // Clickably full-size
                 image = "http:" + thumb.select("a").attr("href");
-            } else if (thumb.select("img").size() > 0) {
+            } else if (!thumb.select("img").isEmpty()) {
                 image = "http:" + thumb.select("img").attr("src");
             } else {
                 // Unable to find image in this div
@@ -449,7 +449,7 @@ public class ImgurRipper extends AlbumRipper {
                 URL imageURL = new URL(image);
                 addURLToDownload(imageURL);
             }
-            if (imgs.size() == 0) {
+            if (imgs.isEmpty()) {
                 break;
             }
             page++;

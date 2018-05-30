@@ -57,7 +57,7 @@ public class VineRipper extends VideoRipper {
         logger.info("    Retrieving " + this.url.toExternalForm());
         Document doc = Http.url(this.url).get();
         Elements props = doc.select("meta[property=twitter:player:stream]");
-        if (props.size() == 0) {
+        if (props.isEmpty()) {
             throw new IOException("Could not find meta property 'twitter:player:stream' at " + url);
         }
         String vidUrl = props.get(0).attr("content");

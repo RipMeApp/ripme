@@ -1039,7 +1039,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         } else {
             logger.info(rb.getString("loading.history.from.configuration"));
             HISTORY.fromList(Utils.getConfigList("download.history"));
-            if (HISTORY.toList().size() == 0) {
+            if (HISTORY.toList().isEmpty()) {
                 // Loaded from config, still no entries.
                 // Guess rip history based on rip folder
                 String[] dirs = Utils.getWorkingDirectory().list((dir, file) -> new File(dir.getAbsolutePath() + File.separator + file).isDirectory());
