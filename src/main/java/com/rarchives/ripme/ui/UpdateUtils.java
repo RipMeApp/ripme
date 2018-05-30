@@ -25,6 +25,7 @@ public class UpdateUtils {
     private static final String updateJsonURL = "https://raw.githubusercontent.com/" + REPO_NAME + "/master/ripme.json";
     private static final String mainFileName = "ripme.jar";
     private static final String updateFileName = "ripme.jar.update";
+    private static JSONObject ripmeJson;
 
     private static String getUpdateJarURL(String latestVersion) {
         return "https://github.com/" + REPO_NAME + "/releases/download/" + latestVersion + "/ripme.jar";
@@ -60,8 +61,8 @@ public class UpdateUtils {
             configUpdateLabel.setText("Current version: " + getThisJarVersion());
         }
         String jsonString = doc.body().html().replaceAll("&quot;", "\"");
-        JSONObject json = new JSONObject(jsonString);
-        JSONArray jsonChangeList = json.getJSONArray("changeList");
+        ripmeJson = new JSONObject(jsonString);
+        JSONArray jsonChangeList = ripmeJson.getJSONArray("changeList");
         StringBuilder changeList = new StringBuilder();
         for (int i = 0; i < jsonChangeList.length(); i++) {
             String change = jsonChangeList.getString(i);
@@ -71,8 +72,8 @@ public class UpdateUtils {
             changeList.append("<br>  + ").append(change);
         }
 
-        String latestVersion = json.getString("latestVersion");
-        if (!UpdateUtils.isNewerVersion(latestVersion)) {
+        String latestVersion = ripmeJson.getString("latestVersion");
+        if (UpdateUtils.isNewerVersion(latestVersion)) {
             logger.info("Found newer version: " + latestVersion);
             int result = JOptionPane.showConfirmDialog(
                     null,
@@ -153,7 +154,8 @@ public class UpdateUtils {
                     digest.update(buffer, 0, n);
                 }
             }
-            return new HexBinaryAdapter().marshal(digest.digest());
+            // As patch.py writes the hash in lowercase this must return the has in lowercase
+            return new HexBinaryAdapter().marshal(digest.digest()).toLowerCase();
         } catch (NoSuchAlgorithmException e) {
             logger.error("Got error getting file hash " + e.getMessage());
         } catch (FileNotFoundException e) {
@@ -176,10 +178,18 @@ public class UpdateUtils {
         try (FileOutputStream out = new FileOutputStream(updateFileName)) {
             out.write(response.bodyAsBytes());
         }
-
+        String updateHash = createSha256(new File(updateFileName));
         logger.info("Download of new version complete; saved to " + updateFileName);
         logger.info("Checking hash of update");
-        logger.info("Hash: " + createSha256(new File(updateFileName)));
+
+        if (!ripmeJson.getString("currentHash").equals(updateHash)) {
+            logger.error("Error: Update has bad hash");
+            logger.debug("Expected hash: " + ripmeJson.getString("currentHash"));
+            logger.debug("Actual hash: " + updateHash);
+            throw new IOException("Got bad file hash");
+        } else {
+            logger.info("Hash is good");
+        }
 
         // Setup updater script
         final String batchFile, script;
