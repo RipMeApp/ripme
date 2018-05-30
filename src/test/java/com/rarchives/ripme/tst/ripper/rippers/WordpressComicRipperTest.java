@@ -86,12 +86,6 @@ public class WordpressComicRipperTest extends RippersTest {
         testRipper(ripper);
     }
 
-    public void test_tnbtu() throws IOException {
-        WordpressComicRipper ripper = new WordpressComicRipper(
-                new URL("http://tnbtu.com/comic/01-00/"));
-        testRipper(ripper);
-    }
-
     public void test_Eightmuses_download() throws IOException {
         WordpressComicRipper ripper = new WordpressComicRipper(
                 new URL("https://8muses.download/lustomic-playkittens-josh-samuel-porn-comics-8-muses/"));
