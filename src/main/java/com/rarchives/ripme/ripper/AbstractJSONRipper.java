@@ -63,7 +63,7 @@ public abstract class AbstractJSONRipper extends AlbumRipper {
                 }
             }
 
-            if (imageURLs.size() == 0) {
+            if (imageURLs.isEmpty()) {
                 throw new IOException("No images found at " + this.url);
             }
 

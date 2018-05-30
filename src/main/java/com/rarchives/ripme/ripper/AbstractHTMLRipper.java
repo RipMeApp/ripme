@@ -111,7 +111,7 @@ public abstract class AbstractHTMLRipper extends AlbumRipper {
                     }
                 }
 
-                if (imageURLs.size() == 0) {
+                if (imageURLs.isEmpty()) {
                     throw new IOException("No images found at " + doc.location());
                 }
 
@@ -127,7 +127,7 @@ public abstract class AbstractHTMLRipper extends AlbumRipper {
             if (hasDescriptionSupport() && Utils.getConfigBoolean("descriptions.save", false)) {
                 logger.debug("Fetching description(s) from " + doc.location());
                 List<String> textURLs = getDescriptionsFromPage(doc);
-                if (textURLs.size() > 0) {
+                if (!textURLs.isEmpty()) {
                     logger.debug("Found description link(s) from " + doc.location());
                     for (String textURL : textURLs) {
                         if (isStopped()) {

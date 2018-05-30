@@ -228,7 +228,7 @@ public class TwitterRipper extends AlbumRipper {
         int parsedCount = 0;
         for (int i = 0; i < MAX_REQUESTS; i++) {
             List<JSONObject> tweets = getTweets(getApiURL(lastMaxID - 1));
-            if (tweets.size() == 0) {
+            if (tweets.isEmpty()) {
                 logger.info("   No more tweets found.");
                 break;
             }
