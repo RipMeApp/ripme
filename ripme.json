@@ -1,6 +1,7 @@
 {
-    "latestVersion": "1.7.48",
+    "currentHash": "689d4a5b270b62be7defbdbb696de79c8a223ab7497391e1d610eaf1cb860510",
     "changeList": [
+        "1.7.49: Fixed -n flag; Added ability to change locale at runtime and from gui; Update kr_KR translation; Removed support for tnbtu.com; No longer writes url to url_history file is save urls only is checked",
         "1.7.48: Fixed instagram ripper; Added Korean translation; Added quickQueue support to nhentairipper; Rewrote nhentairipper to be faster; myhentaicomics ripper now requests proper url when downloading images; Can now include comments in url files; Added the ability to blacklist tags on e-hentai.org",
         "1.7.47: Added quick queue support for hentai2read ripper; Fixed instagram ripper; SankakuComplexRipper can now download from different subdomains; Added ripper for bato.to; Added quick queue support for 8muses.download; ",
         "1.7.46: Fixed hentai2read ripper; Rewrote the myhentaicomics ripper to use the new getAlbumsToQueue func; Can now blacklist nhentai tags; SinnercomicsRipper no longer adds -page-01 to folder names; EightmusesRipper now adds file extension to filename; disbaled test for twitch ripper",
@@ -219,5 +220,6 @@
         "1.0.4: Fixed spaces-in-directory bug",
         "1.0.3: Added VK.com ripper",
         "1.0.1: Added auto-update functionality"
-    ]
+    ],
+    "latestVersion": "1.7.49"
 }
