@@ -1,13 +1,12 @@
 package com.rarchives.ripme.ui;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.xml.bind.annotation.adapters.HexBinaryAdapter;
 
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
@@ -21,7 +20,7 @@ import com.rarchives.ripme.utils.Utils;
 public class UpdateUtils {
 
     private static final Logger logger = Logger.getLogger(UpdateUtils.class);
-    private static final String DEFAULT_VERSION = "1.7.48";
+    private static final String DEFAULT_VERSION = "1.7.49";
     private static final String REPO_NAME = "ripmeapp/ripme";
     private static final String updateJsonURL = "https://raw.githubusercontent.com/" + REPO_NAME + "/master/ripme.json";
     private static final String mainFileName = "ripme.jar";
@@ -73,7 +72,7 @@ public class UpdateUtils {
         }
 
         String latestVersion = json.getString("latestVersion");
-        if (UpdateUtils.isNewerVersion(latestVersion)) {
+        if (!UpdateUtils.isNewerVersion(latestVersion)) {
             logger.info("Found newer version: " + latestVersion);
             int result = JOptionPane.showConfirmDialog(
                     null,
@@ -141,6 +140,30 @@ public class UpdateUtils {
         return intVersions;
     }
 
+    // Code take from https://stackoverflow.com/a/30925550
+    private static String createSha256(File file)  {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            InputStream fis = new FileInputStream(file);
+            int n = 0;
+            byte[] buffer = new byte[8192];
+            while (n != -1) {
+                n = fis.read(buffer);
+                if (n > 0) {
+                    digest.update(buffer, 0, n);
+                }
+            }
+            return new HexBinaryAdapter().marshal(digest.digest());
+        } catch (NoSuchAlgorithmException e) {
+            logger.error("Got error getting file hash " + e.getMessage());
+        } catch (FileNotFoundException e) {
+            logger.error("Could not find file: " + file.getName());
+        } catch (IOException e) {
+            logger.error("Got error getting file hash " + e.getMessage());
+        }
+        return null;
+    }
+
     private static void downloadJarAndLaunch(String updateJarURL)
             throws IOException {
         Response response;
@@ -155,6 +178,8 @@ public class UpdateUtils {
         }
 
         logger.info("Download of new version complete; saved to " + updateFileName);
+        logger.info("Checking hash of update");
+        logger.info("Hash: " + createSha256(new File(updateFileName)));
 
         // Setup updater script
         final String batchFile, script;
