@@ -225,7 +225,7 @@ public class App {
                         logger.debug("Skipping over line \"" + url + "\"because it is a comment");
                     } else {
                         // loop through each url in the file and process each url individually.
-                        ripURL(url.trim(), cl.hasOption("n"));
+                        ripURL(url.trim(), !cl.hasOption("n"));
                     }
                 }
             } catch (FileNotFoundException fne) {
@@ -238,7 +238,7 @@ public class App {
         //The URL to rip.
         if (cl.hasOption('u')) {
             String url = cl.getOptionValue('u').trim();
-            ripURL(url, cl.hasOption("n"));
+            ripURL(url, !cl.hasOption("n"));
         }
 
     }
