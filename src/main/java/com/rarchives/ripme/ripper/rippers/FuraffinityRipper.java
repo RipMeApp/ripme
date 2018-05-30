@@ -68,7 +68,7 @@ public class FuraffinityRipper extends AbstractHTMLRipper {
     public Document getNextPage(Document doc) throws IOException {
         // Find next page
         Elements nextPageUrl = doc.select("a.right");
-        if (nextPageUrl.size() == 0) {
+        if (nextPageUrl.isEmpty()) {
             throw new IOException("No more pages");
         }
         String nextUrl = urlBase + nextPageUrl.first().attr("href");
@@ -121,7 +121,7 @@ public class FuraffinityRipper extends AbstractHTMLRipper {
 
             // Try to find the description
             Elements els = resp.parse().select("td[class=alt1][width=\"70%\"]");
-            if (els.size() == 0) {
+            if (els.isEmpty()) {
                 logger.debug("No description at " + page);
                 throw new IOException("No description found");
             }

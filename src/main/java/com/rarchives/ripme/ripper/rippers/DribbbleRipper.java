@@ -49,7 +49,7 @@ public class DribbbleRipper extends AbstractHTMLRipper {
     public Document getNextPage(Document doc) throws IOException {
         // Find next page
         Elements hrefs = doc.select("a.next_page");
-        if (hrefs.size() == 0) {
+        if (hrefs.isEmpty()) {
             throw new IOException("No more pages");
         }
         String nextUrl = "https://www.dribbble.com" + hrefs.first().attr("href");

@@ -58,7 +58,7 @@ public class MotherlessVideoRipper extends VideoRipper {
             logger.error("WTF");
         }
         List<String> vidUrls = Utils.between(html, "__fileurl = '", "';");
-        if (vidUrls.size() == 0) {
+        if (vidUrls.isEmpty()) {
             throw new IOException("Could not find video URL at " + url);
         }
         String vidUrl = vidUrls.get(0);

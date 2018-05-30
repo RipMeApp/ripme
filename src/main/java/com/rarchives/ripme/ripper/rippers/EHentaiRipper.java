@@ -186,7 +186,7 @@ public class EHentaiRipper extends AbstractHTMLRipper {
         }
         // Find next page
         Elements hrefs = doc.select(".ptt a");
-        if (hrefs.size() == 0) {
+        if (hrefs.isEmpty()) {
             logger.info("doc: " + doc.html());
             throw new IOException("No navigation links found");
         }
@@ -255,10 +255,10 @@ public class EHentaiRipper extends AbstractHTMLRipper {
 
                 // Find image
                 Elements images = doc.select(".sni > a > img");
-                if (images.size() == 0) {
+                if (images.isEmpty()) {
                     // Attempt to find image elsewise (Issue #41)
                     images = doc.select("img#img");
-                    if (images.size() == 0) {
+                    if (images.isEmpty()) {
                         logger.warn("Image not found at " + this.url);
                         return;
                     }
