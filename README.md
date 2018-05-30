@@ -24,7 +24,7 @@ RipMe is an album ripper for various websites. Runs on your computer. Requires J
 
 Download `ripme.jar` from the [latest release](https://github.com/ripmeapp/ripme/releases).
 
-**Note: If you're currently using version 1.2.x or 1.3.x, you will not automatically get updates to the newest versions. We recommend downloading the latest version from the link above.**
+**Note: If you're currently using version 1.2.x, 1.3.x or 1.7.49, you will not automatically get updates to the newest versions. We recommend downloading the latest version from the link above.**
 
 For information about running the `.jar` file, see [the How To Run wiki](https://github.com/ripmeapp/ripme/wiki/How-To-Run-RipMe).
 
