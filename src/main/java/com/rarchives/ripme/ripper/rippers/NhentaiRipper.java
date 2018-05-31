@@ -35,10 +35,7 @@ public class NhentaiRipper extends AbstractHTMLRipper {
     public boolean pageContainsAlbums(URL url) {
         Pattern pa = Pattern.compile("^https?://nhentai\\.net/tag/([a-zA-Z0-9_\\-]+)/?");
         Matcher ma = pa.matcher(url.toExternalForm());
-        if (ma.matches()) {
-            return true;
-        }
-        return false;
+        return ma.matches();
     }
 
     @Override
