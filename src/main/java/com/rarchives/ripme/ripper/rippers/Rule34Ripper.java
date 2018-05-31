@@ -37,10 +37,7 @@ public class Rule34Ripper extends AbstractHTMLRipper {
     public boolean canRip(URL url){
         Pattern p = Pattern.compile("https?://rule34.xxx/index.php\\?page=post&s=list&tags=([\\S]+)");
         Matcher m = p.matcher(url.toExternalForm());
-        if (m.matches()) {
-            return true;
-        }
-        return false;
+        return m.matches();
     }
 
     @Override
