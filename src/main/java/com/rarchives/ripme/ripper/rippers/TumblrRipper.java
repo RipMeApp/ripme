@@ -23,8 +23,8 @@ import com.rarchives.ripme.utils.Utils;
 public class TumblrRipper extends AlbumRipper {
 
     private static final String DOMAIN = "tumblr.com",
-                                HOST   = "tumblr",
-                                IMAGE_PATTERN = "([^\\s]+(\\.(?i)(jpg|png|gif|bmp))$)";
+            HOST   = "tumblr",
+            IMAGE_PATTERN = "([^\\s]+(\\.(?i)(jpg|png|gif|bmp))$)";
 
     private enum ALBUM_TYPE {
         SUBDOMAIN,
@@ -37,11 +37,8 @@ public class TumblrRipper extends AlbumRipper {
     private static final String TUMBLR_AUTH_CONFIG_KEY = "tumblr.auth";
 
     private static boolean useDefaultApiKey = false; // fall-back for bad user-specified key
-    private static final List<String> APIKEYS = Arrays.asList("JFNLu3CbINQjRdUvZibXW9VpSEVYYtiPJ86o8YmvgLZIoKyuNX",
-                                                              "FQrwZMCxVnzonv90rgNUJcAk4FpnoS0mYuSuGYqIpM2cFgp9L4",
-                                                              "qpdkY6nMknksfvYAhf2xIHp0iNRLkMlcWShxqzXyFJRxIsZ1Zz");
-    private static int genNum = new Random().nextInt(APIKEYS.size());
-    private static final String API_KEY = APIKEYS.get(genNum); // Select random API key from APIKEYS
+    private static String API_KEY = null;
+
 
     /**
      * Gets the API key.
@@ -49,6 +46,10 @@ public class TumblrRipper extends AlbumRipper {
      * @return Tumblr API key
      */
     public static String getApiKey() {
+        if (API_KEY == null) {
+            API_KEY = pickRandomApiKey();
+        }
+
         if (useDefaultApiKey || Utils.getConfigString(TUMBLR_AUTH_CONFIG_KEY, "JFNLu3CbINQjRdUvZibXW9VpSEVYYtiPJ86o8YmvgLZIoKyuNX").equals("JFNLu3CbINQjRdUvZibXW9VpSEVYYtiPJ86o8YmvgLZIoKyuNX")) {
             logger.info("Using api key: " + API_KEY);
             return API_KEY;
@@ -60,9 +61,19 @@ public class TumblrRipper extends AlbumRipper {
 
     }
 
+    private static String pickRandomApiKey() {
+        final List<String> APIKEYS = Arrays.asList("JFNLu3CbINQjRdUvZibXW9VpSEVYYtiPJ86o8YmvgLZIoKyuNX",
+                "FQrwZMCxVnzonv90rgNUJcAk4FpnoS0mYuSuGYqIpM2cFgp9L4",
+                "qpdkY6nMknksfvYAhf2xIHp0iNRLkMlcWShxqzXyFJRxIsZ1Zz");
+        int genNum = new Random().nextInt(APIKEYS.size());
+        logger.info(genNum);
+        final String API_KEY = APIKEYS.get(genNum); // Select random API key from APIKEYS
+        return API_KEY;
+    }
+
     public TumblrRipper(URL url) throws IOException {
         super(url);
-        if (API_KEY == null) {
+        if (getApiKey() == null) {
             throw new IOException("Could not find tumblr authentication key in configuration");
         }
     }
@@ -100,7 +111,7 @@ public class TumblrRipper extends AlbumRipper {
         checkURL += "/info?api_key=" + getApiKey();
         try {
             JSONObject json = Http.url(checkURL)
-                               .getJSON();
+                    .getJSON();
             int status = json.getJSONObject("meta").getInt("status");
             return status == 200;
         } catch (IOException e) {
@@ -245,11 +256,11 @@ public class TumblrRipper extends AlbumRipper {
                 }
             } else if (post.has("video_url")) {
                 try {
-                    fileURL = new URL(post.getString("video_url").replaceAll("http", "https"));
+                    fileURL = new URL(post.getString("video_url").replaceAll("http:", "https:"));
                     addURLToDownload(fileURL);
                 } catch (Exception e) {
-                        logger.error("[!] Error while parsing video in " + post, e);
-                        return true;
+                    logger.error("[!] Error while parsing video in " + post, e);
+                    return true;
                 }
             }
             if (albumType == ALBUM_TYPE.POST) {
@@ -263,24 +274,24 @@ public class TumblrRipper extends AlbumRipper {
         StringBuilder sb = new StringBuilder();
         if (albumType == ALBUM_TYPE.POST) {
             sb.append("http://api.tumblr.com/v2/blog/")
-              .append(subdomain)
-              .append("/posts?id=")
-              .append(postNumber)
-              .append("&api_key=")
-              .append(getApiKey());
+                    .append(subdomain)
+                    .append("/posts?id=")
+                    .append(postNumber)
+                    .append("&api_key=")
+                    .append(getApiKey());
             return sb.toString();
         }
         sb.append("http://api.tumblr.com/v2/blog/")
-          .append(subdomain)
-          .append("/posts/")
-          .append(mediaType)
-          .append("?api_key=")
-          .append(getApiKey())
-          .append("&offset=")
-          .append(offset);
+                .append(subdomain)
+                .append("/posts/")
+                .append(mediaType)
+                .append("?api_key=")
+                .append(getApiKey())
+                .append("&offset=")
+                .append(offset);
         if (albumType == ALBUM_TYPE.TAG) {
-           sb.append("&tag=")
-             .append(tagName);
+            sb.append("&tag=")
+                    .append(tagName);
         }
         return sb.toString();
     }
