@@ -20,7 +20,7 @@ import com.rarchives.ripme.utils.Utils;
 public class UpdateUtils {
 
     private static final Logger logger = Logger.getLogger(UpdateUtils.class);
-    private static final String DEFAULT_VERSION = "1.7.50";
+    private static final String DEFAULT_VERSION = "1.7.49";
     private static final String REPO_NAME = "ripmeapp/ripme";
     private static final String updateJsonURL = "https://raw.githubusercontent.com/" + REPO_NAME + "/master/ripme.json";
     private static final String mainFileName = "ripme.jar";
@@ -39,8 +39,57 @@ public class UpdateUtils {
         }
         return thisVersion;
     }
+    public static void updateProgramCLI() {
+        logger.info("Checking for update...");
 
-    public static void updateProgram(JLabel configUpdateLabel) {
+        Document doc = null;
+        try {
+            logger.debug("Retrieving " + UpdateUtils.updateJsonURL);
+            doc = Jsoup.connect(UpdateUtils.updateJsonURL)
+                    .timeout(10 * 1000)
+                    .ignoreContentType(true)
+                    .get();
+        } catch (IOException e) {
+            logger.error("Error while fetching update: ", e);
+            JOptionPane.showMessageDialog(null,
+                    "<html><font color=\"red\">Error while fetching update: " + e.getMessage() + "</font></html>",
+                    "RipMe Updater",
+                    JOptionPane.ERROR_MESSAGE);
+            return;
+        } finally {
+            logger.info("Current version: " + getThisJarVersion());
+        }
+        String jsonString = doc.body().html().replaceAll("&quot;", "\"");
+        ripmeJson = new JSONObject(jsonString);
+        JSONArray jsonChangeList = ripmeJson.getJSONArray("changeList");
+        StringBuilder changeList = new StringBuilder();
+        for (int i = 0; i < jsonChangeList.length(); i++) {
+            String change = jsonChangeList.getString(i);
+            if (change.startsWith(UpdateUtils.getThisJarVersion() + ":")) {
+                break;
+            }
+            changeList.append("<br>  + ").append(change);
+        }
+
+        String latestVersion = ripmeJson.getString("latestVersion");
+        if (UpdateUtils.isNewerVersion(latestVersion)) {
+            logger.info("Found newer version: " + latestVersion);
+            logger.info("Downloading new version...");
+            logger.info("New version found, downloading...");
+            try {
+                UpdateUtils.downloadJarAndLaunch(getUpdateJarURL(latestVersion), false);
+            } catch (IOException e) {
+                logger.error("Error while updating: ", e);
+            }
+        } else {
+            logger.debug("This version (" + UpdateUtils.getThisJarVersion() +
+                    ") is the same or newer than the website's version (" + latestVersion + ")");
+            logger.info("v" + UpdateUtils.getThisJarVersion() + " is the latest version");
+            logger.debug("Running latest version: " + UpdateUtils.getThisJarVersion());
+        }
+    }
+
+    public static void updateProgramGUI(JLabel configUpdateLabel) {
         configUpdateLabel.setText("Checking for update...");
 
         Document doc = null;
@@ -90,7 +139,7 @@ public class UpdateUtils {
             configUpdateLabel.setText("<html><font color=\"green\">Downloading new version...</font></html>");
             logger.info("New version found, downloading...");
             try {
-                UpdateUtils.downloadJarAndLaunch(getUpdateJarURL(latestVersion));
+                UpdateUtils.downloadJarAndLaunch(getUpdateJarURL(latestVersion), true);
             } catch (IOException e) {
             JOptionPane.showMessageDialog(null,
                     "Error while updating: " + e.getMessage(),
@@ -166,7 +215,7 @@ public class UpdateUtils {
         return null;
     }
 
-    private static void downloadJarAndLaunch(String updateJarURL)
+    private static void downloadJarAndLaunch(String updateJarURL, Boolean shouldLaunch)
             throws IOException {
         Response response;
         response = Jsoup.connect(updateJarURL)
@@ -190,58 +239,61 @@ public class UpdateUtils {
         } else {
             logger.info("Hash is good");
         }
+        if (shouldLaunch) {
+            // Setup updater script
+            final String batchFile, script;
+            final String[] batchExec;
+            String os = System.getProperty("os.name").toLowerCase();
+            if (os.contains("win")) {
+                // Windows
+                batchFile = "update_ripme.bat";
+                String batchPath = new File(batchFile).getAbsolutePath();
+                script = "@echo off\r\n"
+                        + "timeout 1" + "\r\n"
+                        + "copy " + updateFileName + " " + mainFileName + "\r\n"
+                        + "del " + updateFileName + "\r\n"
+                        + "ripme.jar" + "\r\n"
+                        + "del " + batchPath + "\r\n";
+                batchExec = new String[]{batchPath};
 
-        // Setup updater script
-        final String batchFile, script;
-        final String[] batchExec;
-        String os = System.getProperty("os.name").toLowerCase();
-        if (os.contains("win")) {
-            // Windows
-            batchFile = "update_ripme.bat";
-            String batchPath = new File(batchFile).getAbsolutePath();
-            script = "@echo off\r\n"
-                    + "timeout 1" + "\r\n"
-                    + "copy " + updateFileName + " " + mainFileName + "\r\n"
-                    + "del " + updateFileName + "\r\n"
-                    + "ripme.jar" + "\r\n"
-                    + "del " + batchPath + "\r\n";
-            batchExec = new String[] { batchPath };
-
-        }
-        else {
-            // Mac / Linux
-            batchFile = "update_ripme.sh";
-            String batchPath = new File(batchFile).getAbsolutePath();
-            script = "#!/bin/sh\n"
-                    + "sleep 1" + "\n"
-                    + "cd " + new File(mainFileName).getAbsoluteFile().getParent() + "\n"
-                    + "cp -f " + updateFileName + " " + mainFileName + "\n"
-                    + "rm -f " + updateFileName + "\n"
-                    + "java -jar \"" + new File(mainFileName).getAbsolutePath() + "\" &\n"
-                    + "sleep 1" + "\n"
-                    + "rm -f " + batchPath + "\n";
-            batchExec = new String[] { "sh", batchPath };
-        }
-
-        // Create updater script
-        try (BufferedWriter bw = new BufferedWriter(new FileWriter(batchFile))) {
-            bw.write(script);
-            bw.flush();
-        }
-
-        logger.info("Saved update script to " + batchFile);
-        // Run updater script on exit
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            try {
-                logger.info("Executing: " + batchFile);
-                Runtime.getRuntime().exec(batchExec);
-            } catch (IOException e) {
-                //TODO implement proper stack trace handling this is really just intented as a placeholder until you implement proper error handling
-                e.printStackTrace();
+            } else {
+                // Mac / Linux
+                batchFile = "update_ripme.sh";
+                String batchPath = new File(batchFile).getAbsolutePath();
+                script = "#!/bin/sh\n"
+                        + "sleep 1" + "\n"
+                        + "cd " + new File(mainFileName).getAbsoluteFile().getParent() + "\n"
+                        + "cp -f " + updateFileName + " " + mainFileName + "\n"
+                        + "rm -f " + updateFileName + "\n"
+                        + "java -jar \"" + new File(mainFileName).getAbsolutePath() + "\" &\n"
+                        + "sleep 1" + "\n"
+                        + "rm -f " + batchPath + "\n";
+                batchExec = new String[]{"sh", batchPath};
             }
-        }));
-        logger.info("Exiting older version, should execute update script (" + batchFile + ") during exit");
-        System.exit(0);
+
+            // Create updater script
+            try (BufferedWriter bw = new BufferedWriter(new FileWriter(batchFile))) {
+                bw.write(script);
+                bw.flush();
+            }
+
+            logger.info("Saved update script to " + batchFile);
+            // Run updater script on exit
+            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                try {
+                    logger.info("Executing: " + batchFile);
+                    Runtime.getRuntime().exec(batchExec);
+                } catch (IOException e) {
+                    //TODO implement proper stack trace handling this is really just intented as a placeholder until you implement proper error handling
+                    e.printStackTrace();
+                }
+            }));
+            logger.info("Exiting older version, should execute update script (" + batchFile + ") during exit");
+            System.exit(0);
+        } else {
+            new File(mainFileName).delete();
+            new File(updateFileName).renameTo(new File(mainFileName));
+        }
     }
 
 }
