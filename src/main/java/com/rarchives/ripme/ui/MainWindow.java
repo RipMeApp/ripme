@@ -198,7 +198,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         if (!configurationPanel.isVisible()) {
             optionConfiguration.doClick();
         }
-        Runnable r = () -> UpdateUtils.updateProgram(configUpdateLabel);
+        Runnable r = () -> UpdateUtils.updateProgramGUI(configUpdateLabel);
         new Thread(r).start();
     }
 
@@ -786,7 +786,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
             }
         });
         configUpdateButton.addActionListener(arg0 -> {
-            Thread t = new Thread(() -> UpdateUtils.updateProgram(configUpdateLabel));
+            Thread t = new Thread(() -> UpdateUtils.updateProgramGUI(configUpdateLabel));
             t.start();
         });
         configLogLevelCombobox.addActionListener(arg0 -> {
