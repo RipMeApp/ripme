@@ -1,5 +1,5 @@
 {
-    "currentHash": "689d4a5b270b62be7defbdbb696de79c8a223ab7497391e1d610eaf1cb860510",
+    "currentHash": "f6e1e6c931abfbeffdd37dabb65f83e4335ca11ccc017f31e1d835ee6e6bec7a",
     "changeList": [
         "1.7.50: Ripme now checks file hash before running update; fixed update bug which cased ripme to report every update as new",
         "1.7.49: Fixed -n flag; Added ability to change locale at runtime and from gui; Update kr_KR translation; Removed support for tnbtu.com; No longer writes url to url_history file is save urls only is checked",
