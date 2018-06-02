@@ -38,10 +38,7 @@ public class WebtoonsRipper extends AbstractHTMLRipper {
     public boolean canRip(URL url) {
         Pattern pat = Pattern.compile("https?://www.webtoons.com/[a-zA-Z-_]+/[a-zA-Z_-]+/([a-zA-Z0-9_-]*)/[a-zA-Z0-9_-]+/\\S*");
         Matcher mat = pat.matcher(url.toExternalForm());
-        if (mat.matches()) {
-            return true;
-        }
-        return false;
+        return mat.matches();
     }
 
 
