@@ -241,6 +241,10 @@ public class App {
             ripURL(url, !cl.hasOption("n"));
         }
 
+        if (cl.hasOption('j')) {
+            UpdateUtils.updateProgramCLI();
+        }
+
     }
 
     /**
@@ -290,6 +294,7 @@ public class App {
         opts.addOption("v", "version", false, "Show current version");
         opts.addOption("s", "socks-server", true, "Use socks server ([user:password]@host[:port])");
         opts.addOption("p", "proxy-server", true, "Use HTTP Proxy server ([user:password]@host[:port])");
+        opts.addOption("j", "update", false, "Update ripme");
         return opts;
     }
 
