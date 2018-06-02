@@ -161,6 +161,7 @@ public class UpdateUtils {
     private static boolean isNewerVersion(String latestVersion) {
         // If we're testing the update utils we want the program to always try to update
         if (Utils.getConfigBoolean("testing.always_try_to_update", false)) {
+            logger.info("isNewerVersion is returning true because the key \"testing.always_try_to_update\" is true");
             return true;
         }
         int[] oldVersions = versionStringToInt(getThisJarVersion());
