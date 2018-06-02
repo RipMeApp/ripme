@@ -39,6 +39,20 @@ public class UpdateUtils {
         }
         return thisVersion;
     }
+
+    private static String getChangeList(JSONObject rj) {
+        JSONArray jsonChangeList = rj.getJSONArray("changeList");
+        StringBuilder changeList = new StringBuilder();
+        for (int i = 0; i < jsonChangeList.length(); i++) {
+            String change = jsonChangeList.getString(i);
+            if (change.startsWith(UpdateUtils.getThisJarVersion() + ":")) {
+                break;
+            }
+            changeList.append("\n").append(change);
+        }
+        return changeList.toString();
+    }
+
     public static void updateProgramCLI() {
         logger.info("Checking for update...");
 
@@ -61,16 +75,10 @@ public class UpdateUtils {
         }
         String jsonString = doc.body().html().replaceAll("&quot;", "\"");
         ripmeJson = new JSONObject(jsonString);
-        JSONArray jsonChangeList = ripmeJson.getJSONArray("changeList");
-        StringBuilder changeList = new StringBuilder();
-        for (int i = 0; i < jsonChangeList.length(); i++) {
-            String change = jsonChangeList.getString(i);
-            if (change.startsWith(UpdateUtils.getThisJarVersion() + ":")) {
-                break;
-            }
-            changeList.append("\n").append(change);
-        }
-        logger.info("Change log: \n" + changeList.toString());
+
+        String changeList = getChangeList(ripmeJson);
+
+        logger.info("Change log: \n" + changeList);
 
         String latestVersion = ripmeJson.getString("latestVersion");
         if (UpdateUtils.isNewerVersion(latestVersion)) {
@@ -112,15 +120,8 @@ public class UpdateUtils {
         }
         String jsonString = doc.body().html().replaceAll("&quot;", "\"");
         ripmeJson = new JSONObject(jsonString);
-        JSONArray jsonChangeList = ripmeJson.getJSONArray("changeList");
-        StringBuilder changeList = new StringBuilder();
-        for (int i = 0; i < jsonChangeList.length(); i++) {
-            String change = jsonChangeList.getString(i);
-            if (change.startsWith(UpdateUtils.getThisJarVersion() + ":")) {
-                break;
-            }
-            changeList.append("<br>  + ").append(change);
-        }
+
+        String changeList = getChangeList(ripmeJson);
 
         String latestVersion = ripmeJson.getString("latestVersion");
         if (UpdateUtils.isNewerVersion(latestVersion)) {
@@ -128,7 +129,7 @@ public class UpdateUtils {
             int result = JOptionPane.showConfirmDialog(
                     null,
                     "<html><font color=\"green\">New version (" + latestVersion + ") is available!</font>"
-                    + "<br><br>Recent changes:" + changeList.toString()
+                    + "<br><br>Recent changes:" + changeList
                     + "<br><br>Do you want to download and run the newest version?</html>",
                     "RipMe Updater",
                     JOptionPane.YES_NO_OPTION);
