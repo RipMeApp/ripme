@@ -16,5 +16,16 @@ public class AerisdiesRipperTest extends RippersTest {
         testRipper(ripper);
     }
 
+    public void testDjAlbum() throws IOException {
+        AerisdiesRipper ripper = new AerisdiesRipper(new URL("http://www.aerisdies.com/html/lb/douj_5230_1.html"));
+        testRipper(ripper);
+    }
+
+    public void testGetGID() throws IOException {
+        URL url = new URL("http://www.aerisdies.com/html/lb/douj_5230_1.html");
+        AerisdiesRipper ripper = new AerisdiesRipper(url);
+        assertEquals("5230", ripper.getGID(url));
+    }
+
     // TODO: Add a test for an album with a title.
 }

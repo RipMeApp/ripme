@@ -20,7 +20,6 @@ import java.util.HashMap;
 
 public class AerisdiesRipper extends AbstractHTMLRipper {
 
-    private Document albumDoc = null;
     private Map<String,String> cookies = new HashMap<>();
 
 
@@ -41,17 +40,21 @@ public class AerisdiesRipper extends AbstractHTMLRipper {
     public String getGID(URL url) throws MalformedURLException {
         Pattern p = Pattern.compile("^https?://www.aerisdies.com/html/lb/[a-z]*_(\\d+)_\\d\\.html");
         Matcher m = p.matcher(url.toExternalForm());
-        if (!m.matches()) {
-            throw new MalformedURLException("Expected URL format: http://www.aerisdies.com/html/lb/albumDIG, got: " + url);
+        if (m.matches()) {
+            return m.group(1);
         }
-        return m.group(1);
+        throw new MalformedURLException("Expected URL format: http://www.aerisdies.com/html/lb/albumDIG, got: " + url);
+
     }
 
     @Override
     public String getAlbumTitle(URL url) throws MalformedURLException {
         try {
-            // Attempt to use album title as GID
-            String title = getFirstPage().select("div > div > span[id=albumname] > a").first().text();
+            Element el = getFirstPage().select(".headtext").first();
+            if (el == null) {
+                throw new IOException("Unable to get album title");
+            }
+            String title = el.text();
             return getHost() + "_" + getGID(url) + "_" + title.trim();
         } catch (IOException e) {
             // Fall back to default album naming convention
@@ -62,12 +65,7 @@ public class AerisdiesRipper extends AbstractHTMLRipper {
 
     @Override
     public Document getFirstPage() throws IOException {
-        if (albumDoc == null) {
-            Response resp = Http.url(url).response();
-            cookies.putAll(resp.cookies());
-            albumDoc = resp.parse();
-        }
-        return albumDoc;
+        return Http.url(url).get();
     }
 
     @Override
