@@ -229,17 +229,20 @@ public class UpdateUtils {
         try (FileOutputStream out = new FileOutputStream(updateFileName)) {
             out.write(response.bodyAsBytes());
         }
-        String updateHash = createSha256(new File(updateFileName));
-        logger.info("Download of new version complete; saved to " + updateFileName);
-        logger.info("Checking hash of update");
+        // Only check the hash if the user hasn't disabled hash checking
+        if (Utils.getConfigBoolean("security.check_update_hash", true)) {
+            String updateHash = createSha256(new File(updateFileName));
+            logger.info("Download of new version complete; saved to " + updateFileName);
+            logger.info("Checking hash of update");
 
-        if (!ripmeJson.getString("currentHash").equals(updateHash)) {
-            logger.error("Error: Update has bad hash");
-            logger.debug("Expected hash: " + ripmeJson.getString("currentHash"));
-            logger.debug("Actual hash: " + updateHash);
-            throw new IOException("Got bad file hash");
-        } else {
-            logger.info("Hash is good");
+            if (!ripmeJson.getString("currentHash").equals(updateHash)) {
+                logger.error("Error: Update has bad hash");
+                logger.debug("Expected hash: " + ripmeJson.getString("currentHash"));
+                logger.debug("Actual hash: " + updateHash);
+                throw new IOException("Got bad file hash");
+            } else {
+                logger.info("Hash is good");
+            }
         }
         if (shouldLaunch) {
             // Setup updater script
