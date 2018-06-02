@@ -59,8 +59,8 @@ public class TheyiffgalleryRipper extends AbstractHTMLRipper {
     @Override
     public List<String> getURLsFromPage(Document doc) {
         List<String> result = new ArrayList<>();
-        for (Element el : doc.select("ul.thumbnails > li.gdthumb")) {
-            String imageSource = el.select("a > img").attr("src");
+        for (Element el : doc.select("img.thumbnail")) {
+            String imageSource = el.attr("src");
             imageSource = imageSource.replaceAll("_data/i", "");
             imageSource = imageSource.replaceAll("-\\w\\w_\\w\\d+x\\d+", "");
             result.add("https://theyiffgallery.com" + imageSource);
