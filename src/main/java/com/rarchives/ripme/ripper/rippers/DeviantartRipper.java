@@ -241,8 +241,8 @@ public class DeviantartRipper extends AbstractHTMLRipper {
             return null;
         }
         Elements nextButtons = page.select("link[rel=\"next\"]");
-        if (nextButtons.size() == 0) {
-            if (page.select("link[rel=\"prev\"]").size() == 0) {
+        if (nextButtons.isEmpty()) {
+            if (page.select("link[rel=\"prev\"]").isEmpty()) {
                 throw new IOException("No next page found");
             } else {
                 throw new IOException("Hit end of pages");
@@ -376,7 +376,7 @@ public class DeviantartRipper extends AbstractHTMLRipper {
             Elements els = doc.select("img.dev-content-full");
             String fsimage = null;
             // Get the largest resolution image on the page
-            if (els.size() > 0) {
+            if (!els.isEmpty()) {
                 // Large image
                 fsimage = els.get(0).attr("src");
                 logger.info("Found large-scale: " + fsimage);
@@ -386,7 +386,7 @@ public class DeviantartRipper extends AbstractHTMLRipper {
             }
             // Try to find the download button
             els = doc.select("a.dev-page-download");
-            if (els.size() > 0) {
+            if (!els.isEmpty()) {
                 // Full-size image
                 String downloadLink = els.get(0).attr("href");
                 logger.info("Found download button link: " + downloadLink);

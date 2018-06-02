@@ -82,7 +82,7 @@ public class TwodgalleriesRipper extends AbstractHTMLRipper {
         Document nextDoc = Http.url(url)
                                .cookies(cookies)
                                .get();
-        if (nextDoc.select("div.hcaption > img").size() == 0) {
+        if (nextDoc.select("div.hcaption > img").isEmpty()) {
             throw new IOException("No more images to retrieve");
         }
         return nextDoc;

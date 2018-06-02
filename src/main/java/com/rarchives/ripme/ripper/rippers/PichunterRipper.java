@@ -60,10 +60,7 @@ public class PichunterRipper extends AbstractHTMLRipper {
     private boolean isPhotoSet(URL url) {
         Pattern p = Pattern.compile("https?://www.pichunter.com/gallery/\\d+/(\\S*)/?");
         Matcher m = p.matcher(url.toExternalForm());
-        if (m.matches()) {
-            return true;
-        }
-        return false;
+        return m.matches();
     }
 
     @Override

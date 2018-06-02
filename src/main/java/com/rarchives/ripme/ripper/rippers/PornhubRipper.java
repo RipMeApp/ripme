@@ -91,7 +91,7 @@ public class PornhubRipper extends AlbumRipper {
 
         // Find thumbnails
         Elements thumbs = albumDoc.select(".photoBlockBox li");
-        if (thumbs.size() == 0) {
+        if (thumbs.isEmpty()) {
             logger.debug("albumDoc: " + albumDoc);
             logger.debug("No images found at " + nextUrl);
             return;

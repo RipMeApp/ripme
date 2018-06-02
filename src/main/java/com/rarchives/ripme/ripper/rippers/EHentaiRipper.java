@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.rarchives.ripme.ui.RipStatusMessage;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -125,12 +126,55 @@ public class EHentaiRipper extends AbstractHTMLRipper {
         }
     }
 
+    /**
+     * Checks for blacklisted tags on page. If it finds one it returns it, if not it return null
+     *
+     * @param doc
+     * @return String
+     */
+    public String checkTags(Document doc, String[] blackListedTags) {
+        // If the user hasn't blacklisted any tags we return null;
+        if (blackListedTags == null) {
+            return null;
+        }
+        logger.info("Blacklisted tags " + blackListedTags[0]);
+        List<String> tagsOnPage = getTags(doc);
+        for (String tag : blackListedTags) {
+            for (String pageTag : tagsOnPage) {
+                // We replace all dashes in the tag with spaces because the tags we get from the site are separated using
+                // dashes
+                if (tag.trim().toLowerCase().equals(pageTag.toLowerCase())) {
+                    return tag;
+                }
+            }
+        }
+        return null;
+    }
+
+    private List<String> getTags(Document doc) {
+        List<String> tags = new ArrayList<>();
+        logger.info("Getting tags");
+        for (Element tag : doc.select("td > div > a")) {
+            logger.info("Found tag " + tag.text());
+            tags.add(tag.text());
+        }
+        return tags;
+    }
+
+
     @Override
     public Document getFirstPage() throws IOException {
         if (albumDoc == null) {
             albumDoc = getPageWithRetries(this.url);
         }
         this.lastURL = this.url.toExternalForm();
+        logger.info("Checking blacklist");
+        String blacklistedTag = checkTags(albumDoc, Utils.getConfigStringArray("ehentai.blacklist.tags"));
+        if (blacklistedTag != null) {
+            sendUpdate(RipStatusMessage.STATUS.DOWNLOAD_WARN, "Skipping " + url.toExternalForm() + " as it " +
+                    "contains the blacklisted tag \"" + blacklistedTag + "\"");
+            return null;
+        }
         return albumDoc;
     }
 
@@ -142,7 +186,7 @@ public class EHentaiRipper extends AbstractHTMLRipper {
         }
         // Find next page
         Elements hrefs = doc.select(".ptt a");
-        if (hrefs.size() == 0) {
+        if (hrefs.isEmpty()) {
             logger.info("doc: " + doc.html());
             throw new IOException("No navigation links found");
         }
@@ -211,10 +255,10 @@ public class EHentaiRipper extends AbstractHTMLRipper {
 
                 // Find image
                 Elements images = doc.select(".sni > a > img");
-                if (images.size() == 0) {
+                if (images.isEmpty()) {
                     // Attempt to find image elsewise (Issue #41)
                     images = doc.select("img#img");
-                    if (images.size() == 0) {
+                    if (images.isEmpty()) {
                         logger.warn("Image not found at " + this.url);
                         return;
                     }

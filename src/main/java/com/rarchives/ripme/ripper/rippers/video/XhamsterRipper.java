@@ -57,7 +57,7 @@ public class XhamsterRipper extends VideoRipper {
         logger.info("Retrieving " + this.url);
         Document doc = Http.url(url).get();
         Elements videos = doc.select("div.player-container > a");
-        if (videos.size() == 0) {
+        if (videos.isEmpty()) {
             throw new IOException("Could not find Embed code at " + url);
         }
         String vidUrl = videos.attr("href");

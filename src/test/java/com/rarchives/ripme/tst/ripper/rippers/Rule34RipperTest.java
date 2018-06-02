@@ -11,4 +11,10 @@ public class Rule34RipperTest extends RippersTest {
         testRipper(ripper);
     }
 
+    public void testGetGID() throws IOException {
+        URL url = new URL("https://rule34.xxx/index.php?page=post&s=list&tags=bimbo");
+        Rule34Ripper ripper = new Rule34Ripper(url);
+        assertEquals("bimbo", ripper.getGID(url));
+    }
+
 }
