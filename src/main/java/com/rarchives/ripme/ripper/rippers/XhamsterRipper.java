@@ -64,10 +64,7 @@ public class XhamsterRipper extends AbstractHTMLRipper {
     public boolean canRip(URL url) {
         Pattern p = Pattern.compile("^https?://[wmde.]*xhamster\\.com/photos/gallery/.*?(\\d+)$");
         Matcher m = p.matcher(url.toExternalForm());
-        if (m.matches()) {
-            return true;
-        }
-        return false;
+        return m.matches();
     }
 
     @Override

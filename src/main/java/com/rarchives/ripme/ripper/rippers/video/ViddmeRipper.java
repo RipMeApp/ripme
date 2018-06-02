@@ -56,7 +56,7 @@ public class ViddmeRipper extends VideoRipper {
         logger.info("    Retrieving " + this.url.toExternalForm());
         Document doc = Http.url(this.url).get();
         Elements videos = doc.select("meta[name=twitter:player:stream]");
-        if (videos.size() == 0) {
+        if (videos.isEmpty()) {
             throw new IOException("Could not find twitter:player:stream at " + url);
         }
         String vidUrl = videos.first().attr("content");
