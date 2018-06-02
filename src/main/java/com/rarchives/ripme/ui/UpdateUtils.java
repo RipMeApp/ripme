@@ -68,8 +68,9 @@ public class UpdateUtils {
             if (change.startsWith(UpdateUtils.getThisJarVersion() + ":")) {
                 break;
             }
-            changeList.append("<br>  + ").append(change);
+            changeList.append("\n").append(change);
         }
+        logger.info("Change log: \n" + changeList.toString());
 
         String latestVersion = ripmeJson.getString("latestVersion");
         if (UpdateUtils.isNewerVersion(latestVersion)) {
