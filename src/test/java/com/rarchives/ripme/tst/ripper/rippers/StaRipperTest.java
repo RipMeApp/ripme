@@ -10,4 +10,10 @@ public class StaRipperTest extends RippersTest {
         StaRipper ripper = new StaRipper(new URL("https://sta.sh/2hn9rtavr1g"));
         testRipper(ripper);
     }
+
+    public void testGetGID() throws IOException {
+        URL url = new URL("https://sta.sh/2hn9rtavr1g");
+        StaRipper ripper = new StaRipper(url);
+        assertEquals("2hn9rtavr1g", ripper.getGID(url));
+    }
 }

@@ -276,7 +276,7 @@ public class FivehundredpxRipper extends AbstractJSONRipper {
             catch (IOException e) {
                 logger.error("Error fetching full-size image from " + rawUrl, e);
             }
-            if (images.size() > 0) {
+            if (!images.isEmpty()) {
                 imageURL = images.first().attr("src");
                 logger.debug("Found full-size non-watermarked image: " + imageURL);
             }

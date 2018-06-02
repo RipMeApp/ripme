@@ -78,7 +78,7 @@ public class NfsfwRipper extends AlbumRipper {
         List<Pair> subAlbums = new ArrayList<>();
         int index = 0;
         subAlbums.add(new Pair(this.url.toExternalForm(), ""));
-        while (subAlbums.size() > 0) {
+        while (!subAlbums.isEmpty()) {
             if (isStopped()) {
                 break;
             }
@@ -167,7 +167,7 @@ public class NfsfwRipper extends AlbumRipper {
                                    .referrer(this.url)
                                    .get();
                 Elements images = doc.select(".gbBlock img");
-                if (images.size() == 0) {
+                if (images.isEmpty()) {
                     logger.error("Failed to find image at " + this.url);
                     return;
                 }

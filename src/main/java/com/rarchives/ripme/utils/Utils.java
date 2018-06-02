@@ -89,9 +89,25 @@ public class Utils {
         return workingDir;
     }
 
+    /**
+     * Gets the value of a specific config key.
+     * 
+     * @param key The name of the config parameter you want to find.
+     * @param defaultValue What the default value would be.
+     */
     public static String getConfigString(String key, String defaultValue) {
         return config.getString(key, defaultValue);
     }
+
+    public static String[] getConfigStringArray(String key) {
+        String[] s = config.getStringArray(key);
+        if (s.length == 0) {
+            return null;
+        } else {
+            return s;
+        }
+    }
+
     public static int getConfigInteger(String key, int defaultValue) {
         return config.getInt(key, defaultValue);
     }
@@ -132,31 +148,53 @@ public class Utils {
         }
     }
 
+    /**
+     * Determines if your current system is a Windows system.
+     */
     private static boolean isWindows() {
         return OS.contains("win");
     }
 
+    /**
+     * Determines if your current system is a Mac system
+     */
     private static boolean isMacOS() {
         return OS.contains("mac");
     }
 
+    /**
+     * Determines if current system is based on UNIX
+     */
     private static boolean isUnix() {
         return OS.contains("nix") || OS.contains("nux") || OS.contains("bsd");
     }
 
+    /**
+     * Gets the directory of where the config file is stored on a Windows machine.
+     */
     private static String getWindowsConfigDir() {
         return System.getenv("LOCALAPPDATA") + File.separator + "ripme";
     }
 
+    
+    /**
+     * Gets the directory of where the config file is stored on a UNIX machine.
+     */
     private static String getUnixConfigDir() {
         return System.getProperty("user.home") + File.separator + ".config" + File.separator + "ripme";
     }
-
+    
+    /**
+     * Gets the directory of where the config file is stored on a Mac machine.
+     */
     private static String getMacOSConfigDir() {
         return System.getProperty("user.home")
                 + File.separator + "Library" + File.separator + "Application Support" + File.separator + "ripme";
     }
 
+    /**
+     * Determines if the app is running in a portable mode. i.e. on a USB stick
+     */
     private static boolean portableMode() {
         try {
             File f = new File(new File(".").getCanonicalPath() + File.separator + configFile);
@@ -169,7 +207,9 @@ public class Utils {
         return false;
     }
 
-
+    /**
+     * Gets the directory of the config directory, for all systems.
+     */
     public static String getConfigDir() {
         if (portableMode()) {
             try {
@@ -189,17 +229,24 @@ public class Utils {
             return ".";
         }
     }
-    // Delete the url history file
+    /**
+     * Delete the url history file
+     */
     public static void clearURLHistory() {
         File file = new File(getURLHistoryFile());
         file.delete();
     }
 
-    // Return the path of the url history file
+    /**
+     *  Return the path of the url history file
+     */
     public static String getURLHistoryFile() {
         return getConfigDir() + File.separator + "url_history.txt";
     }
 
+    /**
+     * Gets the path to the configuration file.
+     */
     private static String getConfigFilePath() {
         return getConfigDir() + File.separator + configFile;
     }
@@ -225,6 +272,15 @@ public class Utils {
         return prettySaveAs;
     }
 
+    /**
+     * Strips away URL parameters, which usually appear at the end of URLs.
+     * E.g. the ?query on PHP
+     * 
+     * @param url The URL to filter/strip
+     * @param parameter The parameter to strip
+     * 
+     * @return The stripped URL
+     */
     public static String stripURLParameter(String url, String parameter) {
         int paramIndex = url.indexOf("?" + parameter);
         boolean wasFirstParam = true;
@@ -252,6 +308,7 @@ public class Utils {
     /**
      * Removes the current working directory from a given filename
      * @param file
+     *      Path to the file
      * @return
      *      'file' without the leading current working directory
      */
@@ -335,9 +392,24 @@ public class Utils {
     }
 
     private static final int SHORTENED_PATH_LENGTH = 12;
+    /**
+     * Shortens the path to a file
+     * @param path
+     *      String of the path to the file
+     * @return
+     *      The simplified path to the file.
+     */
     public static String shortenPath(String path) {
         return shortenPath(new File(path));
     }
+
+    /**
+     * Shortens the path to a file
+     * @param file
+     *      File object that you want the shortened path of.
+     * @return 
+     *      The simplified path to the file.
+     */
     public static String shortenPath(File file) {
         String path = removeCWD(file);
         if (path.length() < SHORTENED_PATH_LENGTH * 2) {
@@ -348,6 +420,13 @@ public class Utils {
                 + path.substring(path.length() - SHORTENED_PATH_LENGTH);
     }
 
+    /**
+     * Sanitizes a string so that a filesystem can handle it
+     * @param text
+     *      The text to be sanitized.
+     * @return
+     *      The sanitized text.
+     */
     public static String filesystemSanitized(String text) {
         text = text.replaceAll("[^a-zA-Z0-9.-]", "_");
         return text;
@@ -397,6 +476,13 @@ public class Utils {
         return original;
     }
 
+    /**
+     * Converts an integer into a human readable string
+     * @param bytes
+     *      Non-human readable integer.
+     * @return
+     *      Human readable interpretation of a byte.
+     */
     public static String bytesToHumanReadable(int bytes) {
         float fbytes = (float) bytes;
         String[] mags = new String[] {"", "K", "M", "G", "T"};
@@ -408,6 +494,10 @@ public class Utils {
         return String.format("%.2f%siB", fbytes, mags[magIndex]);
     }
 
+    /**
+     * Gets and returns a list of all the album rippers present in the "com.rarchives.ripme.ripper.rippers" package.
+     * @return List<String> of all album rippers present.
+     */
     public static List<String> getListOfAlbumRippers() throws Exception {
         List<String> list = new ArrayList<>();
         for (Constructor<?> ripper : AbstractRipper.getRipperConstructors("com.rarchives.ripme.ripper.rippers")) {
@@ -415,6 +505,11 @@ public class Utils {
         }
         return list;
     }
+
+    /**
+     * Gets and returns a list of all video rippers present in the "com.rarchives.rime.rippers.video" package
+     * @return List<String> of all the video rippers.
+     */
     public static List<String> getListOfVideoRippers() throws Exception {
         List<String> list = new ArrayList<>();
         for (Constructor<?> ripper : AbstractRipper.getRipperConstructors("com.rarchives.ripme.ripper.rippers.video")) {
@@ -423,6 +518,11 @@ public class Utils {
         return list;
     }
 
+    /**
+     * Plays a sound from a file.
+     * @param filename 
+     *      Path to the sound file
+     */
     public static void playSound(String filename) {
         URL resource = ClassLoader.getSystemClassLoader().getResource(filename);
         try {
@@ -560,6 +660,9 @@ public class Utils {
         cookieCache = new HashMap<String, HashMap<String, String>>();
     }
 
+    /**
+     * Gets all the cookies from a certain host
+     */
     public static Map<String, String> getCookies(String host) {
         HashMap<String, String> domainCookies = cookieCache.get(host);
         if (domainCookies == null) {
@@ -577,18 +680,30 @@ public class Utils {
         return domainCookies;
     }
 
-    public static ResourceBundle getResourceBundle() {
-        if (!getConfigString("lang", "").equals("")) {
-            String[] langCode = getConfigString("lang", "").split("_");
-            logger.info("Setting locale to " + getConfigString("lang", ""));
+    /**
+     * Gets the ResourceBundle AKA language package.
+     * Used for choosing the language of the UI.
+     * 
+     * @return Returns the default resource bundle using the language specified in the config file.
+     */
+    public static ResourceBundle getResourceBundle(String langSelect) {
+        if (langSelect == null) {
+            if (!getConfigString("lang", "").equals("")) {
+                String[] langCode = getConfigString("lang", "").split("_");
+                logger.info("Setting locale to " + getConfigString("lang", ""));
+                return ResourceBundle.getBundle("LabelsBundle", new Locale(langCode[0], langCode[1]), new UTF8Control());
+            }
+        } else {
+            String[] langCode = langSelect.split("_");
+            logger.info("Setting locale to " + langSelect);
             return ResourceBundle.getBundle("LabelsBundle", new Locale(langCode[0], langCode[1]), new UTF8Control());
         }
         try {
-            ResourceBundle rb = ResourceBundle.getBundle("LabelsBundle", Locale.getDefault(), new UTF8Control());
-            return rb;
+            logger.info("Setting locale to default");
+            return ResourceBundle.getBundle("LabelsBundle", Locale.getDefault(), new UTF8Control());
         } catch (MissingResourceException e) {
-            ResourceBundle rb = ResourceBundle.getBundle("LabelsBundle", Locale.ROOT);
-            return rb;
+            logger.info("Setting locale to root");
+            return ResourceBundle.getBundle("LabelsBundle", Locale.ROOT);
         }
     }
 }

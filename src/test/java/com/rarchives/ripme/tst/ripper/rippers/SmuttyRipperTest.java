@@ -10,4 +10,10 @@ public class SmuttyRipperTest extends RippersTest {
         SmuttyRipper ripper = new SmuttyRipper(new URL("https://smutty.com/user/QUIGON/"));
         testRipper(ripper);
     }
+
+    public void testGetGID() throws IOException {
+        URL url = new URL("https://smutty.com/user/QUIGON/");
+        SmuttyRipper ripper = new SmuttyRipper(url);
+        assertEquals("QUIGON", ripper.getGID(url));
+    }
 }

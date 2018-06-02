@@ -34,7 +34,7 @@ public class SinnercomicsRipper extends AbstractHTMLRipper {
         Pattern p = Pattern.compile("^https?://sinnercomics.com/comic/([a-zA-Z0-9-]*)/?$");
         Matcher m = p.matcher(url.toExternalForm());
         if (m.matches()) {
-            return m.group(1);
+            return m.group(1).replaceAll("-page-\\d+", "");
         }
         throw new MalformedURLException("Expected sinnercomics.com URL format: " +
                         "sinnercomics.com/comic/albumName - got " + url + " instead");

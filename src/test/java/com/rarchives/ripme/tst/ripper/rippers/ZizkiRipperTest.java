@@ -10,4 +10,16 @@ public class ZizkiRipperTest extends RippersTest {
         ZizkiRipper ripper = new ZizkiRipper(new URL("http://zizki.com/dee-chorde/we-got-spirit"));
         testRipper(ripper);
     }
+
+    public void testGetGID() throws IOException {
+        URL url = new URL("http://zizki.com/dee-chorde/we-got-spirit");
+        ZizkiRipper ripper = new ZizkiRipper(url);
+        assertEquals("dee-chorde", ripper.getGID(url));
+    }
+
+    public void testAlbumTitle() throws IOException {
+        URL url = new URL("http://zizki.com/dee-chorde/we-got-spirit");
+        ZizkiRipper ripper = new ZizkiRipper(url);
+        assertEquals("zizki_Dee Chorde_We Got Spirit", ripper.getAlbumTitle(url));
+    }
 }

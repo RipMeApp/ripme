@@ -54,7 +54,7 @@ public class PhotobucketRipper extends AlbumRipper {
             }
             Document albumDoc = pageResponse.parse();
             Elements els = albumDoc.select("div.libraryTitle > h1");
-            if (els.size() == 0) {
+            if (els.isEmpty()) {
                 throw new IOException("Could not find libraryTitle at " + url);
             }
             return els.get(0).text();
@@ -92,7 +92,7 @@ public class PhotobucketRipper extends AlbumRipper {
             subsToRip.add(sub);
         }
 
-        while (subsToRip.size() > 0 && !isStopped()) {
+        while (!subsToRip.isEmpty() && !isStopped()) {
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {

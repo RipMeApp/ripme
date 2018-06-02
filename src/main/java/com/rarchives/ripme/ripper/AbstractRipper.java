@@ -67,14 +67,35 @@ public abstract class AbstractRipper
      * @param downloadedURL URL to check if downloaded
      */
     private void writeDownloadedURL(String downloadedURL) throws IOException {
+        // If "save urls only" is checked don't write to the url history file
+        if (Utils.getConfigBoolean("urls_only.save", false)) {
+            return;
+        }
         downloadedURL = normalizeUrl(downloadedURL);
         BufferedWriter bw = null;
         FileWriter fw = null;
         try {
             File file = new File(URLHistoryFile);
+            if (!new File(Utils.getConfigDir()).exists()) {
+                logger.error("Config dir doesn't exist");
+                logger.info("Making config dir");
+                boolean couldMakeDir = new File(Utils.getConfigDir()).mkdirs();
+                if (!couldMakeDir) {
+                    logger.error("Couldn't make config dir");
+                    return;
+                }
+            }
             // if file doesnt exists, then create it
             if (!file.exists()) {
-                file.createNewFile();
+                boolean couldMakeDir = file.createNewFile();
+                if (!couldMakeDir) {
+                    logger.error("Couldn't url history file");
+                    return;
+                }
+            }
+            if (!file.canWrite()) {
+                logger.error("Can't write to url history file: " + URLHistoryFile);
+                return;
             }
             fw = new FileWriter(file.getAbsoluteFile(), true);
             bw = new BufferedWriter(fw);
@@ -112,8 +133,8 @@ public abstract class AbstractRipper
     private boolean hasDownloadedURL(String url) {
         File file = new File(URLHistoryFile);
         url = normalizeUrl(url);
-        try {
-            Scanner scanner = new Scanner(file);
+
+        try (Scanner scanner = new Scanner(file)) {
             while (scanner.hasNextLine()) {
                 final String lineFromFile = scanner.nextLine();
                 if (lineFromFile.equals(url)) {
@@ -123,6 +144,7 @@ public abstract class AbstractRipper
         } catch (FileNotFoundException e) {
             return false;
         }
+
         return false;
     }
 

@@ -10,4 +10,10 @@ public class ImagevenueRipperTest extends RippersTest {
         ImagevenueRipper ripper = new ImagevenueRipper(new URL("http://img120.imagevenue.com/galshow.php?gal=gallery_1373818527696_191lo"));
         testRipper(ripper);
     }
+
+    public void testGetGID() throws IOException {
+        URL url = new URL("http://img120.imagevenue.com/galshow.php?gal=gallery_1373818527696_191lo");
+        ImagevenueRipper ripper = new ImagevenueRipper(url);
+        assertEquals("gallery_1373818527696_191lo", ripper.getGID(url));
+    }
 }

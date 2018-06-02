@@ -60,7 +60,7 @@ public class DrawcrowdRipper extends AbstractHTMLRipper {
     @Override
     public Document getNextPage(Document doc) throws IOException {
         Elements loadMore = doc.select("a#load-more");
-        if (loadMore.size() == 0) {
+        if (loadMore.isEmpty()) {
             throw new IOException("No next page found");
         }
         if (!sleep(1000)) {

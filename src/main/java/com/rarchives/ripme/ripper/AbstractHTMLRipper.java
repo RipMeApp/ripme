@@ -11,6 +11,7 @@ import org.jsoup.nodes.Document;
 
 import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
 import com.rarchives.ripme.utils.Utils;
+import com.rarchives.ripme.ui.MainWindow;
 
 /**
  * Simplified ripper, designed for ripping from sites by parsing HTML.
@@ -53,12 +54,29 @@ public abstract class AbstractHTMLRipper extends AlbumRipper {
     protected boolean hasDescriptionSupport() {
         return false;
     }
+
     protected String[] getDescription(String url, Document page) throws IOException {
         throw new IOException("getDescription not implemented"); // Do I do this or make an abstract function?
     }
     protected int descSleepTime() {
         return 100;
     }
+
+    protected List<String> getAlbumsToQueue(Document doc) {
+        return null;
+    }
+
+    // If a page has Queue support then it has no images we want to download, just a list of urls we want to add to
+    // the queue
+    protected boolean hasQueueSupport() {
+        return false;
+    }
+
+    // Takes a url and checks if it is for a page of albums
+    protected boolean pageContainsAlbums(URL url) {
+        return false;
+    }
+
     @Override
     public void rip() throws IOException {
         int index = 0;
@@ -66,6 +84,16 @@ public abstract class AbstractHTMLRipper extends AlbumRipper {
         logger.info("Retrieving " + this.url);
         sendUpdate(STATUS.LOADING_RESOURCE, this.url.toExternalForm());
         Document doc = getFirstPage();
+
+        if (hasQueueSupport() && pageContainsAlbums(this.url)) {
+            List<String> urls = getAlbumsToQueue(doc);
+            for (String url : urls) {
+                MainWindow.addUrlToQueue(url);
+            }
+
+            // We set doc to null here so the while loop below this doesn't fire
+            doc = null;
+        }
 
         while (doc != null) {
             if (alreadyDownloadedUrls >= Utils.getConfigInteger("history.end_rip_after_already_seen", 1000000000) && !isThisATest()) {
@@ -83,7 +111,7 @@ public abstract class AbstractHTMLRipper extends AlbumRipper {
                     }
                 }
 
-                if (imageURLs.size() == 0) {
+                if (imageURLs.isEmpty()) {
                     throw new IOException("No images found at " + doc.location());
                 }
 
@@ -99,7 +127,7 @@ public abstract class AbstractHTMLRipper extends AlbumRipper {
             if (hasDescriptionSupport() && Utils.getConfigBoolean("descriptions.save", false)) {
                 logger.debug("Fetching description(s) from " + doc.location());
                 List<String> textURLs = getDescriptionsFromPage(doc);
-                if (textURLs.size() > 0) {
+                if (!textURLs.isEmpty()) {
                     logger.debug("Found description link(s) from " + doc.location());
                     for (String textURL : textURLs) {
                         if (isStopped()) {
