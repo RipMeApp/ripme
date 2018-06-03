@@ -86,7 +86,7 @@ public class NfsfwRipper extends AlbumRipper {
             String nextURL = nextAlbum.first;
             String nextSubalbum = nextAlbum.second;
             sendUpdate(STATUS.LOADING_RESOURCE, nextURL);
-            logger.info("    Retrieving " + nextURL);
+            LOGGER.info("    Retrieving " + nextURL);
             if (albumDoc == null) {
                 albumDoc = Http.url(nextURL).get();
             }
@@ -116,7 +116,7 @@ public class NfsfwRipper extends AlbumRipper {
                         break;
                     }
                 } catch (MalformedURLException mue) {
-                    logger.warn("Invalid URL: " + imagePage);
+                    LOGGER.warn("Invalid URL: " + imagePage);
                 }
             }
             if (isThisATest()) {
@@ -133,7 +133,7 @@ public class NfsfwRipper extends AlbumRipper {
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
-                logger.error("Interrupted while waiting to load next page", e);
+                LOGGER.error("Interrupted while waiting to load next page", e);
                 throw new IOException(e);
             }
         }
@@ -168,7 +168,7 @@ public class NfsfwRipper extends AlbumRipper {
                                    .get();
                 Elements images = doc.select(".gbBlock img");
                 if (images.isEmpty()) {
-                    logger.error("Failed to find image at " + this.url);
+                    LOGGER.error("Failed to find image at " + this.url);
                     return;
                 }
                 String file = images.first().attr("src");
@@ -181,7 +181,7 @@ public class NfsfwRipper extends AlbumRipper {
                 }
                 addURLToDownload(new URL(file), prefix, this.subdir);
             } catch (IOException e) {
-                logger.error("[!] Exception while loading/parsing " + this.url, e);
+                LOGGER.error("[!] Exception while loading/parsing " + this.url, e);
             }
         }
     }

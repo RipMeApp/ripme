@@ -52,7 +52,7 @@ public class VkRipper extends VideoRipper {
 
     @Override
     public void rip() throws IOException {
-        logger.info("    Retrieving " + this.url);
+        LOGGER.info("    Retrieving " + this.url);
         String videoURL = getVideoURLAtPage(this.url.toExternalForm());
         addURLToDownload(new URL(videoURL), HOST + "_" + getGID(this.url));
         waitForThreads();

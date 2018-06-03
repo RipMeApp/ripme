@@ -36,7 +36,7 @@ public class LusciousRipper extends AbstractHTMLRipper {
         // "url" is an instance field of the superclass
         Document page = Http.url(url).get();
         URL firstUrl = new URL("https://luscious.net" +  page.select("div > div.album_cover_item > a").first().attr("href"));
-        logger.info("First page is " + "https://luscious.net" +  page.select("div > div.album_cover_item > a").first().attr("href"));
+        LOGGER.info("First page is " + "https://luscious.net" +  page.select("div > div.album_cover_item > a").first().attr("href"));
         return Http.url(firstUrl).get();
     }
 

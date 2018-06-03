@@ -73,7 +73,7 @@ public class VscoRipper extends AbstractHTMLRipper{
             try {
                 toRip.add(vscoImageToURL(url.toExternalForm()));
             } catch (IOException ex) {
-                logger.debug("Failed to convert " + url.toString() + " to external form.");
+                LOGGER.debug("Failed to convert " + url.toString() + " to external form.");
             }
             
         } else {//want to rip a member profile
@@ -94,12 +94,12 @@ public class VscoRipper extends AbstractHTMLRipper{
                         String relativeURL = vscoImageToURL(link.attr("href"));
                         toRip.add(baseURL + relativeURL);
                     } catch (IOException ex) {
-                        logger.debug("Could not add \"" + link.toString() + "\" to list for ripping.");
+                        LOGGER.debug("Could not add \"" + link.toString() + "\" to list for ripping.");
                     }
                 }
             }
             */
-            logger.debug("Sorry, RipMe currently only supports ripping single images.");
+            LOGGER.debug("Sorry, RipMe currently only supports ripping single images.");
             
             
         }
@@ -121,14 +121,14 @@ public class VscoRipper extends AbstractHTMLRipper{
                 givenURL = givenURL.replaceAll("\\?h=[0-9]+", "");//replace the "?h=xxx" tag at the end of the URL (where each x is a number)
                 
                 result = givenURL;
-                logger.debug("Found image URL: " + givenURL);
+                LOGGER.debug("Found image URL: " + givenURL);
                 break;//immediatly stop after getting URL (there should only be 1 image to be downloaded)
             }
         }
         
         //Means website changed, things need to be fixed.
         if (result.isEmpty()){
-            logger.error("Could not find image URL at: " + url);
+            LOGGER.error("Could not find image URL at: " + url);
         }
         
         return result;

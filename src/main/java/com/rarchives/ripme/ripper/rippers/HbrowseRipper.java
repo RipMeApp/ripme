@@ -56,7 +56,7 @@ public class HbrowseRipper extends AbstractHTMLRipper {
                 return getHost() + "_" + title + "_" + getGID(url);
             } catch (Exception e) {
                 // Fall back to default album naming convention
-                logger.warn("Failed to get album title from " + url, e);
+                LOGGER.warn("Failed to get album title from " + url, e);
             }
             return super.getAlbumTitle(url);
         }

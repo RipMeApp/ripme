@@ -38,7 +38,7 @@ public class Hentai2readRipper extends AbstractHTMLRipper {
 
     @Override
     public boolean pageContainsAlbums(URL url) {
-        logger.info("Page contains albums");
+        LOGGER.info("Page contains albums");
         Pattern pat = Pattern.compile("https?://hentai2read\\.com/([a-zA-Z0-9_-]*)/?");
         Matcher mat = pat.matcher(url.toExternalForm());
         if (mat.matches()) {
@@ -95,7 +95,7 @@ public class Hentai2readRipper extends AbstractHTMLRipper {
                 return getHost() + "_" + getGID(url);
             } catch (Exception e) {
                 // Fall back to default album naming convention
-                logger.warn("Failed to get album title from " + url, e);
+                LOGGER.warn("Failed to get album title from " + url, e);
             }
             return super.getAlbumTitle(url);
         }
