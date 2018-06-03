@@ -20,8 +20,11 @@ import com.rarchives.ripme.utils.RipUtils;
 public class ChanRipper extends AbstractHTMLRipper {
     private static List<ChanSite> explicit_domains = Arrays.asList(
         new ChanSite(Arrays.asList("boards.4chan.org"),   Arrays.asList("4cdn.org", "is.4chan.org", "is2.4chan.org")),
+        new ChanSite(Arrays.asList("archive.moe"),        Arrays.asList("data.archive.moe")),
         new ChanSite(Arrays.asList("4archive.org"),       Arrays.asList("imgur.com")),
-        new ChanSite(Arrays.asList("archive.4plebs.org"), Arrays.asList("img.4plebs.org"))
+        new ChanSite(Arrays.asList("archive.4plebs.org"), Arrays.asList("img.4plebs.org")),
+        new ChanSite(Arrays.asList("8ch.net"),            Arrays.asList("media.8ch.net")),
+        new ChanSite(Arrays.asList("yuki.la"),            Arrays.asList("ii.yuki.la"))
         );
 
     private static List<String> url_piece_blacklist = Arrays.asList(
@@ -65,7 +68,7 @@ public class ChanRipper extends AbstractHTMLRipper {
             // Attempt to use album title as GID
             Document doc = getFirstPage();
             try {
-                String subject = doc.select(".post.op > .postinfo > .subject").first().text();
+                String subject = doc.select(".subject").first().text();
                 return getHost() + "_" + getGID(url) + "_" + subject;
             } catch (NullPointerException e) {
                 logger.warn("Failed to get thread title from " + url);
@@ -86,7 +89,8 @@ public class ChanRipper extends AbstractHTMLRipper {
             }
         }
         return  url.toExternalForm().contains("/res/")     // Most chans
-             || url.toExternalForm().contains("/thread/"); // 4chan, archive.moe
+             || url.toExternalForm().contains("/thread/") // 4chan, archive.moe
+             || url.toExternalForm().contains("/"); // yuki.la, etc
     }
 
     /**
@@ -104,8 +108,8 @@ public class ChanRipper extends AbstractHTMLRipper {
         Matcher m;
 
         String u = url.toExternalForm();
-        if (u.contains("/thread/") || u.contains("/res/")) {
-            p = Pattern.compile("^.*\\.[a-z]{1,3}/[a-zA-Z0-9]+/(thread|res)/([0-9]+)(\\.html|\\.php)?.*$");
+        if (u.contains("/thread/") || u.contains("/res/") || u.contains("/")) {
+            p = Pattern.compile("^.*\\.[a-z]{1,3}/[a-zA-Z0-9]+(/thread/|/res/|/)([0-9]+)(\\.html|\\.php)?.*$");
             m = p.matcher(u);
             if (m.matches()) {
                 return m.group(2);
