@@ -122,14 +122,14 @@ public class DeviantartRipper extends AbstractHTMLRipper {
         String password = Utils.getConfigString("deviantart.password", new String(Base64.decode("ZmFrZXJz")));
         
         if (username == null || password == null) {
-            logger.debug("No DeviantArt login provided.");
+            LOGGER.debug("No DeviantArt login provided.");
             cookies.put("agegate_state","1"); // Bypasses the age gate
         } else {
             // Attempt Login
             try {
                 cookies = loginToDeviantart();
             } catch (IOException e) {
-                logger.warn("Failed to login: ", e);
+                LOGGER.warn("Failed to login: ", e);
                 cookies.put("agegate_state","1"); // Bypasses the age gate
             }
         }
@@ -161,7 +161,7 @@ public class DeviantartRipper extends AbstractHTMLRipper {
                     script = script.substring(script.indexOf("},\"src\":\"") + 9, script.indexOf("\",\"type\""));
                     return script.replace("\\/", "/");
                 } catch (StringIndexOutOfBoundsException e) {
-                    logger.debug("Unable to get json link from " + page.location());
+                    LOGGER.debug("Unable to get json link from " + page.location());
                 }
             }
         }
@@ -204,7 +204,7 @@ public class DeviantartRipper extends AbstractHTMLRipper {
                 }
             }
             if (triedURLs.contains(fullSize)) {
-                logger.warn("Already tried to download " + fullSize);
+                LOGGER.warn("Already tried to download " + fullSize);
                 continue;
             }
             triedURLs.add(fullSize);
@@ -222,7 +222,7 @@ public class DeviantartRipper extends AbstractHTMLRipper {
         List<String> textURLs = new ArrayList<>();
         // Iterate over all thumbnails
         for (Element thumb : page.select("div.zones-container span.thumb")) {
-            logger.info(thumb.attr("href"));
+            LOGGER.info(thumb.attr("href"));
             if (isStopped()) {
                 break;
             }
@@ -256,7 +256,7 @@ public class DeviantartRipper extends AbstractHTMLRipper {
         if (!sleep(PAGE_SLEEP_TIME)) {
             throw new IOException("Interrupted while waiting to load next page: " + nextPage);
         }
-        logger.info("Found next page: " + nextPage);
+        LOGGER.info("Found next page: " + nextPage);
         return Http.url(nextPage)
                    .cookies(cookies)
                    .get();
@@ -351,7 +351,7 @@ public class DeviantartRipper extends AbstractHTMLRipper {
             return new String[] {Jsoup.clean(ele.html().replaceAll("\\\\n", System.getProperty("line.separator")), "", Whitelist.none(), new Document.OutputSettings().prettyPrint(false)),fullSize};
             // TODO Make this not make a newline if someone just types \n into the description.
         } catch (IOException ioe) {
-                logger.info("Failed to get description at " + url + ": '" + ioe.getMessage() + "'");
+                LOGGER.info("Failed to get description at " + url + ": '" + ioe.getMessage() + "'");
                 return null;
         }
     }
@@ -379,7 +379,7 @@ public class DeviantartRipper extends AbstractHTMLRipper {
             if (!els.isEmpty()) {
                 // Large image
                 fsimage = els.get(0).attr("src");
-                logger.info("Found large-scale: " + fsimage);
+                LOGGER.info("Found large-scale: " + fsimage);
                 if (fsimage.contains("//orig")) {
                     return fsimage;
                 }
@@ -389,7 +389,7 @@ public class DeviantartRipper extends AbstractHTMLRipper {
             if (!els.isEmpty()) {
                 // Full-size image
                 String downloadLink = els.get(0).attr("href");
-                logger.info("Found download button link: " + downloadLink);
+                LOGGER.info("Found download button link: " + downloadLink);
                 HttpURLConnection con = (HttpURLConnection) new URL(downloadLink).openConnection();
                 con.setRequestProperty("Referer",this.url.toString());
                 String cookieString = "";
@@ -406,7 +406,7 @@ public class DeviantartRipper extends AbstractHTMLRipper {
                 con.disconnect();
                 if (location.contains("//orig")) {
                     fsimage = location;
-                    logger.info("Found image download: " + location);
+                    LOGGER.info("Found image download: " + location);
                 }
             }
             if (fsimage != null) {
@@ -415,9 +415,9 @@ public class DeviantartRipper extends AbstractHTMLRipper {
             throw new IOException("No download page found");
         } catch (IOException ioe) {
             try {
-                logger.info("Failed to get full size download image at " + page + " : '" + ioe.getMessage() + "'");
+                LOGGER.info("Failed to get full size download image at " + page + " : '" + ioe.getMessage() + "'");
                 String lessThanFull = thumbToFull(thumb, false);
-                logger.info("Falling back to less-than-full-size image " + lessThanFull);
+                LOGGER.info("Falling back to less-than-full-size image " + lessThanFull);
                 return lessThanFull;
             } catch (Exception e) {
                 return null;

@@ -89,10 +89,10 @@ public class SankakuComplexRipper extends AbstractHTMLRipper {
                     String siteURL = "https://" + subDomain + "sankakucomplex.com";
                     // Get the page the full sized image is on
                     Document subPage = Http.url(siteURL + postLink).get();
-                    logger.info("Checking page " + siteURL + postLink);
+                    LOGGER.info("Checking page " + siteURL + postLink);
                     imageURLs.add("https:" + subPage.select("div[id=stats] > ul > li > a[id=highres]").attr("href"));
                 } catch (IOException e) {
-                    logger.warn("Error while loading page " + postLink, e);
+                    LOGGER.warn("Error while loading page " + postLink, e);
                 }
         }
         return imageURLs;
@@ -112,7 +112,7 @@ public class SankakuComplexRipper extends AbstractHTMLRipper {
             // Only logged in users can see past page 25
             // Trying to rip page 26 will throw a no images found error
             if (!nextPage.contains("page=26")) {
-                logger.info("Getting next page: " + pagination.attr("abs:next-page-url"));
+                LOGGER.info("Getting next page: " + pagination.attr("abs:next-page-url"));
                 return Http.url(pagination.attr("abs:next-page-url")).cookies(cookies).get();
             }
         }

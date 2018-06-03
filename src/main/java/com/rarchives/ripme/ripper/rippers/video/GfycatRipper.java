@@ -65,7 +65,7 @@ public class GfycatRipper extends VideoRipper {
      * @throws IOException
      */
     public static String getVideoURL(URL url) throws IOException {
-        logger.info("Retrieving " + url.toExternalForm());
+        LOGGER.info("Retrieving " + url.toExternalForm());
         
         //Sanitize the URL first
         url = new URL(url.toExternalForm().replace("/gifs/detail", ""));

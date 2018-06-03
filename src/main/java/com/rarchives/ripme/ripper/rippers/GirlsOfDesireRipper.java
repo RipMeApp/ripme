@@ -40,7 +40,7 @@ public class GirlsOfDesireRipper extends AbstractHTMLRipper {
             return getHost() + "_" + elems.first().text();
         } catch (Exception e) {
             // Fall back to default album naming convention
-            logger.warn("Failed to get album title from " + url, e);
+            LOGGER.warn("Failed to get album title from " + url, e);
         }
         return super.getAlbumTitle(url);
     }

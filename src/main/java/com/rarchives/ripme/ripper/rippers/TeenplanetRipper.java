@@ -69,7 +69,7 @@ public class TeenplanetRipper extends AlbumRipper {
     @Override
     public void rip() throws IOException {
         int index = 0;
-        logger.info("Retrieving " + this.url);
+        LOGGER.info("Retrieving " + this.url);
         sendUpdate(STATUS.LOADING_RESOURCE, this.url.toExternalForm());
         if (albumDoc == null) {
             albumDoc = Http.url(url).get();

@@ -54,7 +54,7 @@ public class YoupornRipper extends VideoRipper {
 
     @Override
     public void rip() throws IOException {
-        logger.info("    Retrieving " + this.url);
+        LOGGER.info("    Retrieving " + this.url);
         Document doc = Http.url(this.url).get();
         Elements videos = doc.select("video");
         if (videos.isEmpty()) {
