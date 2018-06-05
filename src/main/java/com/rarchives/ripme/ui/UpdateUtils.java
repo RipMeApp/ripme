@@ -39,6 +39,20 @@ public class UpdateUtils {
         }
         return thisVersion;
     }
+
+    private static String getChangeList(JSONObject rj) {
+        JSONArray jsonChangeList = rj.getJSONArray("changeList");
+        StringBuilder changeList = new StringBuilder();
+        for (int i = 0; i < jsonChangeList.length(); i++) {
+            String change = jsonChangeList.getString(i);
+            if (change.startsWith(UpdateUtils.getThisJarVersion() + ":")) {
+                break;
+            }
+            changeList.append("\n").append(change);
+        }
+        return changeList.toString();
+    }
+
     public static void updateProgramCLI() {
         logger.info("Checking for update...");
 
@@ -61,15 +75,10 @@ public class UpdateUtils {
         }
         String jsonString = doc.body().html().replaceAll("&quot;", "\"");
         ripmeJson = new JSONObject(jsonString);
-        JSONArray jsonChangeList = ripmeJson.getJSONArray("changeList");
-        StringBuilder changeList = new StringBuilder();
-        for (int i = 0; i < jsonChangeList.length(); i++) {
-            String change = jsonChangeList.getString(i);
-            if (change.startsWith(UpdateUtils.getThisJarVersion() + ":")) {
-                break;
-            }
-            changeList.append("<br>  + ").append(change);
-        }
+
+        String changeList = getChangeList(ripmeJson);
+
+        logger.info("Change log: \n" + changeList);
 
         String latestVersion = ripmeJson.getString("latestVersion");
         if (UpdateUtils.isNewerVersion(latestVersion)) {
@@ -111,15 +120,8 @@ public class UpdateUtils {
         }
         String jsonString = doc.body().html().replaceAll("&quot;", "\"");
         ripmeJson = new JSONObject(jsonString);
-        JSONArray jsonChangeList = ripmeJson.getJSONArray("changeList");
-        StringBuilder changeList = new StringBuilder();
-        for (int i = 0; i < jsonChangeList.length(); i++) {
-            String change = jsonChangeList.getString(i);
-            if (change.startsWith(UpdateUtils.getThisJarVersion() + ":")) {
-                break;
-            }
-            changeList.append("<br>  + ").append(change);
-        }
+
+        String changeList = getChangeList(ripmeJson);
 
         String latestVersion = ripmeJson.getString("latestVersion");
         if (UpdateUtils.isNewerVersion(latestVersion)) {
@@ -127,7 +129,7 @@ public class UpdateUtils {
             int result = JOptionPane.showConfirmDialog(
                     null,
                     "<html><font color=\"green\">New version (" + latestVersion + ") is available!</font>"
-                    + "<br><br>Recent changes:" + changeList.toString()
+                    + "<br><br>Recent changes:" + changeList
                     + "<br><br>Do you want to download and run the newest version?</html>",
                     "RipMe Updater",
                     JOptionPane.YES_NO_OPTION);
@@ -157,6 +159,11 @@ public class UpdateUtils {
     }
 
     private static boolean isNewerVersion(String latestVersion) {
+        // If we're testing the update utils we want the program to always try to update
+        if (Utils.getConfigBoolean("testing.always_try_to_update", false)) {
+            logger.info("isNewerVersion is returning true because the key \"testing.always_try_to_update\" is true");
+            return true;
+        }
         int[] oldVersions = versionStringToInt(getThisJarVersion());
         int[] newVersions = versionStringToInt(latestVersion);
         if (oldVersions.length < newVersions.length) {
@@ -227,17 +234,20 @@ public class UpdateUtils {
         try (FileOutputStream out = new FileOutputStream(updateFileName)) {
             out.write(response.bodyAsBytes());
         }
-        String updateHash = createSha256(new File(updateFileName));
-        logger.info("Download of new version complete; saved to " + updateFileName);
-        logger.info("Checking hash of update");
+        // Only check the hash if the user hasn't disabled hash checking
+        if (Utils.getConfigBoolean("security.check_update_hash", true)) {
+            String updateHash = createSha256(new File(updateFileName));
+            logger.info("Download of new version complete; saved to " + updateFileName);
+            logger.info("Checking hash of update");
 
-        if (!ripmeJson.getString("currentHash").equals(updateHash)) {
-            logger.error("Error: Update has bad hash");
-            logger.debug("Expected hash: " + ripmeJson.getString("currentHash"));
-            logger.debug("Actual hash: " + updateHash);
-            throw new IOException("Got bad file hash");
-        } else {
-            logger.info("Hash is good");
+            if (!ripmeJson.getString("currentHash").equals(updateHash)) {
+                logger.error("Error: Update has bad hash");
+                logger.debug("Expected hash: " + ripmeJson.getString("currentHash"));
+                logger.debug("Actual hash: " + updateHash);
+                throw new IOException("Got bad file hash");
+            } else {
+                logger.info("Hash is good");
+            }
         }
         if (shouldLaunch) {
             // Setup updater script

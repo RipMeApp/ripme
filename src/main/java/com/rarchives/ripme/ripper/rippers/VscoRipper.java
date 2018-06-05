@@ -6,10 +6,11 @@ import com.rarchives.ripme.utils.Http;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.json.JSONObject;
 import org.jsoup.Jsoup;
 
 import org.jsoup.nodes.Document;
@@ -19,7 +20,11 @@ import org.jsoup.select.Elements;
 /**
  * For ripping VSCO pictures.
  */
-public class VscoRipper extends AbstractHTMLRipper{
+public class VscoRipper extends AbstractHTMLRipper {
+
+    int pageNumber = 1;
+    JSONObject profileJSON;
+
 
     private static final String DOMAIN = "vsco.co",
                         HOST   = "vsco";
@@ -76,35 +81,78 @@ public class VscoRipper extends AbstractHTMLRipper{
                 LOGGER.debug("Failed to convert " + url.toString() + " to external form.");
             }
             
-        } else {//want to rip a member profile
-            /*
-            String baseURL = "https://vsco.co";
-
-
-            //Find all the relative links, adds Base URL, then adds them to an ArrayList
-            List<URL> relativeLinks = new ArrayList<>();
-            Elements links = page.getElementsByTag("a");
-
-            
-            for(Element link : links){
-                System.out.println(link.toString());
-                //if link includes "/media/", add it to the list
-                if (link.attr("href").contains("/media")) {
-                    try {
-                        String relativeURL = vscoImageToURL(link.attr("href"));
-                        toRip.add(baseURL + relativeURL);
-                    } catch (IOException ex) {
-                        LOGGER.debug("Could not add \"" + link.toString() + "\" to list for ripping.");
-                    }
+        } else {
+            String username = getUserName();
+            String userTkn = getUserTkn(username);
+            String siteID = getSiteID(userTkn, username);
+            while (true) {
+                profileJSON = getProfileJSON(userTkn, username, Integer.toString(pageNumber), siteID);
+                for (int i = 0; i < profileJSON.getJSONArray("media").length(); i++) {
+                    toRip.add("https://" + profileJSON.getJSONArray("media").getJSONObject(i).getString("responsive_url"));
                 }
+                if (pageNumber * 1000 > profileJSON.getInt("total")) {
+                    return toRip;
+                }
+                pageNumber++;
             }
-            */
-            LOGGER.debug("Sorry, RipMe currently only supports ripping single images.");
-            
-            
+
+
         }
 
         return toRip;
+    }
+
+    private String getUserTkn(String username) {
+        String userinfoPage = "https://vsco.co/content/Static/userinfo";
+        String referer = "https://vsco.co/" + username + "/images/1";
+        Map<String,String> cookies = new HashMap<>();
+        cookies.put("vs_anonymous_id", UUID.randomUUID().toString());
+        try {
+            Element doc = Http.url(userinfoPage).cookies(cookies).referrer(referer).ignoreContentType().get().body();
+            String json = doc.text().replaceAll("define\\(", "");
+            json = json.replaceAll("\\)", "");
+            return new JSONObject(json).getString("tkn");
+        } catch (IOException e) {
+            LOGGER.error("Could not get user tkn");
+            return null;
+        }
+    }
+
+    private String getUserName() {
+        Pattern p = Pattern.compile("^https?://vsco.co/([a-zA-Z0-9]+)/images/[0-9]+");
+        Matcher m = p.matcher(url.toExternalForm());
+
+        if (m.matches()) {
+            String user = m.group(1);
+            return user;
+        }
+        return null;
+    }
+
+    private JSONObject getProfileJSON(String tkn, String username, String page, String siteId) {
+        String size = "1000";
+        String purl = "https://vsco.co/ajxp/" + tkn + "/2.0/medias?site_id=" + siteId + "&page=" + page + "&size=" + size;
+        Map<String,String> cookies = new HashMap<>();
+        cookies.put("vs", tkn);
+        try {
+            JSONObject j = Http.url(purl).cookies(cookies).getJSON();
+            return j;
+        } catch (IOException e) {
+            LOGGER.error("Could not profile images");
+            return null;
+        }
+    }
+
+    private String getSiteID(String tkn, String username) {
+        Map<String,String> cookies = new HashMap<>();
+        cookies.put("vs", tkn);
+        try {
+            JSONObject j = Http.url("https://vsco.co/ajxp/" + tkn + "/2.0/sites?subdomain=" + username).cookies(cookies).getJSON();
+            return Integer.toString(j.getJSONArray("sites").getJSONObject(0).getInt("id"));
+        } catch (IOException e) {
+            LOGGER.error("Could not get site id");
+            return null;
+        }
     }
 
     private String vscoImageToURL(String url) throws IOException{
@@ -176,12 +224,7 @@ public class VscoRipper extends AbstractHTMLRipper{
     public Document getFirstPage() throws IOException {
         return Http.url(url).get();
     }
-    
-    @Override
-    public Document getNextPage(Document doc) throws IOException {
-        return super.getNextPage(doc);
-    }
-    
+
     @Override
     public void downloadURL(URL url, int index) {
         addURLToDownload(url, getPrefix(index));
