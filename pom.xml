@@ -62,6 +62,11 @@
   <build>
     <plugins>
       <plugin>
+        <groupId>io.github.zlika</groupId>
+        <artifactId>reproducible-build-maven-plugin</artifactId>
+        <version>0.6</version>
+      </plugin>
+      <plugin>
         <artifactId>maven-assembly-plugin</artifactId>
         <configuration>
           <archive>
