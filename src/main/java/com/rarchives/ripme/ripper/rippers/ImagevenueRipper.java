@@ -102,7 +102,7 @@ public class ImagevenueRipper extends AbstractHTMLRipper {
                 // Find image
                 Elements images = doc.select("a > img");
                 if (images.isEmpty()) {
-                    logger.warn("Image not found at " + this.url);
+                    LOGGER.warn("Image not found at " + this.url);
                     return;
                 }
                 Element image = images.first();
@@ -115,7 +115,7 @@ public class ImagevenueRipper extends AbstractHTMLRipper {
                 }
                 addURLToDownload(new URL(imgsrc), prefix);
             } catch (IOException e) {
-                logger.error("[!] Exception while loading/parsing " + this.url, e);
+                LOGGER.error("[!] Exception while loading/parsing " + this.url, e);
             }
         }
     }

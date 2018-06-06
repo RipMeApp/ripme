@@ -27,7 +27,7 @@ public abstract class AbstractRipper
                 extends Observable
                 implements RipperInterface, Runnable {
 
-    protected static final Logger logger = Logger.getLogger(AbstractRipper.class);
+    protected static final Logger LOGGER = Logger.getLogger(AbstractRipper.class);
     private final String URLHistoryFile = Utils.getURLHistoryFile();
 
     public static final String USER_AGENT =
@@ -77,11 +77,11 @@ public abstract class AbstractRipper
         try {
             File file = new File(URLHistoryFile);
             if (!new File(Utils.getConfigDir()).exists()) {
-                logger.error("Config dir doesn't exist");
-                logger.info("Making config dir");
+                LOGGER.error("Config dir doesn't exist");
+                LOGGER.info("Making config dir");
                 boolean couldMakeDir = new File(Utils.getConfigDir()).mkdirs();
                 if (!couldMakeDir) {
-                    logger.error("Couldn't make config dir");
+                    LOGGER.error("Couldn't make config dir");
                     return;
                 }
             }
@@ -89,12 +89,12 @@ public abstract class AbstractRipper
             if (!file.exists()) {
                 boolean couldMakeDir = file.createNewFile();
                 if (!couldMakeDir) {
-                    logger.error("Couldn't url history file");
+                    LOGGER.error("Couldn't url history file");
                     return;
                 }
             }
             if (!file.canWrite()) {
-                logger.error("Can't write to url history file: " + URLHistoryFile);
+                LOGGER.error("Can't write to url history file: " + URLHistoryFile);
                 return;
             }
             fw = new FileWriter(file.getAbsoluteFile(), true);
@@ -247,10 +247,10 @@ public abstract class AbstractRipper
         try {
             stopCheck();
         } catch (IOException e) {
-            logger.debug("Ripper has been stopped");
+            LOGGER.debug("Ripper has been stopped");
             return false;
         }
-        logger.debug("url: " + url + ", prefix: " + prefix + ", subdirectory" + subdirectory + ", referrer: " + referrer + ", cookies: " + cookies + ", fileName: " + fileName);
+        LOGGER.debug("url: " + url + ", prefix: " + prefix + ", subdirectory" + subdirectory + ", referrer: " + referrer + ", cookies: " + cookies + ", fileName: " + fileName);
         String saveAs = getFileName(url, fileName, extension);
         File saveFileAs;
         try {
@@ -265,19 +265,19 @@ public abstract class AbstractRipper
                     + prefix
                     + saveAs);
         } catch (IOException e) {
-            logger.error("[!] Error creating save file path for URL '" + url + "':", e);
+            LOGGER.error("[!] Error creating save file path for URL '" + url + "':", e);
             return false;
         }
-        logger.debug("Downloading " + url + " to " + saveFileAs);
+        LOGGER.debug("Downloading " + url + " to " + saveFileAs);
         if (!saveFileAs.getParentFile().exists()) {
-            logger.info("[+] Creating directory: " + Utils.removeCWD(saveFileAs.getParent()));
+            LOGGER.info("[+] Creating directory: " + Utils.removeCWD(saveFileAs.getParent()));
             saveFileAs.getParentFile().mkdirs();
         }
         if (Utils.getConfigBoolean("remember.url_history", true) && !isThisATest()) {
             try {
                 writeDownloadedURL(url.toExternalForm() + "\n");
             } catch (IOException e) {
-                logger.debug("Unable to write URL history file");
+                LOGGER.debug("Unable to write URL history file");
             }
         }
         return addURLToDownload(url, saveFileAs, referrer, cookies, getFileExtFromMIME);
@@ -357,7 +357,7 @@ public abstract class AbstractRipper
      * Waits for downloading threads to complete.
      */
     protected void waitForThreads() {
-        logger.debug("Waiting for threads to finish");
+        LOGGER.debug("Waiting for threads to finish");
         completed = false;
         threadPool.waitForThreads();
         checkIfComplete();
@@ -409,13 +409,13 @@ public abstract class AbstractRipper
      */
     void checkIfComplete() {
         if (observer == null) {
-            logger.debug("observer is null");
+            LOGGER.debug("observer is null");
             return;
         }
 
         if (!completed) {
             completed = true;
-            logger.info("   Rip completed!");
+            LOGGER.info("   Rip completed!");
 
             RipStatusComplete rsc = new RipStatusComplete(workingDir, getCount());
             RipStatusMessage msg = new RipStatusMessage(STATUS.RIP_COMPLETE, rsc);
@@ -424,7 +424,7 @@ public abstract class AbstractRipper
             Logger rootLogger = Logger.getRootLogger();
             FileAppender fa = (FileAppender) rootLogger.getAppender("FILE");
             if (fa != null) {
-                logger.debug("Changing log file back to 'ripme.log'");
+                LOGGER.debug("Changing log file back to 'ripme.log'");
                 fa.setFile("ripme.log");
                 fa.activateOptions();
             }
@@ -433,7 +433,7 @@ public abstract class AbstractRipper
                 try {
                     Desktop.getDesktop().open(new File(urlFile));
                 } catch (IOException e) {
-                    logger.warn("Error while opening " + urlFile, e);
+                    LOGGER.warn("Error while opening " + urlFile, e);
                 }
             }
         }
@@ -488,7 +488,7 @@ public abstract class AbstractRipper
         for (Constructor<?> constructor : getRipperConstructors("com.rarchives.ripme.ripper.rippers")) {
             try {
                 AlbumRipper ripper = (AlbumRipper) constructor.newInstance(url); // by design: can throw ClassCastException
-                logger.debug("Found album ripper: " + ripper.getClass().getName());
+                LOGGER.debug("Found album ripper: " + ripper.getClass().getName());
                 return ripper;
             } catch (Exception e) {
                 // Incompatible rippers *will* throw exceptions during instantiation.
@@ -497,7 +497,7 @@ public abstract class AbstractRipper
         for (Constructor<?> constructor : getRipperConstructors("com.rarchives.ripme.ripper.rippers.video")) {
             try {
                 VideoRipper ripper = (VideoRipper) constructor.newInstance(url); // by design: can throw ClassCastException
-                logger.debug("Found video ripper: " + ripper.getClass().getName());
+                LOGGER.debug("Found video ripper: " + ripper.getClass().getName());
                 return ripper;
             } catch (Exception e) {
                 // Incompatible rippers *will* throw exceptions during instantiation.
@@ -554,11 +554,11 @@ public abstract class AbstractRipper
         try {
             rip();
         } catch (HttpStatusException e) {
-            logger.error("Got exception while running ripper:", e);
+            LOGGER.error("Got exception while running ripper:", e);
             waitForThreads();
             sendUpdate(STATUS.RIP_ERRORED, "HTTP status code " + e.getStatusCode() + " for URL " + e.getUrl());
         } catch (Exception e) {
-            logger.error("Got exception while running ripper:", e);
+            LOGGER.error("Got exception while running ripper:", e);
             waitForThreads();
             sendUpdate(STATUS.RIP_ERRORED, e.getMessage());
         } finally {
@@ -571,10 +571,10 @@ public abstract class AbstractRipper
     private void cleanup() {
         if (this.workingDir.list().length == 0) {
             // No files, delete the dir
-            logger.info("Deleting empty directory " + this.workingDir);
+            LOGGER.info("Deleting empty directory " + this.workingDir);
             boolean deleteResult = this.workingDir.delete();
             if (!deleteResult) {
-                logger.error("Unable to delete empty directory " +  this.workingDir);
+                LOGGER.error("Unable to delete empty directory " +  this.workingDir);
             }
         }
     }
@@ -589,11 +589,11 @@ public abstract class AbstractRipper
      */
     protected boolean sleep(int milliseconds) {
         try {
-            logger.debug("Sleeping " + milliseconds + "ms");
+            LOGGER.debug("Sleeping " + milliseconds + "ms");
             Thread.sleep(milliseconds);
             return true;
         } catch (InterruptedException e) {
-            logger.error("Interrupted while waiting to load next page", e);
+            LOGGER.error("Interrupted while waiting to load next page", e);
             return false;
         }
     }
@@ -607,7 +607,7 @@ public abstract class AbstractRipper
 
     /** Methods for detecting when we're running a test. */
     public void markAsTest() {
-        logger.debug("THIS IS A TEST RIP");
+        LOGGER.debug("THIS IS A TEST RIP");
         thisIsATest = true;
     }
     protected boolean isThisATest() {

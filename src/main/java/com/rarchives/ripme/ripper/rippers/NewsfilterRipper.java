@@ -43,7 +43,7 @@ public class NewsfilterRipper extends AlbumRipper {
     public void rip() throws IOException {
         String gid = getGID(this.url);
         String theurl = "http://newsfilter.org/gallery/" + gid;
-        logger.info("Loading " + theurl);
+        LOGGER.info("Loading " + theurl);
 
         Connection.Response resp = Jsoup.connect(theurl)
             .timeout(5000)

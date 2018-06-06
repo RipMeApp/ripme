@@ -99,16 +99,16 @@ public class ImagebamRipper extends AbstractHTMLRipper {
             // Attempt to use album title as GID
             Elements elems = getFirstPage().select("legend");
             String title = elems.first().text();
-            logger.info("Title text: '" + title + "'");
+            LOGGER.info("Title text: '" + title + "'");
             Pattern p = Pattern.compile("^(.*)\\s\\d* image.*$");
             Matcher m = p.matcher(title);
             if (m.matches()) {
                 return getHost() + "_" + getGID(url) + " (" + m.group(1).trim() + ")";
             }
-            logger.info("Doesn't match " + p.pattern());
+            LOGGER.info("Doesn't match " + p.pattern());
         } catch (Exception e) {
             // Fall back to default album naming convention
-            logger.warn("Failed to get album title from " + url, e);
+            LOGGER.warn("Failed to get album title from " + url, e);
         }
         return super.getAlbumTitle(url);
     }
@@ -148,14 +148,14 @@ public class ImagebamRipper extends AbstractHTMLRipper {
                     //the direct link to the image seems to always be linked in the <meta> part of the html.
                     if (metaTag.attr("property").equals("og:image")) {
                         imgsrc = metaTag.attr("content");
-                        logger.info("Found URL " + imgsrc);
+                        LOGGER.info("Found URL " + imgsrc);
                         break;//only one (useful) image possible for an "image page".
                     }
                 }
                
                 //for debug, or something goes wrong.
                 if (imgsrc.isEmpty()) {
-                    logger.warn("Image not found at " + this.url);
+                    LOGGER.warn("Image not found at " + this.url);
                     return;
                 }
                
@@ -167,7 +167,7 @@ public class ImagebamRipper extends AbstractHTMLRipper {
                 
                 addURLToDownload(new URL(imgsrc), prefix);
             } catch (IOException e) {
-                logger.error("[!] Exception while loading/parsing " + this.url, e);
+                LOGGER.error("[!] Exception while loading/parsing " + this.url, e);
             }
         }
     }

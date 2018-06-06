@@ -78,7 +78,7 @@ public class VscoRipper extends AbstractHTMLRipper {
             try {
                 toRip.add(vscoImageToURL(url.toExternalForm()));
             } catch (IOException ex) {
-                logger.debug("Failed to convert " + url.toString() + " to external form.");
+                LOGGER.debug("Failed to convert " + url.toString() + " to external form.");
             }
             
         } else {
@@ -95,8 +95,8 @@ public class VscoRipper extends AbstractHTMLRipper {
                 }
                 pageNumber++;
             }
-            
-            
+
+
         }
 
         return toRip;
@@ -113,7 +113,7 @@ public class VscoRipper extends AbstractHTMLRipper {
             json = json.replaceAll("\\)", "");
             return new JSONObject(json).getString("tkn");
         } catch (IOException e) {
-            logger.error("Could not get user tkn");
+            LOGGER.error("Could not get user tkn");
             return null;
         }
     }
@@ -138,7 +138,7 @@ public class VscoRipper extends AbstractHTMLRipper {
             JSONObject j = Http.url(purl).cookies(cookies).getJSON();
             return j;
         } catch (IOException e) {
-            logger.error("Could not profile images");
+            LOGGER.error("Could not profile images");
             return null;
         }
     }
@@ -150,7 +150,7 @@ public class VscoRipper extends AbstractHTMLRipper {
             JSONObject j = Http.url("https://vsco.co/ajxp/" + tkn + "/2.0/sites?subdomain=" + username).cookies(cookies).getJSON();
             return Integer.toString(j.getJSONArray("sites").getJSONObject(0).getInt("id"));
         } catch (IOException e) {
-            logger.error("Could not get site id");
+            LOGGER.error("Could not get site id");
             return null;
         }
     }
@@ -169,14 +169,14 @@ public class VscoRipper extends AbstractHTMLRipper {
                 givenURL = givenURL.replaceAll("\\?h=[0-9]+", "");//replace the "?h=xxx" tag at the end of the URL (where each x is a number)
                 
                 result = givenURL;
-                logger.debug("Found image URL: " + givenURL);
+                LOGGER.debug("Found image URL: " + givenURL);
                 break;//immediatly stop after getting URL (there should only be 1 image to be downloaded)
             }
         }
         
         //Means website changed, things need to be fixed.
         if (result.isEmpty()){
-            logger.error("Could not find image URL at: " + url);
+            LOGGER.error("Could not find image URL at: " + url);
         }
         
         return result;
@@ -224,7 +224,7 @@ public class VscoRipper extends AbstractHTMLRipper {
     public Document getFirstPage() throws IOException {
         return Http.url(url).get();
     }
-    
+
     @Override
     public void downloadURL(URL url, int index) {
         addURLToDownload(url, getPrefix(index));

@@ -66,7 +66,7 @@ public class TwodgalleriesRipper extends AbstractHTMLRipper {
         try {
             login();
         } catch (IOException e) {
-            logger.error("Failed to login", e);
+            LOGGER.error("Failed to login", e);
         }
         String url = getURL(getGID(this.url), offset);
         return Http.url(url)

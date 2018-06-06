@@ -43,7 +43,7 @@ public class ViewcomicRipper extends AbstractHTMLRipper {
                 return getHost() + "_" + title.trim();
             } catch (IOException e) {
                 // Fall back to default album naming convention
-                logger.info("Unable to find title at " + url);
+                LOGGER.info("Unable to find title at " + url);
             }
             return super.getAlbumTitle(url);
         }
