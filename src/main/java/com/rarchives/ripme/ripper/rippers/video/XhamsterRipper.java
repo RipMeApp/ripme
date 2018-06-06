@@ -54,7 +54,7 @@ public class XhamsterRipper extends VideoRipper {
 
     @Override
     public void rip() throws IOException {
-        logger.info("Retrieving " + this.url);
+        LOGGER.info("Retrieving " + this.url);
         Document doc = Http.url(url).get();
         Elements videos = doc.select("div.player-container > a");
         if (videos.isEmpty()) {

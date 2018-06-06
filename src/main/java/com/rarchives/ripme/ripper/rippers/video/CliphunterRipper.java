@@ -55,7 +55,7 @@ public class CliphunterRipper extends VideoRipper {
 
     @Override
     public void rip() throws IOException {
-        logger.info("Retrieving " + this.url);
+        LOGGER.info("Retrieving " + this.url);
         String html = Http.url(url).get().html();
         String jsonString = html.substring(html.indexOf("var flashVars = {d: '") + 21);
         jsonString = jsonString.substring(0, jsonString.indexOf("'"));

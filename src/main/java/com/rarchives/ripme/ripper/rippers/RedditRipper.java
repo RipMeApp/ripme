@@ -4,13 +4,10 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.rarchives.ripme.ripper.AbstractRipper;
-import com.rarchives.ripme.ripper.rippers.video.GfycatRipper;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
@@ -20,9 +17,6 @@ import com.rarchives.ripme.ui.UpdateUtils;
 import com.rarchives.ripme.utils.Http;
 import com.rarchives.ripme.utils.RipUtils;
 import com.rarchives.ripme.utils.Utils;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
 
 public class RedditRipper extends AlbumRipper {
 
@@ -110,7 +104,7 @@ public class RedditRipper extends AlbumRipper {
         try {
             Thread.sleep(2000);
         } catch (InterruptedException e) {
-            logger.warn("Interrupted while sleeping", e);
+            LOGGER.warn("Interrupted while sleeping", e);
         }
         return nextURL;
     }
@@ -122,7 +116,7 @@ public class RedditRipper extends AlbumRipper {
             try {
                 Thread.sleep(timeDiff);
             } catch (InterruptedException e) {
-                logger.warn("[!] Interrupted while waiting to load next page", e);
+                LOGGER.warn("[!] Interrupted while waiting to load next page", e);
                 return new JSONArray();
             }
         }
@@ -141,7 +135,7 @@ public class RedditRipper extends AlbumRipper {
         } else if (jsonObj instanceof JSONArray) {
             jsonArray = (JSONArray) jsonObj;
         } else {
-            logger.warn("[!] Unable to parse JSON: " + jsonString);
+            LOGGER.warn("[!] Unable to parse JSON: " + jsonString);
         }
         return jsonArray;
     }

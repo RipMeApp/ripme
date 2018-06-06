@@ -75,7 +75,7 @@ public class MotherlessRipper extends AlbumRipper {
             if (isStopped()) {
                 break;
             }
-            logger.info("Retrieving " + nextURL);
+            LOGGER.info("Retrieving " + nextURL);
             sendUpdate(STATUS.LOADING_RESOURCE, nextURL);
             Document doc = Http.url(nextURL)
                                .referrer("http://motherless.com")
@@ -152,10 +152,10 @@ public class MotherlessRipper extends AlbumRipper {
                     }
                     addURLToDownload(new URL(file), prefix);
                 } else {
-                    logger.warn("[!] could not find '__fileurl' at " + url);
+                    LOGGER.warn("[!] could not find '__fileurl' at " + url);
                 }
             } catch (IOException e) {
-                logger.error("[!] Exception while loading/parsing " + this.url, e);
+                LOGGER.error("[!] Exception while loading/parsing " + this.url, e);
             }
         }
     }

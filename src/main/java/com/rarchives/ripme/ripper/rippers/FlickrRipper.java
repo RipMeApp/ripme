@@ -251,7 +251,7 @@ public class FlickrRipper extends AbstractHTMLRipper {
                 Document doc = getLargestImagePageDocument(this.url);
                 Elements fullsizeImages = doc.select("div#allsizes-photo img");
                 if (fullsizeImages.isEmpty()) {
-                    logger.error("Could not find flickr image at " + doc.location() + " - missing 'div#allsizes-photo img'");
+                    LOGGER.error("Could not find flickr image at " + doc.location() + " - missing 'div#allsizes-photo img'");
                 }
                 else {
                     String prefix = "";
@@ -263,7 +263,7 @@ public class FlickrRipper extends AbstractHTMLRipper {
                     }
                 }
             } catch (IOException e) {
-                logger.error("[!] Exception while loading/parsing " + this.url, e);
+                LOGGER.error("[!] Exception while loading/parsing " + this.url, e);
             }
         }
 

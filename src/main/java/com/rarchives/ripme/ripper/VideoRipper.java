@@ -11,6 +11,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Map;
 
+
 public abstract class VideoRipper extends AbstractRipper {
 
     private int bytesTotal = 1;
@@ -54,14 +55,14 @@ public abstract class VideoRipper extends AbstractRipper {
                 RipStatusMessage msg = new RipStatusMessage(STATUS.DOWNLOAD_COMPLETE, urlFile);
                 observer.update(this, msg);
             } catch (IOException e) {
-                logger.error("Error while writing to " + urlFile, e);
+                LOGGER.error("Error while writing to " + urlFile, e);
                 return false;
             }
         } else {
             if (isThisATest()) {
                 // Tests shouldn't download the whole video
                 // Just change this.url to the download URL so the test knows we found it.
-                logger.debug("Test rip, found URL: " + url);
+                LOGGER.debug("Test rip, found URL: " + url);
                 this.url = url;
                 return true;
             }
@@ -92,11 +93,11 @@ public abstract class VideoRipper extends AbstractRipper {
         workingDir = new File(path);
 
         if (!workingDir.exists()) {
-            logger.info("[+] Creating directory: " + Utils.removeCWD(workingDir));
+            LOGGER.info("[+] Creating directory: " + Utils.removeCWD(workingDir));
             workingDir.mkdirs();
         }
 
-        logger.debug("Set working directory to: " + workingDir);
+        LOGGER.debug("Set working directory to: " + workingDir);
     }
 
     /**
@@ -126,7 +127,7 @@ public abstract class VideoRipper extends AbstractRipper {
 
             checkIfComplete();
         } catch (Exception e) {
-            logger.error("Exception while updating observer: ", e);
+            LOGGER.error("Exception while updating observer: ", e);
         }
     }
 
