@@ -85,8 +85,7 @@ public class ChanRipper extends AbstractHTMLRipper {
                 return true;
             }
         }
-        return  url.toExternalForm().contains("/res/")     // Most chans
-             || url.toExternalForm().contains("/thread/"); // 4chan, archive.moe
+        return false;
     }
 
     /**
