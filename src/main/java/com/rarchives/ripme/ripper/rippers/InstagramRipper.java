@@ -467,6 +467,11 @@ public class InstagramRipper extends AbstractJSONRipper {
             if (m.find()) {
                 return m.group(1);
             }
+            jsP = Pattern.compile("o.pagination},queryId:.([a-zA-Z0-9]+).");
+            m = jsP.matcher(sb.toString());
+            if (m.find()) {
+                return m.group(1);
+            }
 
         } else {
             Pattern jsP = Pattern.compile("return e.tagMedia.byTagName.get\\(t\\).pagination},queryId:.([a-zA-Z0-9]+).");
