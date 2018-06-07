@@ -39,6 +39,7 @@ fileToUploadPath = args.file
 InNoninteractiveMode = args.non_interactive
 commitMessage = ripmeJson.get("changeList")[0]
 debug = args.debug
+accessToken = args.token
 
 if not os.path.isfile(fileToUploadPath):
     print("[!] Error: {} does not exist".format(fileToUploadPath))
@@ -67,8 +68,12 @@ if expectedHash != actualHash:
     print("[!] Expected hash is {}".format(expectedHash))
     print("[!] Actual hash is {}".format(actualHash))
 
+# Ask the user to review the information before we precede
 # This only runs in we're in interactive mode
 if not InNoninteractiveMode:
     print("File path: {}\n".format(fileToUploadPath))
     print("Release title: {}".format(commitMessage))
     input("\nPlease review the information above and ensure it is correct and then press enter")
+
+print("Accessing github using token")
+g = Github(accessToken)
