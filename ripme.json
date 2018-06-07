@@ -1,6 +1,7 @@
 {
     "currentHash": "f6e1e6c931abfbeffdd37dabb65f83e4335ca11ccc017f31e1d835ee6e6bec7a",
     "changeList": [
+        "1.7.51: Fixed instagram ripper; Added the ability to rip from vsco profiles; Fixed TheyiffgalleryRipper; Can now update ripme using the -j flag; added script to automate releases; Code style fixes",
         "1.7.50: Ripme now checks file hash before running update; fixed update bug which cased ripme to report every update as new",
         "1.7.49: Fixed -n flag; Added ability to change locale at runtime and from gui; Update kr_KR translation; Removed support for tnbtu.com; No longer writes url to url_history file is save urls only is checked",
         "1.7.48: Fixed instagram ripper; Added Korean translation; Added quickQueue support to nhentairipper; Rewrote nhentairipper to be faster; myhentaicomics ripper now requests proper url when downloading images; Can now include comments in url files; Added the ability to blacklist tags on e-hentai.org",
@@ -222,5 +223,5 @@
         "1.0.3: Added VK.com ripper",
         "1.0.1: Added auto-update functionality"
     ],
-    "latestVersion": "1.7.50"
+    "latestVersion": "1.7.51"
 }
