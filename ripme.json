@@ -1,5 +1,5 @@
 {
-    "currentHash": "f6e1e6c931abfbeffdd37dabb65f83e4335ca11ccc017f31e1d835ee6e6bec7a",
+    "currentHash": "aadb71bf5cdf46fe92e270b50a55c8d8d7200a6dd304a4c2ac9f68cddc687d7e",
     "changeList": [
         "1.7.51: Fixed instagram ripper; Added the ability to rip from vsco profiles; Fixed TheyiffgalleryRipper; Can now update ripme using the -j flag; added script to automate releases; Code style fixes",
         "1.7.50: Ripme now checks file hash before running update; fixed update bug which cased ripme to report every update as new",
