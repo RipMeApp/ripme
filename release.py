@@ -6,8 +6,6 @@ import sys
 from hashlib import sha256
 from github import Github
 import json
-from datetime import timezone
-import datetime
 import argparse
 
 parser = argparse.ArgumentParser(description="Make a new ripme release on github")
@@ -38,8 +36,11 @@ ripmeJson = json.loads(open("ripme.json").read())
 fileToUploadPath = args.file
 InNoninteractiveMode = args.non_interactive
 commitMessage = ripmeJson.get("changeList")[0]
+releaseVersion = ripmeJson.get("latestVersion")
 debug = args.debug
 accessToken = args.token
+repoOwner = "ripmeapp"
+repoName = "ripme"
 
 if not os.path.isfile(fileToUploadPath):
     print("[!] Error: {} does not exist".format(fileToUploadPath))
@@ -71,9 +72,17 @@ if expectedHash != actualHash:
 # Ask the user to review the information before we precede
 # This only runs in we're in interactive mode
 if not InNoninteractiveMode:
-    print("File path: {}\n".format(fileToUploadPath))
+    print("File path: {}".format(fileToUploadPath))
     print("Release title: {}".format(commitMessage))
+    print("Repo: {}/{}".format(repoOwner, repoName))
     input("\nPlease review the information above and ensure it is correct and then press enter")
 
 print("Accessing github using token")
 g = Github(accessToken)
+
+
+print("Creating release")
+release = g.get_user(repoOwner).get_repo(repoName).create_git_release(releaseVersion, commitMessage, "")
+
+print("Uploading file")
+release.upload_asset(fileToUploadPath, "ripme.jar")
