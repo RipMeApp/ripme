@@ -85,6 +85,9 @@ public class ChanRipper extends AbstractHTMLRipper {
                 return true;
             }
         }
+        if (url.toExternalForm().contains("desuchan.net") && url.toExternalForm().contains("/res/")) {
+            return true;
+        }
         return false;
     }
 
