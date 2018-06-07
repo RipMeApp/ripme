@@ -17,6 +17,11 @@ parser.add_argument("-d", "--debug", help="Run in debug mode", action="store_tru
 parser.add_argument("-n", "--non-interactive", help="Do not ask for any input from the user", action="store_true")
 args = parser.parse_args()
 
+try:
+    input = raw_input
+except NameError:
+    pass
+
 
 # Make sure the file the user selected is a jar
 def isJar(filename):
