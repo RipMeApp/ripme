@@ -68,6 +68,7 @@ if expectedHash != actualHash:
     print("[!] Error: expected hash of file and actual hash differ")
     print("[!] Expected hash is {}".format(expectedHash))
     print("[!] Actual hash is {}".format(actualHash))
+    sys.exit(1)
 
 # Ask the user to review the information before we precede
 # This only runs in we're in interactive mode
