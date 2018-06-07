@@ -12,10 +12,12 @@ from hashlib import sha256
 
 message = input('message: ')
 
+
 def get_ripme_json():
     with open('ripme.json') as dataFile:
         ripmeJson = json.load(dataFile)
     return ripmeJson
+
 
 def update_hash(current_hash):
     ripmeJson = get_ripme_json()
@@ -23,6 +25,7 @@ def update_hash(current_hash):
         ripmeJson["currentHash"] = current_hash
         print(ripmeJson["currentHash"])
         json.dump(ripmeJson, dataFile, indent=4)
+
 
 def update_change_list(message):
     ripmeJson = get_ripme_json()
@@ -72,9 +75,6 @@ dataFile = open("ripme.json", "w")
 dataFile.write(outputContent)
 dataFile.close()
 
-subprocess.call(['git', 'add', '-u'])
-subprocess.call(['git', 'commit', '-m', commitMessage])
-subprocess.call(['git', 'tag', nextVersion])
 print("Building ripme")
 subprocess.call(["mvn", "clean", "compile", "assembly:single"])
 print("Stripping jar")
@@ -86,3 +86,6 @@ file_hash = sha256(readFile).hexdigest()
 print("Hash is: {}".format(file_hash))
 print("Updating hash")
 update_hash(file_hash)
+subprocess.call(['git', 'add', '-u'])
+subprocess.call(['git', 'commit', '-m', commitMessage])
+subprocess.call(['git', 'tag', nextVersion])
