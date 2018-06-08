@@ -29,8 +29,11 @@ public class FuraffinityRipper extends AbstractHTMLRipper {
     private static final String urlBase = "https://www.furaffinity.net";
     private static Map<String,String> cookies = new HashMap<>();
     static {
-        cookies.put("b", "bd5ccac8-51dc-4265-8ae1-7eac685ad667");
-        cookies.put("a", "7c41b782-d01d-4b0e-b45b-62a4f0b2a369");
+        if (Utils.getConfigString("furaffinity.cookie.a", "") != "" && Utils.getConfigString("furaffinity.cookie.b", "") != "") {
+            LOGGER.info("Logging in using cookies");
+            cookies.put("b", Utils.getConfigString("furaffinity.cookie.b", ""));
+            cookies.put("a", Utils.getConfigString("furaffinity.cookie.a", ""));
+        }
     }
 
     // Thread pool for finding direct image links from "image" pages (html)
@@ -91,9 +94,12 @@ public class FuraffinityRipper extends AbstractHTMLRipper {
     @Override
     public List<String> getURLsFromPage(Document page) {
         List<String> urls = new ArrayList<>();
-        Elements urlElements = page.select("figure.t-image > b > u > a");
+        Elements urlElements = page.select("figure > b > u > a");
         for (Element e : urlElements) {
-            urls.add(getImageFromPost(urlBase + e.select("a").first().attr("href")));
+            String urlToAdd = getImageFromPost(urlBase + e.select("a").first().attr("href"));
+            if (urlToAdd.startsWith("http")) {
+                urls.add(urlToAdd);
+            }
         }
         return urls;
     }
