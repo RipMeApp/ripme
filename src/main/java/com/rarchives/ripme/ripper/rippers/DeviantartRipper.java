@@ -437,15 +437,19 @@ public class DeviantartRipper extends AbstractHTMLRipper {
         if (username == null || password == null) {
             throw new IOException("could not find username or password in config");
         }
-        Response resp = Http.url("http://www.deviantart.com/")
+        Response resp = Http.url("http://www.deviantart.com/users/login")
                             .response();
-        for (Element input : resp.parse().select("form#form-login input[type=hidden]")) {
-            postData.put(input.attr("name"), input.attr("value"));
-        }
+//        for (Element input : resp.parse().select("form#form-login input[type=hidden]")) {
+//            postData.put(input.attr("name"), input.attr("value"));
+//        }
+        Document r = resp.parse();
+        LOGGER.info("R: " + r.html());
         postData.put("username", username);
         postData.put("password", password);
-        postData.put("remember_me", "1");
-
+        postData.put("validate_token", "829439d1f0b53e20f2f5");
+        postData.put("validate_key", "1528530690");
+//        postData.put("remember_me", "1");
+        LOGGER.info(postData);
         // Send login request
         resp = Http.url("https://www.deviantart.com/users/login")
                     .userAgent(USER_AGENT)
@@ -453,6 +457,7 @@ public class DeviantartRipper extends AbstractHTMLRipper {
                     .cookies(resp.cookies())
                     .method(Method.POST)
                     .response();
+//        LOGGER.info("RESP: " + resp.parse().html());
 
         // Assert we are logged in
         if (resp.hasHeader("Location") && resp.header("Location").contains("password")) {
