@@ -30,7 +30,7 @@ public class VscoRipperTest extends RippersTest {
      * @throws IOException 
      */
     public void testHyphenatedRip() throws IOException {
-        VscoRipper ripper = new VscoRipper(new URL(""));
+        VscoRipper ripper = new VscoRipper(new URL("https://vsco.co/jolly-roger/images/1"));
         testRipper(ripper);
     }
     
