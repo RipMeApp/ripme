@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.rarchives.ripme.ui.RipStatusMessage;
 import com.rarchives.ripme.utils.Utils;
 import org.jsoup.Connection.Response;
 import org.jsoup.Jsoup;
@@ -27,12 +28,23 @@ import com.rarchives.ripme.utils.Http;
 public class FuraffinityRipper extends AbstractHTMLRipper {
 
     private static final String urlBase = "https://www.furaffinity.net";
-    private static Map<String,String> cookies = new HashMap<>();
-    static {
+    private  Map<String,String> cookies = new HashMap<>();
+
+    private void setCookies() {
         if (Utils.getConfigBoolean("furaffinity.login", true)) {
             LOGGER.info("Logging in using cookies");
-            cookies.put("a", Utils.getConfigString("furaffinity.cookie.a", "897bc45b-1f87-49f1-8a85-9412bc103e7a"));
-            cookies.put("b", Utils.getConfigString("furaffinity.cookie.b", "c8807f36-7a85-4caf-80ca-01c2a2368267"));
+            String faACookie = Utils.getConfigString("furaffinity.cookie.a", "897bc45b-1f87-49f1-8a85-9412bc103e7a");
+            String faBCookie = Utils.getConfigString("furaffinity.cookie.b", "c8807f36-7a85-4caf-80ca-01c2a2368267");
+            warnAboutSharedAccount(faACookie, faBCookie);
+            cookies.put("a", faACookie);
+            cookies.put("b", faBCookie);
+        }
+    }
+
+    private void warnAboutSharedAccount(String a, String b) {
+        if (a.equals("897bc45b-1f87-49f1-8a85-9412bc103e7a") && b.equals("c8807f36-7a85-4caf-80ca-01c2a2368267")) {
+            sendUpdate(RipStatusMessage.STATUS.DOWNLOAD_ERRORED,
+                    "WARNING: Using the shared furaffinity account exposes both your IP and how many items you downloaded to the other users of the share account");
         }
     }
 
@@ -64,6 +76,7 @@ public class FuraffinityRipper extends AbstractHTMLRipper {
     }
     @Override
     public Document getFirstPage() throws IOException {
+        setCookies();
         return Http.url(url).cookies(cookies).get();
     }
 
