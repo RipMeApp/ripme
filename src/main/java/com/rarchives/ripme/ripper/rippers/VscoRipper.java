@@ -2,17 +2,14 @@ package com.rarchives.ripme.ripper.rippers;
 
 import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 import com.rarchives.ripme.utils.Http;
-
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import org.json.JSONObject;
 import org.jsoup.Jsoup;
-
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -119,7 +116,7 @@ public class VscoRipper extends AbstractHTMLRipper {
     }
 
     private String getUserName() {
-        Pattern p = Pattern.compile("^https?://vsco.co/([a-zA-Z0-9]+)/images/[0-9]+");
+        Pattern p = Pattern.compile("^https?://vsco.co/([a-zA-Z0-9-]+)/images/[0-9]+");
         Matcher m = p.matcher(url.toExternalForm());
 
         if (m.matches()) {
@@ -170,7 +167,7 @@ public class VscoRipper extends AbstractHTMLRipper {
                 
                 result = givenURL;
                 LOGGER.debug("Found image URL: " + givenURL);
-                break;//immediatly stop after getting URL (there should only be 1 image to be downloaded)
+                break;//immediately stop after getting URL (there should only be 1 image to be downloaded)
             }
         }
         
@@ -192,7 +189,7 @@ public class VscoRipper extends AbstractHTMLRipper {
     public String getGID(URL url) throws MalformedURLException {
         
         //Single Image
-        Pattern p = Pattern.compile("^https?://vsco\\.co/([a-zA-Z0-9]+)/media/([a-zA-Z0-9]+)");
+        Pattern p = Pattern.compile("^https?://vsco\\.co/([a-zA-Z0-9-]+)/media/([a-zA-Z0-9]+)");
         Matcher m = p.matcher(url.toExternalForm());
         
         if (m.matches()){
@@ -203,7 +200,7 @@ public class VscoRipper extends AbstractHTMLRipper {
         }
         
         //Member profile (Usernames should all be different, so this should work.
-        p = Pattern.compile("^https?://vsco.co/([a-zA-Z0-9]+)/images/[0-9]+");
+        p = Pattern.compile("^https?://vsco.co/([a-zA-Z0-9-]+)/images/[0-9]+");
         m = p.matcher(url.toExternalForm());
         
         if (m.matches()){
