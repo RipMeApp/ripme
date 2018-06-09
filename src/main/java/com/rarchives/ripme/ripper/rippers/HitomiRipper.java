@@ -9,9 +9,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.json.JSONArray;
-import org.json.JSONObject;
 import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
 
 import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 import com.rarchives.ripme.utils.Http;
@@ -57,7 +55,7 @@ public class HitomiRipper extends AbstractHTMLRipper {
     public List<String> getURLsFromPage(Document doc) {
         List<String> result = new ArrayList<>();
         String json = doc.text().replaceAll("var galleryinfo =", "");
-        logger.info(json);
+        LOGGER.info(json);
         JSONArray json_data = new JSONArray(json);
         for (int i = 0; i < json_data.length(); i++) {
             result.add("https://0a.hitomi.la/galleries/" + galleryId + "/" + json_data.getJSONObject(i).getString("name"));
