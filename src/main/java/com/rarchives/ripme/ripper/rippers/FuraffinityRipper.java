@@ -29,10 +29,10 @@ public class FuraffinityRipper extends AbstractHTMLRipper {
     private static final String urlBase = "https://www.furaffinity.net";
     private static Map<String,String> cookies = new HashMap<>();
     static {
-        if (Utils.getConfigString("furaffinity.cookie.a", "") != "" && Utils.getConfigString("furaffinity.cookie.b", "") != "") {
+        if (Utils.getConfigBoolean("furaffinity.login", true)) {
             LOGGER.info("Logging in using cookies");
-            cookies.put("b", Utils.getConfigString("furaffinity.cookie.b", ""));
-            cookies.put("a", Utils.getConfigString("furaffinity.cookie.a", ""));
+            cookies.put("a", Utils.getConfigString("furaffinity.cookie.a", "897bc45b-1f87-49f1-8a85-9412bc103e7a"));
+            cookies.put("b", Utils.getConfigString("furaffinity.cookie.b", "c8807f36-7a85-4caf-80ca-01c2a2368267"));
         }
     }
 
@@ -97,7 +97,7 @@ public class FuraffinityRipper extends AbstractHTMLRipper {
         Elements urlElements = page.select("figure > b > u > a");
         for (Element e : urlElements) {
             String urlToAdd = getImageFromPost(urlBase + e.select("a").first().attr("href"));
-            if (urlToAdd.startsWith("http")) {
+            if (urlToAdd.startsWith("http") && urlToAdd.contains("/view/")) {
                 urls.add(urlToAdd);
             }
         }
@@ -204,17 +204,6 @@ public class FuraffinityRipper extends AbstractHTMLRipper {
         throw new MalformedURLException("Expected furaffinity.net URL format: "
                 + "www.furaffinity.net/gallery/username  - got " + url
                 + " instead");
-    }
-
-    private class FuraffinityDocumentThread extends Thread {
-        private URL url;
-
-        FuraffinityDocumentThread(URL url) {
-            super();
-            this.url = url;
-        }
-
-
     }
 
 
