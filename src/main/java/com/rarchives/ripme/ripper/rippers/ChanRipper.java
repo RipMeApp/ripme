@@ -68,11 +68,11 @@ public class ChanRipper extends AbstractHTMLRipper {
                 String subject = doc.select(".post.op > .postinfo > .subject").first().text();
                 return getHost() + "_" + getGID(url) + "_" + subject;
             } catch (NullPointerException e) {
-                logger.warn("Failed to get thread title from " + url);
+                LOGGER.warn("Failed to get thread title from " + url);
             }
         } catch (Exception e) {
             // Fall back to default album naming convention
-            logger.warn("Failed to get album title from " + url, e);
+            LOGGER.warn("Failed to get album title from " + url, e);
         }
         // Fall back on the GID
         return getHost() + "_" + getGID(url);
@@ -144,7 +144,7 @@ public class ChanRipper extends AbstractHTMLRipper {
     private boolean isURLBlacklisted(String url) {
         for (String blacklist_item : url_piece_blacklist) {
             if (url.contains(blacklist_item)) {
-                logger.debug("Skipping link that contains '"+blacklist_item+"': " + url);
+                LOGGER.debug("Skipping link that contains '"+blacklist_item+"': " + url);
                 return true;
             }
         }
@@ -185,7 +185,7 @@ public class ChanRipper extends AbstractHTMLRipper {
                     }
                     // Don't download the same URL twice
                     if (imageURLs.contains(href)) {
-                        logger.debug("Already attempted: " + href);
+                        LOGGER.debug("Already attempted: " + href);
                         continue;
                     }
                     imageURLs.add(href);

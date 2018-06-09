@@ -54,12 +54,12 @@ public class XvideosRipper extends VideoRipper {
 
     @Override
     public void rip() throws IOException {
-        logger.info("    Retrieving " + this.url);
+        LOGGER.info("    Retrieving " + this.url);
         Document doc = Http.url(this.url).get();
         Elements scripts = doc.select("script");
         for (Element e : scripts) {
             if (e.html().contains("html5player.setVideoUrlHigh")) {
-                logger.info("Found the right script");
+                LOGGER.info("Found the right script");
                 String[] lines = e.html().split("\n");
                 for (String line: lines) {
                     if (line.contains("html5player.setVideoUrlHigh")) {

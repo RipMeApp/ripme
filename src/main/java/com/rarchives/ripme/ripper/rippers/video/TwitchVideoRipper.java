@@ -55,7 +55,7 @@ public class TwitchVideoRipper extends VideoRipper {
 
     @Override
     public void rip() throws IOException {
-        logger.info("Retrieving " + this.url);
+        LOGGER.info("Retrieving " + this.url);
         Document doc = Http.url(url).get();
         
         //Get user friendly filename from page title

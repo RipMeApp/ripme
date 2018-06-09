@@ -54,7 +54,7 @@ public class VineRipper extends VideoRipper {
 
     @Override
     public void rip() throws IOException {
-        logger.info("    Retrieving " + this.url.toExternalForm());
+        LOGGER.info("    Retrieving " + this.url.toExternalForm());
         Document doc = Http.url(this.url).get();
         Elements props = doc.select("meta[property=twitter:player:stream]");
         if (props.isEmpty()) {

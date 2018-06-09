@@ -67,7 +67,7 @@ public class FuskatorRipper extends AbstractHTMLRipper {
         try {
             baseUrl = URLDecoder.decode(baseUrl, "UTF-8");
         } catch (UnsupportedEncodingException e) {
-            logger.warn("Error while decoding " + baseUrl, e);
+            LOGGER.warn("Error while decoding " + baseUrl, e);
         }
         if (baseUrl.startsWith("//")) {
             baseUrl = "http:" + baseUrl;

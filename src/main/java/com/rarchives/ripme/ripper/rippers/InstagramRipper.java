@@ -23,7 +23,6 @@ import com.rarchives.ripme.ripper.AbstractJSONRipper;
 import com.rarchives.ripme.utils.Http;
 
 import org.jsoup.Connection;
-import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import com.rarchives.ripme.ui.RipStatusMessage;
@@ -67,7 +66,7 @@ public class InstagramRipper extends AbstractJSONRipper {
     @Override
     public URL sanitizeURL(URL url) throws MalformedURLException {
        URL san_url = new URL(url.toExternalForm().replaceAll("\\?hl=\\S*", ""));
-       logger.info("sanitized URL is " + san_url.toExternalForm());
+       LOGGER.info("sanitized URL is " + san_url.toExternalForm());
         return san_url;
     }
 
@@ -184,7 +183,7 @@ public class InstagramRipper extends AbstractJSONRipper {
     @Override
     public JSONObject getFirstPage() throws IOException {
         Connection.Response resp = Http.url(url).response();
-        logger.info(resp.cookies());
+        LOGGER.info(resp.cookies());
         csrftoken = resp.cookie("csrftoken");
         Document p = resp.parse();
         // Get the query hash so we can download the next page
@@ -197,7 +196,7 @@ public class InstagramRipper extends AbstractJSONRipper {
             Document doc = Http.url("https://www.instagram.com/p/" + videoID).get();
             return doc.select("meta[property=og:video]").attr("content");
         } catch (IOException e) {
-            logger.warn("Unable to get page " + "https://www.instagram.com/p/" + videoID);
+            LOGGER.warn("Unable to get page " + "https://www.instagram.com/p/" + videoID);
         }
         return "";
     }
@@ -279,9 +278,9 @@ public class InstagramRipper extends AbstractJSONRipper {
                                 addURLToDownload(new URL(toAdd.get(slideShowInt)), image_date + data.getString("shortcode"));
                             }
                         } catch (MalformedURLException e) {
-                            logger.error("Unable to download slide show, URL was malformed");
+                            LOGGER.error("Unable to download slide show, URL was malformed");
                         } catch (IOException e) {
-                            logger.error("Unable to download slide show");
+                            LOGGER.error("Unable to download slide show");
                         }
                     }
                 }
@@ -312,7 +311,7 @@ public class InstagramRipper extends AbstractJSONRipper {
             }
 
         } else { // We're ripping from a single page
-            logger.info("Ripping from single page");
+            LOGGER.info("Ripping from single page");
             imageURLs = getPostsFromSinglePage(json);
         }
 
@@ -321,7 +320,7 @@ public class InstagramRipper extends AbstractJSONRipper {
 
     private String getIGGis(String variables) {
         String stringToMD5 = rhx_gis + ":" + variables;
-        logger.debug("String to md5 is \"" + stringToMD5 + "\"");
+        LOGGER.debug("String to md5 is \"" + stringToMD5 + "\"");
         try {
             byte[] bytesOfMessage = stringToMD5.getBytes("UTF-8");
 
@@ -355,7 +354,7 @@ public class InstagramRipper extends AbstractJSONRipper {
                      toreturn = getPage("https://www.instagram.com/graphql/query/?query_hash=" + qHash +
                                      "&variables=" + vars, ig_gis);
                     // Sleep for a while to avoid a ban
-                    logger.info(toreturn);
+                    LOGGER.info(toreturn);
                     if (!pageHasImages(toreturn)) {
                         throw new IOException("No more pages");
                     }
@@ -371,7 +370,7 @@ public class InstagramRipper extends AbstractJSONRipper {
                 sleep(2500);
                 String vars = "{\"id\":\"" + userID + "\",\"first\":50,\"after\":\"" + nextPageID + "\"}";
                 String ig_gis = getIGGis(vars);
-                logger.info(ig_gis);
+                LOGGER.info(ig_gis);
 
                 toreturn = getPage("https://www.instagram.com/graphql/query/?query_hash=" + qHash + "&variables=" + vars, ig_gis);
                 if (!pageHasImages(toreturn)) {
@@ -419,11 +418,11 @@ public class InstagramRipper extends AbstractJSONRipper {
             return new JSONObject(sb.toString());
 
         } catch (MalformedURLException e) {
-            logger.info("Unable to get query_hash, " + url + " is a malformed URL");
+            LOGGER.info("Unable to get query_hash, " + url + " is a malformed URL");
             return null;
         } catch (IOException e) {
-            logger.info("Unable to get query_hash");
-            logger.info(e.getMessage());
+            LOGGER.info("Unable to get query_hash");
+            LOGGER.info(e.getMessage());
             return null;
         }
     }
@@ -444,11 +443,11 @@ public class InstagramRipper extends AbstractJSONRipper {
             in.close();
 
         } catch (MalformedURLException e) {
-            logger.info("Unable to get query_hash, " + jsFileURL + " is a malformed URL");
+            LOGGER.info("Unable to get query_hash, " + jsFileURL + " is a malformed URL");
             return null;
         } catch (IOException e) {
-            logger.info("Unable to get query_hash");
-            logger.info(e.getMessage());
+            LOGGER.info("Unable to get query_hash");
+            LOGGER.info(e.getMessage());
             return null;
         }
         if (!rippingTag) {
@@ -467,6 +466,11 @@ public class InstagramRipper extends AbstractJSONRipper {
             if (m.find()) {
                 return m.group(1);
             }
+            jsP = Pattern.compile("o.pagination},queryId:.([a-zA-Z0-9]+).");
+            m = jsP.matcher(sb.toString());
+            if (m.find()) {
+                return m.group(1);
+            }
 
         } else {
             Pattern jsP = Pattern.compile("return e.tagMedia.byTagName.get\\(t\\).pagination},queryId:.([a-zA-Z0-9]+).");
@@ -475,7 +479,7 @@ public class InstagramRipper extends AbstractJSONRipper {
                 return m.group(1);
             }
         }
-        logger.error("Could not find query_hash on " + jsFileURL);
+        LOGGER.error("Could not find query_hash on " + jsFileURL);
         return null;
 
     }

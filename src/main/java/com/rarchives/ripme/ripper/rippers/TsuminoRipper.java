@@ -40,7 +40,7 @@ public class TsuminoRipper extends AbstractHTMLRipper {
             JSONObject json = new JSONObject(jsonInfo);
             return json.getJSONArray("reader_page_urls");
         } catch (IOException e) {
-            logger.info(e);
+            LOGGER.info(e);
             sendUpdate(RipStatusMessage.STATUS.DOWNLOAD_ERRORED, "Unable to download album, please compete the captcha at http://www.tsumino.com/Read/Auth/"
                     + getAlbumID() + " and try again");
             return null;

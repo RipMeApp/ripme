@@ -9,7 +9,6 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -102,7 +101,7 @@ public class NhentaiRipper extends AbstractHTMLRipper {
         if (blackListedTags == null) {
             return null;
         }
-        logger.info("Blacklisted tags " + blackListedTags[0]);
+        LOGGER.info("Blacklisted tags " + blackListedTags[0]);
         List<String> tagsOnPage = getTags(doc);
         for (String tag : blackListedTags) {
             for (String pageTag : tagsOnPage) {

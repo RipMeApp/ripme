@@ -43,7 +43,7 @@ public class ImagefapRipper extends AbstractHTMLRipper {
             newURL += "p";
         }
         newURL += "gid=" + gid + "&view=2";
-        logger.debug("Changed URL from " + url + " to " + newURL);
+        LOGGER.debug("Changed URL from " + url + " to " + newURL);
         return new URL(newURL);
     }
 
