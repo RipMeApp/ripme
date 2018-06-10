@@ -3,6 +3,7 @@ package com.rarchives.ripme.ripper.rippers;
 import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 import com.rarchives.ripme.utils.Base64;
 import com.rarchives.ripme.utils.Http;
+import com.rarchives.ripme.utils.RipUtils;
 import com.rarchives.ripme.utils.Utils;
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -36,6 +37,10 @@ public class DeviantartRipper extends AbstractHTMLRipper {
     public DeviantartRipper(URL url) throws IOException {
         super(url);
     }
+
+    String loginCookies = "auth=__0f9158aaec09f417b235%3B%221ff79836392a515d154216d919eae573%22;" +
+            "auth_secure=__41d14dd0da101f411bb0%3B%2281cf2cf9477776162a1172543aae85ce%22;" +
+            "userinfo=__bf84ac233bfa8ae642e8%3B%7B%22username%22%3A%22grabpy%22%2C%22uniqueid%22%3A%22a0a876aa37dbd4b30e1c80406ee9c280%22%2C%22vd%22%3A%22BbHUXZ%2CBbHUXZ%2CA%2CU%2CA%2C%2CB%2CA%2CB%2CBbHUXZ%2CBbHUdj%2CL%2CL%2CA%2CBbHUdj%2C13%2CA%2CB%2CA%2C%2CA%2CA%2CB%2CA%2CA%2C%2CA%22%2C%22attr%22%3A56%7D";
 
     @Override
     public String getHost() {
@@ -117,24 +122,20 @@ public class DeviantartRipper extends AbstractHTMLRipper {
     @Override
     public Document getFirstPage() throws IOException {
         
-        //Test to see if there is a login:
-        String username = Utils.getConfigString("deviantart.username", new String(Base64.decode("Z3JhYnB5")));
-        String password = Utils.getConfigString("deviantart.password", new String(Base64.decode("ZmFrZXJz")));
-        
-        if (username == null || password == null) {
-            LOGGER.debug("No DeviantArt login provided.");
-            cookies.put("agegate_state","1"); // Bypasses the age gate
-        } else {
-            // Attempt Login
-            try {
-                cookies = loginToDeviantart();
-            } catch (IOException e) {
-                LOGGER.warn("Failed to login: ", e);
+        // Base64 da login
+        // username: Z3JhYnB5
+        // password: ZmFrZXJz
+
+
+        cookies = getDACookies();
+            if (cookies.isEmpty()) {
+                LOGGER.warn("Failed to get login cookies");
                 cookies.put("agegate_state","1"); // Bypasses the age gate
             }
-        }
-        
-        
+
+        LOGGER.info(Http.url(this.url)
+                .cookies(cookies)
+                .get());
         return Http.url(this.url)
                    .cookies(cookies)
                    .get();
@@ -426,52 +427,10 @@ public class DeviantartRipper extends AbstractHTMLRipper {
     }
 
     /**
-     * Logs into deviant art. Required to rip full-size NSFW content.
+     * Returns DA cookies.
      * @return Map of cookies containing session data.
      */
-    private Map<String, String> loginToDeviantart() throws IOException {
-        // Populate postData fields
-        Map<String,String> postData = new HashMap<>();
-        String username = Utils.getConfigString("deviantart.username", new String(Base64.decode("Z3JhYnB5")));
-        String password = Utils.getConfigString("deviantart.password", new String(Base64.decode("ZmFrZXJz")));
-        if (username == null || password == null) {
-            throw new IOException("could not find username or password in config");
-        }
-        Response resp = Http.url("http://www.deviantart.com/users/login")
-                            .response();
-//        for (Element input : resp.parse().select("form#form-login input[type=hidden]")) {
-//            postData.put(input.attr("name"), input.attr("value"));
-//        }
-        Document r = resp.parse();
-        LOGGER.info("R: " + r.html());
-        postData.put("username", username);
-        postData.put("password", password);
-        postData.put("validate_token", "829439d1f0b53e20f2f5");
-        postData.put("validate_key", "1528530690");
-//        postData.put("remember_me", "1");
-        LOGGER.info(postData);
-        // Send login request
-        resp = Http.url("https://www.deviantart.com/users/login")
-                    .userAgent(USER_AGENT)
-                    .data(postData)
-                    .cookies(resp.cookies())
-                    .method(Method.POST)
-                    .response();
-//        LOGGER.info("RESP: " + resp.parse().html());
-
-        // Assert we are logged in
-        if (resp.hasHeader("Location") && resp.header("Location").contains("password")) {
-            // Wrong password
-            throw new IOException("Wrong password");
-        }
-        if (resp.url().toExternalForm().contains("bad_form")) {
-            throw new IOException("Login form was incorrectly submitted");
-        }
-        if (resp.cookie("auth_secure") == null ||
-            resp.cookie("auth") == null) {
-            throw new IOException("No auth_secure or auth cookies received");
-        }
-        // We are logged in, save the cookies
-        return resp.cookies();
+    private Map<String, String> getDACookies() {
+        return RipUtils.getCookiesFromString(Utils.getConfigString("deviantart.cookies", loginCookies));
     }
 }
