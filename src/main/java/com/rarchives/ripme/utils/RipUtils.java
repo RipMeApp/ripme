@@ -3,9 +3,7 @@ package com.rarchives.ripme.utils;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -278,5 +276,17 @@ public class RipUtils {
             }
         }
         return url;
+    }
+    /**
+     * Reads a cookie string (Key1=value1;key2=value2) from the config file and turns it into a hashmap
+     * @return Map of cookies containing session data.
+     */
+    public static Map<String, String> getCookiesFromString(String line) {
+        Map<String,String> cookies = new HashMap<>();
+        for (String pair : line.split(";")) {
+            String[] kv = pair.split("=");
+            cookies.put(kv[0], kv[1]);
+        }
+        return cookies;
     }
 }
