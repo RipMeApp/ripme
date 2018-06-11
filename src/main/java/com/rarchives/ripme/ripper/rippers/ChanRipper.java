@@ -88,6 +88,15 @@ public class ChanRipper extends AbstractHTMLRipper {
         if (url.toExternalForm().contains("desuchan.net") && url.toExternalForm().contains("/res/")) {
             return true;
         }
+        if (url.toExternalForm().contains("boards.420chan.org") && url.toExternalForm().contains("/res/")) {
+            return true;
+        }
+        if (url.toExternalForm().contains("7chan.org") && url.toExternalForm().contains("/res/")) {
+            return true;
+        }
+        if (url.toExternalForm().contains("xchan.pw") && url.toExternalForm().contains("/board/")) {
+            return true;
+        }
         return false;
     }
 
