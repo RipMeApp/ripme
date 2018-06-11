@@ -15,6 +15,7 @@ import java.util.regex.Pattern;
 import com.rarchives.ripme.ui.RipStatusMessage;
 import com.rarchives.ripme.utils.Utils;
 import org.jsoup.Connection.Response;
+import org.jsoup.HttpStatusException;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -77,6 +78,7 @@ public class FuraffinityRipper extends AbstractHTMLRipper {
     @Override
     public Document getFirstPage() throws IOException {
         setCookies();
+        LOGGER.info(Http.url(url).cookies(cookies).get().html());
         return Http.url(url).cookies(cookies).get();
     }
 
@@ -96,22 +98,33 @@ public class FuraffinityRipper extends AbstractHTMLRipper {
     }
 
     private String getImageFromPost(String url) {
+        sleep(1000);
+        Document d = null;
         try {
-            LOGGER.info("found url " + Http.url(url).cookies(cookies).get().select("meta[property=og:image]").attr("content"));
-            return Http.url(url).cookies(cookies).get().select("meta[property=og:image]").attr("content");
+            d = Http.url(url).cookies(cookies).get();
+            Elements links = d.getElementsByTag("a");
+            for (Element link : links) {
+                if (link.text().equals("Download")) {
+                    LOGGER.info("Found image " + link.attr("href"));
+                   return "https:" + link.attr("href");
+                }
+            }
         } catch (IOException e) {
-            return "";
+            return null;
         }
+        return null;
     }
 
     @Override
     public List<String> getURLsFromPage(Document page) {
         List<String> urls = new ArrayList<>();
-        Elements urlElements = page.select("figure > b > u > a");
+        Elements urlElements = page.select("figure.t-image > b > u > a");
         for (Element e : urlElements) {
             String urlToAdd = getImageFromPost(urlBase + e.select("a").first().attr("href"));
-            if (urlToAdd.startsWith("http") && urlToAdd.contains("/view/")) {
-                urls.add(urlToAdd);
+            if (url != null) {
+                if (urlToAdd.startsWith("http")) {
+                    urls.add(urlToAdd);
+                }
             }
         }
         return urls;
