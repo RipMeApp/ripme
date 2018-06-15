@@ -132,10 +132,7 @@ public class DeviantartRipper extends AbstractHTMLRipper {
                 LOGGER.warn("Failed to get login cookies");
                 cookies.put("agegate_state","1"); // Bypasses the age gate
             }
-
-        LOGGER.info(Http.url(this.url)
-                .cookies(cookies)
-                .get());
+            
         return Http.url(this.url)
                    .cookies(cookies)
                    .get();
