@@ -15,9 +15,12 @@ parser.add_argument("-f", "--file", help="Path to the version of ripme to releas
 parser.add_argument("-t", "--token", help="Your github personal access token")
 parser.add_argument("-d", "--debug", help="Run in debug mode", action="store_true")
 parser.add_argument("-n", "--non-interactive", help="Do not ask for any input from the user", action="store_true")
+parser.add_argument("--test", help="Perform a dry run (Do everything but upload new release)", action="store_true")
+parser.add_argument("--skip-hash-check", help="Skip hash check (This should only be used for testing)", action="store_true")
 args = parser.parse_args()
 
 try:
+    # This binds input to raw_input on python2, we do this because input acts like eval on python2
     input = raw_input
 except NameError:
     pass
@@ -39,8 +42,20 @@ def isValidCommitMessage(message):
     return re.match(pattern, message)
 
 
+# Checks if the update has the name ripme.jar, if not it renames the file
+# Returns the update file path
+# TODO handle files that aren't in sub dirs
+def renameFile(path):
+    if not path.endswith("ripme.jar"):
+        print("Specified file is not named ripme.jar, renaming")
+        # os.sep is the path separator for the os this is being run on
+        os.rename(path, path.split(os.sep)[0] + os.sep + "ripme.jar")
+        return path.split(os.sep)[0] + os.sep + "ripme.jar"
+    return path
+
+
 ripmeJson = json.loads(open("ripme.json").read())
-fileToUploadPath = args.file
+fileToUploadPath = renameFile(args.file)
 InNoninteractiveMode = args.non_interactive
 commitMessage = ripmeJson.get("changeList")[0]
 releaseVersion = ripmeJson.get("latestVersion")
@@ -61,22 +76,27 @@ if not isValidCommitMessage(commitMessage):
     print("[!] Error: {} is not a valid commit message as it does not start with a version".format(fileToUploadPath))
     sys.exit(1)
 
-ripmeUpdate = open(fileToUploadPath, mode='rb').read()
 
-# The hash that we expect the update to have
-expectedHash = ripmeJson.get("currentHash")
+if not args.skip_hash_check:
+    if debug:
+        print("Reading file {}".format(fileToUploadPath))
+    ripmeUpdate = open(fileToUploadPath, mode='rb').read()
 
-# The actual hash of the file on disk
-actualHash = sha256(ripmeUpdate).hexdigest()
+    # The actual hash of the file on disk
+    actualHash = sha256(ripmeUpdate).hexdigest()
 
-# Make sure that the hash of the file we're uploading matches the hash in ripme.json. These hashes not matching will
-# cause ripme to refuse to install the update for all users who haven't disabled update hash checking
-if expectedHash != actualHash:
-    print("[!] Error: expected hash of file and actual hash differ")
-    print("[!] Expected hash is {}".format(expectedHash))
-    print("[!] Actual hash is {}".format(actualHash))
-    sys.exit(1)
+    # The hash that we expect the update to have
+    expectedHash = ripmeJson.get("currentHash")
 
+    # Make sure that the hash of the file we're uploading matches the hash in ripme.json. These hashes not matching will
+    # cause ripme to refuse to install the update for all users who haven't disabled update hash checking
+    if expectedHash != actualHash:
+        print("[!] Error: expected hash of file and actual hash differ")
+        print("[!] Expected hash is {}".format(expectedHash))
+        print("[!] Actual hash is {}".format(actualHash))
+        sys.exit(1)
+else:
+    print("[*] WARNING: SKIPPING HASH CHECK")
 # Ask the user to review the information before we precede
 # This only runs in we're in interactive mode
 if not InNoninteractiveMode:
@@ -85,12 +105,14 @@ if not InNoninteractiveMode:
     print("Repo: {}/{}".format(repoOwner, repoName))
     input("\nPlease review the information above and ensure it is correct and then press enter")
 
-print("Accessing github using token")
-g = Github(accessToken)
+if not args.test:
+    print("Accessing github using token")
+    g = Github(accessToken)
 
+    print("Creating release")
+    release = g.get_user(repoOwner).get_repo(repoName).create_git_release(releaseVersion, commitMessage, "")
 
-print("Creating release")
-release = g.get_user(repoOwner).get_repo(repoName).create_git_release(releaseVersion, commitMessage, "")
-
-print("Uploading file")
-release.upload_asset(fileToUploadPath, "ripme.jar")
+    print("Uploading file")
+    release.upload_asset(fileToUploadPath, "ripme.jar")
+else:
+    print("Not uploading release being script was run with --test flag")
