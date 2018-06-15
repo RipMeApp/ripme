@@ -26,6 +26,8 @@ import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 import com.rarchives.ripme.ripper.DownloadThreadPool;
 import com.rarchives.ripme.utils.Http;
 
+import static com.rarchives.ripme.utils.RipUtils.getCookiesFromString;
+
 public class FuraffinityRipper extends AbstractHTMLRipper {
 
     private static final String urlBase = "https://www.furaffinity.net";
@@ -34,16 +36,14 @@ public class FuraffinityRipper extends AbstractHTMLRipper {
     private void setCookies() {
         if (Utils.getConfigBoolean("furaffinity.login", true)) {
             LOGGER.info("Logging in using cookies");
-            String faACookie = Utils.getConfigString("furaffinity.cookie.a", "897bc45b-1f87-49f1-8a85-9412bc103e7a");
-            String faBCookie = Utils.getConfigString("furaffinity.cookie.b", "c8807f36-7a85-4caf-80ca-01c2a2368267");
-            warnAboutSharedAccount(faACookie, faBCookie);
-            cookies.put("a", faACookie);
-            cookies.put("b", faBCookie);
+            String faCookies = Utils.getConfigString("furaffinity.cookies", "a=897bc45b-1f87-49f1-8a85-9412bc103e7a;b=c8807f36-7a85-4caf-80ca-01c2a2368267");
+            warnAboutSharedAccount(faCookies);
+            cookies = getCookiesFromString(faCookies);
         }
     }
 
-    private void warnAboutSharedAccount(String a, String b) {
-        if (a.equals("897bc45b-1f87-49f1-8a85-9412bc103e7a") && b.equals("c8807f36-7a85-4caf-80ca-01c2a2368267")) {
+    private void warnAboutSharedAccount(String loginCookies) {
+        if (loginCookies.equals("a=897bc45b-1f87-49f1-8a85-9412bc103e7a;b=c8807f36-7a85-4caf-80ca-01c2a2368267")) {
             sendUpdate(RipStatusMessage.STATUS.DOWNLOAD_ERRORED,
                     "WARNING: Using the shared furaffinity account exposes both your IP and how many items you downloaded to the other users of the share account");
         }
