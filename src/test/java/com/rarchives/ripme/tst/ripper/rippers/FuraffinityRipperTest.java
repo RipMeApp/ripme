@@ -16,4 +16,12 @@ public class FuraffinityRipperTest extends RippersTest {
         FuraffinityRipper ripper = new FuraffinityRipper(url);
         assertEquals("mustardgas", ripper.getGID(url));
     }
+
+    public void testLogin() throws IOException {
+        URL url = new URL("https://www.furaffinity.net/gallery/mustardgas/");
+        FuraffinityRipper ripper = new FuraffinityRipper(url);
+        // Check if the first page contain the username of ripmes shared account
+        Boolean containsUsername = ripper.getFirstPage().html().contains("ripmethrowaway");
+        assert containsUsername;
+    }
 }
