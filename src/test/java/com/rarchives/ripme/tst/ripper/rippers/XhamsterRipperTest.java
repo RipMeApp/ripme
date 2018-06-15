@@ -17,6 +17,11 @@ public class XhamsterRipperTest extends RippersTest {
         testRipper(ripper);
     }
 
+    public void testBrazilianXhamster() throws IOException {
+        XhamsterRipper ripper = new XhamsterRipper(new URL("https://pt.xhamster.com/photos/gallery/silvana-7105696"));
+        testRipper(ripper);
+    }
+
     public void testGetGID() throws IOException {
         URL url = new URL("https://xhamster.com/photos/gallery/japanese-dolls-4-asahi-mizuno-7254664");
         XhamsterRipper ripper = new XhamsterRipper(url);
