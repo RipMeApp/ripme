@@ -123,7 +123,7 @@ public class TwitterRipper extends AlbumRipper {
                         .append("&include_entities=true")
                         .append("&exclude_replies=true")
                         .append("&trim_user=true")
-                        .append("&include_rts=false")
+                        .append("&include_rts=true")
                         .append("&count=" + 200);
                 break;
             case SEARCH:
@@ -187,14 +187,18 @@ public class TwitterRipper extends AlbumRipper {
                 url = media.getString("media_url");
                 if (media.getString("type").equals("video")) {
                     JSONArray variants = media.getJSONObject("video_info").getJSONArray("variants");
+                    int largestBitrate = 0;
+                    String urlToDownload = null;
+                    // Loop over all the video options and find the biggest video
                     for (int j = 0; j < medias.length(); j++) {
                         JSONObject variant = (JSONObject) variants.get(i);
-                        if (variant.has("bitrate") && variant.getInt("bitrate") == 832000) {
-                            addURLToDownload(new URL(variant.getString("url")));
-                            parsedCount++;
-                            break;
+                        if (variant.getInt("bitrate") > largestBitrate) {
+                            largestBitrate = variant.getInt("bitrate");
+                            urlToDownload = variant.getString("url");
                         }
                     }
+                    addURLToDownload(new URL(urlToDownload));
+                    parsedCount++;
                 } else if (media.getString("type").equals("photo")) {
                     if (url.contains(".twimg.com/")) {
                         url += ":orig";
