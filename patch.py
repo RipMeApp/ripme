@@ -8,8 +8,8 @@ from hashlib import sha256
 # - update version in a few places
 # - insert new line in ripme.json with message
 # - build ripme
-# - add the hash of the lastest binary to ripme.json
-
+# - add the hash of the latest binary to ripme.json
+# - commit all changes
 message = input('message: ')
 
 
@@ -89,3 +89,4 @@ update_hash(file_hash)
 subprocess.call(['git', 'add', '-u'])
 subprocess.call(['git', 'commit', '-m', commitMessage])
 subprocess.call(['git', 'tag', nextVersion])
+print("Remember to run `git push origin master` before release.py")
