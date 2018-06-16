@@ -20,6 +20,8 @@ import com.rarchives.ripme.utils.Utils;
 
 public class TwitterRipper extends AlbumRipper {
 
+    int downloadUrls = 1;
+
     private static final String DOMAIN = "twitter.com",
             HOST = "twitter";
 
@@ -197,12 +199,18 @@ public class TwitterRipper extends AlbumRipper {
                             urlToDownload = variant.getString("url");
                         }
                     }
-                    addURLToDownload(new URL(urlToDownload));
+                    if (urlToDownload != null) {
+                        addURLToDownload(new URL(urlToDownload), getPrefix(downloadUrls));
+                        downloadUrls++;
+                    } else {
+                        LOGGER.error("URLToDownload was null");
+                    }
                     parsedCount++;
                 } else if (media.getString("type").equals("photo")) {
                     if (url.contains(".twimg.com/")) {
                         url += ":orig";
-                        addURLToDownload(new URL(url));
+                        addURLToDownload(new URL(url), getPrefix(downloadUrls));
+                        downloadUrls++;
                         parsedCount++;
                     } else {
                         LOGGER.debug("Unexpected media_url: " + url);
@@ -213,6 +221,10 @@ public class TwitterRipper extends AlbumRipper {
 
 
         return parsedCount;
+    }
+
+    public String getPrefix(int index) {
+        return String.format("%03d_", index);
     }
 
     @Override
