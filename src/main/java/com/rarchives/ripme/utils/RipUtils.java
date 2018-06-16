@@ -86,6 +86,9 @@ public class RipUtils {
                 logger.warn("Exception while retrieving eroshare page:", e);
             }
             return result;
+        } else if (url.toExternalForm().contains("v.redd.it")) {
+            result.add(url);
+            return result;
         }
 
         else if (url.toExternalForm().contains("erome.com")) {
