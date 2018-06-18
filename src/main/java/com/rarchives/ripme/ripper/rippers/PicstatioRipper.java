@@ -22,7 +22,8 @@ public class PicstatioRipper extends AbstractHTMLRipper {
 
     private String getFullSizedImageFromURL(String fileName) {
         try {
-            return Http.url("https://www.picstatio.com/wallpaper/" + fileName + "/download").get().select("p.text-center > a").attr("href");
+            LOGGER.info("https://www.picstatio.com/wallpaper/" + fileName + "/download");
+            return Http.url("https://www.picstatio.com/wallpaper/" + fileName + "/download").get().select("p.text-center > span > a").attr("href");
         } catch (IOException e) {
             e.printStackTrace();
             return null;
