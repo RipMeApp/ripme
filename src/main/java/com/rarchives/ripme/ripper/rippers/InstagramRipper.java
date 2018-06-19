@@ -246,11 +246,12 @@ public class InstagramRipper extends AbstractJSONRipper {
                 try {
                     JSONArray profilePage = json.getJSONObject("entry_data").getJSONArray("ProfilePage");
                     userID = profilePage.getJSONObject(0).getString("logging_page_id").replaceAll("profilePage_", "");
-                    datas = profilePage.getJSONObject(0).getJSONObject("graphql").getJSONObject("user")
+                    datas = json.getJSONObject("entry_data").getJSONArray("ProfilePage").getJSONObject(0)
+                            .getJSONObject("graphql").getJSONObject("user")
                             .getJSONObject("edge_owner_to_timeline_media").getJSONArray("edges");
                 } catch (JSONException e) {
                     datas = json.getJSONObject("data").getJSONObject("user")
-                            .getJSONObject("edge_owner_to_timeline_media").getJSONArray("edges");
+                            .getJSONObject("edge_user_to_photos_of_you").getJSONArray("edges");
                 }
             } else {
                 try {
@@ -391,8 +392,9 @@ public class InstagramRipper extends AbstractJSONRipper {
     }
 
     private boolean pageHasImages(JSONObject json) {
+        LOGGER.info(json);
         int numberOfImages = json.getJSONObject("data").getJSONObject("user")
-                .getJSONObject("edge_owner_to_timeline_media").getJSONArray("edges").length();
+                .getJSONObject("edge_user_to_photos_of_you").getJSONArray("edges").length();
         if (numberOfImages == 0) {
             return false;
         }
