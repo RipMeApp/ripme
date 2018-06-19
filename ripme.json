@@ -1,6 +1,9 @@
 {
+    "currentHash": "f52212a8bd77f38cef7e362429c6a43e5a105a4567e02c69315da31f952c9b35",
+    "latestVersion": "1.7.54",
     "changeList": [
         "1.7.53: Added Picstatio ripper; Fixed instagram ripper; Reddit ripper now gets videos from v.redd.it; Fixed ZikiRipper getAlbumTitle; fixed twitter ripper",
+        "1.7.54: Fixed twitter ripper video downloading; fixed instagram ripper",
         "1.7.52: Added warning about using furaffinty shared account; Refactoring in Utils class; XhamsterRipper now accepts all countries subdomains; E621 ripper now accepts urls with order:Score at the end; release.py imrpovements; DeviantartRipper now logs in using cookies; patch.py imrpovements",
         "1.7.51: Fixed instagram ripper; Added the ability to rip from vsco profiles; Fixed TheyiffgalleryRipper; Can now update ripme using the -j flag; added script to automate releases; Code style fixes",
         "1.7.50: Ripme now checks file hash before running update; fixed update bug which cased ripme to report every update as new",
@@ -223,7 +226,5 @@
         "1.0.4: Fixed spaces-in-directory bug",
         "1.0.3: Added VK.com ripper",
         "1.0.1: Added auto-update functionality"
-    ],
-    "latestVersion": "1.7.53",
-    "currentHash": "3447ec65444b979d8c28bdbfdbc3a675166c8dce695b9c5fb4716ff1b5195e35"
+    ]
 }
