@@ -249,7 +249,9 @@ public class InstagramRipper extends AbstractJSONRipper {
     @Override
     public List<String> getURLsFromJSON(JSONObject json) {
         List<String> imageURLs = new ArrayList<>();
-        nextPageID = getAfter(json);
+        if (!url.toExternalForm().contains("/p/")) {
+            nextPageID = getAfter(json);
+        }
 
         // get the rhx_gis value so we can get the next page later on
         if (rhx_gis == null) {
