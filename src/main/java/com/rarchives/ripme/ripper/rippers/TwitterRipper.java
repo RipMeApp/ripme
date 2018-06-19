@@ -194,9 +194,13 @@ public class TwitterRipper extends AlbumRipper {
                     // Loop over all the video options and find the biggest video
                     for (int j = 0; j < medias.length(); j++) {
                         JSONObject variant = (JSONObject) variants.get(i);
-                        if (variant.getInt("bitrate") > largestBitrate) {
-                            largestBitrate = variant.getInt("bitrate");
-                            urlToDownload = variant.getString("url");
+                        LOGGER.info(variant);
+                        // If the video doesn't have a bitrate it's a m3u8 file we can't download
+                        if (variant.has("bitrate")) {
+                            if (variant.getInt("bitrate") > largestBitrate) {
+                                largestBitrate = variant.getInt("bitrate");
+                                urlToDownload = variant.getString("url");
+                            }
                         }
                     }
                     if (urlToDownload != null) {
