@@ -37,25 +37,24 @@ def isJar(filename):
 # false if not
 def isValidCommitMessage(message):
     if debug:
-        print("Checking if {} matchs pattern ^\d+\.\d+\.\d+:".format(message))
-    pattern = re.compile("^\d+\.\d+\.\d+:")
+        print(r"Checking if {} matches pattern ^\d+\.\d+\.\d+:".format(message))
+    pattern = re.compile(r"^\d+\.\d+\.\d+:")
     return re.match(pattern, message)
 
 
 # Checks if the update has the name ripme.jar, if not it renames the file
-# Returns the update file path
-# TODO handle files that aren't in sub dirs
-def renameFile(path):
+def checkAndRenameFile(path):
+    """Check if path (a string) points to a ripme.jar. Returns the possibly renamed file path"""
     if not path.endswith("ripme.jar"):
         print("Specified file is not named ripme.jar, renaming")
-        # os.sep is the path separator for the os this is being run on
-        os.rename(path, path.split(os.sep)[0] + os.sep + "ripme.jar")
-        return path.split(os.sep)[0] + os.sep + "ripme.jar"
+        new_path = os.path.join(os.path.dirname(path), "ripme.jar")
+        os.rename(path, new_path) 
+        return new_path 
     return path
 
 
 ripmeJson = json.loads(open("ripme.json").read())
-fileToUploadPath = renameFile(args.file)
+fileToUploadPath = checkAndRenameFile(args.file)
 InNoninteractiveMode = args.non_interactive
 commitMessage = ripmeJson.get("changeList")[0]
 releaseVersion = ripmeJson.get("latestVersion")
