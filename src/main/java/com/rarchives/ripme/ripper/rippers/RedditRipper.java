@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.rarchives.ripme.ui.RipStatusMessage;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
@@ -39,6 +40,10 @@ public class RedditRipper extends AlbumRipper {
 
     private long lastRequestTime = 0;
 
+    private Boolean shouldAddURL() {
+        return (alreadyDownloadedUrls >= Utils.getConfigInteger("history.end_rip_after_already_seen", 1000000000) && !isThisATest());
+    }
+
     @Override
     public boolean canRip(URL url) {
         return url.getHost().endsWith(DOMAIN);
@@ -65,6 +70,10 @@ public class RedditRipper extends AlbumRipper {
     public void rip() throws IOException {
         URL jsonURL = getJsonURL(this.url);
         while (true) {
+            if (shouldAddURL()) {
+                sendUpdate(RipStatusMessage.STATUS.DOWNLOAD_COMPLETE_HISTORY, "Already seen the last " + alreadyDownloadedUrls + " images ending rip");
+                break;
+            }
             jsonURL = getAndParseAndReturnNext(jsonURL);
             if (jsonURL == null || isThisATest() || isStopped()) {
                 break;
