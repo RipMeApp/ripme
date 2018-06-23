@@ -30,9 +30,8 @@ def update_hash(current_hash):
 def update_change_list(message):
     ripmeJson = get_ripme_json()
     with open('ripme.json', 'w') as dataFile:
-        new_cl = ripmeJson["changeList"].insert(0, message)
-        ripmeJson["changeList"] = new_cl
         print(ripmeJson["changeList"])
+        ripmeJson["changeList"].insert(0, message)
         json.dump(ripmeJson, dataFile, indent=4)
 
 
