@@ -1,7 +1,7 @@
 {
-    "currentHash": "f52212a8bd77f38cef7e362429c6a43e5a105a4567e02c69315da31f952c9b35",
-    "latestVersion": "1.7.54",
+    "latestVersion": "1.7.55",
     "changeList": [
+        "1.7.55: Fixed instagram ripper; Reddit ripper now respects history.end_rip_after_already_seen; Improvements to patch.py and release.py",
         "1.7.54: Fixed twitter ripper video downloading; fixed instagram ripper",
         "1.7.53: Added Picstatio ripper; Fixed instagram ripper; Reddit ripper now gets videos from v.redd.it; Fixed ZikiRipper getAlbumTitle; fixed twitter ripper",
         "1.7.52: Added warning about using furaffinty shared account; Refactoring in Utils class; XhamsterRipper now accepts all countries subdomains; E621 ripper now accepts urls with order:Score at the end; release.py imrpovements; DeviantartRipper now logs in using cookies; patch.py imrpovements",
@@ -226,5 +226,6 @@
         "1.0.4: Fixed spaces-in-directory bug",
         "1.0.3: Added VK.com ripper",
         "1.0.1: Added auto-update functionality"
-    ]
+    ],
+    "currentHash": "1df13a792f17e2e36a2c3a62527d0e97a3edbee14d1bdb0cd822c7d2a8ce3cf4"
 }
