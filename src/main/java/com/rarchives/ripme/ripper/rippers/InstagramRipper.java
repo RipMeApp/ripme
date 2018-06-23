@@ -471,7 +471,7 @@ public class InstagramRipper extends AbstractJSONRipper {
             return null;
         }
         if (!rippingTag) {
-            Pattern jsP = Pattern.compile("m=\"9ca88e465c3f866a76f7adee3871bdd8\",g=Object\\(c.b\\)\\(\\{pageSize:p.a,pagesToPreload:0,getState:function\\(e,t\\)\\{var o;return null===\\(o=e.profilePosts.byUserId.get\\(t\\)\\)\\|\\|void 0===o\\?void 0:o\\.pagination},queryId:.([a-zA-Z0-9]+)");
+            Pattern jsP = Pattern.compile("byUserId\\.get\\(t\\)\\)\\|\\|void 0===r\\?void 0:r\\.pagination},queryId:.([a-zA-Z0-9]+)");
             Matcher m = jsP.matcher(sb.toString());
             if (m.find()) {
                 return m.group(1);
