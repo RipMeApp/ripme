@@ -65,15 +65,8 @@ subprocess.call(['git', 'grep', '<version>' + nextVersion + '</version>', 'pom.x
 commitMessage = nextVersion + ': ' + message
 changeLogLine = '        \"' + commitMessage + '\",\n'
 
-dataFile = open("ripme.json", "r")
-ripmeJsonLines = dataFile.readlines()
-ripmeJsonLines.insert(3, changeLogLine)
-outputContent = ''.join(ripmeJsonLines)
-dataFile.close()
+update_change_list(changeLogLine)
 
-dataFile = open("ripme.json", "w")
-dataFile.write(outputContent)
-dataFile.close()
 
 print("Building ripme")
 subprocess.call(["mvn", "clean", "compile", "assembly:single"])
