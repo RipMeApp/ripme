@@ -1206,6 +1206,12 @@ public final class MainWindow implements Runnable, RipStatusHandler {
                 appendLog("Downloaded " + msg.getObject(), Color.GREEN);
             }
             break;
+        case DOWNLOAD_COMPLETE_HISTORY:
+            if (LOGGER.isEnabledFor(Level.INFO)) {
+                appendLog("" + msg.getObject(), Color.GREEN);
+            }
+            break;
+
         case DOWNLOAD_ERRORED:
             if (LOGGER.isEnabledFor(Level.ERROR)) {
                 appendLog((String) msg.getObject(), Color.RED);
