@@ -63,9 +63,8 @@ subprocess.call(['sed', '-i', '-e', substrExpr, 'pom.xml'])
 subprocess.call(['git', 'grep', '<version>' + nextVersion + '</version>', 'pom.xml'])
 
 commitMessage = nextVersion + ': ' + message
-changeLogLine = '        \"' + commitMessage + '\",\n'
 
-update_change_list(changeLogLine)
+update_change_list(commitMessage)
 
 
 print("Building ripme")
