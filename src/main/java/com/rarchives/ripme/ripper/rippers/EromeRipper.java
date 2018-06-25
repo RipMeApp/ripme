@@ -22,6 +22,8 @@ import com.rarchives.ripme.utils.Http;
  */
 public class EromeRipper extends AbstractHTMLRipper {
 
+    boolean rippingProfile;
+
 
     public EromeRipper (URL url) throws IOException {
         super(url);
@@ -43,6 +45,27 @@ public class EromeRipper extends AbstractHTMLRipper {
     }
 
     @Override
+    public boolean hasQueueSupport() {
+        return true;
+    }
+
+    @Override
+    public boolean pageContainsAlbums(URL url) {
+        Pattern pa = Pattern.compile("https?://www.erome.com/([a-zA-Z0-9_-]*)/?");
+        Matcher ma = pa.matcher(url.toExternalForm());
+        return ma.matches();
+    }
+
+    @Override
+    public List<String> getAlbumsToQueue(Document doc) {
+        List<String> urlsToAddToQueue = new ArrayList<>();
+        for (Element elem : doc.select("div#albums > div.album > a")) {
+            urlsToAddToQueue.add(elem.attr("href"));
+        }
+        return urlsToAddToQueue;
+    }
+
+    @Override
     public String getAlbumTitle(URL url) throws MalformedURLException {
             try {
                 // Attempt to use album title as GID
@@ -53,6 +76,8 @@ public class EromeRipper extends AbstractHTMLRipper {
             } catch (IOException e) {
                 // Fall back to default album naming convention
                 LOGGER.info("Unable to find title at " + url);
+            } catch (NullPointerException e) {
+                return getHost() + "_" + getGID(url);
             }
             return super.getAlbumTitle(url);
     }
@@ -66,21 +91,7 @@ public class EromeRipper extends AbstractHTMLRipper {
     @Override
     public List<String> getURLsFromPage(Document doc) {
         List<String> URLs = new ArrayList<>();
-        //Pictures
-        Elements imgs = doc.select("div.img > img.img-front");
-        for (Element img : imgs) {
-            String imageURL = img.attr("src");
-            imageURL = "https:" + imageURL;
-            URLs.add(imageURL);
-        }
-        //Videos
-        Elements vids = doc.select("div.video > video > source");
-        for (Element vid : vids) {
-            String videoURL = vid.attr("src");
-            URLs.add("https:" + videoURL);
-        }
-
-        return URLs;
+        return getMediaFromPage(doc);
     }
 
     @Override
@@ -100,7 +111,7 @@ public class EromeRipper extends AbstractHTMLRipper {
             return m.group(1);
         }
 
-        p = Pattern.compile("^https?://erome.com/a/([a-zA-Z0-9]*)/?$");
+        p = Pattern.compile("^https?://www.erome.com/([a-zA-Z0-9_-]+)/?$");
         m = p.matcher(url.toExternalForm());
 
         if (m.matches()) {
@@ -110,34 +121,15 @@ public class EromeRipper extends AbstractHTMLRipper {
         throw new MalformedURLException("erome album not found in " + url + ", expected https://www.erome.com/album");
     }
 
-    public static List<URL> getURLs(URL url) throws IOException{
-
-        Response resp = Http.url(url)
-                            .ignoreContentType()
-                            .response();
-
-        Document doc = resp.parse();
-
-        List<URL> URLs = new ArrayList<>();
-        //Pictures
-        Elements imgs = doc.getElementsByTag("img");
-        for (Element img : imgs) {
-            if (img.hasClass("album-image")) {
-                String imageURL = img.attr("src");
-                imageURL = "https:" + imageURL;
-                URLs.add(new URL(imageURL));
-            }
+    private List<String> getMediaFromPage(Document doc) {
+        List<String> results = new ArrayList<>();
+        for (Element el : doc.select("img.img-front")) {
+            results.add("https:" + el.attr("src"));
         }
-        //Videos
-        Elements vids = doc.getElementsByTag("video");
-        for (Element vid : vids) {
-            if (vid.hasClass("album-video")) {
-                Elements source = vid.getElementsByTag("source");
-                String videoURL = source.first().attr("src");
-                URLs.add(new URL(videoURL));
-            }
+        for (Element el : doc.select("source[label=HD]")) {
+            results.add("https:" + el.attr("src"));
         }
-
-        return URLs;
+        return results;
     }
+
 }
