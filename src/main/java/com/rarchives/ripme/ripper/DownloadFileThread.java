@@ -59,6 +59,16 @@ class DownloadFileThread extends Thread {
         this.cookies = cookies;
     }
 
+    private int getTotalBytes(URL url) throws IOException {
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setRequestMethod("HEAD");
+        conn.setRequestProperty("accept",  "*/*");
+        conn.setRequestProperty("Referer", this.url.toExternalForm()); // Sic
+        conn.setRequestProperty("User-agent", AbstractRipper.USER_AGENT);
+        return conn.getContentLength();
+    }
+
+
     /**
      * Attempts to download the file. Retries as needed.
      * Notifies observers upon completion/error/warn.
@@ -79,6 +89,21 @@ class DownloadFileThread extends Thread {
                 observer.downloadExists(url, saveAs);
                 return;
             }
+        }
+
+        int bytesTotal, bytesDownloaded = 0;
+        if (observer.useByteProgessBar()) {
+            try {
+                bytesTotal = getTotalBytes(this.url);
+            } catch (IOException e) {
+                logger.error("Failed to get file size at " + this.url, e);
+                observer.downloadErrored(this.url, "Failed to get file size of " + this.url);
+                return;
+            }
+
+            observer.setBytesTotal(bytesTotal);
+            observer.sendUpdate(STATUS.TOTAL_BYTES, bytesTotal);
+            logger.debug("Size of file at " + this.url + " = " + bytesTotal + "b");
         }
 
         URL urlToDownload = this.url;
@@ -156,7 +181,23 @@ class DownloadFileThread extends Thread {
                 }
 
                 fos = new FileOutputStream(saveAs);
-                IOUtils.copy(bis, fos);
+                byte[] data = new byte[1024 * 256]; int bytesRead;
+                while ( (bytesRead = bis.read(data)) != -1) {
+                    try {
+                        observer.stopCheck();
+                    } catch (IOException e) {
+                        observer.downloadErrored(url, "Download interrupted");
+                        return;
+                    }
+                    fos.write(data, 0, bytesRead);
+                    if (observer.useByteProgessBar()) {
+                        bytesDownloaded += bytesRead;
+                        observer.setBytesCompleted(bytesDownloaded);
+                        observer.sendUpdate(STATUS.COMPLETED_BYTES, bytesDownloaded);
+                    }
+                }
+                bis.close();
+                fos.close();
                 break; // Download successful: break out of infinite loop
             } catch (HttpStatusException hse) {
                 logger.debug("HTTP status exception", hse);
