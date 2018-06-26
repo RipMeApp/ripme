@@ -1,6 +1,6 @@
 package com.rarchives.ripme.tst.ripper.rippers;
 
-import com.rarchives.ripme.ripper.rippers.video.GfycatRipper;
+import com.rarchives.ripme.ripper.rippers.GfycatRipper;
 import java.io.IOException;
 import java.net.URL;
 
