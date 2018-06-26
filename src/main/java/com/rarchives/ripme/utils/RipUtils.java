@@ -12,7 +12,7 @@ import com.rarchives.ripme.ripper.rippers.EroShareRipper;
 import com.rarchives.ripme.ripper.rippers.EromeRipper;
 import com.rarchives.ripme.ripper.rippers.ImgurRipper;
 import com.rarchives.ripme.ripper.rippers.VidbleRipper;
-import com.rarchives.ripme.ripper.rippers.video.GfycatRipper;
+import com.rarchives.ripme.ripper.rippers.GfycatRipper;
 import org.apache.commons.lang.math.NumberUtils;
 import org.apache.log4j.Logger;
 import org.jsoup.Jsoup;
