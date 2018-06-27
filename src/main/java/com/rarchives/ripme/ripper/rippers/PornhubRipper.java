@@ -46,7 +46,7 @@ public class PornhubRipper extends AlbumRipper {
         try {
             // Attempt to use album title as GID
             if (albumDoc == null) {
-                logger.info("    Retrieving " + url.toExternalForm());
+                LOGGER.info("    Retrieving " + url.toExternalForm());
                 sendUpdate(STATUS.LOADING_RESOURCE, url.toString());
                 albumDoc = Http.url(url).get();
             }
@@ -54,7 +54,7 @@ public class PornhubRipper extends AlbumRipper {
             return HOST + "_" + elems.get(0).text();
         } catch (Exception e) {
             // Fall back to default album naming convention
-            logger.warn("Failed to get album title from " + url, e);
+            LOGGER.warn("Failed to get album title from " + url, e);
         }
         return super.getAlbumTitle(url);
     }
@@ -82,7 +82,7 @@ public class PornhubRipper extends AlbumRipper {
         String nextUrl = this.url.toExternalForm();
 
         if (albumDoc == null) {
-            logger.info("    Retrieving album page " + nextUrl);
+            LOGGER.info("    Retrieving album page " + nextUrl);
             sendUpdate(STATUS.LOADING_RESOURCE, nextUrl);
             albumDoc = Http.url(nextUrl)
                            .referrer(this.url)
@@ -91,9 +91,9 @@ public class PornhubRipper extends AlbumRipper {
 
         // Find thumbnails
         Elements thumbs = albumDoc.select(".photoBlockBox li");
-        if (thumbs.size() == 0) {
-            logger.debug("albumDoc: " + albumDoc);
-            logger.debug("No images found at " + nextUrl);
+        if (thumbs.isEmpty()) {
+            LOGGER.debug("albumDoc: " + albumDoc);
+            LOGGER.debug("No images found at " + nextUrl);
             return;
         }
 
@@ -113,7 +113,7 @@ public class PornhubRipper extends AlbumRipper {
             try {
                 Thread.sleep(IMAGE_SLEEP_TIME);
             } catch (InterruptedException e) {
-                logger.warn("Interrupted while waiting to load next image", e);
+                LOGGER.warn("Interrupted while waiting to load next image", e);
             }
         }
 
@@ -155,7 +155,7 @@ public class PornhubRipper extends AlbumRipper {
                 Elements images = doc.select("#photoImageSection img");
                 Element image = images.first();
                 String imgsrc = image.attr("src");
-                logger.info("Found URL " + imgsrc + " via " + images.get(0));
+                LOGGER.info("Found URL " + imgsrc + " via " + images.get(0));
 
                 // Provide prefix and let the AbstractRipper "guess" the filename
                 String prefix = "";
@@ -167,7 +167,7 @@ public class PornhubRipper extends AlbumRipper {
                 addURLToDownload(imgurl, prefix);
 
             } catch (IOException e) {
-                logger.error("[!] Exception while loading/parsing " + this.url, e);
+                LOGGER.error("[!] Exception while loading/parsing " + this.url, e);
             }
         }
     }

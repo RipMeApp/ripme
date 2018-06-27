@@ -15,8 +15,6 @@ import org.jsoup.nodes.Element;
 import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 import com.rarchives.ripme.utils.Http;
 
-import javax.print.Doc;
-
 public class ManganeloRipper extends AbstractHTMLRipper {
 
     public ManganeloRipper(URL url) throws IOException {
@@ -67,7 +65,7 @@ public class ManganeloRipper extends AbstractHTMLRipper {
     }
 
     private List<String> getURLsFromChap(String url) {
-        logger.debug("Getting urls from " + url);
+        LOGGER.debug("Getting urls from " + url);
         List<String> result = new ArrayList<>();
         try {
             Document doc = Http.url(url).get();
@@ -82,7 +80,7 @@ public class ManganeloRipper extends AbstractHTMLRipper {
     }
 
     private List<String> getURLsFromChap(Document doc) {
-        logger.debug("Getting urls from " + url);
+        LOGGER.debug("Getting urls from " + url);
         List<String> result = new ArrayList<>();
         for (Element el : doc.select("img.img_content")) {
             result.add(el.attr("src"));

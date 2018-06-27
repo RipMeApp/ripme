@@ -98,7 +98,7 @@ public class HentaifoundryRipper extends AbstractHTMLRipper {
             cookies.putAll(resp.cookies());
         }
         else {
-            logger.info("unable to find csrf_token and set filter");
+            LOGGER.info("unable to find csrf_token and set filter");
         }
 
         resp = Http.url(url)
@@ -111,7 +111,7 @@ public class HentaifoundryRipper extends AbstractHTMLRipper {
 
     @Override
     public Document getNextPage(Document doc) throws IOException {
-        if (doc.select("li.next.hidden").size() != 0) {
+        if (!doc.select("li.next.hidden").isEmpty()) {
             // Last page
             throw new IOException("No more pages");
         }
@@ -139,19 +139,19 @@ public class HentaifoundryRipper extends AbstractHTMLRipper {
             }
             Matcher imgMatcher = imgRegex.matcher(thumb.attr("href"));
             if (!imgMatcher.matches()) {
-                logger.info("Couldn't find user & image ID in " + thumb.attr("href"));
+                LOGGER.info("Couldn't find user & image ID in " + thumb.attr("href"));
                 continue;
             }
             Document imagePage;
             try {
 
-                logger.info("grabbing " + "http://www.hentai-foundry.com" + thumb.attr("href"));
+                LOGGER.info("grabbing " + "http://www.hentai-foundry.com" + thumb.attr("href"));
                 imagePage = Http.url("http://www.hentai-foundry.com" + thumb.attr("href")).cookies(cookies).get();
             }
 
             catch (IOException e) {
-                logger.debug(e.getMessage());
-                logger.debug("Warning: imagePage is null!");
+                LOGGER.debug(e.getMessage());
+                LOGGER.debug("Warning: imagePage is null!");
                 imagePage = null;
             }
             // This is here for when the image is resized to a thumbnail because ripme doesn't report a screensize

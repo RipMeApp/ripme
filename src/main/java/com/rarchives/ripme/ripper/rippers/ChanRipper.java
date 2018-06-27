@@ -19,7 +19,7 @@ import com.rarchives.ripme.utils.RipUtils;
 
 public class ChanRipper extends AbstractHTMLRipper {
     private static List<ChanSite> explicit_domains = Arrays.asList(
-        new ChanSite(Arrays.asList("boards.4chan.org"),   Arrays.asList("4cdn.org", "is.4chan.org", "is2.4chan.org")),
+        new ChanSite(Arrays.asList("boards.4chan.org"),   Arrays.asList("4cdn.org", "is.4chan.org", "is2.4chan.org", "is3.4chan.org")),
         new ChanSite(Arrays.asList("4archive.org"),       Arrays.asList("imgur.com")),
         new ChanSite(Arrays.asList("archive.4plebs.org"), Arrays.asList("img.4plebs.org"))
         );
@@ -68,11 +68,11 @@ public class ChanRipper extends AbstractHTMLRipper {
                 String subject = doc.select(".post.op > .postinfo > .subject").first().text();
                 return getHost() + "_" + getGID(url) + "_" + subject;
             } catch (NullPointerException e) {
-                logger.warn("Failed to get thread title from " + url);
+                LOGGER.warn("Failed to get thread title from " + url);
             }
         } catch (Exception e) {
             // Fall back to default album naming convention
-            logger.warn("Failed to get album title from " + url, e);
+            LOGGER.warn("Failed to get album title from " + url, e);
         }
         // Fall back on the GID
         return getHost() + "_" + getGID(url);
@@ -85,8 +85,19 @@ public class ChanRipper extends AbstractHTMLRipper {
                 return true;
             }
         }
-        return  url.toExternalForm().contains("/res/")     // Most chans
-             || url.toExternalForm().contains("/thread/"); // 4chan, archive.moe
+        if (url.toExternalForm().contains("desuchan.net") && url.toExternalForm().contains("/res/")) {
+            return true;
+        }
+        if (url.toExternalForm().contains("boards.420chan.org") && url.toExternalForm().contains("/res/")) {
+            return true;
+        }
+        if (url.toExternalForm().contains("7chan.org") && url.toExternalForm().contains("/res/")) {
+            return true;
+        }
+        if (url.toExternalForm().contains("xchan.pw") && url.toExternalForm().contains("/board/")) {
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -144,7 +155,7 @@ public class ChanRipper extends AbstractHTMLRipper {
     private boolean isURLBlacklisted(String url) {
         for (String blacklist_item : url_piece_blacklist) {
             if (url.contains(blacklist_item)) {
-                logger.debug("Skipping link that contains '"+blacklist_item+"': " + url);
+                LOGGER.debug("Skipping link that contains '"+blacklist_item+"': " + url);
                 return true;
             }
         }
@@ -185,7 +196,7 @@ public class ChanRipper extends AbstractHTMLRipper {
                     }
                     // Don't download the same URL twice
                     if (imageURLs.contains(href)) {
-                        logger.debug("Already attempted: " + href);
+                        LOGGER.debug("Already attempted: " + href);
                         continue;
                     }
                     imageURLs.add(href);

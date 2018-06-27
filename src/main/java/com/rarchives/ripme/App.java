@@ -35,7 +35,7 @@ import com.rarchives.ripme.utils.Utils;
  * Entry point to application.
  * This is where all the fun happens, with the main method.
  * Decides to display UI or to run silently via command-line.
- * 
+ *
  * As the "controller" to all other classes, it parses command line parameters and loads the history.
  */
 public class App {
@@ -46,7 +46,7 @@ public class App {
     /**
      * Where everything starts. Takes in, and tries to parse as many commandline arguments as possible.
      * Otherwise, it launches a GUI.
-     * 
+     *
      * @param args Array of command line arguments.
      */
     public static void main(String[] args) throws MalformedURLException {
@@ -84,7 +84,7 @@ public class App {
      * Creates an abstract ripper and instructs it to rip.
      * @param url URL to be ripped
      * @throws Exception Nothing too specific here, just a catch-all.
-     * 
+     *
      */
     private static void rip(URL url) throws Exception {
         AbstractRipper ripper = AbstractRipper.getRipper(url);
@@ -217,12 +217,16 @@ public class App {
         //Read URLs from File
         if (cl.hasOption('f')) {
             String filename = cl.getOptionValue('f');
-            try {
+
+            try (BufferedReader br = new BufferedReader(new FileReader(filename))) {
                 String url;
-                BufferedReader br = new BufferedReader(new FileReader(filename));
                 while ((url = br.readLine()) != null) {
-                    // loop through each url in the file and proces each url individually.
-                    ripURL(url.trim(), cl.hasOption("n"));
+                    if (url.startsWith("//") || url.startsWith("#")) {
+                        logger.debug("Skipping over line \"" + url + "\"because it is a comment");
+                    } else {
+                        // loop through each url in the file and process each url individually.
+                        ripURL(url.trim(), !cl.hasOption("n"));
+                    }
                 }
             } catch (FileNotFoundException fne) {
                 logger.error("[!] File containing list of URLs not found. Cannot continue.");
@@ -234,7 +238,11 @@ public class App {
         //The URL to rip.
         if (cl.hasOption('u')) {
             String url = cl.getOptionValue('u').trim();
-            ripURL(url, cl.hasOption("n"));
+            ripURL(url, !cl.hasOption("n"));
+        }
+
+        if (cl.hasOption('j')) {
+            UpdateUtils.updateProgramCLI();
         }
 
     }
@@ -286,6 +294,7 @@ public class App {
         opts.addOption("v", "version", false, "Show current version");
         opts.addOption("s", "socks-server", true, "Use socks server ([user:password]@host[:port])");
         opts.addOption("p", "proxy-server", true, "Use HTTP Proxy server ([user:password]@host[:port])");
+        opts.addOption("j", "update", false, "Update ripme");
         return opts;
     }
 
@@ -326,7 +335,7 @@ public class App {
         } else {
             logger.info("Loading history from configuration");
             HISTORY.fromList(Utils.getConfigList("download.history"));
-            if (HISTORY.toList().size() == 0) {
+            if (HISTORY.toList().isEmpty()) {
                 // Loaded from config, still no entries.
                 // Guess rip history based on rip folder
                 String[] dirs = Utils.getWorkingDirectory().list((dir, file) -> new File(dir.getAbsolutePath() + File.separator + file).isDirectory());

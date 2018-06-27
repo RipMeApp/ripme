@@ -96,40 +96,40 @@ public class E621Ripper extends AbstractHTMLRipper{
 
 	private String getTerm(URL url) throws MalformedURLException{
 		if(gidPattern==null)
-			gidPattern=Pattern.compile("^https?://(www\\.)?e621\\.net/post/index/[^/]+/([a-zA-Z0-9$_.+!*'(),%-]+)(/.*)?(#.*)?$");
+			gidPattern=Pattern.compile("^https?://(www\\.)?e621\\.net/post/index/[^/]+/([a-zA-Z0-9$_.+!*'():,%\\-]+)(/.*)?(#.*)?$");
 		if(gidPatternPool==null)
-			gidPatternPool=Pattern.compile("^https?://(www\\.)?e621\\.net/pool/show/([a-zA-Z0-9$_.+!*'(),%-]+)(\\?.*)?(/.*)?(#.*)?$");
+			gidPatternPool=Pattern.compile("^https?://(www\\.)?e621\\.net/pool/show/([a-zA-Z0-9$_.+!*'(),%:\\-]+)(\\?.*)?(/.*)?(#.*)?$");
 
 		Matcher m = gidPattern.matcher(url.toExternalForm());
-		if(m.matches())
-			return m.group(2);
+		if(m.matches()) {
+            LOGGER.info(m.group(2));
+            return m.group(2);
+        }
 
 		m = gidPatternPool.matcher(url.toExternalForm());
-		if(m.matches())
-			return m.group(2);
+		if(m.matches()) {
+            return m.group(2);
+        }
 
 		throw new MalformedURLException("Expected e621.net URL format: e621.net/post/index/1/searchterm - got "+url+" instead");
 	}
 
 	@Override
 	public String getGID(URL url) throws MalformedURLException {
-		try {
+
 			String prefix="";
-			if(url.getPath().startsWith("/pool/show/"))
-				prefix="pool_";
+			if (url.getPath().startsWith("/pool/show/")) {
+                prefix = "pool_";
+            }
 
-			return Utils.filesystemSafe(prefix+new URI(getTerm(url)).getPath());
-		} catch (URISyntaxException ex) {
-			logger.error(ex);
-		}
+			return Utils.filesystemSafe(prefix+getTerm(url));
 
-		throw new MalformedURLException("Expected e621.net URL format: e621.net/post/index/1/searchterm - got "+url+" instead");
 	}
 
 	@Override
 	public URL sanitizeURL(URL url) throws MalformedURLException {
 		if(gidPattern2==null)
-			gidPattern2=Pattern.compile("^https?://(www\\.)?e621\\.net/post/search\\?tags=([a-zA-Z0-9$_.+!*'(),%-]+)(/.*)?(#.*)?$");
+			gidPattern2=Pattern.compile("^https?://(www\\.)?e621\\.net/post/search\\?tags=([a-zA-Z0-9$_.+!*'():,%-]+)(/.*)?(#.*)?$");
 
 		Matcher m = gidPattern2.matcher(url.toExternalForm());
 		if(m.matches())

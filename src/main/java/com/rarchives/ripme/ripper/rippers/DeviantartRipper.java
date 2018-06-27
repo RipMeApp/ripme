@@ -3,6 +3,7 @@ package com.rarchives.ripme.ripper.rippers;
 import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 import com.rarchives.ripme.utils.Base64;
 import com.rarchives.ripme.utils.Http;
+import com.rarchives.ripme.utils.RipUtils;
 import com.rarchives.ripme.utils.Utils;
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -36,6 +37,10 @@ public class DeviantartRipper extends AbstractHTMLRipper {
     public DeviantartRipper(URL url) throws IOException {
         super(url);
     }
+
+    String loginCookies = "auth=__0f9158aaec09f417b235%3B%221ff79836392a515d154216d919eae573%22;" +
+            "auth_secure=__41d14dd0da101f411bb0%3B%2281cf2cf9477776162a1172543aae85ce%22;" +
+            "userinfo=__bf84ac233bfa8ae642e8%3B%7B%22username%22%3A%22grabpy%22%2C%22uniqueid%22%3A%22a0a876aa37dbd4b30e1c80406ee9c280%22%2C%22vd%22%3A%22BbHUXZ%2CBbHUXZ%2CA%2CU%2CA%2C%2CB%2CA%2CB%2CBbHUXZ%2CBbHUdj%2CL%2CL%2CA%2CBbHUdj%2C13%2CA%2CB%2CA%2C%2CA%2CA%2CB%2CA%2CA%2C%2CA%22%2C%22attr%22%3A56%7D";
 
     @Override
     public String getHost() {
@@ -117,24 +122,17 @@ public class DeviantartRipper extends AbstractHTMLRipper {
     @Override
     public Document getFirstPage() throws IOException {
         
-        //Test to see if there is a login:
-        String username = Utils.getConfigString("deviantart.username", new String(Base64.decode("Z3JhYnB5")));
-        String password = Utils.getConfigString("deviantart.password", new String(Base64.decode("ZmFrZXJz")));
-        
-        if (username == null || password == null) {
-            logger.debug("No DeviantArt login provided.");
-            cookies.put("agegate_state","1"); // Bypasses the age gate
-        } else {
-            // Attempt Login
-            try {
-                cookies = loginToDeviantart();
-            } catch (IOException e) {
-                logger.warn("Failed to login: ", e);
+        // Base64 da login
+        // username: Z3JhYnB5
+        // password: ZmFrZXJz
+
+
+        cookies = getDACookies();
+            if (cookies.isEmpty()) {
+                LOGGER.warn("Failed to get login cookies");
                 cookies.put("agegate_state","1"); // Bypasses the age gate
             }
-        }
-        
-        
+            
         return Http.url(this.url)
                    .cookies(cookies)
                    .get();
@@ -161,7 +159,7 @@ public class DeviantartRipper extends AbstractHTMLRipper {
                     script = script.substring(script.indexOf("},\"src\":\"") + 9, script.indexOf("\",\"type\""));
                     return script.replace("\\/", "/");
                 } catch (StringIndexOutOfBoundsException e) {
-                    logger.debug("Unable to get json link from " + page.location());
+                    LOGGER.debug("Unable to get json link from " + page.location());
                 }
             }
         }
@@ -204,7 +202,7 @@ public class DeviantartRipper extends AbstractHTMLRipper {
                 }
             }
             if (triedURLs.contains(fullSize)) {
-                logger.warn("Already tried to download " + fullSize);
+                LOGGER.warn("Already tried to download " + fullSize);
                 continue;
             }
             triedURLs.add(fullSize);
@@ -222,7 +220,7 @@ public class DeviantartRipper extends AbstractHTMLRipper {
         List<String> textURLs = new ArrayList<>();
         // Iterate over all thumbnails
         for (Element thumb : page.select("div.zones-container span.thumb")) {
-            logger.info(thumb.attr("href"));
+            LOGGER.info(thumb.attr("href"));
             if (isStopped()) {
                 break;
             }
@@ -241,8 +239,8 @@ public class DeviantartRipper extends AbstractHTMLRipper {
             return null;
         }
         Elements nextButtons = page.select("link[rel=\"next\"]");
-        if (nextButtons.size() == 0) {
-            if (page.select("link[rel=\"prev\"]").size() == 0) {
+        if (nextButtons.isEmpty()) {
+            if (page.select("link[rel=\"prev\"]").isEmpty()) {
                 throw new IOException("No next page found");
             } else {
                 throw new IOException("Hit end of pages");
@@ -256,7 +254,7 @@ public class DeviantartRipper extends AbstractHTMLRipper {
         if (!sleep(PAGE_SLEEP_TIME)) {
             throw new IOException("Interrupted while waiting to load next page: " + nextPage);
         }
-        logger.info("Found next page: " + nextPage);
+        LOGGER.info("Found next page: " + nextPage);
         return Http.url(nextPage)
                    .cookies(cookies)
                    .get();
@@ -351,7 +349,7 @@ public class DeviantartRipper extends AbstractHTMLRipper {
             return new String[] {Jsoup.clean(ele.html().replaceAll("\\\\n", System.getProperty("line.separator")), "", Whitelist.none(), new Document.OutputSettings().prettyPrint(false)),fullSize};
             // TODO Make this not make a newline if someone just types \n into the description.
         } catch (IOException ioe) {
-                logger.info("Failed to get description at " + url + ": '" + ioe.getMessage() + "'");
+                LOGGER.info("Failed to get description at " + url + ": '" + ioe.getMessage() + "'");
                 return null;
         }
     }
@@ -376,20 +374,20 @@ public class DeviantartRipper extends AbstractHTMLRipper {
             Elements els = doc.select("img.dev-content-full");
             String fsimage = null;
             // Get the largest resolution image on the page
-            if (els.size() > 0) {
+            if (!els.isEmpty()) {
                 // Large image
                 fsimage = els.get(0).attr("src");
-                logger.info("Found large-scale: " + fsimage);
+                LOGGER.info("Found large-scale: " + fsimage);
                 if (fsimage.contains("//orig")) {
                     return fsimage;
                 }
             }
             // Try to find the download button
             els = doc.select("a.dev-page-download");
-            if (els.size() > 0) {
+            if (!els.isEmpty()) {
                 // Full-size image
                 String downloadLink = els.get(0).attr("href");
-                logger.info("Found download button link: " + downloadLink);
+                LOGGER.info("Found download button link: " + downloadLink);
                 HttpURLConnection con = (HttpURLConnection) new URL(downloadLink).openConnection();
                 con.setRequestProperty("Referer",this.url.toString());
                 String cookieString = "";
@@ -406,7 +404,7 @@ public class DeviantartRipper extends AbstractHTMLRipper {
                 con.disconnect();
                 if (location.contains("//orig")) {
                     fsimage = location;
-                    logger.info("Found image download: " + location);
+                    LOGGER.info("Found image download: " + location);
                 }
             }
             if (fsimage != null) {
@@ -415,9 +413,9 @@ public class DeviantartRipper extends AbstractHTMLRipper {
             throw new IOException("No download page found");
         } catch (IOException ioe) {
             try {
-                logger.info("Failed to get full size download image at " + page + " : '" + ioe.getMessage() + "'");
+                LOGGER.info("Failed to get full size download image at " + page + " : '" + ioe.getMessage() + "'");
                 String lessThanFull = thumbToFull(thumb, false);
-                logger.info("Falling back to less-than-full-size image " + lessThanFull);
+                LOGGER.info("Falling back to less-than-full-size image " + lessThanFull);
                 return lessThanFull;
             } catch (Exception e) {
                 return null;
@@ -426,47 +424,10 @@ public class DeviantartRipper extends AbstractHTMLRipper {
     }
 
     /**
-     * Logs into deviant art. Required to rip full-size NSFW content.
+     * Returns DA cookies.
      * @return Map of cookies containing session data.
      */
-    private Map<String, String> loginToDeviantart() throws IOException {
-        // Populate postData fields
-        Map<String,String> postData = new HashMap<>();
-        String username = Utils.getConfigString("deviantart.username", new String(Base64.decode("Z3JhYnB5")));
-        String password = Utils.getConfigString("deviantart.password", new String(Base64.decode("ZmFrZXJz")));
-        if (username == null || password == null) {
-            throw new IOException("could not find username or password in config");
-        }
-        Response resp = Http.url("http://www.deviantart.com/")
-                            .response();
-        for (Element input : resp.parse().select("form#form-login input[type=hidden]")) {
-            postData.put(input.attr("name"), input.attr("value"));
-        }
-        postData.put("username", username);
-        postData.put("password", password);
-        postData.put("remember_me", "1");
-
-        // Send login request
-        resp = Http.url("https://www.deviantart.com/users/login")
-                    .userAgent(USER_AGENT)
-                    .data(postData)
-                    .cookies(resp.cookies())
-                    .method(Method.POST)
-                    .response();
-
-        // Assert we are logged in
-        if (resp.hasHeader("Location") && resp.header("Location").contains("password")) {
-            // Wrong password
-            throw new IOException("Wrong password");
-        }
-        if (resp.url().toExternalForm().contains("bad_form")) {
-            throw new IOException("Login form was incorrectly submitted");
-        }
-        if (resp.cookie("auth_secure") == null ||
-            resp.cookie("auth") == null) {
-            throw new IOException("No auth_secure or auth cookies received");
-        }
-        // We are logged in, save the cookies
-        return resp.cookies();
+    private Map<String, String> getDACookies() {
+        return RipUtils.getCookiesFromString(Utils.getConfigString("deviantart.cookies", loginCookies));
     }
 }

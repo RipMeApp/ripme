@@ -55,7 +55,7 @@ public class YuvutuRipper extends VideoRipper {
 
     @Override
     public void rip() throws IOException {
-        logger.info("Retrieving " + this.url);
+        LOGGER.info("Retrieving " + this.url);
         Document doc = Http.url(url).get();
         Element iframe = doc.select("iframe").first();
         String iframeSrc = iframe.attr("src");
@@ -65,7 +65,7 @@ public class YuvutuRipper extends VideoRipper {
             throw new IOException("Could not find iframe code at " + url);
         }
         Elements script = doc.select("script");
-        if (script.size() == 0) {
+        if (script.isEmpty()) {
             throw new IOException("Could not find script code at " + url);
         }
         Pattern p = Pattern.compile("file: \"(.*?)\"");

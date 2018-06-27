@@ -65,14 +65,14 @@ public class GfycatRipper extends VideoRipper {
      * @throws IOException
      */
     public static String getVideoURL(URL url) throws IOException {
-        logger.info("Retrieving " + url.toExternalForm());
+        LOGGER.info("Retrieving " + url.toExternalForm());
         
         //Sanitize the URL first
         url = new URL(url.toExternalForm().replace("/gifs/detail", ""));
         
         Document doc = Http.url(url).get();
         Elements videos = doc.select("source#mp4Source");
-        if (videos.size() == 0) {
+        if (videos.isEmpty()) {
             throw new IOException("Could not find source#mp4source at " + url);
         }
         String vidUrl = videos.first().attr("src");

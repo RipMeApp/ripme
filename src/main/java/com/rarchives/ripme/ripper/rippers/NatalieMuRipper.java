@@ -109,7 +109,7 @@ public class NatalieMuRipper extends AbstractHTMLRipper {
                 imgUrl = imgUrl.replace("list_thumb_inbox","xlarge");
                 // Don't download the same URL twice
                 if (imageURLs.contains(imgUrl)) {
-                    logger.debug("Already attempted: " + imgUrl);
+                    LOGGER.debug("Already attempted: " + imgUrl);
                     continue;
                 }
                 imageURLs.add(imgUrl);

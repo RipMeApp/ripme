@@ -35,7 +35,7 @@ public class PhotobucketRipper extends AlbumRipper {
     }
 
     public URL sanitizeURL(URL url) throws MalformedURLException {
-        logger.info(url);
+        LOGGER.info(url);
         String u = url.toExternalForm();
         if (u.contains("?")) {
             u = u.substring(0, u.indexOf("?"));
@@ -54,7 +54,7 @@ public class PhotobucketRipper extends AlbumRipper {
             }
             Document albumDoc = pageResponse.parse();
             Elements els = albumDoc.select("div.libraryTitle > h1");
-            if (els.size() == 0) {
+            if (els.isEmpty()) {
                 throw new IOException("Could not find libraryTitle at " + url);
             }
             return els.get(0).text();
@@ -92,7 +92,7 @@ public class PhotobucketRipper extends AlbumRipper {
             subsToRip.add(sub);
         }
 
-        while (subsToRip.size() > 0 && !isStopped()) {
+        while (!subsToRip.isEmpty() && !isStopped()) {
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
@@ -100,12 +100,12 @@ public class PhotobucketRipper extends AlbumRipper {
             }
             String nextSub = subsToRip.remove(0);
             rippedSubs.add(nextSub);
-            logger.info("Attempting to rip next subalbum: " + nextSub);
+            LOGGER.info("Attempting to rip next subalbum: " + nextSub);
             try {
                 pageResponse = null;
                 subalbums = ripAlbumAndGetSubalbums(nextSub);
             } catch (IOException e) {
-                logger.error("Error while ripping " + nextSub, e);
+                LOGGER.error("Error while ripping " + nextSub, e);
                 break;
             }
             for (String subalbum : subalbums) {
@@ -131,7 +131,7 @@ public class PhotobucketRipper extends AlbumRipper {
             pageIndex++;
             if (pageIndex > 1 || pageResponse == null) {
                 url = theUrl + String.format("?sort=3&page=%d", pageIndex);
-                logger.info("    Retrieving " + url);
+                LOGGER.info("    Retrieving " + url);
                 pageResponse = Http.url(url).response();
             }
             Document albumDoc = pageResponse.parse();
@@ -153,7 +153,7 @@ public class PhotobucketRipper extends AlbumRipper {
                 }
             }
             if (jsonString == null) {
-                logger.error("Unable to find JSON data at URL: " + url);
+                LOGGER.error("Unable to find JSON data at URL: " + url);
                 break;
             }
             JSONObject json = new JSONObject(jsonString);
@@ -189,7 +189,7 @@ public class PhotobucketRipper extends AlbumRipper {
                 + "&albumPath=" + currentAlbumPath // %2Falbums%2Fab10%2FSpazzySpizzy"
                 + "&json=1";
         try {
-            logger.info("Loading " + apiUrl);
+            LOGGER.info("Loading " + apiUrl);
             JSONObject json = Http.url(apiUrl).getJSON();
             JSONArray subalbums = json.getJSONObject("body").getJSONArray("subAlbums");
             for (int i = 0; i < subalbums.length(); i++) {
@@ -202,7 +202,7 @@ public class PhotobucketRipper extends AlbumRipper {
                 result.add(suburl);
             }
         } catch (IOException e) {
-            logger.error("Failed to get subalbums from " + apiUrl, e);
+            LOGGER.error("Failed to get subalbums from " + apiUrl, e);
         }
         return result;
     }

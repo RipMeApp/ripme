@@ -14,8 +14,6 @@ import org.jsoup.nodes.Element;
 import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 import com.rarchives.ripme.utils.Http;
 
-import javax.print.Doc;
-
 public class HypnohubRipper extends AbstractHTMLRipper {
 
     public HypnohubRipper(URL url) throws IOException {
@@ -55,14 +53,14 @@ public class HypnohubRipper extends AbstractHTMLRipper {
     }
 
     private String ripPost(String url) throws IOException {
-        logger.info(url);
+        LOGGER.info(url);
         Document doc = Http.url(url).get();
         return "https:" +  doc.select("img.image").attr("src");
 
     }
 
     private String ripPost(Document doc) {
-        logger.info(url);
+        LOGGER.info(url);
         return "https:" +  doc.select("img.image").attr("src");
 
     }
