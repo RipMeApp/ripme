@@ -715,4 +715,20 @@ public class Utils {
         }
     }
 
+    /**
+     * Formats and reuturns the status text for rippers using the byte progress bar
+     *
+     * @param completionPercentage An int between 0 and 100 which repersents how close the download is to complete
+     * @param bytesCompleted How many bytes have been downloaded
+     * @param bytesTotal The total size of the file that is being downloaded
+     * @return Returns the formatted status text for rippers using the byte progress bar
+     */
+    public static String getByteStatusText(int completionPercentage, int bytesCompleted, int bytesTotal) {
+        return String.valueOf(completionPercentage) +
+                "%  - " +
+                Utils.bytesToHumanReadable(bytesCompleted) +
+                " / " +
+                Utils.bytesToHumanReadable(bytesTotal);
+    }
+
 }
