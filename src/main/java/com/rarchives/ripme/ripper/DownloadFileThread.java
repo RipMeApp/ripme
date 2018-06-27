@@ -130,7 +130,7 @@ class DownloadFileThread extends Thread {
 
                 int statusCode = huc.getResponseCode();
                 logger.debug("Status code: " + statusCode);
-                if (statusCode != 206 && observer.tryResumeDownload()) {
+                if (statusCode != 206 && observer.tryResumeDownload() && saveAs.exists()) {
                     // TODO find a better way to handle servers that don't support resuming downloads then just erroring out
                     throw new IOException("Server doesn't support resuming downloads");
                 }
