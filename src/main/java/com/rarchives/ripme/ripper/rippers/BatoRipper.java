@@ -57,10 +57,7 @@ public class BatoRipper extends AbstractHTMLRipper {
     public boolean pageContainsAlbums(URL url) {
         Pattern p = Pattern.compile("https?://bato.to/series/([\\d]+)/?");
         Matcher m = p.matcher(url.toExternalForm());
-        if (m.matches()) {
-            return true;
-        }
-        return false;
+        return m.matches();
     }
 
     @Override
@@ -79,7 +76,7 @@ public class BatoRipper extends AbstractHTMLRipper {
             return getHost() + "_" + getGID(url) + "_" + getFirstPage().select("title").first().text().replaceAll(" ", "_");
         } catch (IOException e) {
             // Fall back to default album naming convention
-            logger.info("Unable to find title at " + url);
+            LOGGER.info("Unable to find title at " + url);
         }
         return super.getAlbumTitle(url);
     }
@@ -94,10 +91,7 @@ public class BatoRipper extends AbstractHTMLRipper {
 
         p = Pattern.compile("https?://bato.to/chapter/([\\d]+)/?");
         m = p.matcher(url.toExternalForm());
-        if (m.matches()) {
-            return true;
-        }
-        return false;
+        return m.matches();
     }
 
     @Override
@@ -119,7 +113,7 @@ public class BatoRipper extends AbstractHTMLRipper {
                 s = s.replaceAll("var prevCha = null;", "");
                 s = s.replaceAll("var nextCha = \\.*;", "");
                 String json = s.replaceAll("var images = ", "").replaceAll(";", "");
-                logger.info(s);
+                LOGGER.info(s);
                 JSONObject images = new JSONObject(json);
                 for (int i = 1; i < images.length() +1; i++) {
                     result.add(images.getString(Integer.toString(i)));

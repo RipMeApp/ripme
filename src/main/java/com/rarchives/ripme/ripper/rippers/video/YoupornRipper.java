@@ -54,10 +54,10 @@ public class YoupornRipper extends VideoRipper {
 
     @Override
     public void rip() throws IOException {
-        logger.info("    Retrieving " + this.url);
+        LOGGER.info("    Retrieving " + this.url);
         Document doc = Http.url(this.url).get();
         Elements videos = doc.select("video");
-        if (videos.size() == 0) {
+        if (videos.isEmpty()) {
             throw new IOException("Could not find Embed code at " + url);
         }
         Element video = videos.get(0);

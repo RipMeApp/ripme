@@ -36,7 +36,7 @@ public class XhamsterRipper extends AbstractHTMLRipper {
         URLToReturn = URLToReturn.replaceAll("m.xhamster.com", "xhamster.com");
         URLToReturn = URLToReturn.replaceAll("\\w\\w.xhamster.com", "xhamster.com");
         URL san_url = new URL(URLToReturn.replaceAll("xhamster.com", "m.xhamster.com"));
-        logger.info("sanitized URL is " + san_url.toExternalForm());
+        LOGGER.info("sanitized URL is " + san_url.toExternalForm());
         return san_url;
     }
 
@@ -62,12 +62,9 @@ public class XhamsterRipper extends AbstractHTMLRipper {
 
     @Override
     public boolean canRip(URL url) {
-        Pattern p = Pattern.compile("^https?://[wmde.]*xhamster\\.com/photos/gallery/.*?(\\d+)$");
+        Pattern p = Pattern.compile("^https?://([\\w\\w]*\\.)?xhamster\\.com/photos/gallery/.*?(\\d+)$");
         Matcher m = p.matcher(url.toExternalForm());
-        if (m.matches()) {
-            return true;
-        }
-        return false;
+        return m.matches();
     }
 
     @Override

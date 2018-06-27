@@ -20,6 +20,8 @@ import com.rarchives.ripme.utils.Utils;
 
 public class TwitterRipper extends AlbumRipper {
 
+    int downloadUrls = 1;
+
     private static final String DOMAIN = "twitter.com",
             HOST = "twitter";
 
@@ -103,13 +105,13 @@ public class TwitterRipper extends AlbumRipper {
                     .getJSONObject(resource)
                     .getJSONObject(api);
             int remaining = stats.getInt("remaining");
-            logger.info("    Twitter " + resource + " calls remaining: " + remaining);
+            LOGGER.info("    Twitter " + resource + " calls remaining: " + remaining);
             if (remaining < 20) {
-                logger.error("Twitter API calls exhausted: " + stats.toString());
+                LOGGER.error("Twitter API calls exhausted: " + stats.toString());
                 throw new IOException("Less than 20 API calls remaining; not enough to rip.");
             }
         } catch (JSONException e) {
-            logger.error("JSONException: ", e);
+            LOGGER.error("JSONException: ", e);
             throw new IOException("Error while parsing JSON: " + body, e);
         }
     }
@@ -123,7 +125,7 @@ public class TwitterRipper extends AlbumRipper {
                         .append("&include_entities=true")
                         .append("&exclude_replies=true")
                         .append("&trim_user=true")
-                        .append("&include_rts=false")
+                        .append("&include_rts=true")
                         .append("&count=" + 200);
                 break;
             case SEARCH:
@@ -142,7 +144,7 @@ public class TwitterRipper extends AlbumRipper {
 
     private List<JSONObject> getTweets(String url) throws IOException {
         List<JSONObject> tweets = new ArrayList<>();
-        logger.info("    Retrieving " + url);
+        LOGGER.info("    Retrieving " + url);
         Document doc = Http.url(url)
                 .ignoreContentType()
                 .header("Authorization", "Bearer " + accessToken)
@@ -171,7 +173,7 @@ public class TwitterRipper extends AlbumRipper {
     private int parseTweet(JSONObject tweet) throws MalformedURLException {
         int parsedCount = 0;
         if (!tweet.has("extended_entities")) {
-            logger.error("XXX Tweet doesn't have entitites");
+            LOGGER.error("XXX Tweet doesn't have entitites");
             return 0;
         }
 
@@ -187,21 +189,35 @@ public class TwitterRipper extends AlbumRipper {
                 url = media.getString("media_url");
                 if (media.getString("type").equals("video")) {
                     JSONArray variants = media.getJSONObject("video_info").getJSONArray("variants");
+                    int largestBitrate = 0;
+                    String urlToDownload = null;
+                    // Loop over all the video options and find the biggest video
                     for (int j = 0; j < medias.length(); j++) {
                         JSONObject variant = (JSONObject) variants.get(i);
-                        if (variant.has("bitrate") && variant.getInt("bitrate") == 832000) {
-                            addURLToDownload(new URL(variant.getString("url")));
-                            parsedCount++;
-                            break;
+                        LOGGER.info(variant);
+                        // If the video doesn't have a bitrate it's a m3u8 file we can't download
+                        if (variant.has("bitrate")) {
+                            if (variant.getInt("bitrate") > largestBitrate) {
+                                largestBitrate = variant.getInt("bitrate");
+                                urlToDownload = variant.getString("url");
+                            }
                         }
                     }
+                    if (urlToDownload != null) {
+                        addURLToDownload(new URL(urlToDownload), getPrefix(downloadUrls));
+                        downloadUrls++;
+                    } else {
+                        LOGGER.error("URLToDownload was null");
+                    }
+                    parsedCount++;
                 } else if (media.getString("type").equals("photo")) {
                     if (url.contains(".twimg.com/")) {
                         url += ":orig";
-                        addURLToDownload(new URL(url));
+                        addURLToDownload(new URL(url), getPrefix(downloadUrls));
+                        downloadUrls++;
                         parsedCount++;
                     } else {
-                        logger.debug("Unexpected media_url: " + url);
+                        LOGGER.debug("Unexpected media_url: " + url);
                     }
                 }
             }
@@ -209,6 +225,10 @@ public class TwitterRipper extends AlbumRipper {
 
 
         return parsedCount;
+    }
+
+    public String getPrefix(int index) {
+        return String.format("%03d_", index);
     }
 
     @Override
@@ -228,15 +248,15 @@ public class TwitterRipper extends AlbumRipper {
         int parsedCount = 0;
         for (int i = 0; i < MAX_REQUESTS; i++) {
             List<JSONObject> tweets = getTweets(getApiURL(lastMaxID - 1));
-            if (tweets.size() == 0) {
-                logger.info("   No more tweets found.");
+            if (tweets.isEmpty()) {
+                LOGGER.info("   No more tweets found.");
                 break;
             }
-            logger.debug("Twitter response #" + (i + 1) + " Tweets:\n" + tweets);
+            LOGGER.debug("Twitter response #" + (i + 1) + " Tweets:\n" + tweets);
             if (tweets.size() == 1 &&
                     lastMaxID.equals(tweets.get(0).getString("id_str"))
                     ) {
-                logger.info("   No more tweet found.");
+                LOGGER.info("   No more tweet found.");
                 break;
             }
 
@@ -256,7 +276,7 @@ public class TwitterRipper extends AlbumRipper {
             try {
                 Thread.sleep(WAIT_TIME);
             } catch (InterruptedException e) {
-                logger.error("[!] Interrupted while waiting to load more results", e);
+                LOGGER.error("[!] Interrupted while waiting to load more results", e);
                 break;
             }
         }

@@ -62,22 +62,21 @@ public abstract class AlbumRipper extends AbstractRipper {
                   || itemsCompleted.containsKey(url)
                   || itemsErrored.containsKey(url) )) {
             // Item is already downloaded/downloading, skip it.
-            logger.info("[!] Skipping " + url + " -- already attempted: " + Utils.removeCWD(saveAs));
+            LOGGER.info("[!] Skipping " + url + " -- already attempted: " + Utils.removeCWD(saveAs));
             return false;
         }
         if (Utils.getConfigBoolean("urls_only.save", false)) {
             // Output URL to file
             String urlFile = this.workingDir + File.separator + "urls.txt";
-            try {
-                FileWriter fw = new FileWriter(urlFile, true);
+            try (FileWriter fw = new FileWriter(urlFile, true)) {
                 fw.write(url.toExternalForm());
                 fw.write("\n");
-                fw.close();
+
                 RipStatusMessage msg = new RipStatusMessage(STATUS.DOWNLOAD_COMPLETE, urlFile);
                 itemsCompleted.put(url, new File(urlFile));
                 observer.update(this, msg);
             } catch (IOException e) {
-                logger.error("Error while writing to " + urlFile, e);
+                LOGGER.error("Error while writing to " + urlFile, e);
             }
         }
         else {
@@ -129,7 +128,7 @@ public abstract class AlbumRipper extends AbstractRipper {
 
             checkIfComplete();
         } catch (Exception e) {
-            logger.error("Exception while updating observer: ", e);
+            LOGGER.error("Exception while updating observer: ", e);
         }
     }
 
@@ -197,7 +196,7 @@ public abstract class AlbumRipper extends AbstractRipper {
         } else {
             title = super.getAlbumTitle(this.url);
         }
-        logger.debug("Using album title '" + title + "'");
+        LOGGER.debug("Using album title '" + title + "'");
 
         title = Utils.filesystemSafe(title);
         path += title;
@@ -205,10 +204,10 @@ public abstract class AlbumRipper extends AbstractRipper {
 
         this.workingDir = new File(path);
         if (!this.workingDir.exists()) {
-            logger.info("[+] Creating directory: " + Utils.removeCWD(this.workingDir));
+            LOGGER.info("[+] Creating directory: " + Utils.removeCWD(this.workingDir));
             this.workingDir.mkdirs();
         }
-        logger.debug("Set working directory to: " + this.workingDir);
+        LOGGER.debug("Set working directory to: " + this.workingDir);
     }
 
     /**
