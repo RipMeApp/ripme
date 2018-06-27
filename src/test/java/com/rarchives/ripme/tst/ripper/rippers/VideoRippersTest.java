@@ -8,7 +8,6 @@ import java.util.List;
 import com.rarchives.ripme.ripper.VideoRipper;
 import com.rarchives.ripme.ripper.rippers.video.PornhubRipper;
 import com.rarchives.ripme.ripper.rippers.video.TwitchVideoRipper;
-import com.rarchives.ripme.ripper.rippers.video.VineRipper;
 import com.rarchives.ripme.ripper.rippers.video.XhamsterRipper;
 import com.rarchives.ripme.ripper.rippers.video.XvideosRipper;
 import com.rarchives.ripme.ripper.rippers.video.YoupornRipper;
@@ -77,18 +76,6 @@ public class VideoRippersTest extends RippersTest {
             videoTestHelper(ripper);
         }
     }
-
-    // https://github.com/RipMeApp/ripme/issues/186
-    /*
-    public void testVineRipper() throws IOException {
-        List<URL> contentURLs = new ArrayList<>();
-        contentURLs.add(new URL("https://vine.co/v/hiqQrP0eUZx"));
-        for (URL url : contentURLs) {
-            VineRipper ripper = new VineRipper(url);
-            videoTestHelper(ripper);
-        }
-    }
-    */
 
     public void testYoupornRipper() throws IOException {
         List<URL> contentURLs = new ArrayList<>();
