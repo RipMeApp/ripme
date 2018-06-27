@@ -19,6 +19,9 @@ import com.rarchives.ripme.utils.Http;
 
 public class GfycatRipper extends AbstractHTMLRipper {
 
+    private int bytesTotal = 1;
+    private int bytesCompleted = 1;
+
     private static final String HOST = "gfycat.com";
 
     public GfycatRipper(URL url) throws IOException {
@@ -106,9 +109,6 @@ public class GfycatRipper extends AbstractHTMLRipper {
         }
         return vidUrl;
     }
-
-    private int bytesTotal = 1;
-    private int bytesCompleted = 1;
 
     @Override
     public String getStatusText() {
