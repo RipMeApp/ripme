@@ -65,11 +65,7 @@ public class GfycatporntubeRipper extends AbstractHTMLRipper {
 
     @Override
     public String getStatusText() {
-        return String.valueOf(getCompletionPercentage()) +
-                "%  - " +
-                Utils.bytesToHumanReadable(bytesCompleted) +
-                " / " +
-                Utils.bytesToHumanReadable(bytesTotal);
+        return Utils.getByteStatusText(getCompletionPercentage(), bytesCompleted, bytesTotal);
     }
 
     @Override
