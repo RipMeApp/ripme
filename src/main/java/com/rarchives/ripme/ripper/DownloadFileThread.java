@@ -184,7 +184,8 @@ class DownloadFileThread extends Thread {
                 } else {
                     fos = new FileOutputStream(saveAs);
                 }
-                byte[] data = new byte[1024 * 256]; int bytesRead;
+                byte[] data = new byte[1024 * 256];
+                int bytesRead;
                 while ( (bytesRead = bis.read(data)) != -1) {
                     try {
                         observer.stopCheck();
