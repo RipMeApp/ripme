@@ -17,6 +17,9 @@ import com.rarchives.ripme.utils.Http;
 
 public class GfycatporntubeRipper extends AbstractHTMLRipper {
 
+    private int bytesTotal = 1;
+    private int bytesCompleted = 1;
+
     public GfycatporntubeRipper(URL url) throws IOException {
         super(url);
     }
@@ -59,9 +62,6 @@ public class GfycatporntubeRipper extends AbstractHTMLRipper {
     public void downloadURL(URL url, int index) {
         addURLToDownload(url, getPrefix(index));
     }
-
-    private int bytesTotal = 1;
-    private int bytesCompleted = 1;
 
     @Override
     public String getStatusText() {
