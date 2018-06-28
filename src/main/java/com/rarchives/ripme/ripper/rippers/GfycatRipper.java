@@ -1,18 +1,26 @@
-package com.rarchives.ripme.ripper.rippers.video;
+package com.rarchives.ripme.ripper.rippers;
+
 
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.rarchives.ripme.ripper.AbstractHTMLRipper;
+import com.rarchives.ripme.utils.Utils;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
 
-import com.rarchives.ripme.ripper.VideoRipper;
 import com.rarchives.ripme.utils.Http;
 
-public class GfycatRipper extends VideoRipper {
+
+public class GfycatRipper extends AbstractHTMLRipper {
+
+    private int bytesTotal = 1;
+    private int bytesCompleted = 1;
 
     private static final String HOST = "gfycat.com";
 
@@ -21,8 +29,13 @@ public class GfycatRipper extends VideoRipper {
     }
 
     @Override
+    public String getDomain() {
+        return "gfycat.com";
+    }
+
+    @Override
     public String getHost() {
-        return HOST;
+        return "gfycat";
     }
 
     @Override
@@ -35,6 +48,16 @@ public class GfycatRipper extends VideoRipper {
         url = new URL(url.toExternalForm().replace("/gifs/detail", ""));
         
         return url;
+    }
+
+    @Override
+    public Document getFirstPage() throws IOException {
+        return Http.url(url).get();
+    }
+
+    @Override
+    public void downloadURL(URL url, int index) {
+        addURLToDownload(url, getPrefix(index));
     }
 
     @Override
@@ -52,10 +75,15 @@ public class GfycatRipper extends VideoRipper {
     }
 
     @Override
-    public void rip() throws IOException {
-        String vidUrl = getVideoURL(this.url);
-        addURLToDownload(new URL(vidUrl), "gfycat_" + getGID(this.url));
-        waitForThreads();
+    public List<String> getURLsFromPage(Document doc) {
+        List<String> result = new ArrayList<>();
+        Elements videos = doc.select("source#mp4Source");
+        String vidUrl = videos.first().attr("src");
+        if (vidUrl.startsWith("//")) {
+            vidUrl = "http:" + vidUrl;
+        }
+        result.add(vidUrl);
+        return result;
     }
 
     /**
@@ -66,10 +94,10 @@ public class GfycatRipper extends VideoRipper {
      */
     public static String getVideoURL(URL url) throws IOException {
         LOGGER.info("Retrieving " + url.toExternalForm());
-        
+
         //Sanitize the URL first
         url = new URL(url.toExternalForm().replace("/gifs/detail", ""));
-        
+
         Document doc = Http.url(url).get();
         Elements videos = doc.select("source#mp4Source");
         if (videos.isEmpty()) {
@@ -81,4 +109,27 @@ public class GfycatRipper extends VideoRipper {
         }
         return vidUrl;
     }
+
+    @Override
+    public String getStatusText() {
+        return Utils.getByteStatusText(getCompletionPercentage(), bytesCompleted, bytesTotal);
+    }
+
+    @Override
+    public int getCompletionPercentage() {
+        return (int) (100 * (bytesCompleted / (float) bytesTotal));
+    }
+
+    @Override
+    public void setBytesTotal(int bytes) {
+        this.bytesTotal = bytes;
+    }
+
+    @Override
+    public void setBytesCompleted(int bytes) {
+        this.bytesCompleted = bytes;
+    }
+
+    @Override
+    public boolean useByteProgessBar() {return true;}
 }
