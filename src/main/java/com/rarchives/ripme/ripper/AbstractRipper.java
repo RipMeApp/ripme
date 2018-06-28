@@ -613,4 +613,9 @@ public abstract class AbstractRipper
     protected boolean isThisATest() {
         return thisIsATest;
     }
+
+    // If true ripme uses a byte progress bar
+    protected boolean useByteProgessBar() { return false;}
+    // If true ripme will try to resume a broken download for this ripper
+    protected boolean tryResumeDownload() { return false;}
 }
