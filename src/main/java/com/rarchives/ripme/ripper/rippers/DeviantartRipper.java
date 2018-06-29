@@ -66,7 +66,7 @@ public class DeviantartRipper extends AbstractHTMLRipper {
             u += "gallery/?";
         }
 
-        Pattern p = Pattern.compile("^https?://([a-zA-Z0-9\\-]+)\\.deviantart\\.com/favou?rites/([0-9]+)/*?$");
+        Pattern p = Pattern.compile("^https?://www\\.deviantart\\.com/([a-zA-Z0-9\\-]+)/favou?rites/([0-9]+)/*?$");
         Matcher m = p.matcher(url.toExternalForm());
         if (!m.matches()) {
             String subdir = "/";
@@ -80,7 +80,7 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 
     @Override
     public String getGID(URL url) throws MalformedURLException {
-        Pattern p = Pattern.compile("^https?://([a-zA-Z0-9\\-]+)\\.deviantart\\.com(/gallery)?/?(\\?.*)?$");
+        Pattern p = Pattern.compile("^https?://www\\.deviantart\\.com/([a-zA-Z0-9\\-]+)(/gallery)?/?(\\?.*)?$");
         Matcher m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             // Root gallery
@@ -91,24 +91,24 @@ public class DeviantartRipper extends AbstractHTMLRipper {
                 return m.group(1);
             }
         }
-        p = Pattern.compile("^https?://([a-zA-Z0-9\\-]+)\\.deviantart\\.com/gallery/([0-9]+).*$");
+        p = Pattern.compile("^https?://www\\.deviantart\\.com/([a-zA-Z0-9\\-]+)/gallery/([0-9]+).*$");
         m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             // Subgallery
             return m.group(1) + "_" + m.group(2);
         }
-        p = Pattern.compile("^https?://([a-zA-Z0-9\\-]+)\\.deviantart\\.com/favou?rites/([0-9]+)/.*?$");
+        p = Pattern.compile("^https?://www\\.deviantart\\.com/([a-zA-Z0-9\\-]+)/favou?rites/([0-9]+)/.*?$");
         m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             return m.group(1) + "_faves_" + m.group(2);
         }
-        p = Pattern.compile("^https?://([a-zA-Z0-9\\-]+)\\.deviantart\\.com/favou?rites/?$");
+        p = Pattern.compile("^https?://www\\.deviantart\\.com/([a-zA-Z0-9\\-]+)/favou?rites/?$");
         m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             // Subgallery
             return m.group(1) + "_faves";
         }
-        throw new MalformedURLException("Expected URL format: http://username.deviantart.com/[/gallery/#####], got: " + url);
+        throw new MalformedURLException("Expected URL format: http://www.deviantart.com/username[/gallery/#####], got: " + url);
     }
 
     /**
@@ -238,26 +238,19 @@ public class DeviantartRipper extends AbstractHTMLRipper {
         if (isThisATest()) {
             return null;
         }
-        Elements nextButtons = page.select("link[rel=\"next\"]");
-        if (nextButtons.isEmpty()) {
-            if (page.select("link[rel=\"prev\"]").isEmpty()) {
-                throw new IOException("No next page found");
-            } else {
-                throw new IOException("Hit end of pages");
-            }
-        }
-        Element a = nextButtons.first();
-        String nextPage = a.attr("href");
-        if (nextPage.startsWith("/")) {
-            nextPage = "http://" + this.url.getHost() + nextPage;
-        }
-        if (!sleep(PAGE_SLEEP_TIME)) {
-            throw new IOException("Interrupted while waiting to load next page: " + nextPage);
-        }
-        LOGGER.info("Found next page: " + nextPage);
-        return Http.url(nextPage)
-                   .cookies(cookies)
-                   .get();
+        String baseURL = "https://www.deviantart.com/dapi/v1/gallery/";
+        String id = page.select("div[gmi-name=gallery]").first().attr("gmi-itemid");
+        baseURL = baseURL + id;
+        String requestID = getRequestID(page);
+        Document d = Http.url(baseURL).data("idd", requestID).post();
+        LOGGER.info(d.html());
+        return d;
+    }
+
+    private String getRequestID(Document doc) {
+        Pattern p = Pattern.compile("requestid\":\"([a-zA-Z0-9]+)\"");
+        Matcher m = p.matcher(doc.html());
+        return "590m257da2ea3eea661e272dde2948081c4d";
     }
 
     @Override
