@@ -1,6 +1,6 @@
 {
-    "latestVersion": "1.7.55",
     "changeList": [
+        "1.7.56: Fixed DeviantartRipper ripper; Added support for resuming file downloads; Fixed erome ripper; Fixed ModelmayhemRipper NSFW image downloading",
         "1.7.55: Fixed instagram ripper; Reddit ripper now respects history.end_rip_after_already_seen; Improvements to patch.py and release.py",
         "1.7.54: Fixed twitter ripper video downloading; fixed instagram ripper",
         "1.7.53: Added Picstatio ripper; Fixed instagram ripper; Reddit ripper now gets videos from v.redd.it; Fixed ZikiRipper getAlbumTitle; fixed twitter ripper",
@@ -227,5 +227,6 @@
         "1.0.3: Added VK.com ripper",
         "1.0.1: Added auto-update functionality"
     ],
-    "currentHash": "1df13a792f17e2e36a2c3a62527d0e97a3edbee14d1bdb0cd822c7d2a8ce3cf4"
+    "currentHash": "1a6b86e2127b69db0461b7085dcd4d2209b3d344834cd700b5d94154684a5d74",
+    "latestVersion": "1.7.56"
 }
