@@ -1,6 +1,6 @@
 package com.rarchives.ripme.ripper.rippers;
 
-import com.rarchives.ripme.ripper.AbstractHTMLRipper;
+import com.rarchives.ripme.ripper.AbstractJSONRipper;
 import com.rarchives.ripme.utils.Base64;
 import com.rarchives.ripme.utils.Http;
 import com.rarchives.ripme.utils.RipUtils;
@@ -18,15 +18,23 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.jsoup.Connection.Method;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.jsoup.Connection.Response;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
-import org.jsoup.safety.Whitelist;
 import org.jsoup.select.Elements;
 
-public class DeviantartRipper extends AbstractHTMLRipper {
+
+public class DeviantartRipper extends AbstractJSONRipper {
+    String requestID;
+    String galleryID;
+    String username;
+    String baseApiUrl = "https://www.deviantart.com/dapi/v1/gallery/";
+    String csrf;
+    Map<String, String> pageCookies = new HashMap<>();
 
     private static final int PAGE_SLEEP_TIME  = 3000,
                              IMAGE_SLEEP_TIME = 2000;
@@ -50,10 +58,10 @@ public class DeviantartRipper extends AbstractHTMLRipper {
     public String getDomain() {
         return "deviantart.com";
     }
-    @Override
-    public boolean hasDescriptionSupport() {
-        return true;
-    }
+//    @Override
+//    public boolean hasDescriptionSupport() {
+//        return true;
+//    }
     @Override
     public URL sanitizeURL(URL url) throws MalformedURLException {
         String u = url.toExternalForm();
@@ -120,7 +128,7 @@ public class DeviantartRipper extends AbstractHTMLRipper {
      * @throws IOException 
      */
     @Override
-    public Document getFirstPage() throws IOException {
+    public JSONObject getFirstPage() throws IOException {
         
         // Base64 da login
         // username: Z3JhYnB5
@@ -133,124 +141,103 @@ public class DeviantartRipper extends AbstractHTMLRipper {
                 cookies.put("agegate_state","1"); // Bypasses the age gate
             }
             
-        return Http.url(this.url)
+        Response res = Http.url(this.url)
                    .cookies(cookies)
-                   .get();
+                   .response();
+        Document page = res.parse();
+
+        JSONObject firstPageJSON = getFirstPageJSON(page);
+        requestID = firstPageJSON.getJSONObject("dapx").getString("requestid");
+        galleryID = page.select("input[name=set]").attr("value");
+        username = page.select("div.tt-tv150").attr("username");
+        csrf = firstPageJSON.getString("csrf");
+        pageCookies = res.cookies();
+
+        return requestPage(0, galleryID, username, requestID, csrf, pageCookies);
     }
-    
-    /**
-     * 
-     * @param page
-     * @param id
-     * @return 
-     */
-    private String jsonToImage(Document page, String id) {
-        Elements js = page.select("script[type=\"text/javascript\"]");
-        for (Element tag : js) {
-            if (tag.html().contains("window.__pageload")) {
-                try {
-                    String script = tag.html();
-                    script = script.substring(script.indexOf("window.__pageload"));
-                    if (!script.contains(id)) {
-                        continue;
-                    }
-                    script = script.substring(script.indexOf(id));
-                    // first },"src":"url" after id
-                    script = script.substring(script.indexOf("},\"src\":\"") + 9, script.indexOf("\",\"type\""));
-                    return script.replace("\\/", "/");
-                } catch (StringIndexOutOfBoundsException e) {
-                    LOGGER.debug("Unable to get json link from " + page.location());
-                }
+
+    private JSONObject requestPage(int offset, String galleryID, String username, String requestID, String csfr, Map<String, String> c) {
+        LOGGER.debug("offset: " + Integer.toString(offset));
+        LOGGER.debug("galleryID: " + galleryID);
+        LOGGER.debug("username: " + username);
+        LOGGER.debug("requestID: " + requestID);
+        String url = baseApiUrl + galleryID + "?iid=" + requestID;
+        try {
+            Document doc = Http.url(url).cookies(c).data("username", username).data("offset", Integer.toString(offset))
+                    .data("limit", "24").data("_csrf", csfr).data("id", requestID)
+                    .ignoreContentType().post();
+            return new JSONObject(doc.body().text());
+        } catch (IOException e) {
+            LOGGER.error("Got error trying to get page: " + e.getMessage());
+            e.printStackTrace();
+            return null;
+        }
+
+
+    }
+
+    private JSONObject getFirstPageJSON(Document doc) {
+        for (Element js : doc.select("script")) {
+            LOGGER.info(js.html());
+            if (js.html().contains("requestid")) {
+                String json = js.html().replaceAll("window.__initial_body_data=", "").replaceAll("\\);", "")
+                        .replaceAll(";__wake\\(.+", "");
+                LOGGER.info("json: " + json);
+                JSONObject j = new JSONObject(json);
+                return j;
             }
         }
         return null;
     }
+    
+
     @Override
-    public List<String> getURLsFromPage(Document page) {
+    public List<String> getURLsFromJSON(JSONObject json) {
         List<String> imageURLs = new ArrayList<>();
+        LOGGER.info(json);
+        JSONArray results = json.getJSONObject("content").getJSONArray("results");
+        for (int i = 0; i < results.length(); i++) {
+            LOGGER.info(results.getJSONObject(i).toString());
+            Document doc = Jsoup.parseBodyFragment(results.getJSONObject(i).getString("html"));
+            try {
+                String imageURL = doc.select("span").first().attr("data-super-full-img");
+                if (!imageURL.isEmpty()) {
+                    imageURLs.add(imageURL);
+                }
+            } catch (NullPointerException e) {
+               LOGGER.info(i + " does not contain any images");
+            }
 
-        // Iterate over all thumbnails
-        for (Element thumb : page.select("div.zones-container span.thumb")) {
-            if (isStopped()) {
-                break;
-            }
-            Element img = thumb.select("img").get(0);
-            if (img.attr("transparent").equals("false")) {
-                continue; // a.thumbs to other albums are invisible
-            }
-            // Get full-sized image via helper methods
-            String fullSize = null;
-            if (thumb.attr("data-super-full-img").contains("//orig")) {
-                fullSize = thumb.attr("data-super-full-img");
-            } else {
-                String spanUrl = thumb.attr("href");
-                String fullSize1 = jsonToImage(page,spanUrl.substring(spanUrl.lastIndexOf('-') + 1));
-                if (fullSize1 == null || !fullSize1.contains("//orig")) {
-                    fullSize = smallToFull(img.attr("src"), spanUrl);
-                }
-                if (fullSize == null && fullSize1 != null) {
-                    fullSize = fullSize1;
-                }
-            }
-            if (fullSize == null) {
-                if (thumb.attr("data-super-full-img") != null) {
-                    fullSize = thumb.attr("data-super-full-img");
-                } else if (thumb.attr("data-super-img") != null) {
-                    fullSize = thumb.attr("data-super-img");
-                } else {
-                    continue;
-                }
-            }
-            if (triedURLs.contains(fullSize)) {
-                LOGGER.warn("Already tried to download " + fullSize);
-                continue;
-            }
-            triedURLs.add(fullSize);
-            imageURLs.add(fullSize);
-
-            if (isThisATest()) {
-                // Only need one image for a test
-                break;
-            }
         }
         return imageURLs;
     }
-    @Override
-    public List<String> getDescriptionsFromPage(Document page) {
-        List<String> textURLs = new ArrayList<>();
-        // Iterate over all thumbnails
-        for (Element thumb : page.select("div.zones-container span.thumb")) {
-            LOGGER.info(thumb.attr("href"));
-            if (isStopped()) {
-                break;
-            }
-            Element img = thumb.select("img").get(0);
-            if (img.attr("transparent").equals("false")) {
-                continue; // a.thumbs to other albums are invisible
-            }
-            textURLs.add(thumb.attr("href"));
+//    @Override
+//    public List<String> getDescriptionsFromPage(Document page) {
+//        List<String> textURLs = new ArrayList<>();
+//        // Iterate over all thumbnails
+//        for (Element thumb : page.select("div.zones-container span.thumb")) {
+//            LOGGER.info(thumb.attr("href"));
+//            if (isStopped()) {
+//                break;
+//            }
+//            Element img = thumb.select("img").get(0);
+//            if (img.attr("transparent").equals("false")) {
+//                continue; // a.thumbs to other albums are invisible
+//            }
+//            textURLs.add(thumb.attr("href"));
+//
+//        }
+//        return textURLs;
+//    }
 
-        }
-        return textURLs;
-    }
     @Override
-    public Document getNextPage(Document page) throws IOException {
-        if (isThisATest()) {
-            return null;
+    public JSONObject getNextPage(JSONObject page) throws IOException {
+        boolean hasMore = page.getJSONObject("content").getBoolean("has_more");
+        if (hasMore) {
+            return requestPage(page.getJSONObject("content").getInt("next_offset"), galleryID, username, requestID, csrf, pageCookies);
         }
-        String baseURL = "https://www.deviantart.com/dapi/v1/gallery/";
-        String id = page.select("div[gmi-name=gallery]").first().attr("gmi-itemid");
-        baseURL = baseURL + id;
-        String requestID = getRequestID(page);
-        Document d = Http.url(baseURL).data("idd", requestID).post();
-        LOGGER.info(d.html());
-        return d;
-    }
 
-    private String getRequestID(Document doc) {
-        Pattern p = Pattern.compile("requestid\":\"([a-zA-Z0-9]+)\"");
-        Matcher m = p.matcher(doc.html());
-        return "590m257da2ea3eea661e272dde2948081c4d";
+        throw new IOException("No more pages");
     }
 
     @Override
@@ -299,53 +286,53 @@ public class DeviantartRipper extends AbstractHTMLRipper {
      * @param page The gallery page the URL was found on
      * @return A String[] with first object being the description, and the second object being image file name if found.
      */
-    @Override
-    public String[] getDescription(String url,Document page) {
-        if (isThisATest()) {
-            return null;
-        }
-        try {
-            // Fetch the image page
-            Response resp = Http.url(url)
-                                .referrer(this.url)
-                                .cookies(cookies)
-                                .response();
-            cookies.putAll(resp.cookies());
-
-            // Try to find the description
-            Document documentz = resp.parse();
-            Element ele = documentz.select("div.dev-description").first();
-            if (ele == null) {
-                throw new IOException("No description found");
-            }
-            documentz.outputSettings(new Document.OutputSettings().prettyPrint(false));
-            ele.select("br").append("\\n");
-            ele.select("p").prepend("\\n\\n");
-            String fullSize = null;
-            Element thumb = page.select("div.zones-container span.thumb[href=\"" + url + "\"]").get(0);
-            if (!thumb.attr("data-super-full-img").isEmpty()) {
-                fullSize = thumb.attr("data-super-full-img");
-                String[] split = fullSize.split("/");
-                fullSize = split[split.length - 1];
-            } else {
-                String spanUrl = thumb.attr("href");
-                fullSize = jsonToImage(page,spanUrl.substring(spanUrl.lastIndexOf('-') + 1));
-                if (fullSize != null) {
-                    String[] split = fullSize.split("/");
-                    fullSize = split[split.length - 1];
-                }
-            }
-            if (fullSize == null) {
-                return new String[] {Jsoup.clean(ele.html().replaceAll("\\\\n", System.getProperty("line.separator")), "", Whitelist.none(), new Document.OutputSettings().prettyPrint(false))};
-            }
-            fullSize = fullSize.substring(0, fullSize.lastIndexOf("."));
-            return new String[] {Jsoup.clean(ele.html().replaceAll("\\\\n", System.getProperty("line.separator")), "", Whitelist.none(), new Document.OutputSettings().prettyPrint(false)),fullSize};
-            // TODO Make this not make a newline if someone just types \n into the description.
-        } catch (IOException ioe) {
-                LOGGER.info("Failed to get description at " + url + ": '" + ioe.getMessage() + "'");
-                return null;
-        }
-    }
+//    @Override
+//    public String[] getDescription(String url,Document page) {
+//        if (isThisATest()) {
+//            return null;
+//        }
+//        try {
+//            // Fetch the image page
+//            Response resp = Http.url(url)
+//                                .referrer(this.url)
+//                                .cookies(cookies)
+//                                .response();
+//            cookies.putAll(resp.cookies());
+//
+//            // Try to find the description
+//            Document documentz = resp.parse();
+//            Element ele = documentz.select("div.dev-description").first();
+//            if (ele == null) {
+//                throw new IOException("No description found");
+//            }
+//            documentz.outputSettings(new Document.OutputSettings().prettyPrint(false));
+//            ele.select("br").append("\\n");
+//            ele.select("p").prepend("\\n\\n");
+//            String fullSize = null;
+//            Element thumb = page.select("div.zones-container span.thumb[href=\"" + url + "\"]").get(0);
+//            if (!thumb.attr("data-super-full-img").isEmpty()) {
+//                fullSize = thumb.attr("data-super-full-img");
+//                String[] split = fullSize.split("/");
+//                fullSize = split[split.length - 1];
+//            } else {
+//                String spanUrl = thumb.attr("href");
+//                fullSize = jsonToImage(page,spanUrl.substring(spanUrl.lastIndexOf('-') + 1));
+//                if (fullSize != null) {
+//                    String[] split = fullSize.split("/");
+//                    fullSize = split[split.length - 1];
+//                }
+//            }
+//            if (fullSize == null) {
+//                return new String[] {Jsoup.clean(ele.html().replaceAll("\\\\n", System.getProperty("line.separator")), "", Whitelist.none(), new Document.OutputSettings().prettyPrint(false))};
+//            }
+//            fullSize = fullSize.substring(0, fullSize.lastIndexOf("."));
+//            return new String[] {Jsoup.clean(ele.html().replaceAll("\\\\n", System.getProperty("line.separator")), "", Whitelist.none(), new Document.OutputSettings().prettyPrint(false)),fullSize};
+//            // TODO Make this not make a newline if someone just types \n into the description.
+//        } catch (IOException ioe) {
+//                LOGGER.info("Failed to get description at " + url + ": '" + ioe.getMessage() + "'");
+//                return null;
+//        }
+//    }
 
     /**
      * If largest resolution for image at 'thumb' is found, starts downloading
