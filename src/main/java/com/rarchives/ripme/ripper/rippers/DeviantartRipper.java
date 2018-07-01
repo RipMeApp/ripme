@@ -54,25 +54,22 @@ public class DeviantartRipper extends AbstractJSONRipper {
     public String getHost() {
         return "deviantart";
     }
+
     @Override
     public String getDomain() {
         return "deviantart.com";
     }
-//    @Override
-//    public boolean hasDescriptionSupport() {
-//        return true;
-//    }
+
     @Override
     public URL sanitizeURL(URL url) throws MalformedURLException {
         String u = url.toExternalForm();
 
-        if (u.replace("/", "").endsWith(".deviantart.com")) {
-            // Root user page, get all albums
-            if (!u.endsWith("/")) {
-                u += "/";
+        if (!u.endsWith("/gallery/")) {
+            if (!u.endsWith("/gallery")) {
+                u += "gallery/";
             }
-            u += "gallery/?";
         }
+
 
         Pattern p = Pattern.compile("^https?://www\\.deviantart\\.com/([a-zA-Z0-9\\-]+)/favou?rites/([0-9]+)/*?$");
         Matcher m = p.matcher(url.toExternalForm());
@@ -117,6 +114,25 @@ public class DeviantartRipper extends AbstractJSONRipper {
             return m.group(1) + "_faves";
         }
         throw new MalformedURLException("Expected URL format: http://www.deviantart.com/username[/gallery/#####], got: " + url);
+    }
+
+    private String getFullsizedNSFWImage(String pageURL) {
+        try {
+            Document doc = Http.url(pageURL).cookies(cookies).get();
+            String imageToReturn = "";
+            String[] d = doc.select("img").attr("srcset").split(",");
+
+            String s = d[d.length -1].split(" ")[0];
+            LOGGER.info("2:" + s);
+
+            if (s == null || s.equals("")) {
+                LOGGER.error("Could not find full sized image at " + pageURL);
+            }
+            return s;
+        } catch (IOException e) {
+            LOGGER.error("Could not find full sized image at " + pageURL);
+            return null;
+        }
     }
 
     /**
@@ -178,7 +194,6 @@ public class DeviantartRipper extends AbstractJSONRipper {
 
     private JSONObject getFirstPageJSON(Document doc) {
         for (Element js : doc.select("script")) {
-            LOGGER.info(js.html());
             if (js.html().contains("requestid")) {
                 String json = js.html().replaceAll("window.__initial_body_data=", "").replaceAll("\\);", "")
                         .replaceAll(";__wake\\(.+", "");
@@ -204,7 +219,8 @@ public class DeviantartRipper extends AbstractJSONRipper {
     }
 
     public String getUsername(Document doc) {
-        return doc.select("meta[property=og:title]").attr("content").replaceAll("'s DeviantArt gallery", "");
+        return doc.select("meta[property=og:title]").attr("content")
+                .replaceAll("'s DeviantArt gallery", "").replaceAll("'s DeviantArt Gallery", "");
     }
     
 
@@ -215,6 +231,13 @@ public class DeviantartRipper extends AbstractJSONRipper {
         JSONArray results = json.getJSONObject("content").getJSONArray("results");
         for (int i = 0; i < results.length(); i++) {
             Document doc = Jsoup.parseBodyFragment(results.getJSONObject(i).getString("html"));
+            if (doc.html().contains("ismature")) {
+                LOGGER.info("Downloading nsfw image");
+                String nsfwImage = getFullsizedNSFWImage(doc.select("span").attr("href"));
+                if (nsfwImage != null) {
+                    imageURLs.add(nsfwImage);
+                }
+            }
             try {
                 String imageURL = doc.select("span").first().attr("data-super-full-img");
                 if (!imageURL.isEmpty()) {
