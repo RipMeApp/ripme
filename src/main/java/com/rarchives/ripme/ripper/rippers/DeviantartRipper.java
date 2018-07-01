@@ -190,13 +190,11 @@ public class DeviantartRipper extends AbstractJSONRipper {
         return null;
     }
 
-    private String getGalleryID(Document doc) {
+    public String getGalleryID(Document doc) {
         for (Element el : doc.select("input[name=set]")) {
             try {
                 String galleryID = el.attr("value");
-                if (galleryID.length() == 8) {
-                    return galleryID;
-                }
+                return galleryID;
             } catch (NullPointerException e) {
                 continue;
             }
@@ -205,7 +203,7 @@ public class DeviantartRipper extends AbstractJSONRipper {
         return null;
     }
 
-    private String getUsername(Document doc) {
+    public String getUsername(Document doc) {
         return doc.select("meta[property=og:title]").attr("content").replaceAll("'s DeviantArt gallery", "");
     }
     
