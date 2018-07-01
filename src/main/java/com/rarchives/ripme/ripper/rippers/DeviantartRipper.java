@@ -148,8 +148,8 @@ public class DeviantartRipper extends AbstractJSONRipper {
 
         JSONObject firstPageJSON = getFirstPageJSON(page);
         requestID = firstPageJSON.getJSONObject("dapx").getString("requestid");
-        galleryID = page.select("input[name=set]").attr("value");
-        username = page.select("div.tt-tv150").attr("username");
+        galleryID = getGalleryID(page);
+        username = getUsername(page);
         csrf = firstPageJSON.getString("csrf");
         pageCookies = res.cookies();
 
@@ -189,6 +189,25 @@ public class DeviantartRipper extends AbstractJSONRipper {
         }
         return null;
     }
+
+    private String getGalleryID(Document doc) {
+        for (Element el : doc.select("input[name=set]")) {
+            try {
+                String galleryID = el.attr("value");
+                if (galleryID.length() == 8) {
+                    return galleryID;
+                }
+            } catch (NullPointerException e) {
+                continue;
+            }
+        }
+        LOGGER.error("Could not find gallery ID");
+        return null;
+    }
+
+    private String getUsername(Document doc) {
+        return doc.select("meta[property=og:title]").attr("content").replaceAll("'s DeviantArt gallery", "");
+    }
     
 
     @Override
@@ -197,7 +216,6 @@ public class DeviantartRipper extends AbstractJSONRipper {
         LOGGER.info(json);
         JSONArray results = json.getJSONObject("content").getJSONArray("results");
         for (int i = 0; i < results.length(); i++) {
-            LOGGER.info(results.getJSONObject(i).toString());
             Document doc = Jsoup.parseBodyFragment(results.getJSONObject(i).getString("html"));
             try {
                 String imageURL = doc.select("span").first().attr("data-super-full-img");
@@ -240,12 +258,12 @@ public class DeviantartRipper extends AbstractJSONRipper {
         throw new IOException("No more pages");
     }
 
-    @Override
-    public boolean keepSortOrder() {
-         // Don't keep sort order (do not add prefixes).
-         // Causes file duplication, as outlined in https://github.com/4pr0n/ripme/issues/113
-        return false;
-    }
+//    @Override
+//    public boolean keepSortOrder() {
+//         // Don't keep sort order (do not add prefixes).
+//         // Causes file duplication, as outlined in https://github.com/4pr0n/ripme/issues/113
+//        return false;
+//    }
 
     @Override
     public void downloadURL(URL url, int index) {
