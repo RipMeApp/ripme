@@ -64,8 +64,10 @@ public class DeviantartRipper extends AbstractJSONRipper {
     public URL sanitizeURL(URL url) throws MalformedURLException {
         String u = url.toExternalForm();
 
-        if (!u.endsWith("/gallery/")) {
-            if (!u.endsWith("/gallery")) {
+        if (!u.endsWith("/gallery/") && !u.endsWith("/gallery")) {
+            if (!u.endsWith("/")) {
+                u += "/gallery/";
+            } else {
                 u += "gallery/";
             }
         }
