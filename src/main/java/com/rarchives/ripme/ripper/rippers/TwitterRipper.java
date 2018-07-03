@@ -126,14 +126,16 @@ public class TwitterRipper extends AlbumRipper {
                         .append("&exclude_replies=true")
                         .append("&trim_user=true")
                         .append("&include_rts=true")
-                        .append("&count=" + 200);
+                        .append("&count=" + 200)
+                        .append("&tweet_mode=extended");
                 break;
             case SEARCH:
                 req.append("https://api.twitter.com/1.1/search/tweets.json")
                         .append("?q=" + this.searchText)
                         .append("&include_entities=true")
                         .append("&result_type=recent")
-                        .append("&count=100");
+                        .append("&count=100")
+                        .append("&tweet_mode=extended");
                 break;
         }
         if (maxID > 0) {
