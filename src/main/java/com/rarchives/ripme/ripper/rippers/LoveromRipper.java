@@ -79,26 +79,26 @@ public class LoveromRipper extends AbstractHTMLRipper {
                 Utils.bytesToHumanReadable(bytesTotal);
     }
 
-//    @Override
-//    public int getCompletionPercentage() {
-//        return (int) (100 * (bytesCompleted / (float) bytesTotal));
-//    }
-//
-//    @Override
-//    public void setBytesTotal(int bytes) {
-//        this.bytesTotal = bytes;
-//    }
-//
-//    @Override
-//    public void setBytesCompleted(int bytes) {
-//        this.bytesCompleted = bytes;
-//    }
+    @Override
+    public int getCompletionPercentage() {
+        return (int) (100 * (bytesCompleted / (float) bytesTotal));
+    }
 
-//    @Override
-//    public boolean useByteProgessBar() {return true;}
-//
-//    @Override
-//    public boolean tryResumeDownload() {return true;}
+    @Override
+    public void setBytesTotal(int bytes) {
+        this.bytesTotal = bytes;
+    }
+
+    @Override
+    public void setBytesCompleted(int bytes) {
+        this.bytesCompleted = bytes;
+    }
+
+    @Override
+    public boolean useByteProgessBar() {return true;}
+
+    @Override
+    public boolean tryResumeDownload() {return true;}
 
     @Override
     public String getPrefix(int index) {
