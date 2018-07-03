@@ -1,24 +1,35 @@
-package com.rarchives.ripme.ripper.rippers.video;
+package com.rarchives.ripme.ripper.rippers;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.rarchives.ripme.ripper.AbstractHTMLRipper;
+import com.rarchives.ripme.utils.Utils;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import com.rarchives.ripme.ripper.VideoRipper;
 import com.rarchives.ripme.utils.Http;
 
-public class XvideosRipper extends VideoRipper {
+public class XvideosRipper extends AbstractHTMLRipper {
 
     private static final String HOST = "xvideos";
 
+    private int bytesTotal = 1;
+    private int bytesCompleted = 1;
+
     public XvideosRipper(URL url) throws IOException {
         super(url);
+    }
+
+    @Override
+    public Document getFirstPage() throws IOException {
+        return Http.url(this.url).get();
     }
 
     @Override
@@ -27,15 +38,15 @@ public class XvideosRipper extends VideoRipper {
     }
 
     @Override
+    public String getDomain() {
+        return HOST + ".com";
+    }
+
+    @Override
     public boolean canRip(URL url) {
         Pattern p = Pattern.compile("^https?://[wm.]*xvideos\\.com/video[0-9]+.*$");
         Matcher m = p.matcher(url.toExternalForm());
         return m.matches();
-    }
-
-    @Override
-    public URL sanitizeURL(URL url) throws MalformedURLException {
-        return url;
     }
 
     @Override
@@ -53,9 +64,8 @@ public class XvideosRipper extends VideoRipper {
     }
 
     @Override
-    public void rip() throws IOException {
-        LOGGER.info("    Retrieving " + this.url);
-        Document doc = Http.url(this.url).get();
+    public List<String> getURLsFromPage(Document doc) {
+        List<String> results = new ArrayList<>();
         Elements scripts = doc.select("script");
         for (Element e : scripts) {
             if (e.html().contains("html5player.setVideoUrlHigh")) {
@@ -64,13 +74,39 @@ public class XvideosRipper extends VideoRipper {
                 for (String line: lines) {
                     if (line.contains("html5player.setVideoUrlHigh")) {
                         String videoURL = line.replaceAll("\t", "").replaceAll("html5player.setVideoUrlHigh\\(", "").replaceAll("\'", "").replaceAll("\\);", "");
-                        addURLToDownload(new URL(videoURL), HOST + "_" + getGID(this.url));
-                        waitForThreads();
-                        return;
+                        results.add(videoURL);
                     }
                 }
             }
         }
-        throw new IOException("Unable to find video url at " + this.url.toExternalForm());
+        return results;
     }
+
+    @Override
+    public void downloadURL(URL url, int index) {
+        addURLToDownload(url, getPrefix(index));
+    }
+
+    @Override
+    public String getStatusText() {
+        return Utils.getByteStatusText(getCompletionPercentage(), bytesCompleted, bytesTotal);
+    }
+
+    @Override
+    public int getCompletionPercentage() {
+        return (int) (100 * (bytesCompleted / (float) bytesTotal));
+    }
+
+    @Override
+    public void setBytesTotal(int bytes) {
+        this.bytesTotal = bytes;
+    }
+
+    @Override
+    public void setBytesCompleted(int bytes) {
+        this.bytesCompleted = bytes;
+    }
+
+    @Override
+    public boolean useByteProgessBar() {return true;}
 }
