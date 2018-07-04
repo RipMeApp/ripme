@@ -125,7 +125,6 @@ public class TwitterRipper extends AlbumRipper {
                         .append("&include_entities=true")
                         .append("&exclude_replies=true")
                         .append("&trim_user=true")
-                        .append("&include_rts=true")
                         .append("&count=" + 200)
                         .append("&tweet_mode=extended");
                 break;
