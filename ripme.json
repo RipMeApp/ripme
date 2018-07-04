@@ -1,5 +1,6 @@
 {
     "changeList": [
+        "1.7.57: Got DeviantartRipper working again; Imagefap ripper now downloads full sized images; Twitter ripper can now rip extended tweets; Added nl_NL translation",
         "1.7.56: Fixed DeviantartRipper ripper; Added support for resuming file downloads; Fixed erome ripper; Fixed ModelmayhemRipper NSFW image downloading",
         "1.7.55: Fixed instagram ripper; Reddit ripper now respects history.end_rip_after_already_seen; Improvements to patch.py and release.py",
         "1.7.54: Fixed twitter ripper video downloading; fixed instagram ripper",
@@ -227,6 +228,6 @@
         "1.0.3: Added VK.com ripper",
         "1.0.1: Added auto-update functionality"
     ],
-    "currentHash": "9898b7882749cd4ee6616f3be0215247a2933db9e76257b6ad506a01253e42c0",
-    "latestVersion": "1.7.56"
+    "latestVersion": "1.7.57",
+    "currentHash": "cd84b64c5d85c2d14b79b6d18b25cee6e843ba3ba0771a5b43c5b3db15229218"
 }
