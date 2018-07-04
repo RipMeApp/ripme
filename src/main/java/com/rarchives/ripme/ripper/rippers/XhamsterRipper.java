@@ -100,4 +100,23 @@ public class XhamsterRipper extends AbstractHTMLRipper {
     public void downloadURL(URL url, int index) {
         addURLToDownload(url, getPrefix(index));
     }
+    
+    @Override
+    public String getAlbumTitle(URL url) throws MalformedURLException {
+        try {
+            // Attempt to use album title and username as GID
+            Document doc = getFirstPage();
+            Element user = doc.select("a.author").first();
+            String username = user.text();
+            String path = url.getPath();
+            Pattern p = Pattern.compile("^/photos/gallery/(.*)$");
+            Matcher m = p.matcher(path);
+            if (m.matches() && !username.isEmpty()) {
+                return getHost() + "_" + username + "_" + m.group(1);
+            }
+        } catch (IOException e) {
+            // Fall back to default album naming convention
+        }
+        return super.getAlbumTitle(url);
+    }
 }
