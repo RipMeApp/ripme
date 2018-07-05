@@ -63,6 +63,9 @@ public class DeviantartRipper extends AbstractJSONRipper {
     @Override
     public URL sanitizeURL(URL url) throws MalformedURLException {
         String u = url.toExternalForm();
+        if (u.contains("/gallery/")) {
+            return url;
+        }
 
         if (!u.endsWith("/gallery/") && !u.endsWith("/gallery")) {
             if (!u.endsWith("/")) {
@@ -118,6 +121,16 @@ public class DeviantartRipper extends AbstractJSONRipper {
         throw new MalformedURLException("Expected URL format: http://www.deviantart.com/username[/gallery/#####], got: " + url);
     }
 
+    private String getUsernameFromURL(String u) {
+        Pattern p = Pattern.compile("^https?://www\\.deviantart\\.com/([a-zA-Z0-9\\-]+)/gallery/\\S+");
+        Matcher m = p.matcher(url.toExternalForm());
+        if (m.matches()) {
+            return m.group(1);
+        }
+        return null;
+
+    }
+
     private String getFullsizedNSFWImage(String pageURL) {
         try {
             Document doc = Http.url(pageURL).cookies(cookies).get();
@@ -158,6 +171,7 @@ public class DeviantartRipper extends AbstractJSONRipper {
                 LOGGER.warn("Failed to get login cookies");
                 cookies.put("agegate_state","1"); // Bypasses the age gate
             }
+        cookies.put("agegate_state", "1");
             
         Response res = Http.url(this.url)
                    .cookies(cookies)
@@ -167,7 +181,7 @@ public class DeviantartRipper extends AbstractJSONRipper {
         JSONObject firstPageJSON = getFirstPageJSON(page);
         requestID = firstPageJSON.getJSONObject("dapx").getString("requestid");
         galleryID = getGalleryID(page);
-        username = getUsername(page);
+        username = getUsernameFromURL(url.toExternalForm());
         csrf = firstPageJSON.getString("csrf");
         pageCookies = res.cookies();
 
@@ -208,6 +222,16 @@ public class DeviantartRipper extends AbstractJSONRipper {
     }
 
     public String getGalleryID(Document doc) {
+        // If the url contains catpath we return 0 as the DA api will provide all galery images if you sent the
+        // gallery id to 0
+        if (url.toExternalForm().contains("catpath=")) {
+            return "0";
+        }
+        Pattern p = Pattern.compile("^https?://www\\.deviantart\\.com/[a-zA-Z0-9\\-]+/gallery/([0-9]+)/?\\S+");
+        Matcher m = p.matcher(url.toExternalForm());
+        if (m.matches()) {
+            return m.group(1);
+        }
         for (Element el : doc.select("input[name=set]")) {
             try {
                 String galleryID = el.attr("value");
@@ -252,24 +276,7 @@ public class DeviantartRipper extends AbstractJSONRipper {
         }
         return imageURLs;
     }
-//    @Override
-//    public List<String> getDescriptionsFromPage(Document page) {
-//        List<String> textURLs = new ArrayList<>();
-//        // Iterate over all thumbnails
-//        for (Element thumb : page.select("div.zones-container span.thumb")) {
-//            LOGGER.info(thumb.attr("href"));
-//            if (isStopped()) {
-//                break;
-//            }
-//            Element img = thumb.select("img").get(0);
-//            if (img.attr("transparent").equals("false")) {
-//                continue; // a.thumbs to other albums are invisible
-//            }
-//            textURLs.add(thumb.attr("href"));
-//
-//        }
-//        return textURLs;
-//    }
+
 
     @Override
     public JSONObject getNextPage(JSONObject page) throws IOException {
@@ -281,12 +288,12 @@ public class DeviantartRipper extends AbstractJSONRipper {
         throw new IOException("No more pages");
     }
 
-//    @Override
-//    public boolean keepSortOrder() {
-//         // Don't keep sort order (do not add prefixes).
-//         // Causes file duplication, as outlined in https://github.com/4pr0n/ripme/issues/113
-//        return false;
-//    }
+    @Override
+    public boolean keepSortOrder() {
+         // Don't keep sort order (do not add prefixes).
+         // Causes file duplication, as outlined in https://github.com/4pr0n/ripme/issues/113
+        return false;
+    }
 
     @Override
     public void downloadURL(URL url, int index) {
@@ -319,61 +326,7 @@ public class DeviantartRipper extends AbstractJSONRipper {
         return result.toString();
     }
 
-    /**
-     * Attempts to download description for image.
-     * Comes in handy when people put entire stories in their description.
-     * If no description was found, returns null.
-     * @param url The URL the description will be retrieved from
-     * @param page The gallery page the URL was found on
-     * @return A String[] with first object being the description, and the second object being image file name if found.
-     */
-//    @Override
-//    public String[] getDescription(String url,Document page) {
-//        if (isThisATest()) {
-//            return null;
-//        }
-//        try {
-//            // Fetch the image page
-//            Response resp = Http.url(url)
-//                                .referrer(this.url)
-//                                .cookies(cookies)
-//                                .response();
-//            cookies.putAll(resp.cookies());
-//
-//            // Try to find the description
-//            Document documentz = resp.parse();
-//            Element ele = documentz.select("div.dev-description").first();
-//            if (ele == null) {
-//                throw new IOException("No description found");
-//            }
-//            documentz.outputSettings(new Document.OutputSettings().prettyPrint(false));
-//            ele.select("br").append("\\n");
-//            ele.select("p").prepend("\\n\\n");
-//            String fullSize = null;
-//            Element thumb = page.select("div.zones-container span.thumb[href=\"" + url + "\"]").get(0);
-//            if (!thumb.attr("data-super-full-img").isEmpty()) {
-//                fullSize = thumb.attr("data-super-full-img");
-//                String[] split = fullSize.split("/");
-//                fullSize = split[split.length - 1];
-//            } else {
-//                String spanUrl = thumb.attr("href");
-//                fullSize = jsonToImage(page,spanUrl.substring(spanUrl.lastIndexOf('-') + 1));
-//                if (fullSize != null) {
-//                    String[] split = fullSize.split("/");
-//                    fullSize = split[split.length - 1];
-//                }
-//            }
-//            if (fullSize == null) {
-//                return new String[] {Jsoup.clean(ele.html().replaceAll("\\\\n", System.getProperty("line.separator")), "", Whitelist.none(), new Document.OutputSettings().prettyPrint(false))};
-//            }
-//            fullSize = fullSize.substring(0, fullSize.lastIndexOf("."));
-//            return new String[] {Jsoup.clean(ele.html().replaceAll("\\\\n", System.getProperty("line.separator")), "", Whitelist.none(), new Document.OutputSettings().prettyPrint(false)),fullSize};
-//            // TODO Make this not make a newline if someone just types \n into the description.
-//        } catch (IOException ioe) {
-//                LOGGER.info("Failed to get description at " + url + ": '" + ioe.getMessage() + "'");
-//                return null;
-//        }
-//    }
+
 
     /**
      * If largest resolution for image at 'thumb' is found, starts downloading
