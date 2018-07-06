@@ -122,7 +122,7 @@ public class DeviantartRipper extends AbstractJSONRipper {
     }
 
     private String getUsernameFromURL(String u) {
-        Pattern p = Pattern.compile("^https?://www\\.deviantart\\.com/([a-zA-Z0-9\\-]+)/gallery/\\S+");
+        Pattern p = Pattern.compile("^https?://www\\.deviantart\\.com/([a-zA-Z0-9\\-]+)/gallery/?(\\S+)?");
         Matcher m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             return m.group(1);
