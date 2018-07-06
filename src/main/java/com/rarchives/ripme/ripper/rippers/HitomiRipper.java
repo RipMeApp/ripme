@@ -47,7 +47,7 @@ public class HitomiRipper extends AbstractHTMLRipper {
     @Override
     public Document getFirstPage() throws IOException {
         // if we go to /GALLERYID.js we get a nice json array of all images in the gallery
-        return Http.url(new URL(url.toExternalForm().replaceAll(".html", ".js"))).ignoreContentType().get();
+        return Http.url(new URL(url.toExternalForm().replaceAll("hitomi", "ltn.hitomi").replaceAll(".html", ".js"))).ignoreContentType().get();
     }
 
 
