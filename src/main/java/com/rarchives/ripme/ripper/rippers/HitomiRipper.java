@@ -13,10 +13,11 @@ import org.jsoup.nodes.Document;
 
 import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 import com.rarchives.ripme.utils.Http;
+import org.jsoup.nodes.Element;
 
 public class HitomiRipper extends AbstractHTMLRipper {
 
-    String galleryId = "";
+    private String galleryId = "";
 
     public HitomiRipper(URL url) throws IOException {
         super(url);
@@ -62,6 +63,19 @@ public class HitomiRipper extends AbstractHTMLRipper {
         }
 
         return result;
+    }
+
+    @Override
+    public String getAlbumTitle(URL url) throws MalformedURLException {
+        try {
+            // Attempt to use album title and username as GID
+            Document doc = Http.url(url).get();
+            return getHost() + "_" + getGID(url) + "_" +
+                    doc.select("title").text().replaceAll(" - Read Online - hentai artistcg \\| Hitomi.la", "");
+        } catch (IOException e) {
+            LOGGER.info("Falling back");
+        }
+        return super.getAlbumTitle(url);
     }
 
     @Override
