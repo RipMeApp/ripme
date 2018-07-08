@@ -99,7 +99,7 @@ public class ManganeloRipper extends AbstractHTMLRipper {
             Collections.reverse(urlsToGrab);
 
             for (String url : urlsToGrab) {
-                result.addAll(getURLsFromChap(url));
+                result.addAll(getURLsFromChap("https:" + url));
             }
         } else if (url.toExternalForm().contains("/chapter/")) {
             result.addAll(getURLsFromChap(doc));
