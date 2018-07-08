@@ -128,9 +128,9 @@ public class UpdateUtils {
             logger.info("Found newer version: " + latestVersion);
             int result = JOptionPane.showConfirmDialog(
                     null,
-                    "<html><font color=\"green\">New version (" + latestVersion + ") is available!</font>"
-                    + "<br><br>Recent changes:" + changeList
-                    + "<br><br>Do you want to download and run the newest version?</html>",
+                    String.format("<html><font color=\"green\">New version (%s) is available!</font>"
+                            + "<br><br>Recent changes: %s"
+                            + "<br><br>Do you want to download and run the newest version?</html>", latestVersion, changeList.replaceAll("\n", "")),
                     "RipMe Updater",
                     JOptionPane.YES_NO_OPTION);
             if (result != JOptionPane.YES_OPTION) {
