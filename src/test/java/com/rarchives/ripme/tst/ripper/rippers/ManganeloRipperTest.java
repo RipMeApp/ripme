@@ -7,7 +7,13 @@ import com.rarchives.ripme.ripper.rippers.ManganeloRipper;
 
 public class ManganeloRipperTest extends RippersTest {
     public void testRip() throws IOException {
-        ManganeloRipper ripper = new ManganeloRipper(new URL("http://manganelo.com/manga/black_clover"));
+        ManganeloRipper ripper = new ManganeloRipper(new URL("https://manganelo.com/manga/demonic_housekeeper"));
         testRipper(ripper);
+    }
+
+    public void testGetGID() throws IOException {
+        URL url = new URL("https://manganelo.com/manga/demonic_housekeeper");
+        ManganeloRipper ripper = new ManganeloRipper(url);
+        assertEquals("demonic_housekeeper", ripper.getGID(url));
     }
 }
