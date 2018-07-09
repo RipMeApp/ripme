@@ -23,6 +23,7 @@ public class LoveromRipper extends AbstractHTMLRipper {
 
     private int bytesTotal = 1;
     private int bytesCompleted = 1;
+    boolean multipart = false;
 
     @Override
     public String getHost() {
@@ -58,6 +59,7 @@ public class LoveromRipper extends AbstractHTMLRipper {
         if (downloadLink != null && !downloadLink.isEmpty()) {
             result.add(downloadLink);
         } else {
+            multipart = true;
             for (Element el : doc.select("a.multi-file-btn")) {
                 result.add(el.attr("href"));
             }
@@ -72,6 +74,9 @@ public class LoveromRipper extends AbstractHTMLRipper {
 
     @Override
     public String getStatusText() {
+        if (multipart) {
+            return super.getStatusText();
+        }
         return String.valueOf(getCompletionPercentage()) +
                 "%  - " +
                 Utils.bytesToHumanReadable(bytesCompleted) +
@@ -81,6 +86,9 @@ public class LoveromRipper extends AbstractHTMLRipper {
 
     @Override
     public int getCompletionPercentage() {
+        if (multipart) {
+            return super.getCompletionPercentage();
+        }
         return (int) (100 * (bytesCompleted / (float) bytesTotal));
     }
 
