@@ -260,13 +260,13 @@ public class DeviantartRipper extends AbstractJSONRipper {
             if (doc.html().contains("ismature")) {
                 LOGGER.info("Downloading nsfw image");
                 String nsfwImage = getFullsizedNSFWImage(doc.select("span").attr("href"));
-                if (nsfwImage != null) {
+                if (nsfwImage != null && nsfwImage.startsWith("http")) {
                     imageURLs.add(nsfwImage);
                 }
             }
             try {
                 String imageURL = doc.select("span").first().attr("data-super-full-img");
-                if (!imageURL.isEmpty()) {
+                if (!imageURL.isEmpty() && imageURL.startsWith("http")) {
                     imageURLs.add(imageURL);
                 }
             } catch (NullPointerException e) {
