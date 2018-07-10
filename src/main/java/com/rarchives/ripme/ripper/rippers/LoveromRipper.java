@@ -55,7 +55,7 @@ public class LoveromRipper extends AbstractHTMLRipper {
     @Override
     public List<String> getURLsFromPage(Document doc) {
         List<String> result = new ArrayList<>();
-        String downloadLink = doc.select("a#download_link").attr("href");
+        String downloadLink = doc.select("a#start_download_link").attr("href");
         if (downloadLink != null && !downloadLink.isEmpty()) {
             result.add(downloadLink);
         } else {
@@ -69,7 +69,11 @@ public class LoveromRipper extends AbstractHTMLRipper {
 
     @Override
     public void downloadURL(URL url, int index) {
-        addURLToDownload(url, getPrefix(index));
+        if (multipart) {
+            addURLToDownload(url, "", "", "", null, null, getPrefix(index));
+        } else {
+            addURLToDownload(url);
+        }
     }
 
     @Override
@@ -112,7 +116,7 @@ public class LoveromRipper extends AbstractHTMLRipper {
     public String getPrefix(int index) {
         String prefix = "";
         if (keepSortOrder() && Utils.getConfigBoolean("download.save_order", true)) {
-            prefix = String.format("%03d_", index);
+            prefix = String.format("7z.%03d", index);
         }
         return prefix;
     }
