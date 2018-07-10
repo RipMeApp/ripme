@@ -175,8 +175,13 @@ class DownloadFileThread extends Thread {
 
                 // Check if we should get the file ext from the MIME type
                 if (getFileExtFromMIME) {
-                    String fileExt = URLConnection.guessContentTypeFromStream(bis).replaceAll("image/", "");
-                    saveAs = new File(saveAs.toString() + "." + fileExt);
+                    String fileExt = URLConnection.guessContentTypeFromStream(bis);
+                    if (fileExt != null) {
+                        fileExt = fileExt.replaceAll("image/", "");
+                        saveAs = new File(saveAs.toString() + "." + fileExt);
+                    } else {
+                        logger.error("Was unable to get content type from stream");
+                    }
                 }
                 // If we're resuming a download we append data to the existing file
                 if (statusCode == 206) {
