@@ -299,7 +299,7 @@ public abstract class AbstractRipper
      *      Prefix to prepend to the saved filename.
      * @param subdirectory
      *      Sub-directory of the working directory to save the images to.
-     * @return True on success, flase on failure.
+     * @return True on success, false on failure.
      */
     protected boolean addURLToDownload(URL url, String prefix, String subdirectory) {
         return addURLToDownload(url, prefix, subdirectory, null, null, null);
@@ -316,7 +316,7 @@ public abstract class AbstractRipper
      *      URL to download
      * @param prefix
      *      Text to append to saved filename.
-     * @return True on success, flase on failure.
+     * @return True on success, false on failure.
      */
     protected boolean addURLToDownload(URL url, String prefix) {
         // Use empty subdirectory
