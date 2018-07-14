@@ -1,6 +1,7 @@
 package com.rarchives.ripme.ripper.rippers;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
@@ -94,7 +95,13 @@ public class TsuminoRipper extends AbstractHTMLRipper {
         JSONArray imageIds = getPageUrls();
         List<String> result = new ArrayList<>();
         for (int i = 0; i < imageIds.length(); i++) {
-            result.add("http://www.tsumino.com/Image/Object?name=" + URLEncoder.encode(imageIds.getString(i)));
+            try {
+                result.add("http://www.tsumino.com/Image/Object?name=" + URLEncoder.encode(imageIds.getString(i), "UTF-8"));
+            } catch (UnsupportedEncodingException e) {
+                LOGGER.info(e);
+                sendUpdate(RipStatusMessage.STATUS.DOWNLOAD_ERRORED, String.format("Encoding is not supported for %s", imageIds.getString(i)));
+                return null;
+            }
         }
 
         return result;
