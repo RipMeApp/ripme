@@ -105,7 +105,7 @@ public class EromeRipper extends AbstractHTMLRipper {
 
     @Override
     public String getGID(URL url) throws MalformedURLException {
-        Pattern p = Pattern.compile("^https?://www.erome.com/a/([a-zA-Z0-9]*)/?$");
+        Pattern p = Pattern.compile("^https?://www.erome.com/[ai]/([a-zA-Z0-9]*)/?$");
         Matcher m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             return m.group(1);
