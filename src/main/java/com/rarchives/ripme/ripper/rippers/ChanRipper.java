@@ -97,6 +97,9 @@ public class ChanRipper extends AbstractHTMLRipper {
         if (url.toExternalForm().contains("xchan.pw") && url.toExternalForm().contains("/board/")) {
             return true;
         }
+        if (url.toExternalForm().contains("desuarchive.org")) {
+            return true;
+        }
         return false;
     }
 
