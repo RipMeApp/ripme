@@ -57,7 +57,7 @@ public class JabArchivesRipper extends AbstractHTMLRipper {
         if (hrefs.isEmpty()) {
             throw new IOException("No more pages");
         }
-        String nextUrl = "http://jabarchives.com" + hrefs.first().attr("href");
+        String nextUrl = "https://jabarchives.com" + hrefs.first().attr("href");
         sleep(500);
         return Http.url(nextUrl).get();
     }
@@ -66,7 +66,7 @@ public class JabArchivesRipper extends AbstractHTMLRipper {
     public List<String> getURLsFromPage(Document doc) {
         List<String> result = new ArrayList<String>();
         for (Element el : doc.select("#contentMain img")) {
-            result.add("http://jabarchives.com" + el.attr("src").replace("thumb", "large"));
+            result.add("https://jabarchives.com" + el.attr("src").replace("thumb", "large"));
         }
         return result;
     }
