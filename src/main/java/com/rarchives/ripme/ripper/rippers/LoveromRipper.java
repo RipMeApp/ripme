@@ -70,9 +70,9 @@ public class LoveromRipper extends AbstractHTMLRipper {
     @Override
     public void downloadURL(URL url, int index) {
         if (multipart) {
-            addURLToDownload(url, "", "", "", null, null, getPrefix(index));
+            addURLToDownload(url, "", "", "", null, null, "7z." + getPrefix(index));
         } else {
-            addURLToDownload(url);
+            addURLToDownload(url, "", "", "", null, null, "7z");
         }
     }
 
