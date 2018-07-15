@@ -57,7 +57,7 @@ public class RipUtils {
         }  else if (url.getHost().endsWith("i.imgur.com") && url.toExternalForm().contains("gifv")) {
             // links to imgur gifvs
             try {
-                result.add(new URL(Http.url(url).get().select("meta[itemprop=contentURL]").attr("content")));
+                result.add(new URL(url.toExternalForm().replaceAll(".gifv", ".mp4")));
             } catch (IOException e) {
                 logger.info("Couldn't get gifv from " + url);
             }
