@@ -21,6 +21,7 @@ public class ArtStationRipper extends AbstractJSONRipper {
     private ParsedURL albumURL;
     private String projectName;
     private Integer projectIndex;
+    private Integer projectPageNumber;
 
     public ArtStationRipper(URL url) throws IOException {
         super(url);
@@ -95,14 +96,25 @@ public class ArtStationRipper extends AbstractJSONRipper {
     @Override
     protected JSONObject getNextPage(JSONObject doc) throws IOException {
         if (albumURL.getType() == URL_TYPE.USER_PORTFOLIO) {
-            // Initialize the index if it hasn't been initialized already
-            if (projectIndex == null) {
-                projectIndex = 1;
+            // Initialize the page number if it hasn't been initialized already
+            if (projectPageNumber == null) {
+                projectPageNumber = 1;
             }
 
-            JSONObject albumContent = Http.url(albumURL.getLocation()).getJSON();
+            // Each page holds a maximum of 50 projects. Initialize the index if it hasn't
+            // been initialized already or increment page number and reset the index if all
+            // projects of the current page were already processed
+            if (projectIndex == null) {
+                projectIndex = 0;
+            } else if (projectIndex > 49) {
+                projectPageNumber++;
+                projectIndex = 0;
+            }
 
-            if (albumContent.getInt("total_count") > projectIndex) {
+            Integer currentProject = ((projectPageNumber - 1) * 50) + (projectIndex + 1);
+            JSONObject albumContent = Http.url(albumURL.getLocation() + "?page=" + projectPageNumber).getJSON();
+
+            if (albumContent.getInt("total_count") > currentProject) {
                 // Get JSON of the next project and return it
                 JSONObject projectInfo = albumContent.getJSONArray("data").getJSONObject(projectIndex);
                 ParsedURL projectURL = parseURL(new URL(projectInfo.getString("permalink")));
