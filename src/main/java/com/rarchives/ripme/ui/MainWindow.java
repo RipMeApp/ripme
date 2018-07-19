@@ -51,7 +51,6 @@ import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.FileAppender;
 import org.apache.log4j.Level;
@@ -153,8 +152,12 @@ public final class MainWindow implements Runnable, RipStatusHandler {
     }
 
     private static int getAverageFontWidth(JComponent component) {
+        int sum = 0;
         int[] widths = component.getFontMetrics(component.getFont()).getWidths();
-        return Collections.max(Arrays.asList(ArrayUtils.toObject(widths)));
+        for(int i : widths) {
+            sum += i;
+        }
+        return sum / widths.length;
     }
 
     private static void insertWrappedString(JComponent parent, StyledDocument document, String string, SimpleAttributeSet s) 
@@ -165,7 +168,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         while(i < string.length()/maxCharsToFit) {
             if(i > 0) resultString.append(string.substring(i*maxCharsToFit-2, i*maxCharsToFit));
             resultString.append(string.substring(i*maxCharsToFit, (i+1)*maxCharsToFit-2));
-            resultString.append("\\\n");
+            resultString.append("\n");
             i++;
         }
         resultString.append(string.substring(string.length()-(string.length()%maxCharsToFit)));
@@ -383,7 +386,6 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         logPanel.setBorder(emptyBorder);
         logText = new JTextPane();
         logText.setEditable(false);
-        logText.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
         JScrollPane logTextScroll = new JScrollPane(logText);
         logTextScroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
         logPanel.setVisible(false);
