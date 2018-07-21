@@ -54,6 +54,15 @@ public class RipUtils {
             } catch (IOException e) {
                 logger.error("[!] Exception while loading album " + url, e);
             }
+        }  else if (url.getHost().endsWith("i.imgur.com") && url.toExternalForm().contains("gifv")) {
+            // links to imgur gifvs
+            try {
+                result.add(new URL(url.toExternalForm().replaceAll(".gifv", ".mp4")));
+            } catch (IOException e) {
+                logger.info("Couldn't get gifv from " + url);
+            }
+            return result;
+
         }
         else if (url.getHost().endsWith("gfycat.com")) {
             try {
