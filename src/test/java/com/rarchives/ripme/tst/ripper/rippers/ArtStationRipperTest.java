@@ -23,6 +23,7 @@ public class ArtStationRipperTest extends RippersTest {
     public void testArtStationUserProfiles() throws IOException {
         List<URL> contentURLs = new ArrayList<>();
         contentURLs.add(new URL("https://www.artstation.com/heitoramatsu"));
+        contentURLs.add(new URL("https://artstation.com/kuvshinov_ilya"));
         contentURLs.add(new URL("http://artstation.com/givemeapiggy"));
         for (URL url : contentURLs) {
             ArtStationRipper ripper = new ArtStationRipper(url);
