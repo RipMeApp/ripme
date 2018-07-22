@@ -79,7 +79,7 @@ class DownloadFileThread extends Thread {
             observer.downloadErrored(url, "Download interrupted");
             return;
         }
-        if (saveAs.exists() && !observer.tryResumeDownload()) {
+        if (saveAs.exists() && !observer.tryResumeDownload() || Utils.fuzzyExists(new File(saveAs.getParent()), saveAs.getName())) {
             if (Utils.getConfigBoolean("file.overwrite", false)) {
                 logger.info("[!] Deleting existing file" + prettySaveAs);
                 saveAs.delete();

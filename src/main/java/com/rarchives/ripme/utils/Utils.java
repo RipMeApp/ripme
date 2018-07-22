@@ -741,4 +741,26 @@ public class Utils {
         return null;
     }
 
+    // Checks if a file exists ignoring it's extension.
+    // Code from: https://stackoverflow.com/a/17698068
+    public static boolean fuzzyExists(File folder, String fileName) {
+        if (!folder.exists()) {
+            return false;
+        }
+        File[] listOfFiles = folder.listFiles();
+        if (listOfFiles == null) {
+            return false;
+        }
+
+        for (File file : listOfFiles) {
+            if (file.isFile()) {
+                String[] filename = file.getName().split("\\.(?=[^\\.]+$)"); //split filename from it's extension
+                if(filename[0].equalsIgnoreCase(fileName)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
 }
