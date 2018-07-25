@@ -191,12 +191,9 @@ public class EightmusesRipper extends AbstractHTMLRipper {
     }
 
     private String deobfuscateJSON(String obfuscatedString) {
-        LOGGER.info("obfuscatedString: " + obfuscatedString);
         StringBuilder deobfuscatedString = new StringBuilder();
         // The first char in one of 8muses obfuscated strings is always ! so we replace it
         for (char ch : obfuscatedString.replaceFirst("!", "").toCharArray()){
-            LOGGER.info(ch + ":" + deobfuscateChar(ch));
-            LOGGER.info((int) ch + ":" + (int) deobfuscateChar(ch).charAt(0));
             deobfuscatedString.append(deobfuscateChar(ch));
         }
         return deobfuscatedString.toString();
