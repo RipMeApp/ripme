@@ -15,6 +15,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -729,6 +730,37 @@ public class Utils {
                 Utils.bytesToHumanReadable(bytesCompleted) +
                 " / " +
                 Utils.bytesToHumanReadable(bytesTotal);
+    }
+
+    public static String getEXTFromMagic(byte[] magic) {
+        if (Arrays.equals(magic, new byte[]{-1, -40, -1, -37, 0, 0, 0, 0})) {
+            return "jpeg";
+        } else {
+            LOGGER.info("Unknown magic number " + Arrays.toString(magic));
+        }
+        return null;
+    }
+
+    // Checks if a file exists ignoring it's extension.
+    // Code from: https://stackoverflow.com/a/17698068
+    public static boolean fuzzyExists(File folder, String fileName) {
+        if (!folder.exists()) {
+            return false;
+        }
+        File[] listOfFiles = folder.listFiles();
+        if (listOfFiles == null) {
+            return false;
+        }
+
+        for (File file : listOfFiles) {
+            if (file.isFile()) {
+                String[] filename = file.getName().split("\\.(?=[^\\.]+$)"); //split filename from it's extension
+                if(filename[0].equalsIgnoreCase(fileName)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
 }
