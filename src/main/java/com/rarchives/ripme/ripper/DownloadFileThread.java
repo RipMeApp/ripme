@@ -6,9 +6,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.reflect.Array;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -77,7 +79,8 @@ class DownloadFileThread extends Thread {
             observer.downloadErrored(url, "Download interrupted");
             return;
         }
-        if (saveAs.exists() && !observer.tryResumeDownload()) {
+        if (saveAs.exists() && !observer.tryResumeDownload() && !getFileExtFromMIME ||
+                Utils.fuzzyExists(new File(saveAs.getParent()), saveAs.getName()) && getFileExtFromMIME && !observer.tryResumeDownload()) {
             if (Utils.getConfigBoolean("file.overwrite", false)) {
                 logger.info("[!] Deleting existing file" + prettySaveAs);
                 saveAs.delete();
@@ -181,6 +184,17 @@ class DownloadFileThread extends Thread {
                         saveAs = new File(saveAs.toString() + "." + fileExt);
                     } else {
                         logger.error("Was unable to get content type from stream");
+                        // Try to get the file type from the magic number
+                        byte[] magicBytes = new byte[8];
+                        bis.read(magicBytes,0, 5);
+                        bis.reset();
+                        fileExt = Utils.getEXTFromMagic(magicBytes);
+                        if (fileExt != null) {
+                            saveAs = new File(saveAs.toString() + "." + fileExt);
+                        } else {
+                            logger.error("Was unable to get content type using magic number");
+                            logger.error("Magic number was: " + Arrays.toString(magicBytes));
+                        }
                     }
                 }
                 // If we're resuming a download we append data to the existing file
