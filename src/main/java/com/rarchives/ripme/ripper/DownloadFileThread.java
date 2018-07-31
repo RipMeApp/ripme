@@ -8,6 +8,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Array;
 import java.net.HttpURLConnection;
+import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.Arrays;
@@ -110,6 +111,7 @@ class DownloadFileThread extends Thread {
                 }
                 huc.setInstanceFollowRedirects(true);
                 huc.setConnectTimeout(TIMEOUT);
+                huc.setReadTimeout(TIMEOUT);
                 huc.setRequestProperty("accept",  "*/*");
                 if (!referrer.equals("")) {
                     huc.setRequestProperty("Referer", referrer); // Sic
@@ -222,6 +224,9 @@ class DownloadFileThread extends Thread {
                 bis.close();
                 fos.close();
                 break; // Download successful: break out of infinite loop
+            } catch (SocketTimeoutException timeoutEx) {
+                logger.error(url.toExternalForm() + " timedout!");
+                break;
             } catch (HttpStatusException hse) {
                 logger.debug("HTTP status exception", hse);
                 logger.error("[!] HTTP status " + hse.getStatusCode() + " while downloading from " + urlToDownload);
