@@ -110,6 +110,8 @@ class DownloadFileThread extends Thread {
                     huc = (HttpURLConnection) urlToDownload.openConnection();
                 }
                 huc.setInstanceFollowRedirects(true);
+                // It is important to set both ConnectTimeout and ReadTimeout. If you don't then ripme will wait forever
+                // for the server to send data after connecting.
                 huc.setConnectTimeout(TIMEOUT);
                 huc.setReadTimeout(TIMEOUT);
                 huc.setRequestProperty("accept",  "*/*");
@@ -225,7 +227,9 @@ class DownloadFileThread extends Thread {
                 fos.close();
                 break; // Download successful: break out of infinite loop
             } catch (SocketTimeoutException timeoutEx) {
-                logger.error(url.toExternalForm() + " timedout!");
+                // Handle the timeout
+                logger.error("[!] " + url.toExternalForm() + " timedout!");
+                // Download failed, break out of loop
                 break;
             } catch (HttpStatusException hse) {
                 logger.debug("HTTP status exception", hse);
