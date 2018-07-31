@@ -8,17 +8,12 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.rarchives.ripme.utils.Utils;
+import com.rarchives.ripme.ripper.AbstractSingleFileRipper;
 import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
 
-import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 import com.rarchives.ripme.utils.Http;
 
-public class GfycatporntubeRipper extends AbstractHTMLRipper {
-
-    private int bytesTotal = 1;
-    private int bytesCompleted = 1;
+public class GfycatporntubeRipper extends AbstractSingleFileRipper {
 
     public GfycatporntubeRipper(URL url) throws IOException {
         super(url);
@@ -62,27 +57,4 @@ public class GfycatporntubeRipper extends AbstractHTMLRipper {
     public void downloadURL(URL url, int index) {
         addURLToDownload(url, getPrefix(index));
     }
-
-    @Override
-    public String getStatusText() {
-        return Utils.getByteStatusText(getCompletionPercentage(), bytesCompleted, bytesTotal);
-    }
-
-    @Override
-    public int getCompletionPercentage() {
-        return (int) (100 * (bytesCompleted / (float) bytesTotal));
-    }
-
-    @Override
-    public void setBytesTotal(int bytes) {
-        this.bytesTotal = bytes;
-    }
-
-    @Override
-    public void setBytesCompleted(int bytes) {
-        this.bytesCompleted = bytes;
-    }
-
-    @Override
-    public boolean useByteProgessBar() {return true;}
 }
