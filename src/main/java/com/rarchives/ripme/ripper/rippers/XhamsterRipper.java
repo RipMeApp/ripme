@@ -62,18 +62,20 @@ public class XhamsterRipper extends AbstractHTMLRipper {
 
     @Override
     public boolean canRip(URL url) {
-        Pattern p = Pattern.compile("^https?://[wmde.]*xhamster\\.com/photos/gallery/.*?(\\d+)$");
+        Pattern p = Pattern.compile("^https?://([\\w\\w]*\\.)?xhamster\\.com/photos/gallery/.*?(\\d+)$");
         Matcher m = p.matcher(url.toExternalForm());
         return m.matches();
     }
 
     @Override
     public Document getNextPage(Document doc) throws IOException {
-        if (!doc.select("a.next").first().attr("href").equals("")) {
-            return Http.url(doc.select("a.next").first().attr("href")).get();
-        } else {
-            throw new IOException("No more pages");
+        if (doc.select("a.next").first() != null) {
+            if (doc.select("a.next").first().attr("href").startsWith("http")) {
+                return Http.url(doc.select("a.next").first().attr("href")).get();
+            }
         }
+        throw new IOException("No more pages");
+
     }
 
     @Override
@@ -99,5 +101,24 @@ public class XhamsterRipper extends AbstractHTMLRipper {
     @Override
     public void downloadURL(URL url, int index) {
         addURLToDownload(url, getPrefix(index));
+    }
+    
+    @Override
+    public String getAlbumTitle(URL url) throws MalformedURLException {
+        try {
+            // Attempt to use album title and username as GID
+            Document doc = getFirstPage();
+            Element user = doc.select("a.author").first();
+            String username = user.text();
+            String path = url.getPath();
+            Pattern p = Pattern.compile("^/photos/gallery/(.*)$");
+            Matcher m = p.matcher(path);
+            if (m.matches() && !username.isEmpty()) {
+                return getHost() + "_" + username + "_" + m.group(1);
+            }
+        } catch (IOException e) {
+            // Fall back to default album naming convention
+        }
+        return super.getAlbumTitle(url);
     }
 }

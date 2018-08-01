@@ -49,9 +49,8 @@ public class ZizkiRipper extends AbstractHTMLRipper {
     public String getAlbumTitle(URL url) throws MalformedURLException {
         try {
             // Attempt to use album title as GID
-            Element titleElement = getFirstPage().select("meta[name=description]").first();
-            String title = titleElement.attr("content");
-            title = title.substring(title.lastIndexOf('/') + 1);
+            Element titleElement = getFirstPage().select("h1.title").first();
+            String title = titleElement.text();
 
             Element authorSpan = getFirstPage().select("span[class=creator]").first();
             String author = authorSpan.select("a").first().text();

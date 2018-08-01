@@ -1,6 +1,14 @@
 {
-    "currentHash": "aadb71bf5cdf46fe92e270b50a55c8d8d7200a6dd304a4c2ac9f68cddc687d7e",
     "changeList": [
+        "1.7.60: Fixed EightmusesRipper; added Jab Archives ripper; loveroms ripper now properly names files; Fixed ArtStationRipper",
+        "1.7.59: Added Loverom ripper; added Imagearn ripper; Added support for Desuarchive.org; Fixed erome ripper",
+        "1.7.58: Fixed Deviantart ripper; fixed HitomiRipper; Fixed ManganeloRipper; Fixed update box formating",
+        "1.7.57: Got DeviantartRipper working again; Imagefap ripper now downloads full sized images; Twitter ripper can now rip extended tweets; Added nl_NL translation",
+        "1.7.56: Fixed DeviantartRipper ripper; Added support for resuming file downloads; Fixed erome ripper; Fixed ModelmayhemRipper NSFW image downloading",
+        "1.7.55: Fixed instagram ripper; Reddit ripper now respects history.end_rip_after_already_seen; Improvements to patch.py and release.py",
+        "1.7.54: Fixed twitter ripper video downloading; fixed instagram ripper",
+        "1.7.53: Added Picstatio ripper; Fixed instagram ripper; Reddit ripper now gets videos from v.redd.it; Fixed ZikiRipper getAlbumTitle; fixed twitter ripper",
+        "1.7.52: Added warning about using furaffinty shared account; Refactoring in Utils class; XhamsterRipper now accepts all countries subdomains; E621 ripper now accepts urls with order:Score at the end; release.py imrpovements; DeviantartRipper now logs in using cookies; patch.py imrpovements",
         "1.7.51: Fixed instagram ripper; Added the ability to rip from vsco profiles; Fixed TheyiffgalleryRipper; Can now update ripme using the -j flag; added script to automate releases; Code style fixes",
         "1.7.50: Ripme now checks file hash before running update; fixed update bug which cased ripme to report every update as new",
         "1.7.49: Fixed -n flag; Added ability to change locale at runtime and from gui; Update kr_KR translation; Removed support for tnbtu.com; No longer writes url to url_history file is save urls only is checked",
@@ -223,5 +231,6 @@
         "1.0.3: Added VK.com ripper",
         "1.0.1: Added auto-update functionality"
     ],
-    "latestVersion": "1.7.51"
+    "latestVersion": "1.7.60",
+    "currentHash": "f206e478822134328763fc41676f438ee5cc795f31984613619952dab8402301"
 }

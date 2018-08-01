@@ -19,7 +19,7 @@ import com.rarchives.ripme.utils.RipUtils;
 
 public class ChanRipper extends AbstractHTMLRipper {
     private static List<ChanSite> explicit_domains = Arrays.asList(
-        new ChanSite(Arrays.asList("boards.4chan.org"),   Arrays.asList("4cdn.org", "is.4chan.org", "is2.4chan.org")),
+        new ChanSite(Arrays.asList("boards.4chan.org"),   Arrays.asList("4cdn.org", "is.4chan.org", "is2.4chan.org", "is3.4chan.org")),
         new ChanSite(Arrays.asList("4archive.org"),       Arrays.asList("imgur.com")),
         new ChanSite(Arrays.asList("archive.4plebs.org"), Arrays.asList("img.4plebs.org"))
         );
@@ -85,8 +85,22 @@ public class ChanRipper extends AbstractHTMLRipper {
                 return true;
             }
         }
-        return  url.toExternalForm().contains("/res/")     // Most chans
-             || url.toExternalForm().contains("/thread/"); // 4chan, archive.moe
+        if (url.toExternalForm().contains("desuchan.net") && url.toExternalForm().contains("/res/")) {
+            return true;
+        }
+        if (url.toExternalForm().contains("boards.420chan.org") && url.toExternalForm().contains("/res/")) {
+            return true;
+        }
+        if (url.toExternalForm().contains("7chan.org") && url.toExternalForm().contains("/res/")) {
+            return true;
+        }
+        if (url.toExternalForm().contains("xchan.pw") && url.toExternalForm().contains("/board/")) {
+            return true;
+        }
+        if (url.toExternalForm().contains("desuarchive.org")) {
+            return true;
+        }
+        return false;
     }
 
     /**

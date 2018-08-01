@@ -3,9 +3,7 @@ package com.rarchives.ripme.utils;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -14,7 +12,7 @@ import com.rarchives.ripme.ripper.rippers.EroShareRipper;
 import com.rarchives.ripme.ripper.rippers.EromeRipper;
 import com.rarchives.ripme.ripper.rippers.ImgurRipper;
 import com.rarchives.ripme.ripper.rippers.VidbleRipper;
-import com.rarchives.ripme.ripper.rippers.video.GfycatRipper;
+import com.rarchives.ripme.ripper.rippers.GfycatRipper;
 import org.apache.commons.lang.math.NumberUtils;
 import org.apache.log4j.Logger;
 import org.jsoup.Jsoup;
@@ -56,6 +54,15 @@ public class RipUtils {
             } catch (IOException e) {
                 logger.error("[!] Exception while loading album " + url, e);
             }
+        }  else if (url.getHost().endsWith("i.imgur.com") && url.toExternalForm().contains("gifv")) {
+            // links to imgur gifvs
+            try {
+                result.add(new URL(url.toExternalForm().replaceAll(".gifv", ".mp4")));
+            } catch (IOException e) {
+                logger.info("Couldn't get gifv from " + url);
+            }
+            return result;
+
         }
         else if (url.getHost().endsWith("gfycat.com")) {
             try {
@@ -87,6 +94,9 @@ public class RipUtils {
                 // Do nothing
                 logger.warn("Exception while retrieving eroshare page:", e);
             }
+            return result;
+        } else if (url.toExternalForm().contains("v.redd.it")) {
+            result.add(url);
             return result;
         }
 
@@ -278,5 +288,17 @@ public class RipUtils {
             }
         }
         return url;
+    }
+    /**
+     * Reads a cookie string (Key1=value1;key2=value2) from the config file and turns it into a hashmap
+     * @return Map of cookies containing session data.
+     */
+    public static Map<String, String> getCookiesFromString(String line) {
+        Map<String,String> cookies = new HashMap<>();
+        for (String pair : line.split(";")) {
+            String[] kv = pair.split("=");
+            cookies.put(kv[0], kv[1]);
+        }
+        return cookies;
     }
 }

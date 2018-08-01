@@ -6,9 +6,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.reflect.Array;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -59,18 +61,26 @@ class DownloadFileThread extends Thread {
         this.cookies = cookies;
     }
 
+
     /**
      * Attempts to download the file. Retries as needed.
      * Notifies observers upon completion/error/warn.
      */
     public void run() {
+        long fileSize = 0;
+        int bytesTotal = 0;
+        int bytesDownloaded = 0;
+        if (saveAs.exists() && observer.tryResumeDownload()) {
+            fileSize = saveAs.length();
+        }
         try {
             observer.stopCheck();
         } catch (IOException e) {
             observer.downloadErrored(url, "Download interrupted");
             return;
         }
-        if (saveAs.exists()) {
+        if (saveAs.exists() && !observer.tryResumeDownload() && !getFileExtFromMIME ||
+                Utils.fuzzyExists(new File(saveAs.getParent()), saveAs.getName()) && getFileExtFromMIME && !observer.tryResumeDownload()) {
             if (Utils.getConfigBoolean("file.overwrite", false)) {
                 logger.info("[!] Deleting existing file" + prettySaveAs);
                 saveAs.delete();
@@ -80,7 +90,6 @@ class DownloadFileThread extends Thread {
                 return;
             }
         }
-
         URL urlToDownload = this.url;
         boolean redirected = false;
         int tries = 0; // Number of attempts to download
@@ -114,11 +123,20 @@ class DownloadFileThread extends Thread {
                     cookie += key + "=" + cookies.get(key);
                 }
                 huc.setRequestProperty("Cookie", cookie);
+                if (observer.tryResumeDownload()) {
+                    if (fileSize != 0) {
+                        huc.setRequestProperty("Range", "bytes=" + fileSize + "-");
+                    }
+                }
                 logger.debug("Request properties: " + huc.getRequestProperties());
                 huc.connect();
 
                 int statusCode = huc.getResponseCode();
                 logger.debug("Status code: " + statusCode);
+                if (statusCode != 206 && observer.tryResumeDownload() && saveAs.exists()) {
+                    // TODO find a better way to handle servers that don't support resuming downloads then just erroring out
+                    throw new IOException("Server doesn't support resuming downloads");
+                }
                 if (statusCode  / 100 == 3) { // 3xx Redirect
                     if (!redirected) {
                         // Don't increment retries on the first redirect
@@ -146,17 +164,63 @@ class DownloadFileThread extends Thread {
                     observer.downloadErrored(url, "Imgur image is 404: " + url.toExternalForm());
                     return;
                 }
+
+                // If the ripper is using the bytes progress bar set bytesTotal to huc.getContentLength()
+                if (observer.useByteProgessBar()) {
+                    bytesTotal = huc.getContentLength();
+                    observer.setBytesTotal(bytesTotal);
+                    observer.sendUpdate(STATUS.TOTAL_BYTES, bytesTotal);
+                    logger.debug("Size of file at " + this.url + " = " + bytesTotal + "b");
+                }
+
                 // Save file
                 bis = new BufferedInputStream(huc.getInputStream());
 
                 // Check if we should get the file ext from the MIME type
                 if (getFileExtFromMIME) {
-                    String fileExt = URLConnection.guessContentTypeFromStream(bis).replaceAll("image/", "");
-                    saveAs = new File(saveAs.toString() + "." + fileExt);
+                    String fileExt = URLConnection.guessContentTypeFromStream(bis);
+                    if (fileExt != null) {
+                        fileExt = fileExt.replaceAll("image/", "");
+                        saveAs = new File(saveAs.toString() + "." + fileExt);
+                    } else {
+                        logger.error("Was unable to get content type from stream");
+                        // Try to get the file type from the magic number
+                        byte[] magicBytes = new byte[8];
+                        bis.read(magicBytes,0, 5);
+                        bis.reset();
+                        fileExt = Utils.getEXTFromMagic(magicBytes);
+                        if (fileExt != null) {
+                            saveAs = new File(saveAs.toString() + "." + fileExt);
+                        } else {
+                            logger.error("Was unable to get content type using magic number");
+                            logger.error("Magic number was: " + Arrays.toString(magicBytes));
+                        }
+                    }
                 }
-
-                fos = new FileOutputStream(saveAs);
-                IOUtils.copy(bis, fos);
+                // If we're resuming a download we append data to the existing file
+                if (statusCode == 206) {
+                    fos = new FileOutputStream(saveAs, true);
+                } else {
+                    fos = new FileOutputStream(saveAs);
+                }
+                byte[] data = new byte[1024 * 256];
+                int bytesRead;
+                while ( (bytesRead = bis.read(data)) != -1) {
+                    try {
+                        observer.stopCheck();
+                    } catch (IOException e) {
+                        observer.downloadErrored(url, "Download interrupted");
+                        return;
+                    }
+                    fos.write(data, 0, bytesRead);
+                    if (observer.useByteProgessBar()) {
+                        bytesDownloaded += bytesRead;
+                        observer.setBytesCompleted(bytesDownloaded);
+                        observer.sendUpdate(STATUS.COMPLETED_BYTES, bytesDownloaded);
+                    }
+                }
+                bis.close();
+                fos.close();
                 break; // Download successful: break out of infinite loop
             } catch (HttpStatusException hse) {
                 logger.debug("HTTP status exception", hse);

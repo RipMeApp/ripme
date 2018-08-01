@@ -71,10 +71,7 @@ public abstract class AlbumRipper extends AbstractRipper {
             try (FileWriter fw = new FileWriter(urlFile, true)) {
                 fw.write(url.toExternalForm());
                 fw.write("\n");
-
-                RipStatusMessage msg = new RipStatusMessage(STATUS.DOWNLOAD_COMPLETE, urlFile);
                 itemsCompleted.put(url, new File(urlFile));
-                observer.update(this, msg);
             } catch (IOException e) {
                 LOGGER.error("Error while writing to " + urlFile, e);
             }
