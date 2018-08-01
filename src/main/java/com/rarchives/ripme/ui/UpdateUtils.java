@@ -20,7 +20,7 @@ import com.rarchives.ripme.utils.Utils;
 public class UpdateUtils {
 
     private static final Logger logger = Logger.getLogger(UpdateUtils.class);
-    private static final String DEFAULT_VERSION = "1.7.51";
+    private static final String DEFAULT_VERSION = "1.7.60";
     private static final String REPO_NAME = "ripmeapp/ripme";
     private static final String updateJsonURL = "https://raw.githubusercontent.com/" + REPO_NAME + "/master/ripme.json";
     private static final String mainFileName = "ripme.jar";
@@ -128,9 +128,9 @@ public class UpdateUtils {
             logger.info("Found newer version: " + latestVersion);
             int result = JOptionPane.showConfirmDialog(
                     null,
-                    "<html><font color=\"green\">New version (" + latestVersion + ") is available!</font>"
-                    + "<br><br>Recent changes:" + changeList
-                    + "<br><br>Do you want to download and run the newest version?</html>",
+                    String.format("<html><font color=\"green\">New version (%s) is available!</font>"
+                            + "<br><br>Recent changes: %s"
+                            + "<br><br>Do you want to download and run the newest version?</html>", latestVersion, changeList.replaceAll("\n", "")),
                     "RipMe Updater",
                     JOptionPane.YES_NO_OPTION);
             if (result != JOptionPane.YES_OPTION) {

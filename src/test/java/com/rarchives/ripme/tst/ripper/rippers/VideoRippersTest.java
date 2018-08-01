@@ -7,10 +7,8 @@ import java.util.List;
 
 import com.rarchives.ripme.ripper.VideoRipper;
 import com.rarchives.ripme.ripper.rippers.video.PornhubRipper;
-import com.rarchives.ripme.ripper.rippers.video.TwitchVideoRipper;
-import com.rarchives.ripme.ripper.rippers.video.VineRipper;
 import com.rarchives.ripme.ripper.rippers.video.XhamsterRipper;
-import com.rarchives.ripme.ripper.rippers.video.XvideosRipper;
+import com.rarchives.ripme.ripper.rippers.XvideosRipper;
 import com.rarchives.ripme.ripper.rippers.video.YoupornRipper;
 import com.rarchives.ripme.ripper.rippers.video.YuvutuRipper;
 
@@ -58,17 +56,7 @@ public class VideoRippersTest extends RippersTest {
             videoTestHelper(ripper);
         }
     }
-
-    public void testXvideosRipper() throws IOException {
-        List<URL> contentURLs = new ArrayList<>();
-        contentURLs.add(new URL("https://www.xvideos.com/video19719109/ziggy_star_ultra_hard_anal_pounding"));
-        contentURLs.add(new URL("https://www.xvideos.com/video23515878/dee_s_pool_toys"));
-        for (URL url : contentURLs) {
-            XvideosRipper ripper = new XvideosRipper(url);
-            videoTestHelper(ripper);
-        }
-    }
-
+    
     public void testPornhubRipper() throws IOException {
         List<URL> contentURLs = new ArrayList<>();
         contentURLs.add(new URL("https://www.pornhub.com/view_video.php?viewkey=ph5a329fa707269"));
@@ -77,18 +65,6 @@ public class VideoRippersTest extends RippersTest {
             videoTestHelper(ripper);
         }
     }
-
-    // https://github.com/RipMeApp/ripme/issues/186
-    /*
-    public void testVineRipper() throws IOException {
-        List<URL> contentURLs = new ArrayList<>();
-        contentURLs.add(new URL("https://vine.co/v/hiqQrP0eUZx"));
-        for (URL url : contentURLs) {
-            VineRipper ripper = new VineRipper(url);
-            videoTestHelper(ripper);
-        }
-    }
-    */
 
     public void testYoupornRipper() throws IOException {
         List<URL> contentURLs = new ArrayList<>();

@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.rarchives.ripme.ui.RipStatusMessage;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
@@ -17,6 +18,10 @@ import com.rarchives.ripme.ui.UpdateUtils;
 import com.rarchives.ripme.utils.Http;
 import com.rarchives.ripme.utils.RipUtils;
 import com.rarchives.ripme.utils.Utils;
+import org.jsoup.Jsoup;
+
+import javax.swing.text.Document;
+import javax.swing.text.Element;
 
 public class RedditRipper extends AlbumRipper {
 
@@ -34,6 +39,10 @@ public class RedditRipper extends AlbumRipper {
     //private static final String USER_AGENT = "ripme by /u/4_pr0n github.com/4pr0n/ripme";
 
     private long lastRequestTime = 0;
+
+    private Boolean shouldAddURL() {
+        return (alreadyDownloadedUrls >= Utils.getConfigInteger("history.end_rip_after_already_seen", 1000000000) && !isThisATest());
+    }
 
     @Override
     public boolean canRip(URL url) {
@@ -61,6 +70,10 @@ public class RedditRipper extends AlbumRipper {
     public void rip() throws IOException {
         URL jsonURL = getJsonURL(this.url);
         while (true) {
+            if (shouldAddURL()) {
+                sendUpdate(RipStatusMessage.STATUS.DOWNLOAD_COMPLETE_HISTORY, "Already seen the last " + alreadyDownloadedUrls + " images ending rip");
+                break;
+            }
             jsonURL = getAndParseAndReturnNext(jsonURL);
             if (jsonURL == null || isThisATest() || isStopped()) {
                 break;
@@ -179,6 +192,32 @@ public class RedditRipper extends AlbumRipper {
         }
     }
 
+    private URL parseRedditVideoMPD(String vidURL) {
+        org.jsoup.nodes.Document doc = null;
+        try {
+            doc = Http.url(vidURL + "/DASHPlaylist.mpd").ignoreContentType().get();
+            int largestHeight = 0;
+            String baseURL = null;
+            // Loops over all the videos and finds the one with the largest height and sets baseURL to the base url of that video
+            for (org.jsoup.nodes.Element e : doc.select("MPD > Period > AdaptationSet > Representation")) {
+                String height = e.attr("height");
+                if (height.equals("")) {
+                    height = "0";
+                }
+                if (largestHeight < Integer.parseInt(height)) {
+                    largestHeight = Integer.parseInt(height);
+                    baseURL = doc.select("MPD > Period > AdaptationSet > Representation[height=" + height + "]").select("BaseURL").text();
+                }
+                LOGGER.info("H " + e.attr("height") + " V " + e.attr("width"));
+            }
+            return new URL(vidURL + "/" + baseURL);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+
+    }
+
     private void handleURL(String theUrl, String id) {
         URL originalURL;
         try {
@@ -197,6 +236,11 @@ public class RedditRipper extends AlbumRipper {
                 String savePath = this.workingDir + File.separator;
                 savePath += id + "-" + m.group(1) + ".jpg";
                 addURLToDownload(urls.get(0), new File(savePath));
+            }
+            if (url.contains("v.redd.it")) {
+                String savePath = this.workingDir + File.separator;
+                savePath += id + "-" + url.split("/")[3] + ".mp4";
+                addURLToDownload(parseRedditVideoMPD(urls.get(0).toExternalForm()), new File(savePath));
             }
             else {
                 addURLToDownload(urls.get(0), id + "-", "", theUrl, null);

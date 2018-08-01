@@ -97,7 +97,7 @@ public abstract class AbstractHTMLRipper extends AlbumRipper {
 
         while (doc != null) {
             if (alreadyDownloadedUrls >= Utils.getConfigInteger("history.end_rip_after_already_seen", 1000000000) && !isThisATest()) {
-                sendUpdate(STATUS.DOWNLOAD_COMPLETE, "Already seen the last " + alreadyDownloadedUrls + " images ending rip");
+                sendUpdate(STATUS.DOWNLOAD_COMPLETE_HISTORY, "Already seen the last " + alreadyDownloadedUrls + " images ending rip");
                 break;
             }
             List<String> imageURLs = getURLsFromPage(doc);
@@ -224,7 +224,6 @@ public abstract class AbstractHTMLRipper extends AlbumRipper {
             if (!subdirectory.equals("")) { // Not sure about this part
                 subdirectory = File.separator + subdirectory;
             }
-            // TODO Get prefix working again, probably requires reworking a lot of stuff! (Might be fixed now)
             saveFileAs = new File(
                     workingDir.getCanonicalPath()
                     + subdirectory

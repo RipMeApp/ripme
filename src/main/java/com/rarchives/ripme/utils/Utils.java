@@ -1,87 +1,103 @@
 package com.rarchives.ripme.utils;
 
-import java.io.*;
-import java.lang.reflect.Constructor;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.net.URLDecoder;
-import java.util.*;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
-
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.Clip;
-import javax.sound.sampled.Line;
-import javax.sound.sampled.LineEvent;
-
+import com.rarchives.ripme.ripper.AbstractRipper;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 
-import com.rarchives.ripme.ripper.AbstractRipper;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
+import javax.sound.sampled.Line;
+import javax.sound.sampled.LineEvent;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.lang.reflect.Array;
+import java.lang.reflect.Constructor;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.URLDecoder;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.MissingResourceException;
+import java.util.ResourceBundle;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 
 /**
  * Common utility functions used in various places throughout the project.
  */
 public class Utils {
+
     private static final String RIP_DIRECTORY = "rips";
-    private static final String configFile = "rip.properties";
+    private static final String CONFIG_FILE = "rip.properties";
     private static final String OS = System.getProperty("os.name").toLowerCase();
-    private static final Logger logger = Logger.getLogger(Utils.class);
+    private static final Logger LOGGER = Logger.getLogger(Utils.class);
+    private static final int SHORTENED_PATH_LENGTH = 12;
 
     private static PropertiesConfiguration config;
+    private static HashMap<String, HashMap<String, String>> cookieCache;
+
     static {
+        cookieCache = new HashMap<>();
+
         try {
             String configPath = getConfigFilePath();
-            File f = new File(configPath);
-            if (!f.exists()) {
+            File file = new File(configPath);
+
+            if (!file.exists()) {
                 // Use default bundled with .jar
-                configPath = configFile;
+                configPath = CONFIG_FILE;
             }
+
             config = new PropertiesConfiguration(configPath);
-            logger.info("Loaded " + config.getPath());
-            if (f.exists()) {
+            LOGGER.info("Loaded " + config.getPath());
+
+            if (file.exists()) {
                 // Config was loaded from file
-                if ( !config.containsKey("twitter.auth")
-                  || !config.containsKey("twitter.max_requests")
-                  || !config.containsKey("tumblr.auth")
-                  || !config.containsKey("error.skip404")
-                  || !config.containsKey("gw.api")
-                  || !config.containsKey("page.timeout")
-                  || !config.containsKey("download.max_size")
-                  ) {
+                if (!config.containsKey("twitter.auth") || !config.containsKey("twitter.max_requests")
+                        || !config.containsKey("tumblr.auth") || !config.containsKey("error.skip404")
+                        || !config.containsKey("gw.api") || !config.containsKey("page.timeout")
+                        || !config.containsKey("download.max_size")) {
                     // Config is missing key fields
                     // Need to reload the default config
                     // See https://github.com/4pr0n/ripme/issues/158
-                    logger.warn("Config does not contain key fields, deleting old config");
-                    f.delete();
-                    config = new PropertiesConfiguration(configFile);
-                    logger.info("Loaded " + config.getPath());
+                    LOGGER.warn("Config does not contain key fields, deleting old config");
+                    file.delete();
+                    config = new PropertiesConfiguration(CONFIG_FILE);
+                    LOGGER.info("Loaded " + config.getPath());
                 }
             }
         } catch (Exception e) {
-            logger.error("[!] Failed to load properties file from " + configFile, e);
+            LOGGER.error("[!] Failed to load properties file from " + CONFIG_FILE, e);
         }
     }
 
     /**
      * Get the root rips directory.
-     * @return
-     *      Root directory to save rips to.
-     * @throws IOException
+     *
+     * @return Root directory to save rips to.
      */
     public static File getWorkingDirectory() {
         String currentDir = ".";
         try {
             currentDir = new File(".").getCanonicalPath() + File.separator + RIP_DIRECTORY + File.separator;
         } catch (IOException e) {
-            logger.error("Error while finding working dir: ", e);
+            LOGGER.error("Error while finding working dir: ", e);
         }
+
         if (config != null) {
             currentDir = getConfigString("rips.directory", currentDir);
         }
+
         File workingDir = new File(currentDir);
         if (!workingDir.exists()) {
             workingDir.mkdirs();
@@ -91,8 +107,8 @@ public class Utils {
 
     /**
      * Gets the value of a specific config key.
-     * 
-     * @param key The name of the config parameter you want to find.
+     *
+     * @param key          The name of the config parameter you want to find.
      * @param defaultValue What the default value would be.
      */
     public static String getConfigString(String key, String defaultValue) {
@@ -100,36 +116,46 @@ public class Utils {
     }
 
     public static String[] getConfigStringArray(String key) {
-        String[] s = config.getStringArray(key);
-        if (s.length == 0) {
-            return null;
-        } else {
-            return s;
-        }
+        String[] configStringArray = config.getStringArray(key);
+
+        return configStringArray.length == 0 ? null : configStringArray;
     }
 
     public static int getConfigInteger(String key, int defaultValue) {
         return config.getInt(key, defaultValue);
     }
+
     public static boolean getConfigBoolean(String key, boolean defaultValue) {
         return config.getBoolean(key, defaultValue);
     }
+
     public static List<String> getConfigList(String key) {
         List<String> result = new ArrayList<>();
         for (Object obj : config.getList(key, new ArrayList<String>())) {
             if (obj instanceof String) {
-                result.add( (String) obj);
+                result.add((String) obj);
             }
         }
         return result;
     }
-    public static void setConfigBoolean(String key, boolean value)  { config.setProperty(key, value); }
-    public static void setConfigString(String key, String value)    { config.setProperty(key, value); }
-    public static void setConfigInteger(String key, int value)      { config.setProperty(key, value); }
+
+    public static void setConfigBoolean(String key, boolean value) {
+        config.setProperty(key, value);
+    }
+
+    public static void setConfigString(String key, String value) {
+        config.setProperty(key, value);
+    }
+
+    public static void setConfigInteger(String key, int value) {
+        config.setProperty(key, value);
+    }
+
     public static void setConfigList(String key, List<Object> list) {
         config.clearProperty(key);
         config.addProperty(key, list);
     }
+
     public static void setConfigList(String key, Enumeration<Object> enumeration) {
         config.clearProperty(key);
         List<Object> list = new ArrayList<>();
@@ -142,9 +168,9 @@ public class Utils {
     public static void saveConfig() {
         try {
             config.save(getConfigFilePath());
-            logger.info("Saved configuration to " + getConfigFilePath());
+            LOGGER.info("Saved configuration to " + getConfigFilePath());
         } catch (ConfigurationException e) {
-            logger.error("Error while saving configuration: ", e);
+            LOGGER.error("Error while saving configuration: ", e);
         }
     }
 
@@ -176,14 +202,13 @@ public class Utils {
         return System.getenv("LOCALAPPDATA") + File.separator + "ripme";
     }
 
-    
     /**
      * Gets the directory of where the config file is stored on a UNIX machine.
      */
     private static String getUnixConfigDir() {
         return System.getProperty("user.home") + File.separator + ".config" + File.separator + "ripme";
     }
-    
+
     /**
      * Gets the directory of where the config file is stored on a Mac machine.
      */
@@ -197,13 +222,14 @@ public class Utils {
      */
     private static boolean portableMode() {
         try {
-            File f = new File(new File(".").getCanonicalPath() + File.separator + configFile);
-            if(f.exists() && !f.isDirectory()) {
+            File file = new File(new File(".").getCanonicalPath() + File.separator + CONFIG_FILE);
+            if (file.exists() && !file.isDirectory()) {
                 return true;
             }
         } catch (IOException e) {
             return false;
         }
+
         return false;
     }
 
@@ -222,13 +248,14 @@ public class Utils {
         if (isWindows()) return getWindowsConfigDir();
         if (isMacOS()) return getMacOSConfigDir();
         if (isUnix()) return getUnixConfigDir();
-        
+
         try {
             return new File(".").getCanonicalPath();
         } catch (Exception e) {
             return ".";
         }
     }
+
     /**
      * Delete the url history file
      */
@@ -238,7 +265,7 @@ public class Utils {
     }
 
     /**
-     *  Return the path of the url history file
+     * Return the path of the url history file
      */
     public static String getURLHistoryFile() {
         return getConfigDir() + File.separator + "url_history.txt";
@@ -248,26 +275,23 @@ public class Utils {
      * Gets the path to the configuration file.
      */
     private static String getConfigFilePath() {
-        return getConfigDir() + File.separator + configFile;
+        return getConfigDir() + File.separator + CONFIG_FILE;
     }
 
     /**
      * Removes the current working directory (CWD) from a File.
-     * @param saveAs
-     *      The File path
-     * @return
-     *      saveAs in relation to the CWD
+     *
+     * @param saveAs The File path
+     * @return saveAs in relation to the CWD
      */
     public static String removeCWD(File saveAs) {
         String prettySaveAs = saveAs.toString();
         try {
             prettySaveAs = saveAs.getCanonicalPath();
             String cwd = new File(".").getCanonicalPath() + File.separator;
-            prettySaveAs = prettySaveAs.replace(
-                    cwd,
-                    "." + File.separator);
+            prettySaveAs = prettySaveAs.replace(cwd, "." + File.separator);
         } catch (Exception e) {
-            logger.error("Exception: ", e);
+            LOGGER.error("Exception: ", e);
         }
         return prettySaveAs;
     }
@@ -275,10 +299,9 @@ public class Utils {
     /**
      * Strips away URL parameters, which usually appear at the end of URLs.
      * E.g. the ?query on PHP
-     * 
-     * @param url The URL to filter/strip
+     *
+     * @param url       The URL to filter/strip
      * @param parameter The parameter to strip
-     * 
      * @return The stripped URL
      */
     public static String stripURLParameter(String url, String parameter) {
@@ -290,13 +313,13 @@ public class Utils {
         }
 
         if (paramIndex > 0) {
-            int nextParam = url.indexOf("&", paramIndex+1);
+            int nextParam = url.indexOf('&', paramIndex + 1);
             if (nextParam != -1) {
                 String c = "&";
                 if (wasFirstParam) {
                     c = "?";
                 }
-                url = url.substring(0, paramIndex) + c + url.substring(nextParam+1, url.length());
+                url = url.substring(0, paramIndex) + c + url.substring(nextParam + 1, url.length());
             } else {
                 url = url.substring(0, paramIndex);
             }
@@ -307,10 +330,9 @@ public class Utils {
 
     /**
      * Removes the current working directory from a given filename
-     * @param file
-     *      Path to the file
-     * @return
-     *      'file' without the leading current working directory
+     *
+     * @param file Path to the file
+     * @return 'file' without the leading current working directory
      */
     public static String removeCWD(String file) {
         return removeCWD(new File(file));
@@ -320,12 +342,11 @@ public class Utils {
      * Get a list of all Classes within a package.
      * Works with file system projects and jar files!
      * Borrowed from StackOverflow, but I don't have a link :[
-     * @param pkgname
-     *      The name of the package
-     * @return
-     *      List of classes within the package
+     *
+     * @param pkgname The name of the package
+     * @return List of classes within the package
      */
-    public static ArrayList<Class<?>> getClassesForPackage(String pkgname) {
+    public static List<Class<?>> getClassesForPackage(String pkgname) {
         ArrayList<Class<?>> classes = new ArrayList<>();
         String relPath = pkgname.replace('.', '/');
         URL resource = ClassLoader.getSystemClassLoader().getResource(relPath);
@@ -334,7 +355,8 @@ public class Utils {
         }
 
         String fullPath = resource.getFile();
-        File directory = null;
+        File directory;
+
         try {
             directory = new File(resource.toURI());
         } catch (URISyntaxException e) {
@@ -356,8 +378,7 @@ public class Utils {
                     }
                 }
             }
-        }
-        else {
+        } else {
             // Load from JAR
             try {
                 String jarPath = fullPath
@@ -376,7 +397,7 @@ public class Utils {
                         try {
                             classes.add(Class.forName(className));
                         } catch (ClassNotFoundException e) {
-                            logger.error("ClassNotFoundException loading " + className);
+                            LOGGER.error("ClassNotFoundException loading " + className);
                             jarFile.close(); // Resource leak fix?
                             throw new RuntimeException("ClassNotFoundException loading " + className);
                         }
@@ -384,20 +405,18 @@ public class Utils {
                 }
                 jarFile.close(); // Eclipse said not closing it would have a resource leak
             } catch (IOException e) {
-                logger.error("Error while loading jar file:", e);
+                LOGGER.error("Error while loading jar file:", e);
                 throw new RuntimeException(pkgname + " (" + directory + ") does not appear to be a valid package", e);
             }
         }
         return classes;
     }
 
-    private static final int SHORTENED_PATH_LENGTH = 12;
     /**
      * Shortens the path to a file
-     * @param path
-     *      String of the path to the file
-     * @return
-     *      The simplified path to the file.
+     *
+     * @param path String of the path to the file
+     * @return The simplified path to the file.
      */
     public static String shortenPath(String path) {
         return shortenPath(new File(path));
@@ -405,10 +424,9 @@ public class Utils {
 
     /**
      * Shortens the path to a file
-     * @param file
-     *      File object that you want the shortened path of.
-     * @return 
-     *      The simplified path to the file.
+     *
+     * @param file File object that you want the shortened path of.
+     * @return The simplified path to the file.
      */
     public static String shortenPath(File file) {
         String path = removeCWD(file);
@@ -422,10 +440,9 @@ public class Utils {
 
     /**
      * Sanitizes a string so that a filesystem can handle it
-     * @param text
-     *      The text to be sanitized.
-     * @return
-     *      The sanitized text.
+     *
+     * @param text The text to be sanitized.
+     * @return The sanitized text.
      */
     public static String filesystemSanitized(String text) {
         text = text.replaceAll("[^a-zA-Z0-9.-]", "_");
@@ -434,8 +451,8 @@ public class Utils {
 
     public static String filesystemSafe(String text) {
         text = text.replaceAll("[^a-zA-Z0-9.-]", "_")
-                   .replaceAll("__", "_")
-                   .replaceAll("_+$", "");
+                .replaceAll("__", "_")
+                .replaceAll("_+$", "");
         if (text.length() > 100) {
             text = text.substring(0, 99);
         }
@@ -451,7 +468,7 @@ public class Utils {
     public static String getOriginalDirectory(String path) {
 
         int index;
-        if(isUnix() || isMacOS()) {
+        if (isUnix() || isMacOS()) {
             index = path.lastIndexOf('/');
         } else {
             // current OS is windows - nothing to do here
@@ -459,17 +476,17 @@ public class Utils {
         }
 
         String original = path;                                         // needs to be checked if lowercase exists
-        String lastPart = original.substring(index+1).toLowerCase();    // setting lowercase to check if it exists
+        String lastPart = original.substring(index + 1).toLowerCase();    // setting lowercase to check if it exists
 
         // Get a List of all Directories and check its lowercase
         // if file exists return it
-        File f = new File(path.substring(0, index));
-        ArrayList<String> names = new ArrayList<String>(Arrays.asList(f.list()));
+        File file = new File(path.substring(0, index));
+        ArrayList<String> names = new ArrayList<>(Arrays.asList(file.list()));
 
-        for (String s : names) {
-            if(s.toLowerCase().equals(lastPart)) {
+        for (String name : names) {
+            if (name.toLowerCase().equals(lastPart)) {
                 // Building Path of existing file
-                return path.substring(0, index) + File.separator + s;
+                return path.substring(0, index) + File.separator + name;
             }
         }
 
@@ -478,14 +495,13 @@ public class Utils {
 
     /**
      * Converts an integer into a human readable string
-     * @param bytes
-     *      Non-human readable integer.
-     * @return
-     *      Human readable interpretation of a byte.
+     *
+     * @param bytes Non-human readable integer.
+     * @return Human readable interpretation of a byte.
      */
     public static String bytesToHumanReadable(int bytes) {
         float fbytes = (float) bytes;
-        String[] mags = new String[] {"", "K", "M", "G", "T"};
+        String[] mags = new String[]{"", "K", "M", "G", "T"};
         int magIndex = 0;
         while (fbytes >= 1024) {
             fbytes /= 1024;
@@ -496,6 +512,7 @@ public class Utils {
 
     /**
      * Gets and returns a list of all the album rippers present in the "com.rarchives.ripme.ripper.rippers" package.
+     *
      * @return List<String> of all album rippers present.
      */
     public static List<String> getListOfAlbumRippers() throws Exception {
@@ -508,6 +525,7 @@ public class Utils {
 
     /**
      * Gets and returns a list of all video rippers present in the "com.rarchives.rime.rippers.video" package
+     *
      * @return List<String> of all the video rippers.
      */
     public static List<String> getListOfVideoRippers() throws Exception {
@@ -520,8 +538,8 @@ public class Utils {
 
     /**
      * Plays a sound from a file.
-     * @param filename 
-     *      Path to the sound file
+     *
+     * @param filename Path to the sound file
      */
     public static void playSound(String filename) {
         URL resource = ClassLoader.getSystemClassLoader().getResource(filename);
@@ -535,7 +553,7 @@ public class Utils {
             clip.open(AudioSystem.getAudioInputStream(resource));
             clip.start();
         } catch (Exception e) {
-            logger.error("Failed to play sound " + filename, e);
+            LOGGER.error("Failed to play sound " + filename, e);
         }
     }
 
@@ -544,57 +562,55 @@ public class Utils {
      */
     public static void configureLogger() {
         LogManager.shutdown();
-        String logFile;
-        if (getConfigBoolean("log.save", false)) {
-            logFile = "log4j.file.properties";
+        String logFile = getConfigBoolean("log.save", false) ? "log4j.file.properties" : "log4j.properties";
+
+        try (InputStream stream = Utils.class.getClassLoader().getResourceAsStream(logFile)) {
+            if (stream == null) {
+                PropertyConfigurator.configure("src/main/resources/" + logFile);
+            } else {
+                PropertyConfigurator.configure(stream);
+            }
+
+            LOGGER.info("Loaded " + logFile);
+        } catch (IOException e) {
+            LOGGER.error(e.getMessage(), e);
         }
-        else {
-            logFile = "log4j.properties";
-        }
-        InputStream stream = Utils.class.getClassLoader().getResourceAsStream(logFile);
-        if (stream == null) {
-            PropertyConfigurator.configure("src/main/resources/" + logFile);
-        } else {
-            PropertyConfigurator.configure(stream);
-        }
-        logger.info("Loaded " + logFile);
-        try {
-            stream.close();
-        } catch (IOException e) { }
+
     }
 
     /**
      * Gets list of strings between two strings.
+     *
      * @param fullText Text to retrieve from.
-     * @param start String that precedes the desired text
-     * @param finish String that follows the desired text
+     * @param start    String that precedes the desired text
+     * @param finish   String that follows the desired text
      * @return List of all strings that are between 'start' and 'finish'
      */
     public static List<String> between(String fullText, String start, String finish) {
         List<String> result = new ArrayList<>();
-        int i, j;
-        i = fullText.indexOf(start);
+        int i = fullText.indexOf(start);
+
         while (i >= 0) {
             i += start.length();
-            j = fullText.indexOf(finish, i);
+            int j = fullText.indexOf(finish, i);
             if (j < 0) {
                 break;
             }
             result.add(fullText.substring(i, j));
             i = fullText.indexOf(start, j + finish.length());
         }
+
         return result;
     }
 
     /**
      * Parses an URL query
      *
-     * @param query
-     *          The query part of an URL
+     * @param query The query part of an URL
      * @return The map of all query parameters
      */
-    public static Map<String,String> parseUrlQuery(String query) {
-        Map<String,String> res = new HashMap<>();
+    public static Map<String, String> parseUrlQuery(String query) {
+        Map<String, String> res = new HashMap<>();
 
         if (query.equals("")) {
             return res;
@@ -622,10 +638,8 @@ public class Utils {
     /**
      * Parses an URL query and returns the requested parameter's value
      *
-     * @param query
-     *          The query part of an URL
-     * @param key
-     *          The key whose value is requested
+     * @param query The query part of an URL
+     * @param key   The key whose value is requested
      * @return The associated value or null if key wasn't found
      */
     public static String parseUrlQuery(String query, String key) {
@@ -655,18 +669,13 @@ public class Utils {
         return null;
     }
 
-    private static HashMap<String, HashMap<String, String>> cookieCache;
-    static {
-        cookieCache = new HashMap<String, HashMap<String, String>>();
-    }
-
     /**
      * Gets all the cookies from a certain host
      */
     public static Map<String, String> getCookies(String host) {
         HashMap<String, String> domainCookies = cookieCache.get(host);
         if (domainCookies == null) {
-            domainCookies = new HashMap<String, String>();
+            domainCookies = new HashMap<>();
             String cookiesConfig = getConfigString("cookies." + host, "");
             for (String pair : cookiesConfig.split(" ")) {
                 pair = pair.trim();
@@ -683,27 +692,75 @@ public class Utils {
     /**
      * Gets the ResourceBundle AKA language package.
      * Used for choosing the language of the UI.
-     * 
+     *
      * @return Returns the default resource bundle using the language specified in the config file.
      */
     public static ResourceBundle getResourceBundle(String langSelect) {
         if (langSelect == null) {
             if (!getConfigString("lang", "").equals("")) {
                 String[] langCode = getConfigString("lang", "").split("_");
-                logger.info("Setting locale to " + getConfigString("lang", ""));
+                LOGGER.info("Setting locale to " + getConfigString("lang", ""));
                 return ResourceBundle.getBundle("LabelsBundle", new Locale(langCode[0], langCode[1]), new UTF8Control());
             }
         } else {
             String[] langCode = langSelect.split("_");
-            logger.info("Setting locale to " + langSelect);
+            LOGGER.info("Setting locale to " + langSelect);
             return ResourceBundle.getBundle("LabelsBundle", new Locale(langCode[0], langCode[1]), new UTF8Control());
         }
         try {
-            logger.info("Setting locale to default");
+            LOGGER.info("Setting locale to default");
             return ResourceBundle.getBundle("LabelsBundle", Locale.getDefault(), new UTF8Control());
         } catch (MissingResourceException e) {
-            logger.info("Setting locale to root");
+            LOGGER.info("Setting locale to root");
             return ResourceBundle.getBundle("LabelsBundle", Locale.ROOT);
         }
     }
+
+    /**
+     * Formats and reuturns the status text for rippers using the byte progress bar
+     *
+     * @param completionPercentage An int between 0 and 100 which repersents how close the download is to complete
+     * @param bytesCompleted How many bytes have been downloaded
+     * @param bytesTotal The total size of the file that is being downloaded
+     * @return Returns the formatted status text for rippers using the byte progress bar
+     */
+    public static String getByteStatusText(int completionPercentage, int bytesCompleted, int bytesTotal) {
+        return String.valueOf(completionPercentage) +
+                "%  - " +
+                Utils.bytesToHumanReadable(bytesCompleted) +
+                " / " +
+                Utils.bytesToHumanReadable(bytesTotal);
+    }
+
+    public static String getEXTFromMagic(byte[] magic) {
+        if (Arrays.equals(magic, new byte[]{-1, -40, -1, -37, 0, 0, 0, 0})) {
+            return "jpeg";
+        } else {
+            LOGGER.info("Unknown magic number " + Arrays.toString(magic));
+        }
+        return null;
+    }
+
+    // Checks if a file exists ignoring it's extension.
+    // Code from: https://stackoverflow.com/a/17698068
+    public static boolean fuzzyExists(File folder, String fileName) {
+        if (!folder.exists()) {
+            return false;
+        }
+        File[] listOfFiles = folder.listFiles();
+        if (listOfFiles == null) {
+            return false;
+        }
+
+        for (File file : listOfFiles) {
+            if (file.isFile()) {
+                String[] filename = file.getName().split("\\.(?=[^\\.]+$)"); //split filename from it's extension
+                if(filename[0].equalsIgnoreCase(fileName)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
 }

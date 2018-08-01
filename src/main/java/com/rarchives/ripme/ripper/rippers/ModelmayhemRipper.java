@@ -4,7 +4,9 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -15,6 +17,8 @@ import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 import com.rarchives.ripme.utils.Http;
 
 public class ModelmayhemRipper extends AbstractHTMLRipper {
+
+    private Map<String,String> cookies = new HashMap<>();
 
     public ModelmayhemRipper(URL url) throws IOException {
         super(url);
@@ -43,8 +47,10 @@ public class ModelmayhemRipper extends AbstractHTMLRipper {
 
     @Override
     public Document getFirstPage() throws IOException {
+        // Bypass NSFW filter
+        cookies.put("worksafe", "0");
         // "url" is an instance field of the superclass
-        return Http.url(url).get();
+        return Http.url(url).cookies(cookies).get();
     }
 
     @Override

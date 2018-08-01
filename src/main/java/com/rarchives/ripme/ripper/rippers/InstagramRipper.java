@@ -76,6 +76,10 @@ public class InstagramRipper extends AbstractJSONRipper {
         return url.replaceAll("/[A-Z0-9]{8}/", "/");
     }
 
+    @Override public boolean hasASAPRipping() {
+        return true;
+    }
+
     private List<String> getPostsFromSinglePage(JSONObject json) {
         List<String> imageURLs = new ArrayList<>();
         JSONArray datas;
@@ -231,9 +235,23 @@ public class InstagramRipper extends AbstractJSONRipper {
         return imageURL;
     }
 
+    public String getAfter(JSONObject json) {
+        try {
+            return json.getJSONObject("entry_data").getJSONArray("ProfilePage").getJSONObject(0)
+                    .getJSONObject("graphql").getJSONObject("user")
+                    .getJSONObject("edge_owner_to_timeline_media").getJSONObject("page_info").getString("end_cursor");
+        } catch (JSONException e) {
+            return json.getJSONObject("data").getJSONObject("user")
+                    .getJSONObject("edge_owner_to_timeline_media").getJSONObject("page_info").getString("end_cursor");
+        }
+    }
+
     @Override
     public List<String> getURLsFromJSON(JSONObject json) {
         List<String> imageURLs = new ArrayList<>();
+        if (!url.toExternalForm().contains("/p/")) {
+            nextPageID = getAfter(json);
+        }
 
         // get the rhx_gis value so we can get the next page later on
         if (rhx_gis == null) {
@@ -246,7 +264,8 @@ public class InstagramRipper extends AbstractJSONRipper {
                 try {
                     JSONArray profilePage = json.getJSONObject("entry_data").getJSONArray("ProfilePage");
                     userID = profilePage.getJSONObject(0).getString("logging_page_id").replaceAll("profilePage_", "");
-                    datas = profilePage.getJSONObject(0).getJSONObject("graphql").getJSONObject("user")
+                    datas = json.getJSONObject("entry_data").getJSONArray("ProfilePage").getJSONObject(0)
+                            .getJSONObject("graphql").getJSONObject("user")
                             .getJSONObject("edge_owner_to_timeline_media").getJSONArray("edges");
                 } catch (JSONException e) {
                     datas = json.getJSONObject("data").getJSONObject("user")
@@ -300,10 +319,9 @@ public class InstagramRipper extends AbstractJSONRipper {
                         }
                     }
                 } catch (MalformedURLException e) {
+                    LOGGER.info("Got MalformedURLException");
                     return imageURLs;
                 }
-
-                nextPageID = data.getString("id");
 
                 if (isThisATest()) {
                     break;
@@ -368,10 +386,11 @@ public class InstagramRipper extends AbstractJSONRipper {
             try {
                 // Sleep for a while to avoid a ban
                 sleep(2500);
-                String vars = "{\"id\":\"" + userID + "\",\"first\":50,\"after\":\"" + nextPageID + "\"}";
+                String vars = "{\"id\":\"" + userID + "\",\"first\":12,\"after\":\"" + nextPageID + "\"}";
                 String ig_gis = getIGGis(vars);
                 LOGGER.info(ig_gis);
 
+                LOGGER.info("https://www.instagram.com/graphql/query/?query_hash=" + qHash + "&variables=" + vars);
                 toreturn = getPage("https://www.instagram.com/graphql/query/?query_hash=" + qHash + "&variables=" + vars, ig_gis);
                 if (!pageHasImages(toreturn)) {
                     throw new IOException("No more pages");
@@ -391,6 +410,7 @@ public class InstagramRipper extends AbstractJSONRipper {
     }
 
     private boolean pageHasImages(JSONObject json) {
+        LOGGER.info(json);
         int numberOfImages = json.getJSONObject("data").getJSONObject("user")
                 .getJSONObject("edge_owner_to_timeline_media").getJSONArray("edges").length();
         if (numberOfImages == 0) {
@@ -451,23 +471,8 @@ public class InstagramRipper extends AbstractJSONRipper {
             return null;
         }
         if (!rippingTag) {
-            Pattern jsP = Pattern.compile("o},queryId:.([a-zA-Z0-9]+).");
+            Pattern jsP = Pattern.compile("byUserId\\.get\\(t\\)\\)\\|\\|void 0===r\\?void 0:r\\.pagination},queryId:.([a-zA-Z0-9]+)");
             Matcher m = jsP.matcher(sb.toString());
-            if (m.find()) {
-                return m.group(1);
-            }
-            jsP = Pattern.compile("n.pagination:n},queryId:.([a-zA-Z0-9]+).");
-            m = jsP.matcher(sb.toString());
-            if (m.find()) {
-                return m.group(1);
-            }
-            jsP = Pattern.compile("0:n.pagination},queryId:.([a-zA-Z0-9]+).");
-            m = jsP.matcher(sb.toString());
-            if (m.find()) {
-                return m.group(1);
-            }
-            jsP = Pattern.compile("o.pagination},queryId:.([a-zA-Z0-9]+).");
-            m = jsP.matcher(sb.toString());
             if (m.find()) {
                 return m.group(1);
             }

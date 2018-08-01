@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.net.URL;
 
 import com.rarchives.ripme.ripper.rippers.RedditRipper;
-import com.rarchives.ripme.ripper.rippers.video.GfycatRipper;
 
 public class RedditRipperTest extends RippersTest {
     // https://github.com/RipMeApp/ripme/issues/253 - Disabled tests: RedditRipperTest#testRedditSubreddit*Rip is flaky

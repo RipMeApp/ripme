@@ -8,13 +8,12 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.rarchives.ripme.ripper.AbstractSingleFileRipper;
 import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
 
-import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 import com.rarchives.ripme.utils.Http;
 
-public class GfycatporntubeRipper extends AbstractHTMLRipper {
+public class GfycatporntubeRipper extends AbstractSingleFileRipper {
 
     public GfycatporntubeRipper(URL url) throws IOException {
         super(url);
