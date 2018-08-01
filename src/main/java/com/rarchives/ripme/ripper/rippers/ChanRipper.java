@@ -1,5 +1,9 @@
 package com.rarchives.ripme.ripper.rippers;
 
+import com.rarchives.ripme.ripper.AbstractHTMLRipper;
+import com.rarchives.ripme.ripper.rippers.ripperhelpers.ChanSite;
+import com.rarchives.ripme.utils.Http;
+import com.rarchives.ripme.utils.RipUtils;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -8,14 +12,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
-
-import com.rarchives.ripme.ripper.AbstractHTMLRipper;
-import com.rarchives.ripme.ripper.rippers.ripperhelpers.ChanSite;
-import com.rarchives.ripme.utils.Http;
-import com.rarchives.ripme.utils.RipUtils;
 
 public class ChanRipper extends AbstractHTMLRipper {
     private static List<ChanSite> explicit_domains = Arrays.asList(
@@ -85,6 +83,7 @@ public class ChanRipper extends AbstractHTMLRipper {
                 return true;
             }
         }
+
         if (url.toExternalForm().contains("desuchan.net") && url.toExternalForm().contains("/res/")) {
             return true;
         }
@@ -98,6 +97,9 @@ public class ChanRipper extends AbstractHTMLRipper {
             return true;
         }
         if (url.toExternalForm().contains("desuarchive.org")) {
+            return true;
+        }
+        if (url.toExternalForm().contains("8ch.net") && url.toExternalForm().contains("/res/")) {
             return true;
         }
         return false;
