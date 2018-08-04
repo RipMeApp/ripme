@@ -4,6 +4,8 @@ import junit.framework.TestCase;
 import com.rarchives.ripme.utils.Utils;
 
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 public class UtilsTest extends TestCase {
 
@@ -32,6 +34,14 @@ public class UtilsTest extends TestCase {
 
     public void testGetListOfAlbumRippers() throws Exception{
         assert(!Utils.getListOfAlbumRippers().isEmpty());
+    }
+
+    public void testGetByteStatusText() {
+        assertEquals("5%  - 500.00iB / 97.66KiB", Utils.getByteStatusText(5, 500, 100000));
+    }
+
+    public void testBetween() {
+        assertEquals(Arrays.asList(" is a "), Utils.between("This is a test", "This", "test"));
     }
 
 }

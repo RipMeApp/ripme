@@ -224,7 +224,6 @@ public abstract class AbstractHTMLRipper extends AlbumRipper {
             if (!subdirectory.equals("")) { // Not sure about this part
                 subdirectory = File.separator + subdirectory;
             }
-            // TODO Get prefix working again, probably requires reworking a lot of stuff! (Might be fixed now)
             saveFileAs = new File(
                     workingDir.getCanonicalPath()
                     + subdirectory
