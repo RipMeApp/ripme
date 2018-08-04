@@ -8,6 +8,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Array;
 import java.net.HttpURLConnection;
+import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.Arrays;
@@ -109,7 +110,10 @@ class DownloadFileThread extends Thread {
                     huc = (HttpURLConnection) urlToDownload.openConnection();
                 }
                 huc.setInstanceFollowRedirects(true);
+                // It is important to set both ConnectTimeout and ReadTimeout. If you don't then ripme will wait forever
+                // for the server to send data after connecting.
                 huc.setConnectTimeout(TIMEOUT);
+                huc.setReadTimeout(TIMEOUT);
                 huc.setRequestProperty("accept",  "*/*");
                 if (!referrer.equals("")) {
                     huc.setRequestProperty("Referer", referrer); // Sic
@@ -222,6 +226,11 @@ class DownloadFileThread extends Thread {
                 bis.close();
                 fos.close();
                 break; // Download successful: break out of infinite loop
+            } catch (SocketTimeoutException timeoutEx) {
+                // Handle the timeout
+                logger.error("[!] " + url.toExternalForm() + " timedout!");
+                // Download failed, break out of loop
+                break;
             } catch (HttpStatusException hse) {
                 logger.debug("HTTP status exception", hse);
                 logger.error("[!] HTTP status " + hse.getStatusCode() + " while downloading from " + urlToDownload);
