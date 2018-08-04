@@ -20,6 +20,7 @@ import java.lang.reflect.Constructor;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLDecoder;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
@@ -45,6 +46,7 @@ public class Utils {
 
     private static PropertiesConfiguration config;
     private static HashMap<String, HashMap<String, String>> cookieCache;
+    private static HashMap<ByteBuffer, String> magicHash = new HashMap<>();
 
     static {
         cookieCache = new HashMap<>();
@@ -732,13 +734,21 @@ public class Utils {
                 Utils.bytesToHumanReadable(bytesTotal);
     }
 
-    public static String getEXTFromMagic(byte[] magic) {
-        if (Arrays.equals(magic, new byte[]{-1, -40, -1, -37, 0, 0, 0, 0})) {
-            return "jpeg";
-        } else {
-            LOGGER.info("Unknown magic number " + Arrays.toString(magic));
+    public static String getEXTFromMagic(ByteBuffer magic) {
+        if (magicHash.isEmpty()) {
+            LOGGER.debug("initialising map");
+            initialiseMagicHashMap();
         }
-        return null;
+        return magicHash.get(magic);
+    }
+
+    public static String getEXTFromMagic(byte[] magic) {
+        return getEXTFromMagic(ByteBuffer.wrap(magic));
+    }
+
+    private static void initialiseMagicHashMap() {
+        magicHash.put(ByteBuffer.wrap(new byte[]{-1, -40, -1, -37, 0, 0, 0, 0}), "jpeg");
+        magicHash.put(ByteBuffer.wrap(new byte[]{-119, 80, 78, 71, 13, 0, 0, 0}), "png");
     }
 
     // Checks if a file exists ignoring it's extension.
