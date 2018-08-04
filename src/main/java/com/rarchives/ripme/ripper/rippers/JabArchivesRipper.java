@@ -33,7 +33,7 @@ public class JabArchivesRipper extends AbstractHTMLRipper {
 
     @Override
     public String getGID(URL url) throws MalformedURLException {
-        Pattern p = Pattern.compile("^https?://jabarchives.com/main/view/([a-zA-Z0-9_]+).*$");
+        Pattern p = Pattern.compile("^https?://(?:www\\.)?jabarchives.com/main/view/([a-zA-Z0-9_]+).*$");
         Matcher m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             // Return the text contained between () in the regex
