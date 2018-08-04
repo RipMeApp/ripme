@@ -1,5 +1,8 @@
 {
+    "latestVersion": "1.7.61",
+    "currentHash": "a418ad18c75e089397de38efb84e3cf1d23e9b18ead95fc28382e3f6d3babef9",
     "changeList": [
+        "1.7.61: Re-add 8Chan support; Added kenzato.uk to CheveretoRippers; Added russian translation; Reddit ripper now uses sub folders; fixed JabArchivesRipper regex",
         "1.7.60: Fixed EightmusesRipper; added Jab Archives ripper; loveroms ripper now properly names files; Fixed ArtStationRipper",
         "1.7.59: Added Loverom ripper; added Imagearn ripper; Added support for Desuarchive.org; Fixed erome ripper",
         "1.7.58: Fixed Deviantart ripper; fixed HitomiRipper; Fixed ManganeloRipper; Fixed update box formating",
@@ -230,7 +233,5 @@
         "1.0.4: Fixed spaces-in-directory bug",
         "1.0.3: Added VK.com ripper",
         "1.0.1: Added auto-update functionality"
-    ],
-    "latestVersion": "1.7.60",
-    "currentHash": "f206e478822134328763fc41676f438ee5cc795f31984613619952dab8402301"
+    ]
 }
