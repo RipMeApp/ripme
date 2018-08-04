@@ -3,6 +3,7 @@ package com.rarchives.ripme.tst;
 import junit.framework.TestCase;
 import com.rarchives.ripme.utils.Utils;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -10,6 +11,7 @@ public class UtilsTest extends TestCase {
 
     public void testGetEXTFromMagic() {
         assertEquals("jpeg", Utils.getEXTFromMagic(new byte[]{-1, -40, -1, -37, 0, 0, 0, 0}));
+        assertEquals("png", Utils.getEXTFromMagic(new byte[]{-119, 80, 78, 71, 13, 0, 0, 0}));
     }
 
     public void testStripURLParameter() {
