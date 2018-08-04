@@ -255,6 +255,7 @@ public abstract class AbstractRipper
         File saveFileAs;
         try {
             if (!subdirectory.equals("")) {
+                subdirectory = Utils.filesystemSafe(subdirectory);
                 subdirectory = File.separator + subdirectory;
             }
             prefix = Utils.filesystemSanitized(prefix);
