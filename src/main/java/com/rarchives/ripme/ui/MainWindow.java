@@ -10,6 +10,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
@@ -141,6 +142,10 @@ public final class MainWindow implements Runnable, RipStatusHandler {
     private static AbstractRipper ripper;
 
     private ResourceBundle rb = Utils.getResourceBundle(null);
+
+    // All the langs ripme has been translated into
+    private static String[] supportedLanges = new String[] {"en_US", "de_DE", "es_ES", "fr_CH", "kr_KR", "pt_PT",
+            "fi_FI", "in_ID", "nl_NL", "porrisavvo_FI", "ru_RU"};
 
     private void updateQueueLabel() {
         if (queueListModel.size() > 0) {
@@ -496,7 +501,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         configURLHistoryCheckbox = addNewCheckbox(rb.getString("remember.url.history"), "remember.url_history", true);
 
         configLogLevelCombobox = new JComboBox<>(new String[] {"Log level: Error", "Log level: Warn", "Log level: Info", "Log level: Debug"});
-        configSelectLangComboBox = new JComboBox<>(new String[] {"en_US", "de_DE", "es_ES", "fr_CH", "kr_KR", "pt_PT", "fi_FI", "in_ID", "nl_NL", "porrisavvo_FI"});
+        configSelectLangComboBox = new JComboBox<>(supportedLanges);
         configLogLevelCombobox.setSelectedItem(Utils.getConfigString("log.level", "Log level: Debug"));
         setLogLevel(configLogLevelCombobox.getSelectedItem().toString());
         configSaveDirLabel = new JLabel();
