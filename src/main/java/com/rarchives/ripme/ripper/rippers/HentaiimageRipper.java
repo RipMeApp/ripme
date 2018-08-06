@@ -23,17 +23,27 @@ public class HentaiimageRipper extends AbstractHTMLRipper {
 
     @Override
     public String getHost() {
-        return "hentai-image";
+        return url.toExternalForm().split("/")[2];
     }
 
     @Override
     public String getDomain() {
-        return "hentai-image.com";
+        return url.toExternalForm().split("/")[2];
+    }
+
+    @Override
+    public boolean canRip(URL url) {
+        try {
+            getGID(url);
+            return true;
+        } catch (MalformedURLException e) {
+            return false;
+        }
     }
 
     @Override
     public String getGID(URL url) throws MalformedURLException {
-        Pattern p = Pattern.compile("https://(?:\\w\\w\\.)?hentai-image.com/image/([a-zA-Z0-9_-]+)/?");
+        Pattern p = Pattern.compile("https://(?:\\w\\w\\.)?hentai-(image|comic).com/image/([a-zA-Z0-9_-]+)/?");
         Matcher m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             return m.group(1);
