@@ -12,4 +12,10 @@ public class HqpornerRipperTest extends RippersTest{
         testRipper(ripper);
     }
 
+    public void testGetGID() throws IOException {
+        URL poolURL = new URL("https://hqporner.com/hdporn/84636-pool_lesson_with_a_cheating_husband.html");
+        HqpornerRipper ripper = new HqpornerRipper(poolURL);
+        assertEquals("84636-pool_lesson_with_a_cheating_husband", ripper.getGID(poolURL));
+    }
+
 }
