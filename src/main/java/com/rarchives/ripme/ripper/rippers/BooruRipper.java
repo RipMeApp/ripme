@@ -16,27 +16,38 @@ import org.apache.log4j.Logger;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
-public class XbooruRipper extends AbstractHTMLRipper {
-    private static final Logger logger = Logger.getLogger(XbooruRipper.class);
+public class BooruRipper extends AbstractHTMLRipper {
+    private static final Logger logger = Logger.getLogger(BooruRipper.class);
 
     private static Pattern gidPattern = null;
 
-    public XbooruRipper(URL url) throws IOException {
+    public BooruRipper(URL url) throws IOException {
         super(url);
     }
 
     @Override
-    public String getDomain() {
-        return "xbooru.com";
+    public boolean canRip(URL url) {
+        if (url.toExternalForm().contains("xbooru") || url.toExternalForm().contains("gelbooru")) {
+            return true;
+        }
+        return false;
+
     }
 
     @Override
     public String getHost() {
-        return "xbooru";
+        logger.info(url.toExternalForm().split("/")[2]);
+        return url.toExternalForm().split("/")[2].split("\\.")[0];
+    }
+
+    @Override
+    public String getDomain() {
+        return url.toExternalForm().split("/")[2];
     }
 
     private String getPage(int num) throws MalformedURLException {
-        return "http://xbooru.com/index.php?page=dapi&s=post&q=index&pid=" + num + "&tags=" + getTerm(url);
+        return "http://" + getHost() + ".com/index.php?page=dapi&s=post&q=index&pid=" + num + "&tags=" + getTerm(url);
+
     }
 
     @Override
@@ -72,7 +83,7 @@ public class XbooruRipper extends AbstractHTMLRipper {
 
     private String getTerm(URL url) throws MalformedURLException {
         if (gidPattern == null) {
-            gidPattern = Pattern.compile("^https?://(www\\.)?xbooru\\.com/(index.php)?.*([?&]tags=([a-zA-Z0-9$_.+!*'(),%-]+))(&|(#.*)?$)");
+            gidPattern = Pattern.compile("^https?://(www\\.)?(x|gel)booru\\.com/(index.php)?.*([?&]tags=([a-zA-Z0-9$_.+!*'(),%-]+))(&|(#.*)?$)");
         }
 
         Matcher m = gidPattern.matcher(url.toExternalForm());
@@ -80,17 +91,17 @@ public class XbooruRipper extends AbstractHTMLRipper {
             return m.group(4);
         }
 
-        throw new MalformedURLException("Expected xbooru.com URL format: xbooru.com/index.php?tags=searchterm - got " + url + " instead");
+        throw new MalformedURLException("Expected xbooru.com URL format: " + getHost() + ".com/index.php?tags=searchterm - got " + url + " instead");
     }
 
     @Override
     public String getGID(URL url) throws MalformedURLException {
         try {
-            return Utils.filesystemSafe(new URI(getTerm(url)).getPath());
+            return Utils.filesystemSafe(new URI(getTerm(url).replaceAll("&tags=", "")).getPath());
         } catch (URISyntaxException ex) {
             logger.error(ex);
         }
 
-        throw new MalformedURLException("Expected xbooru.com URL format: xbooru.com/index.php?tags=searchterm - got " + url + " instead");
+        throw new MalformedURLException("Expected xbooru.com URL format: " + getHost() + ".com/index.php?tags=searchterm - got " + url + " instead");
     }
 }
