@@ -209,28 +209,11 @@ public class InstagramRipper extends AbstractJSONRipper {
         // Without this regex most images will return a 403 error
         imageURL = imageURL.replaceAll("vp/[a-zA-Z0-9]*/", "");
         imageURL = imageURL.replaceAll("scontent.cdninstagram.com/hphotos-", "igcdn-photos-d-a.akamaihd.net/hphotos-ak-");
-        // TODO replace this with a single regex
-        imageURL = imageURL.replaceAll("p150x150/", "");
-        imageURL = imageURL.replaceAll("p320x320/", "");
-        imageURL = imageURL.replaceAll("p480x480/", "");
-        imageURL = imageURL.replaceAll("p640x640/", "");
-        imageURL = imageURL.replaceAll("p720x720/", "");
-        imageURL = imageURL.replaceAll("p1080x1080/", "");
-        imageURL = imageURL.replaceAll("p2048x2048/", "");
-        imageURL = imageURL.replaceAll("s150x150/", "");
-        imageURL = imageURL.replaceAll("s320x320/", "");
-        imageURL = imageURL.replaceAll("s480x480/", "");
-        imageURL = imageURL.replaceAll("s640x640/", "");
-        imageURL = imageURL.replaceAll("s720x720/", "");
-        imageURL = imageURL.replaceAll("s1080x1080/", "");
-        imageURL = imageURL.replaceAll("s2048x2048/", "");
 
-        
         // Instagram returns cropped images to unauthenticated applications to maintain legacy support. 
         // To retrieve the uncropped image, remove this segment from the URL. 
         // Segment format: cX.Y.W.H - eg: c0.134.1080.1080
         imageURL = imageURL.replaceAll("/c\\d{1,4}\\.\\d{1,4}\\.\\d{1,4}\\.\\d{1,4}", "");
-
         imageURL = imageURL.replaceAll("\\?ig_cache_key.+$", "");
         return imageURL;
     }
