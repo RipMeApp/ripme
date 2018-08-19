@@ -8,7 +8,9 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.lang.reflect.Array;
 import java.net.MalformedURLException;
@@ -19,6 +21,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.List;
+import java.util.stream.Stream;
 
 import javax.imageio.ImageIO;
 import javax.swing.DefaultListModel;
@@ -132,6 +135,8 @@ public final class MainWindow implements Runnable, RipStatusHandler {
     private static JLabel configThreadsLabel;
     private static JLabel configTimeoutLabel;
     private static JLabel configRetriesLabel;
+    // This doesn't really belong here but I have no idea where else to put it
+    private static JButton configUrlFileChooserButton;
 
     private static TrayIcon trayIcon;
     private static MenuItem trayMenuMain;
@@ -499,6 +504,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         configPreferMp4 = addNewCheckbox(rb.getString("prefer.mp4.over.gif"),"prefer.mp4", false);
         configWindowPosition = addNewCheckbox(rb.getString("restore.window.position"), "window.position", true);
         configURLHistoryCheckbox = addNewCheckbox(rb.getString("remember.url.history"), "remember.url_history", true);
+        configUrlFileChooserButton = new JButton("Download url list");
 
         configLogLevelCombobox = new JComboBox<>(new String[] {"Log level: Error", "Log level: Warn", "Log level: Info", "Log level: Debug"});
         configSelectLangComboBox = new JComboBox<>(supportedLanges);
@@ -526,7 +532,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         addItemToConfigGridBagConstraints(gbc, 8, configClipboardAutorip, configSaveAlbumTitles);
         addItemToConfigGridBagConstraints(gbc, 9, configSaveDescriptions, configPreferMp4);
         addItemToConfigGridBagConstraints(gbc, 10, configWindowPosition, configURLHistoryCheckbox);
-        addItemToConfigGridBagConstraints(gbc, 11, configSelectLangComboBox);
+        addItemToConfigGridBagConstraints(gbc, 11, configSelectLangComboBox, configUrlFileChooserButton);
         addItemToConfigGridBagConstraints(gbc, 12, configSaveDirLabel, configSaveDirButton);
 
 
@@ -568,6 +574,11 @@ public final class MainWindow implements Runnable, RipStatusHandler {
     }
 
     private void addItemToConfigGridBagConstraints(GridBagConstraints gbc, int gbcYValue, JCheckBox thing1ToAdd, JComboBox thing2ToAdd ) {
+        gbc.gridy = gbcYValue;  gbc.gridx = 0; configurationPanel.add(thing1ToAdd, gbc);
+        gbc.gridx = 1; configurationPanel.add(thing2ToAdd, gbc);
+    }
+
+    private void addItemToConfigGridBagConstraints(GridBagConstraints gbc, int gbcYValue, JComboBox thing1ToAdd, JButton thing2ToAdd ) {
         gbc.gridy = gbcYValue;  gbc.gridx = 0; configurationPanel.add(thing1ToAdd, gbc);
         gbc.gridx = 1; configurationPanel.add(thing2ToAdd, gbc);
     }
@@ -832,6 +843,37 @@ public final class MainWindow implements Runnable, RipStatusHandler {
             configSaveDirLabel.setText(Utils.shortenPath(chosenPath));
             Utils.setConfigString("rips.directory", chosenPath);
         });
+        configUrlFileChooserButton.addActionListener(arg0 -> {
+            UIManager.put("FileChooser.useSystemExtensionHiding", false);
+            JFileChooser jfc = new JFileChooser(Utils.getWorkingDirectory());
+            jfc.setFileSelectionMode(JFileChooser.FILES_ONLY);
+            int returnVal = jfc.showDialog(null, "Open");
+            if (returnVal != JFileChooser.APPROVE_OPTION) {
+                return;
+            }
+            File chosenFile = jfc.getSelectedFile();
+            String chosenPath = null;
+            try {
+                chosenPath = chosenFile.getCanonicalPath();
+            } catch (Exception e) {
+                LOGGER.error("Error while getting selected path: ", e);
+                return;
+            }
+            try {
+                BufferedReader br = new BufferedReader(new FileReader(chosenPath));
+                for (String line = br.readLine(); line != null; line = br.readLine()) {
+                    if (line.startsWith("http")) {
+                        MainWindow.addUrlToQueue(line);
+                    } else {
+                        LOGGER.error("Skipping url " + line + " because it looks malformed (doesn't start with http)");
+                    }
+                }
+
+
+                } catch(IOException e) {
+                    LOGGER.error("Error reading file " + e.getMessage());
+                }
+            });
         addCheckboxListener(configSaveOrderCheckbox, "download.save_order");
         addCheckboxListener(configOverwriteCheckbox, "file.overwrite");
         addCheckboxListener(configSaveLogs, "log.save");
