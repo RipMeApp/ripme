@@ -146,7 +146,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
 
     private static AbstractRipper ripper;
 
-    private ResourceBundle rb = Utils.getResourceBundle(null);
+    public static ResourceBundle rb = Utils.getResourceBundle(null);
 
     // All the langs ripme has been translated into
     private static String[] supportedLanges = new String[] {"en_US", "de_DE", "es_ES", "fr_CH", "kr_KR", "pt_BR", "pt_PT",
@@ -519,7 +519,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         } catch (Exception e) { }
         configSaveDirLabel.setToolTipText(configSaveDirLabel.getText());
         configSaveDirLabel.setHorizontalAlignment(JLabel.RIGHT);
-        configSaveDirButton = new JButton("Select Save Directory...");
+        configSaveDirButton = new JButton(rb.getString("select.save.dir") + "...");
 
         addItemToConfigGridBagConstraints(gbc, 0, configUpdateLabel, configUpdateButton);
         addItemToConfigGridBagConstraints(gbc, 1, configAutoupdateCheckbox, configLogLevelCombobox);

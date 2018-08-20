@@ -14,9 +14,11 @@ import java.net.URLConnection;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.ResourceBundle;
 
 import javax.net.ssl.HttpsURLConnection;
 
+import com.rarchives.ripme.ui.MainWindow;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 import org.jsoup.HttpStatusException;
@@ -30,6 +32,8 @@ import com.rarchives.ripme.ripper.AbstractRipper;
  * Includes retry logic, observer notifications, and other goodies.
  */
 class DownloadFileThread extends Thread {
+
+    private ResourceBundle rb = MainWindow.rb;
 
     private static final Logger logger = Logger.getLogger(DownloadFileThread.class);
 
@@ -78,16 +82,16 @@ class DownloadFileThread extends Thread {
         try {
             observer.stopCheck();
         } catch (IOException e) {
-            observer.downloadErrored(url, "Download interrupted");
+            observer.downloadErrored(url, rb.getString("download.interrupted"));
             return;
         }
         if (saveAs.exists() && !observer.tryResumeDownload() && !getFileExtFromMIME ||
                 Utils.fuzzyExists(new File(saveAs.getParent()), saveAs.getName()) && getFileExtFromMIME && !observer.tryResumeDownload()) {
             if (Utils.getConfigBoolean("file.overwrite", false)) {
-                logger.info("[!] Deleting existing file" + prettySaveAs);
+                logger.info("[!] " + rb.getString("deleting.existing.file") + prettySaveAs);
                 saveAs.delete();
             } else {
-                logger.info("[!] Skipping " + url + " -- file already exists: " + prettySaveAs);
+                logger.info("[!] " + rb.getString("skipping") + url + " -- " + rb.getString("file.already.exists") + ": " + prettySaveAs);
                 observer.downloadExists(url, saveAs);
                 return;
             }
@@ -133,14 +137,14 @@ class DownloadFileThread extends Thread {
                         huc.setRequestProperty("Range", "bytes=" + fileSize + "-");
                     }
                 }
-                logger.debug("Request properties: " + huc.getRequestProperties());
+                logger.debug(rb.getString("request.properties") + ": " + huc.getRequestProperties());
                 huc.connect();
 
                 int statusCode = huc.getResponseCode();
                 logger.debug("Status code: " + statusCode);
                 if (statusCode != 206 && observer.tryResumeDownload() && saveAs.exists()) {
                     // TODO find a better way to handle servers that don't support resuming downloads then just erroring out
-                    throw new IOException("Server doesn't support resuming downloads");
+                    throw new IOException(rb.getString("server.doesnt.support.resuming.downloads"));
                 }
                 if (statusCode  / 100 == 3) { // 3xx Redirect
                     if (!redirected) {
@@ -154,14 +158,14 @@ class DownloadFileThread extends Thread {
                     throw new IOException("Redirect status code " + statusCode + " - redirect to " + location);
                 }
                 if (statusCode / 100 == 4) { // 4xx errors
-                    logger.error("[!] Non-retriable status code " + statusCode + " while downloading from " + url);
-                    observer.downloadErrored(url, "Non-retriable status code " + statusCode + " while downloading " + url.toExternalForm());
+                    logger.error("[!] " + rb.getString("nonretriable.status.code") + " " + statusCode + " while downloading from " + url);
+                    observer.downloadErrored(url, rb.getString("nonretriable.status.code") + " " + statusCode + " while downloading " + url.toExternalForm());
                     return; // Not retriable, drop out.
                 }
                 if (statusCode / 100 == 5) { // 5xx errors
-                    observer.downloadErrored(url, "Retriable status code " + statusCode + " while downloading " + url.toExternalForm());
+                    observer.downloadErrored(url, rb.getString("retriable.status.code") + " " + statusCode + " while downloading " + url.toExternalForm());
                     // Throw exception so download can be retried
-                    throw new IOException("Retriable status code " + statusCode);
+                    throw new IOException(rb.getString("retriable.status.code") + " " + statusCode);
                 }
                 if (huc.getContentLength() == 503 && urlToDownload.getHost().endsWith("imgur.com")) {
                     // Imgur image with 503 bytes is "404"
@@ -197,8 +201,8 @@ class DownloadFileThread extends Thread {
                         if (fileExt != null) {
                             saveAs = new File(saveAs.toString() + "." + fileExt);
                         } else {
-                            logger.error("Was unable to get content type using magic number");
-                            logger.error("Magic number was: " + Arrays.toString(magicBytes));
+                            logger.error(rb.getString("was.unable.to.get.content.type.using.magic.number"));
+                            logger.error(rb.getString("magic.number.was") + ": " + Arrays.toString(magicBytes));
                         }
                     }
                 }
@@ -214,7 +218,7 @@ class DownloadFileThread extends Thread {
                     try {
                         observer.stopCheck();
                     } catch (IOException e) {
-                        observer.downloadErrored(url, "Download interrupted");
+                        observer.downloadErrored(url, rb.getString("download.interrupted"));
                         return;
                     }
                     fos.write(data, 0, bytesRead);
@@ -241,7 +245,7 @@ class DownloadFileThread extends Thread {
                 // Download failed, break out of loop
                 break;
             } catch (HttpStatusException hse) {
-                logger.debug("HTTP status exception", hse);
+                logger.debug(rb.getString("http.status.exception"), hse);
                 logger.error("[!] HTTP status " + hse.getStatusCode() + " while downloading from " + urlToDownload);
                 if (hse.getStatusCode() == 404 && Utils.getConfigBoolean("errors.skip404", false)) {
                     observer.downloadErrored(url, "HTTP status code " + hse.getStatusCode() + " while downloading " + url.toExternalForm());
@@ -249,7 +253,7 @@ class DownloadFileThread extends Thread {
                 }
             } catch (IOException e) {
                 logger.debug("IOException", e);
-                logger.error("[!] Exception while downloading file: " + url + " - " + e.getMessage());
+                logger.error("[!] " + rb.getString("exception.while.downloading.file") + ": " + url + " - " + e.getMessage());
             } finally {
                 // Close any open streams
                 try {
@@ -260,8 +264,8 @@ class DownloadFileThread extends Thread {
                 } catch (IOException e) { }
             }
             if (tries > this.retries) {
-                logger.error("[!] Exceeded maximum retries (" + this.retries + ") for URL " + url);
-                observer.downloadErrored(url, "Failed to download " + url.toExternalForm());
+                logger.error("[!] " + rb.getString ("exceeded.maximum.retries") + " (" + this.retries + ") for URL " + url);
+                observer.downloadErrored(url, rb.getString("failed.to.download") + " " + url.toExternalForm());
                 return;
             }
         } while (true);
