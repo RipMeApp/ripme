@@ -23,6 +23,7 @@ import org.jsoup.HttpStatusException;
 
 import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
 import com.rarchives.ripme.utils.Utils;
+import com.rarchives.ripme.ripper.AbstractRipper;
 
 /**
  * Thread for downloading files.
@@ -221,6 +222,14 @@ class DownloadFileThread extends Thread {
                         bytesDownloaded += bytesRead;
                         observer.setBytesCompleted(bytesDownloaded);
                         observer.sendUpdate(STATUS.COMPLETED_BYTES, bytesDownloaded);
+                    }
+                    // If this is a test and we're downloading a large file
+                    if (AbstractRipper.isThisATest() && bytesTotal / 10000000 >= 10) {
+                        logger.debug("Not downloading whole file because it is over 10mb and this is a test");
+                        bis.close();
+                        fos.close();
+                        break;
+
                     }
                 }
                 bis.close();

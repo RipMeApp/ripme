@@ -47,7 +47,7 @@ public abstract class AbstractRipper
     // Everytime addUrlToDownload skips a already downloaded url this increases by 1
     public int alreadyDownloadedUrls = 0;
     private boolean shouldStop = false;
-    private boolean thisIsATest = false;
+    private static boolean thisIsATest = false;
 
     public void stop() {
         shouldStop = true;
@@ -611,7 +611,7 @@ public abstract class AbstractRipper
         LOGGER.debug("THIS IS A TEST RIP");
         thisIsATest = true;
     }
-    protected boolean isThisATest() {
+    protected static boolean isThisATest() {
         return thisIsATest;
     }
 
