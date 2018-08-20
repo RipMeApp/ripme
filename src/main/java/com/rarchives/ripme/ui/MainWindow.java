@@ -29,6 +29,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -160,6 +161,30 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         }
     }
 
+    private static int getAverageFontWidth(JComponent component) {
+        int sum = 0;
+        int[] widths = component.getFontMetrics(component.getFont()).getWidths();
+        for(int i : widths) {
+            sum += i;
+        }
+        return sum / widths.length;
+    }
+
+    private static void insertWrappedString(JComponent parent, StyledDocument document, String string, SimpleAttributeSet s) 
+        throws BadLocationException {
+        StringBuilder resultString = new StringBuilder();
+        int maxCharsToFit = parent.getWidth() / getAverageFontWidth(parent);
+        int i = 0;
+        while(i < string.length()/maxCharsToFit) {
+            if(i > 0) resultString.append(string.substring(i*maxCharsToFit-2, i*maxCharsToFit));
+            resultString.append(string.substring(i*maxCharsToFit, (i+1)*maxCharsToFit-2));
+            resultString.append("\n");
+            i++;
+        }
+        resultString.append(string.substring(string.length()-(string.length()%maxCharsToFit)));
+        resultString.append("\n");
+        document.insertString(document.getLength(), resultString.toString(), s);
+    }
 
     private static void addCheckboxListener(JCheckBox checkBox, String configString) {
         checkBox.addActionListener(arg0 -> {
@@ -251,7 +276,14 @@ public final class MainWindow implements Runnable, RipStatusHandler {
 
     private void statusWithColor(String text, Color color) {
         statusLabel.setForeground(color);
-        statusLabel.setText(text);
+        statusLabel.setToolTipText(text);
+        int averageWidth = getAverageFontWidth(statusLabel);
+        int numCharsToFit = statusLabel.getWidth() / averageWidth;
+        if(text.length() > (mainFrame.getWidth() / averageWidth)) {
+            statusLabel.setText(text.substring(0, numCharsToFit-6) + "...");
+        } else {
+            statusLabel.setText(text);
+        }
         pack();
     }
 
@@ -318,6 +350,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         gbc.weightx = 1;
 
         statusLabel = new JLabel(rb.getString("inactive"));
+        statusLabel.setToolTipText(rb.getString("inactive"));
         statusLabel.setHorizontalAlignment(JLabel.CENTER);
         openButton = new JButton();
         openButton.setVisible(false);
@@ -1059,7 +1092,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         StyledDocument sd = logText.getStyledDocument();
         try {
             synchronized (this) {
-                sd.insertString(sd.getLength(), text + "\n", sas);
+                insertWrappedString(logText, sd, text, sas);
             }
         } catch (BadLocationException e) { }
 
