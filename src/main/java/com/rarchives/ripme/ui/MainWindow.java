@@ -537,7 +537,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         configPreferMp4 = addNewCheckbox(rb.getString("prefer.mp4.over.gif"),"prefer.mp4", false);
         configWindowPosition = addNewCheckbox(rb.getString("restore.window.position"), "window.position", true);
         configURLHistoryCheckbox = addNewCheckbox(rb.getString("remember.url.history"), "remember.url_history", true);
-        configUrlFileChooserButton = new JButton("Download url list");
+        configUrlFileChooserButton = new JButton(rb.getString("download.url.list"));
 
         configLogLevelCombobox = new JComboBox<>(new String[] {"Log level: Error", "Log level: Warn", "Log level: Info", "Log level: Debug"});
         configSelectLangComboBox = new JComboBox<>(supportedLanges);
@@ -637,6 +637,8 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         configSaveAlbumTitles.setText(rb.getString("save.album.titles"));
         configClipboardAutorip.setText(rb.getString("autorip.from.clipboard"));
         configSaveDescriptions.setText(rb.getString("save.descriptions"));
+        configUrlFileChooserButton.setText(rb.getString("download.url.list"));
+        configSaveDirButton.setText(rb.getString("select.save.dir") + "...");
         configPreferMp4.setText(rb.getString("prefer.mp4.over.gif"));
         configWindowPosition.setText(rb.getString("restore.window.position"));
         configURLHistoryCheckbox.setText(rb.getString("remember.url.history"));
