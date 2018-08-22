@@ -225,13 +225,14 @@ public class RedditRipper extends AlbumRipper {
         } catch (MalformedURLException e) {
             return;
         }
-
         String subdirectory = "";
-        if (Utils.getConfigBoolean("album_titles.save", true)) {
-            subdirectory = title;
-            title = "-" + title + "-";
-        } else {
-            title = "";
+        if (Utils.getConfigBoolean("reddit.use_sub_dirs", true)) {
+            if (Utils.getConfigBoolean("album_titles.save", true)) {
+                subdirectory = title;
+                title = "-" + title + "-";
+            } else {
+                title = "";
+            }
         }
 
         List<URL> urls = RipUtils.getFilesFromURL(originalURL);
