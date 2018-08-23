@@ -73,7 +73,7 @@ public class GfycatRipper extends AbstractSingleFileRipper {
     @Override
     public List<String> getURLsFromPage(Document doc) {
         List<String> result = new ArrayList<>();
-        Elements videos = doc.select("source#mp4Source");
+        Elements videos = doc.select("source");
         String vidUrl = videos.first().attr("src");
         if (vidUrl.startsWith("//")) {
             vidUrl = "http:" + vidUrl;
