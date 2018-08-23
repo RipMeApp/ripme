@@ -1266,11 +1266,12 @@ public final class MainWindow implements Runnable, RipStatusHandler {
                         int rangeStart = Integer.parseInt(rangeToParse.split("-")[0]);
                         int rangeEnd = Integer.parseInt(rangeToParse.split("-")[1]);
                         for (int i = rangeStart; i < rangeEnd +1; i++) {
-                            if (canRip(url.replaceAll("\\{\\S*\\}", Integer.toString(i)))) {
-                                queueListModel.add(queueListModel.size(), url.replaceAll("\\{\\S*\\}", Integer.toString(i)));
+                            String realURL = url.replaceAll("\\{\\S*\\}", Integer.toString(i));
+                            if (canRip(realURL)) {
+                                queueListModel.add(queueListModel.size(), realURL);
                                 ripTextfield.setText("");
                             } else {
-                                LOGGER.error("Can't find ripper for " + url.replaceAll("\\{\\S*\\}", Integer.toString(i)));
+                                LOGGER.error("Can't find ripper for " +realURL);
                             }
                         }
                     }
