@@ -12,7 +12,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
@@ -21,7 +20,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.List;
-import java.util.stream.Stream;
 
 import javax.imageio.ImageIO;
 import javax.swing.DefaultListModel;
@@ -1238,11 +1236,49 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         return null;
     }
 
+    private boolean canRip(String urlString) {
+        try {
+            String urlText = urlString.trim();
+            if (urlText.equals("")) {
+                return false;
+            }
+            if (!urlText.startsWith("http")) {
+                urlText = "http://" + urlText;
+            }
+            URL url = new URL(urlText);
+            // Ripper is needed here to throw.not throw an Exception
+            AbstractRipper ripper = AbstractRipper.getRipper(url);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
     class RipButtonHandler implements ActionListener {
         public void actionPerformed(ActionEvent event) {
-            if (!queueListModel.contains(ripTextfield.getText()) && !ripTextfield.getText().equals("")) {
-                queueListModel.add(queueListModel.size(), ripTextfield.getText());
-                ripTextfield.setText("");
+            String url = ripTextfield.getText();
+            if (!queueListModel.contains(url) && !url.equals("")) {
+                // Check if we're ripping a range of urls
+                if (url.contains("{")) {
+                    // Make sure the user hasn't forgotten the closing }
+                    if (url.contains("}")) {
+                        String rangeToParse = url.substring(url.indexOf("{") + 1, url.indexOf("}"));
+                        int rangeStart = Integer.parseInt(rangeToParse.split("-")[0]);
+                        int rangeEnd = Integer.parseInt(rangeToParse.split("-")[1]);
+                        for (int i = rangeStart; i < rangeEnd +1; i++) {
+                            String realURL = url.replaceAll("\\{\\S*\\}", Integer.toString(i));
+                            if (canRip(realURL)) {
+                                queueListModel.add(queueListModel.size(), realURL);
+                                ripTextfield.setText("");
+                            } else {
+                                LOGGER.error("Can't find ripper for " +realURL);
+                            }
+                        }
+                    }
+                } else {
+                    queueListModel.add(queueListModel.size(), ripTextfield.getText());
+                    ripTextfield.setText("");
+                }
             } else {
                 if (!isRipping) {
                     ripNextAlbum();
