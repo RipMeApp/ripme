@@ -35,7 +35,7 @@ public class LusciousRipper extends AbstractHTMLRipper {
     public Document getFirstPage() throws IOException {
         // "url" is an instance field of the superclass
         Document page = Http.url(url).get();
-        URL firstUrl = new URL("https://luscious.net" +  page.select("div > div.album_cover_item > a").first().attr("href"));
+        URL firstUrl = new URL("https://luscious.net" +  page.select("div > div.item.thumbnail.ic_container > a").first().attr("href"));
         LOGGER.info("First page is " + "https://luscious.net" +  page.select("div > div.album_cover_item > a").first().attr("href"));
         return Http.url(firstUrl).get();
     }
@@ -43,10 +43,11 @@ public class LusciousRipper extends AbstractHTMLRipper {
     @Override
     public List<String> getURLsFromPage(Document page) {
         List<String> urls = new ArrayList<>();
-        Elements urlElements = page.select("img#single_picture");
+        Elements urlElements = page.select(".icon-download");
         for (Element e : urlElements) {
-            urls.add(e.attr("src"));
+            urls.add(e.attr("href"));
         }
+        
         // This is here for pages with mp4s instead of images
         String video_image = "";
         video_image = page.select("div > video > source").attr("src");
