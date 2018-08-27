@@ -41,6 +41,7 @@ import com.rarchives.ripme.utils.Utils;
 public class App {
 
     public static final Logger logger = Logger.getLogger(App.class);
+    public static String stringToAppendToFoldername = null;
     private static final History HISTORY = new History();
 
     /**
@@ -61,6 +62,12 @@ public class App {
             Proxy.setHTTPProxy(Utils.getConfigString("proxy.http", null));
         } else if (Utils.getConfigString("proxy.socks", null) != null) {
             Proxy.setSocks(Utils.getConfigString("proxy.socks", null));
+        }
+
+        // This has to be here instead of handleArgs because handleArgs isn't parsed until after a item is ripper
+        if (cl.hasOption("a")) {
+            logger.info(cl.getOptionValue("a"));
+            stringToAppendToFoldername = cl.getOptionValue("a");
         }
 
         if (GraphicsEnvironment.isHeadless() || args.length > 0) {
@@ -295,6 +302,7 @@ public class App {
         opts.addOption("s", "socks-server", true, "Use socks server ([user:password]@host[:port])");
         opts.addOption("p", "proxy-server", true, "Use HTTP Proxy server ([user:password]@host[:port])");
         opts.addOption("j", "update", false, "Update ripme");
+        opts.addOption("a","append-to-folder", true, "Append a string to the output folder name");
         return opts;
     }
 

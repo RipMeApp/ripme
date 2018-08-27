@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Observable;
 
+import com.rarchives.ripme.App;
 import org.apache.log4j.FileAppender;
 import org.apache.log4j.Logger;
 import org.jsoup.HttpStatusException;
@@ -259,8 +260,12 @@ public abstract class AbstractRipper
                 subdirectory = File.separator + subdirectory;
             }
             prefix = Utils.filesystemSanitized(prefix);
+            String topFolderName = workingDir.getCanonicalPath();
+            if (App.stringToAppendToFoldername != null) {
+                topFolderName = topFolderName + App.stringToAppendToFoldername;
+            }
             saveFileAs = new File(
-                    workingDir.getCanonicalPath()
+                    topFolderName
                     + subdirectory
                     + File.separator
                     + prefix
