@@ -149,7 +149,11 @@ public class RipUtils {
                         .userAgent(AbstractRipper.USER_AGENT)
                         .get();
                 for (Element el : doc.select("meta")) {
-                    if (el.attr("name").equals("twitter:image:src")) {
+                    if (el.attr("property").equals("og:video")) {
+                        result.add(new URL(el.attr("content")));
+                        return result;
+                    }
+                    else if (el.attr("name").equals("twitter:image:src")) {
                         result.add(new URL(el.attr("content")));
                         return result;
                     }
