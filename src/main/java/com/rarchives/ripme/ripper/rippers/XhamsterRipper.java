@@ -14,6 +14,12 @@ import org.jsoup.nodes.Element;
 import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 import com.rarchives.ripme.utils.Http;
 
+
+// WARNING
+// This ripper changes all requests to use the MOBILE version of the site
+// If you're chaning anything be sure to use the mobile sites html/css or you\re just wasting your time!
+// WARNING
+
 public class XhamsterRipper extends AbstractHTMLRipper {
 
     public XhamsterRipper(URL url) throws IOException {
@@ -47,10 +53,40 @@ public class XhamsterRipper extends AbstractHTMLRipper {
         if (m.matches()) {
             return m.group(1);
         }
+        p = Pattern.compile("^https?://[\\w\\w.]*xhamster\\.com/users/([a-zA-Z0-9_-]+)/photos");
+        m = p.matcher(url.toExternalForm());
+        if (m.matches()) {
+            return "user_" + m.group(1);
+        }
         throw new MalformedURLException(
                 "Expected xhamster.com gallery formats: "
                         + "xhamster.com/photos/gallery/xxxxx-#####"
                         + " Got: " + url);
+    }
+
+    @Override
+    public List<String> getAlbumsToQueue(Document doc) {
+        List<String> urlsToAddToQueue = new ArrayList<>();
+        LOGGER.info("getting albums");
+        for (Element elem : doc.select("div.item-container > a.item")) {
+            urlsToAddToQueue.add(elem.attr("href"));
+        }
+        LOGGER.info(doc.html());
+        return urlsToAddToQueue;
+    }
+
+    @Override
+    public boolean hasQueueSupport() {
+        return true;
+    }
+
+    @Override
+    public boolean pageContainsAlbums(URL url) {
+        Pattern p = Pattern.compile("^https?://[\\w\\w.]*xhamster\\.com/users/([a-zA-Z0-9_-]+)/photos");
+        Matcher m = p.matcher(url.toExternalForm());
+        LOGGER.info("Checking if page has albums");
+        LOGGER.info(m.matches());
+        return m.matches();
     }
 
 
@@ -64,7 +100,15 @@ public class XhamsterRipper extends AbstractHTMLRipper {
     public boolean canRip(URL url) {
         Pattern p = Pattern.compile("^https?://([\\w\\w]*\\.)?xhamster\\.com/photos/gallery/.*?(\\d+)$");
         Matcher m = p.matcher(url.toExternalForm());
-        return m.matches();
+        if (m.matches()) {
+            return true;
+        }
+        p = Pattern.compile("^https?://[\\w\\w.]*xhamster\\.com/users/([a-zA-Z0-9_-]+)/photos");
+        m = p.matcher(url.toExternalForm());
+        if (m.matches()) {
+            return true;
+        }
+        return false;
     }
 
     @Override
@@ -116,7 +160,7 @@ public class XhamsterRipper extends AbstractHTMLRipper {
             if (m.matches() && !username.isEmpty()) {
                 return getHost() + "_" + username + "_" + m.group(1);
             }
-        } catch (IOException e) {
+        } catch (IOException | NullPointerException e) {
             // Fall back to default album naming convention
         }
         return super.getAlbumTitle(url);
