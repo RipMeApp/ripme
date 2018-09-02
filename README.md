@@ -38,6 +38,7 @@ For information about running the `.jar` file, see [the How To Run wiki](https:/
 * Can rip images from tumblr in the size they were uploaded in [See here for how to enable](https://github.com/RipMeApp/ripme/wiki/Config-options#tumblrget_raw_image)
 * Skips already downloaded images by default
 * Can auto skip e-hentai and nhentai albums containing certain tags [See here for how to enable](https://github.com/RipMeApp/ripme/wiki/Config-options#nhentaiblacklisttags)
+* Download a range of urls [See here for how](https://github.com/RipMeApp/ripme/wiki/How-To-Run-RipMe#docker)
 
 ## [List of Supported Sites](https://github.com/ripmeapp/ripme/wiki/Supported-Sites)
 
