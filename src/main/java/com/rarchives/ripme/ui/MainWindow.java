@@ -1238,7 +1238,8 @@ public final class MainWindow implements Runnable, RipStatusHandler {
                                 queueListModel.add(queueListModel.size(), realURL);
                                 ripTextfield.setText("");
                             } else {
-                                LOGGER.error("Can't find ripper for " +realURL);
+                                appendLog("Can't find ripper for " + realURL, Color.RED);
+                                LOGGER.error("Can't find ripper for " + realURL);
                             }
                         }
                     }
