@@ -235,18 +235,9 @@ public class TumblrRipper extends AlbumRipper {
                 for (int j = 0; j < photos.length(); j++) {
                     photo = photos.getJSONObject(j);
                     try {
-                        String imageUrl = photo.getJSONObject("original_size").getString("url");
                         // If the url is shorter than 65 chars long we skip it because it's those images don't support grabbing them in fullsize
-                        if (Utils.getConfigBoolean("tumblr.get_raw_image", false) &&
-                                imageUrl.replaceAll("https", "http").length() > 65) {
-                            // We have to change the link to http because tumblr uses an invalid cert for data.tumblr.com
-                            String urlString = imageUrl.replaceAll("https", "http");
-                            urlString = urlString.replaceAll("https?://[a-sA-Z0-9_\\-\\.]*\\.tumblr", "http://data.tumblr");
-                            urlString = urlString.replaceAll("_\\d+\\.", "_raw.");
-                            fileURL = new URL(urlString);
-                        } else {
-                            fileURL = new URL(photo.getJSONObject("original_size").getString("url").replaceAll("http:", "https:"));
-                        }
+                        fileURL = new URL(photo.getJSONObject("original_size").getString("url").replaceAll("http:", "https:"));
+
                         m = p.matcher(fileURL.toString());
                         if (m.matches()) {
                             addURLToDownload(fileURL);
