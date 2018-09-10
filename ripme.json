@@ -1,7 +1,8 @@
 {
-    "latestVersion": "1.7.63",
-    "currentHash": "cd4cd6f09402c3fea864888904b8a10afe450d06d337ae3b0dbea0ff331fd145",
+    "latestVersion": "1.7.64",
+    "currentHash": "86e5789e7207e6667efaa2c000b940428bd72d433ff1a9f2c8182d6038710219",
     "changeList": [
+        "1.7.64: Removed loveroms ripper; Update ru_RU lang file; Removed tumblr raw image downloading; getFilesFromURL now can handle imgur videos; 8muses ripper now gets full sized images; Added -a flag for appending a string to folder name",
         "1.7.63: Removed line wrapping; Added anillty to rip url ranges; Fixed gfycatRipper",
         "1.7.62: Added hentai-comic and hentai-image rippers; Fixed HitomiRipper; Added hqporner ripper; Added Gelbooru.com ripper; Added line wrapping in log window",
         "1.7.61: Re-add 8Chan support; Added kenzato.uk to CheveretoRippers; Added russian translation; Reddit ripper now uses sub folders; fixed JabArchivesRipper regex",
