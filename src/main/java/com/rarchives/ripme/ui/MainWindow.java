@@ -1078,7 +1078,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
      * @param line the string to log
      * @param color the color of the line for the GUI log
      */
-    public void dobuleLog(String line, Color color) {
+    public void displayAndLogError(String line, Color color) {
         appendLog(line, color);
         LOGGER.error(line);
     }
@@ -1255,7 +1255,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
                                 queueListModel.add(queueListModel.size(), realURL);
                                 ripTextfield.setText("");
                             } else {
-                                dobuleLog("Can't find ripper for " + realURL, Color.RED);
+                                displayAndLogError("Can't find ripper for " + realURL, Color.RED);
                             }
                         }
                     }
