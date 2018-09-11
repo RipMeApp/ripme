@@ -1053,6 +1053,12 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         }
     }
 
+    /**
+     * Write a line to the Log section of the GUI
+     *
+     * @param text the string to log
+     * @param color the color of the line
+     */
     private void appendLog(final String text, final Color color) {
         SimpleAttributeSet sas = new SimpleAttributeSet();
         StyleConstants.setForeground(sas, color);
@@ -1064,6 +1070,17 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         } catch (BadLocationException e) { }
 
         logText.setCaretPosition(sd.getLength());
+    }
+
+    /**
+     * Write a line to the GUI log and the CLI log
+     *
+     * @param line the string to log
+     * @param color the color of the line for the GUI log
+     */
+    public void dobuleLog(String line, Color color) {
+        appendLog(line, color);
+        LOGGER.error(line);
     }
 
     private void loadHistory() {
@@ -1213,7 +1230,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
                 urlText = "http://" + urlText;
             }
             URL url = new URL(urlText);
-            // Ripper is needed here to throw.not throw an Exception
+            // Ripper is needed here to throw/not throw an Exception
             AbstractRipper ripper = AbstractRipper.getRipper(url);
             return true;
         } catch (Exception e) {
@@ -1238,8 +1255,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
                                 queueListModel.add(queueListModel.size(), realURL);
                                 ripTextfield.setText("");
                             } else {
-                                appendLog("Can't find ripper for " + realURL, Color.RED);
-                                LOGGER.error("Can't find ripper for " + realURL);
+                                dobuleLog("Can't find ripper for " + realURL, Color.RED);
                             }
                         }
                     }
