@@ -6,5 +6,9 @@ import java.net.URL;
 import com.rarchives.ripme.ripper.rippers.JagodibujaRipper;
 
 public class JagodibujaRipperTest extends RippersTest {
-    // TODO add a test
+    public void testJagodibujaRipper() throws IOException {
+        // a photo set
+        JagodibujaRipper ripper = new JagodibujaRipper(new URL("http://www.jagodibuja.com/comic-in-me/"));
+        testRipper(ripper);
+    }
 }
