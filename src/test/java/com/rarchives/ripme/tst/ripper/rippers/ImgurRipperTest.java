@@ -2,6 +2,7 @@ package com.rarchives.ripme.tst.ripper.rippers;
 
 import com.rarchives.ripme.ripper.rippers.ImgurRipper;
 import com.rarchives.ripme.ripper.rippers.ImgurRipper.ImgurAlbum;
+import com.rarchives.ripme.utils.RipUtils;
 
 import java.io.IOException;
 import java.net.URL;
@@ -67,6 +68,11 @@ public class ImgurRipperTest extends RippersTest {
     public void testImgurAlbumWithMoreThan100Pictures() throws IOException {
         ImgurAlbum album = ImgurRipper.getImgurAlbum(new URL("http://imgur.com/a/zXZBU"));
         assertTrue("Failed to find 100 files from " + album.url.toExternalForm() + ", only got " + album.images.size(), album.images.size() >= 100);
+    }
+
+    public void testImgurVideoFromGetFilesFromURL() throws Exception {
+        List<URL> urls = RipUtils.getFilesFromURL(new URL("https://i.imgur.com/4TtwxRN.gifv"));
+        assertEquals("https://i.imgur.com/4TtwxRN.mp4", urls.get(0).toExternalForm());
     }
 
     /*
