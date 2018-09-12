@@ -69,7 +69,7 @@ public class ViewcomicRipper extends AbstractHTMLRipper {
         @Override
         public List<String> getURLsFromPage(Document doc) {
             List<String> result = new ArrayList<String>();
-                for (Element el : doc.select("div.pinbin-copy > a > img")) {
+                for (Element el : doc.select("div.separator > a > img")) {
                     result.add(el.attr("src"));
                 }
             return result;
