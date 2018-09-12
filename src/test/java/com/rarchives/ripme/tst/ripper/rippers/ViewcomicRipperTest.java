@@ -6,5 +6,8 @@ import java.net.URL;
 import com.rarchives.ripme.ripper.rippers.ViewcomicRipper;
 
 public class ViewcomicRipperTest extends RippersTest {
-    // TODO add a test
+    public void testViewcomicRipper() throws IOException {
+        ViewcomicRipper ripper = new ViewcomicRipper(new URL("https://view-comic.com/batman-no-mans-land-vol-1/"));
+        testRipper(ripper);
+    }
 }
