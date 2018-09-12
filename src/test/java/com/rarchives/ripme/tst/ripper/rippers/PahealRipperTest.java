@@ -6,5 +6,9 @@ import java.net.URL;
 import com.rarchives.ripme.ripper.rippers.PahealRipper;
 
 public class PahealRipperTest extends RippersTest {
-    // TODO add a test
+    public void testPahealRipper() throws IOException {
+        // a photo set
+        PahealRipper ripper = new PahealRipper(new URL("http://rule34.paheal.net/post/list/bimbo/1"));
+        testRipper(ripper);
+    }
 }
