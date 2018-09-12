@@ -14,8 +14,6 @@ public class SpankBangRipperTest extends RippersTest {
         if (Utils.getConfigBoolean("test.run_flaky_tests", false)) {
             SpankbangRipper ripper = new SpankbangRipper(new URL("https://spankbang.com/2a7fh/video/mdb901"));  //most popular video of all time on site; should stay up
             testRipper(ripper);
-        } else {
-            LOGGER.info("Skipping SpankBang ripper test");
         }
     }
 
