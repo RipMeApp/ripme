@@ -6,5 +6,8 @@ import java.net.URL;
 import com.rarchives.ripme.ripper.rippers.HbrowseRipper;
 
 public class HbrowseRipperTest extends RippersTest {
-    // TODO add a test
+    public void testPahealRipper() throws IOException {
+        HbrowseRipper ripper = new HbrowseRipper(new URL("https://www.hbrowse.com/21013/c00001"));
+        testRipper(ripper);
+    }
 }
