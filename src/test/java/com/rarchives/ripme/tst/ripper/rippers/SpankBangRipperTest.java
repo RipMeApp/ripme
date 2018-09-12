@@ -6,8 +6,6 @@ import java.net.URL;
 import com.rarchives.ripme.ripper.rippers.video.SpankbangRipper;
 import com.rarchives.ripme.utils.Utils;
 
-import static com.sun.xml.internal.ws.spi.db.BindingContextFactory.LOGGER;
-
 public class SpankBangRipperTest extends RippersTest {
     public void testSpankBangVideo() throws IOException {
         // This test fails on the CI so we skip it unless running locally
