@@ -12,6 +12,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.rarchives.ripme.ui.RipStatusMessage;
+import com.rarchives.ripme.utils.RipUtils;
+import com.rarchives.ripme.utils.Utils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.jsoup.Connection;
@@ -21,12 +23,23 @@ import org.jsoup.nodes.Document;
 
 import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 import com.rarchives.ripme.utils.Http;
+import org.jsoup.nodes.Element;
 
 public class TsuminoRipper extends AbstractHTMLRipper {
     private Map<String,String> cookies = new HashMap<>();
 
     public TsuminoRipper(URL url) throws IOException {
         super(url);
+    }
+
+    public List<String> getTags(Document doc) {
+        List<String> tags = new ArrayList<>();
+        LOGGER.info("Getting tags");
+        for (Element tag : doc.select("div#Tag > a")) {
+            LOGGER.info("Found tag " + tag.text());
+            tags.add(tag.text().toLowerCase());
+        }
+        return tags;
     }
 
     private JSONArray getPageUrls() {
@@ -86,7 +99,14 @@ public class TsuminoRipper extends AbstractHTMLRipper {
     public Document getFirstPage() throws IOException {
         Connection.Response resp = Http.url(url).response();
         cookies.putAll(resp.cookies());
-        return resp.parse();
+        Document doc =  resp.parse();
+        String blacklistedTag = RipUtils.checkTags(Utils.getConfigStringArray("tsumino.blacklist.tags"), getTags(doc));
+        if (blacklistedTag != null) {
+            sendUpdate(RipStatusMessage.STATUS.DOWNLOAD_WARN, "Skipping " + url.toExternalForm() + " as it " +
+                    "contains the blacklisted tag \"" + blacklistedTag + "\"");
+            return null;
+        }
+        return doc;
     }
 
     @Override
