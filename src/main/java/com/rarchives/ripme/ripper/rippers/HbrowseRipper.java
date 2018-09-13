@@ -32,7 +32,7 @@ public class HbrowseRipper extends AbstractHTMLRipper {
 
         @Override
         public String getGID(URL url) throws MalformedURLException {
-            Pattern p = Pattern.compile("http://www.hbrowse.com/(\\d+)/[a-zA-Z0-9]*");
+            Pattern p = Pattern.compile("https?://www.hbrowse.com/(\\d+)/[a-zA-Z0-9]*");
             Matcher m = p.matcher(url.toExternalForm());
             if (m.matches()) {
                 return m.group(1);
@@ -45,7 +45,7 @@ public class HbrowseRipper extends AbstractHTMLRipper {
         public Document getFirstPage() throws IOException {
             // "url" is an instance field of the superclass
             Document tempDoc = Http.url(url).get();
-            return Http.url(tempDoc.select("td[id=pageTopHome] > a[title=view thumbnails (top)]").attr("href")).get();
+            return Http.url("https://www.hbrowse.com" + tempDoc.select("td[id=pageTopHome] > a[title=view thumbnails (top)]").attr("href")).get();
         }
 
         @Override
@@ -66,7 +66,7 @@ public class HbrowseRipper extends AbstractHTMLRipper {
             List<String> result = new ArrayList<String>();
             for (Element el : doc.select("table > tbody > tr > td > a > img")) {
                 String imageURL = el.attr("src").replace("/zzz", "");
-                result.add(imageURL);
+                result.add("https://www.hbrowse.com" + imageURL);
             }
                 return result;
         }
