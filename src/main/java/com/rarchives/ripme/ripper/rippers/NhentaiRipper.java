@@ -4,6 +4,7 @@ import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 import com.rarchives.ripme.ripper.DownloadThreadPool;
 import com.rarchives.ripme.ui.RipStatusMessage;
 import com.rarchives.ripme.utils.Http;
+import com.rarchives.ripme.utils.RipUtils;
 import com.rarchives.ripme.utils.Utils;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -82,37 +83,14 @@ public class NhentaiRipper extends AbstractHTMLRipper {
         return "nhentai" + title;
     }
 
-    private List<String> getTags(Document doc) {
+    public List<String> getTags(Document doc) {
         List<String> tags = new ArrayList<>();
         for (Element tag : doc.select("a.tag")) {
-            tags.add(tag.attr("href").replaceAll("/tag/", "").replaceAll("/", ""));
+            String tagString = tag.attr("href").replaceAll("/tag/", "").replaceAll("/", "");
+            LOGGER.info("Found tag: " + tagString);
+            tags.add(tagString);
         }
         return tags;
-    }
-
-    /**
-     * Checks for blacklisted tags on page. If it finds one it returns it, if not it return null
-     *
-     * @param doc
-     * @return String
-     */
-    public String checkTags(Document doc, String[] blackListedTags) {
-        // If the user hasn't blacklisted any tags we return false;
-        if (blackListedTags == null) {
-            return null;
-        }
-        LOGGER.info("Blacklisted tags " + blackListedTags[0]);
-        List<String> tagsOnPage = getTags(doc);
-        for (String tag : blackListedTags) {
-            for (String pageTag : tagsOnPage) {
-                // We replace all dashes in the tag with spaces because the tags we get from the site are separated using
-                // dashes
-                if (tag.trim().toLowerCase().equals(pageTag.replaceAll("-", " ").toLowerCase())) {
-                    return tag;
-                }
-            }
-        }
-        return null;
     }
 
     @Override
@@ -134,7 +112,7 @@ public class NhentaiRipper extends AbstractHTMLRipper {
             firstPage = Http.url(url).get();
         }
 
-        String blacklistedTag = checkTags(firstPage, Utils.getConfigStringArray("nhentai.blacklist.tags"));
+        String blacklistedTag = RipUtils.checkTags(Utils.getConfigStringArray("nhentai.blacklist.tags"), getTags(firstPage));
         if (blacklistedTag != null) {
             sendUpdate(RipStatusMessage.STATUS.DOWNLOAD_WARN, "Skipping " + url.toExternalForm() + " as it " +
                     "contains the blacklisted tag \"" + blacklistedTag + "\"");
