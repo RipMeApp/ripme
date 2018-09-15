@@ -1,7 +1,8 @@
 {
-    "latestVersion": "1.7.64",
-    "currentHash": "86e5789e7207e6667efaa2c000b940428bd72d433ff1a9f2c8182d6038710219",
+    "currentHash": "85fb37e19c1db96ea2ee10fb1c6e4f8f7e0448e14975e5e7d537aa980b0a66d8",
+    "latestVersion": "1.7.65",
     "changeList": [
+        "1.7.65: removed RajceRipper; Fixed xhamster ripper; Added xhamster QuickQ support; added StickyXXX.com Ripper; added Mulemax.com Ripper; added SpankBang.com Ripper; fixed LusciousRipper",
         "1.7.64: Removed loveroms ripper; Update ru_RU lang file; Removed tumblr raw image downloading; getFilesFromURL now can handle imgur videos; 8muses ripper now gets full sized images; Added -a flag for appending a string to folder name",
         "1.7.63: Removed line wrapping; Added anillty to rip url ranges; Fixed gfycatRipper",
         "1.7.62: Added hentai-comic and hentai-image rippers; Fixed HitomiRipper; Added hqporner ripper; Added Gelbooru.com ripper; Added line wrapping in log window",
