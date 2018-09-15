@@ -113,9 +113,9 @@ public class XhamsterRipper extends AbstractHTMLRipper {
 
     @Override
     public Document getNextPage(Document doc) throws IOException {
-        if (doc.select("a.next").first() != null) {
-            if (doc.select("a.next").first().attr("href").startsWith("http")) {
-                return Http.url(doc.select("a.next").first().attr("href")).get();
+        if (doc.select("a[data-page=next]").first() != null) {
+            if (doc.select("a[data-page=next]").first().attr("href").startsWith("http")) {
+                return Http.url(doc.select("a[data-page=next]").first().attr("href")).get();
             }
         }
         throw new IOException("No more pages");
