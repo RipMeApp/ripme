@@ -6,5 +6,8 @@ import java.net.URL;
 import com.rarchives.ripme.ripper.rippers.ThechiveRipper;
 
 public class ThechiveRipperTest extends RippersTest {
-    // TODO add a test
+    public void testPahealRipper() throws IOException {
+        ThechiveRipper ripper = new ThechiveRipper(new URL("https://thechive.com/2018/09/17/daily-morning-awesomeness-35-photos-555/"));
+        testRipper(ripper);
+    }
 }
