@@ -22,4 +22,9 @@ public class EightmusesRipperTest extends RippersTest {
         EightmusesRipper ripper = new EightmusesRipper(new URL("https://www.8muses.com/comix/album/Affect3D-Comics/TheDude3DX/Lust-Unleashed-The-Urge-To-Explore"));
         assertEquals("Affect3D-Comics", ripper.getGID(new URL("https://www.8muses.com/comics/album/Affect3D-Comics/TheDude3DX/Lust-Unleashed-The-Urge-To-Explore")));
     }
+
+    public void testGetSubdir() throws IOException {
+        EightmusesRipper ripper = new EightmusesRipper(new URL("https://www.8muses.com/comix/album/Affect3D-Comics/TheDude3DX/Lust-Unleashed-The-Urge-To-Explore"));
+        assertEquals("After-Party-Issue-1", ripper.getSubdir("After Party - Issue 1"));
+    }
 }
