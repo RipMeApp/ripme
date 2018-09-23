@@ -49,6 +49,10 @@ public class TumblrRipper extends AlbumRipper {
      * @return Tumblr API key
      */
     public static String getApiKey() {
+        // Use a different api ket for unit tests so we don't get 429 errors
+        if (isThisATest()) {
+            return "UHpRFx16HFIRgQjtjJKgfVIcwIeb71BYwOQXTMtiCvdSEPjV7N";
+        }
         if (API_KEY == null) {
             API_KEY = pickRandomApiKey();
         }
