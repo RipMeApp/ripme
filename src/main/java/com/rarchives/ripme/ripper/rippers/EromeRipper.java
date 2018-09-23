@@ -129,6 +129,9 @@ public class EromeRipper extends AbstractHTMLRipper {
         for (Element el : doc.select("source[label=HD]")) {
             results.add("https:" + el.attr("src"));
         }
+        for (Element el : doc.select("source[label=SD]")) {
+            results.add("https:" + el.attr("src"));
+        }
         return results;
     }
 
