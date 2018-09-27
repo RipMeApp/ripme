@@ -1,18 +1,22 @@
-package com.rarchives.ripme.ripper.rippers.video;
+package com.rarchives.ripme.ripper.rippers;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.rarchives.ripme.ripper.AbstractSingleFileRipper;
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import com.rarchives.ripme.ripper.VideoRipper;
 import com.rarchives.ripme.utils.Http;
 
-public class MulemaxRipper extends VideoRipper {
+public class MulemaxRipper extends AbstractSingleFileRipper {
 
     private static final String HOST = "mulemax";
 
@@ -22,7 +26,17 @@ public class MulemaxRipper extends VideoRipper {
 
     @Override
     public String getHost() {
-        return HOST;
+        return "mulemax";
+    }
+
+    @Override
+    public String getDomain() {
+        return "mulemax.com";
+    }
+
+    @Override
+    public Document getFirstPage() throws IOException {
+        return Http.url(url).get();
     }
 
     @Override
@@ -52,15 +66,14 @@ public class MulemaxRipper extends VideoRipper {
     }
 
     @Override
-    public void rip() throws IOException {
-        LOGGER.info("Retrieving " + this.url);
-        Document doc = Http.url(url).get();
-        Elements videos = doc.select(".video-js > source");
-        if (videos.isEmpty()) {
-            throw new IOException("Could not find Embed code at " + url);
-        }
-        String vidUrl = videos.attr("src");
-        addURLToDownload(new URL(vidUrl), HOST + "_" + getGID(this.url));
-        waitForThreads();
+    public List<String> getURLsFromPage(Document doc) {
+        List<String> result = new ArrayList<>();
+        result.add(doc.select(".video-js > source").attr("src"));
+        return result;
+    }
+
+    @Override
+    public void downloadURL(URL url, int index) {
+        addURLToDownload(url, getPrefix(index));
     }
 }
