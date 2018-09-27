@@ -19,6 +19,9 @@ import com.rarchives.ripme.ripper.AlbumRipper;
 import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
 import com.rarchives.ripme.utils.Http;
 import com.rarchives.ripme.utils.Utils;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 
 public class TumblrRipper extends AlbumRipper {
 
@@ -46,6 +49,10 @@ public class TumblrRipper extends AlbumRipper {
      * @return Tumblr API key
      */
     public static String getApiKey() {
+        // Use a different api ket for unit tests so we don't get 429 errors
+        if (isThisATest()) {
+            return "UHpRFx16HFIRgQjtjJKgfVIcwIeb71BYwOQXTMtiCvdSEPjV7N";
+        }
         if (API_KEY == null) {
             API_KEY = pickRandomApiKey();
         }
@@ -235,7 +242,6 @@ public class TumblrRipper extends AlbumRipper {
                 for (int j = 0; j < photos.length(); j++) {
                     photo = photos.getJSONObject(j);
                     try {
-                        // If the url is shorter than 65 chars long we skip it because it's those images don't support grabbing them in fullsize
                         fileURL = new URL(photo.getJSONObject("original_size").getString("url").replaceAll("http:", "https:"));
 
                         m = p.matcher(fileURL.toString());
@@ -256,6 +262,16 @@ public class TumblrRipper extends AlbumRipper {
                 } catch (Exception e) {
                     LOGGER.error("[!] Error while parsing video in " + post, e);
                     return true;
+                }
+            } else if (post.has("body")) {
+                Document d = Jsoup.parse(post.getString("body"));
+                if (!d.select("img").attr("src").isEmpty()) {
+                    try {
+                        addURLToDownload(new URL(d.select("img").attr("src")));
+                    } catch (MalformedURLException e) {
+                        LOGGER.error("[!] Error while getting embedded image at " + post, e);
+                        return true;
+                    }
                 }
             }
             if (albumType == ALBUM_TYPE.POST) {
