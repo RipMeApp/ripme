@@ -147,8 +147,20 @@ public final class MainWindow implements Runnable, RipStatusHandler {
     public static ResourceBundle rb = Utils.getResourceBundle(null);
 
     // All the langs ripme has been translated into
-    private static String[] supportedLanges = new String[] {"en_US", "de_DE", "es_ES", "fr_CH", "kr_KR", "pt_BR", "pt_PT",
-            "fi_FI", "in_ID", "nl_NL", "porrisavvo_FI", "ru_RU"};
+    private static String[] supportedLanges = new String[] {
+            "de_DE",
+            "en_US",
+            "es_ES",
+            "fi_FI",
+            "fr_CH",
+            "in_ID",
+            "kr_KR",
+            "nl_NL",
+            "pl_PL",
+            "porrisavvo_FI",
+            "pt_BR",
+            "pt_PT",
+            "ru_RU"};
 
     private void updateQueueLabel() {
         if (queueListModel.size() > 0) {
