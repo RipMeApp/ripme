@@ -11,7 +11,7 @@ public class VscoRipperTest extends RippersTest {
      * @throws IOException 
      */
     public void testSingleImageRip() throws IOException {
-        VscoRipper ripper = new VscoRipper(new URL("https://vsco.co/minijello/media/571cd612542220261a123441"));
+        VscoRipper ripper = new VscoRipper(new URL("https://vsco.co/jonathangodoy/media/5b2c92b2e112534b6716cc7e"));
         testRipper(ripper);
     }
     
