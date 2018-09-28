@@ -7,7 +7,7 @@ import java.util.List;
 
 import com.rarchives.ripme.ripper.VideoRipper;
 import com.rarchives.ripme.ripper.rippers.video.PornhubRipper;
-import com.rarchives.ripme.ripper.rippers.video.YoupornRipper;
+import com.rarchives.ripme.ripper.rippers.YoupornRipper;
 import com.rarchives.ripme.ripper.rippers.video.YuvutuRipper;
 
 public class VideoRippersTest extends RippersTest {
@@ -55,14 +55,6 @@ public class VideoRippersTest extends RippersTest {
         }
     }
 
-    public void testYoupornRipper() throws IOException {
-        List<URL> contentURLs = new ArrayList<>();
-        contentURLs.add(new URL("http://www.youporn.com/watch/7669155/mrs-li-amateur-69-orgasm/?from=categ"));
-        for (URL url : contentURLs) {
-            YoupornRipper ripper = new YoupornRipper(url);
-            videoTestHelper(ripper);
-        }
-    }
     
     public void testYuvutuRipper() throws IOException {
         List<URL> contentURLs = new ArrayList<>();
