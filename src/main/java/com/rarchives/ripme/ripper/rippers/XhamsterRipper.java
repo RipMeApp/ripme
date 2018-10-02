@@ -43,6 +43,9 @@ public class XhamsterRipper extends AbstractHTMLRipper {
         URLToReturn = URLToReturn.replaceAll("\\w\\w.xhamster.com", "xhamster.com");
         URL san_url = new URL(URLToReturn.replaceAll("xhamster.com", "m.xhamster.com"));
         LOGGER.info("sanitized URL is " + san_url.toExternalForm());
+        if (isVideoUrl(url)) {
+            return url;
+        }
         return san_url;
     }
 
@@ -58,7 +61,13 @@ public class XhamsterRipper extends AbstractHTMLRipper {
         if (m.matches()) {
             return "user_" + m.group(1);
         }
-        throw new MalformedURLException(
+        p = Pattern.compile("^https?://.*xhamster\\.com/(movies|videos)/(.*)$");
+        m = p.matcher(url.toExternalForm());
+        if (m.matches()) {
+            return m.group(2);
+        }
+
+            throw new MalformedURLException(
                 "Expected xhamster.com gallery formats: "
                         + "xhamster.com/photos/gallery/xxxxx-#####"
                         + " Got: " + url);
@@ -108,7 +117,18 @@ public class XhamsterRipper extends AbstractHTMLRipper {
         if (m.matches()) {
             return true;
         }
+        p = Pattern.compile("^https?://.*xhamster\\.com/(movies|videos)/.*$");
+        m = p.matcher(url.toExternalForm());
+        if (m.matches()) {
+            return true;
+        }
         return false;
+    }
+
+    private boolean isVideoUrl(URL url) {
+        Pattern p = Pattern.compile("^https?://.*xhamster\\.com/(movies|videos)/.*$");
+        Matcher m = p.matcher(url.toExternalForm());
+        return m.matches();
     }
 
     @Override
@@ -125,19 +145,23 @@ public class XhamsterRipper extends AbstractHTMLRipper {
     @Override
     public List<String> getURLsFromPage(Document doc) {
         List<String> result = new ArrayList<>();
-        for (Element thumb : doc.select("div.picture_view > div.pictures_block > div.items > div.item-container > a > div.thumb_container > div.img > img")) {
-            String image = thumb.attr("src");
-            // replace thumbnail urls with the urls to the full sized images
-            image = image.replaceAll(
-                    "https://upt.xhcdn\\.",
-                    "http://up.xhamster.");
-            image = image.replaceAll("ept\\.xhcdn", "ep.xhamster");
-            image = image.replaceAll(
-                    "_160\\.",
-                    "_1000.");
-            // Xhamster has bad cert management and uses invalid certs for some cdns, so we change all our requests to http
-            image = image.replaceAll("https", "http");
-            result.add(image);
+        if (!isVideoUrl(url)) {
+            for (Element thumb : doc.select("div.picture_view > div.pictures_block > div.items > div.item-container > a > div.thumb_container > div.img > img")) {
+                String image = thumb.attr("src");
+                // replace thumbnail urls with the urls to the full sized images
+                image = image.replaceAll(
+                        "https://upt.xhcdn\\.",
+                        "http://up.xhamster.");
+                image = image.replaceAll("ept\\.xhcdn", "ep.xhamster");
+                image = image.replaceAll(
+                        "_160\\.",
+                        "_1000.");
+                // Xhamster has bad cert management and uses invalid certs for some cdns, so we change all our requests to http
+                image = image.replaceAll("https", "http");
+                result.add(image);
+            }
+        } else {
+            result.add(doc.select("div.player-container > a").attr("href"));
         }
         return result;
     }
