@@ -19,7 +19,8 @@ public class ChanRipper extends AbstractHTMLRipper {
     private static List<ChanSite> explicit_domains = Arrays.asList(
         new ChanSite(Arrays.asList("boards.4chan.org"),   Arrays.asList("4cdn.org", "is.4chan.org", "is2.4chan.org", "is3.4chan.org")),
         new ChanSite(Arrays.asList("4archive.org"),       Arrays.asList("imgur.com")),
-        new ChanSite(Arrays.asList("archive.4plebs.org"), Arrays.asList("img.4plebs.org"))
+        new ChanSite(Arrays.asList("archive.4plebs.org"), Arrays.asList("img.4plebs.org")),
+        new ChanSite(Arrays.asList("yuki.la"))
         );
 
     private static List<String> url_piece_blacklist = Arrays.asList(
@@ -120,7 +121,7 @@ public class ChanRipper extends AbstractHTMLRipper {
         Matcher m;
 
         String u = url.toExternalForm();
-        if (u.contains("/thread/") || u.contains("/res/")) {
+        if (u.contains("/thread/") || u.contains("/res/") || u.contains("yuki.la")) {
             p = Pattern.compile("^.*\\.[a-z]{1,3}/[a-zA-Z0-9]+/(thread|res)/([0-9]+)(\\.html|\\.php)?.*$");
             m = p.matcher(u);
             if (m.matches()) {
@@ -135,6 +136,13 @@ public class ChanRipper extends AbstractHTMLRipper {
             }
             // xchan
             p = Pattern.compile("^.*\\.[a-z]{1,3}/board/[a-zA-Z0-9]+/thread/([0-9]+)/?.*$");
+            m = p.matcher(u);
+            if (m.matches()) {
+                return m.group(1);
+            }
+
+            // yuki.la
+            p = Pattern.compile("https?://yuki.la/[a-zA-Z0-9]+/([0-9]+)");
             m = p.matcher(u);
             if (m.matches()) {
                 return m.group(1);
