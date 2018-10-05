@@ -224,8 +224,13 @@ public class InstagramRipper extends AbstractJSONRipper {
                     .getJSONObject("graphql").getJSONObject("user")
                     .getJSONObject("edge_owner_to_timeline_media").getJSONObject("page_info").getString("end_cursor");
         } catch (JSONException e) {
-            return json.getJSONObject("data").getJSONObject("user")
-                    .getJSONObject("edge_owner_to_timeline_media").getJSONObject("page_info").getString("end_cursor");
+            // This is here so that when the user rips the last page they don't get a "end_cursor not a string" error
+            try {
+                return json.getJSONObject("data").getJSONObject("user")
+                        .getJSONObject("edge_owner_to_timeline_media").getJSONObject("page_info").getString("end_cursor");
+            } catch (JSONException t) {
+                return "";
+            }
         }
     }
 
