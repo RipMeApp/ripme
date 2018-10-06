@@ -124,20 +124,16 @@ public class XhamsterRipper extends AbstractHTMLRipper {
 
     @Override
     public List<String> getURLsFromPage(Document doc) {
+        LOGGER.debug("Checking for urls");
         List<String> result = new ArrayList<>();
-        for (Element thumb : doc.select("div.picture_view > div.pictures_block > div.items > div.item-container > a > div.thumb_container > div.img > img")) {
-            String image = thumb.attr("src");
-            // replace thumbnail urls with the urls to the full sized images
-            image = image.replaceAll(
-                    "https://upt.xhcdn\\.",
-                    "http://up.xhamster.");
-            image = image.replaceAll("ept\\.xhcdn", "ep.xhamster");
-            image = image.replaceAll(
-                    "_160\\.",
-                    "_1000.");
-            // Xhamster has bad cert management and uses invalid certs for some cdns, so we change all our requests to http
-            image = image.replaceAll("https", "http");
-            result.add(image);
+        for (Element page : doc.select("div.items > div.item-container > a.item")) {
+            String pageWithImageUrl = page.attr("href");
+            try {
+                String image = Http.url(new URL(pageWithImageUrl)).get().select("div.picture_container > a > img").attr("src");
+                result.add(image);
+            } catch (IOException e) {
+                LOGGER.error("Was unable to load page " + pageWithImageUrl);
+            }
         }
         return result;
     }
