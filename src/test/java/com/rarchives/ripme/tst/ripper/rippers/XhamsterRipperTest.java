@@ -35,7 +35,7 @@ public class XhamsterRipperTest extends RippersTest {
     }
 
     public void testGetNextPage() throws IOException {
-        XhamsterRipper ripper = new XhamsterRipper(new URL("https://pt.xhamster.com/photos/gallery/silvana-7105696"));
+        XhamsterRipper ripper = new XhamsterRipper(new URL("https://pt.xhamster.com/photos/gallery/mega-compil-6-10728626"));
         Document doc = ripper.getFirstPage();
         try {
             ripper.getNextPage(doc);
