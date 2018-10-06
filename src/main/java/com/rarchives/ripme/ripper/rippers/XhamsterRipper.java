@@ -155,6 +155,7 @@ public class XhamsterRipper extends AbstractHTMLRipper {
               } catch (IOException e) {
                   LOGGER.error("Was unable to load page " + pageWithImageUrl);
               }
+          }
         } else {
             result.add(doc.select("div.player-container > a").attr("href"));
         }
