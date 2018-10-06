@@ -26,6 +26,12 @@ public class XhamsterRipper extends AbstractHTMLRipper {
         super(url);
     }
 
+    private int index = 1;
+
+    @Override public boolean hasASAPRipping() {
+        return true;
+    }
+
     @Override
     public String getHost() {
         return "xhamster";
@@ -151,13 +157,14 @@ public class XhamsterRipper extends AbstractHTMLRipper {
               String pageWithImageUrl = page.attr("href");
               try {
                   String image = Http.url(new URL(pageWithImageUrl)).get().select("div.picture_container > a > img").attr("src");
-                  result.add(image);
+                  downloadFile(image);
               } catch (IOException e) {
                   LOGGER.error("Was unable to load page " + pageWithImageUrl);
               }
           }
         } else {
-            result.add(doc.select("div.player-container > a").attr("href"));
+            String imgUrl = doc.select("div.player-container > a").attr("href");
+            downloadFile(imgUrl);
         }
         return result;
     }
@@ -165,6 +172,15 @@ public class XhamsterRipper extends AbstractHTMLRipper {
     @Override
     public void downloadURL(URL url, int index) {
         addURLToDownload(url, getPrefix(index));
+    }
+
+    private void downloadFile(String url) {
+        try {
+            addURLToDownload(new URL(url), getPrefix(index));
+            index = index + 1;
+        } catch (MalformedURLException e) {
+            LOGGER.error("The url \"" + url + "\" is malformed");
+        }
     }
     
     @Override
