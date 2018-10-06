@@ -214,6 +214,7 @@ class DownloadFileThread extends Thread {
                 }
                 byte[] data = new byte[1024 * 256];
                 int bytesRead;
+                boolean shouldSkipFileDownload = huc.getContentLength() / 10000000 >= 10;
                 while ( (bytesRead = bis.read(data)) != -1) {
                     try {
                         observer.stopCheck();
@@ -228,7 +229,7 @@ class DownloadFileThread extends Thread {
                         observer.sendUpdate(STATUS.COMPLETED_BYTES, bytesDownloaded);
                     }
                     // If this is a test and we're downloading a large file
-                    if (AbstractRipper.isThisATest() && bytesTotal / 10000000 >= 10) {
+                    if (AbstractRipper.isThisATest() && shouldSkipFileDownload) {
                         logger.debug("Not downloading whole file because it is over 10mb and this is a test");
                         bis.close();
                         fos.close();

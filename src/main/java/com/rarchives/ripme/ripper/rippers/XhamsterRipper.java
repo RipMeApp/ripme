@@ -26,6 +26,12 @@ public class XhamsterRipper extends AbstractHTMLRipper {
         super(url);
     }
 
+    private int index = 1;
+
+    @Override public boolean hasASAPRipping() {
+        return true;
+    }
+
     @Override
     public String getHost() {
         return "xhamster";
@@ -144,24 +150,21 @@ public class XhamsterRipper extends AbstractHTMLRipper {
 
     @Override
     public List<String> getURLsFromPage(Document doc) {
+        LOGGER.debug("Checking for urls");
         List<String> result = new ArrayList<>();
         if (!isVideoUrl(url)) {
-            for (Element thumb : doc.select("div.picture_view > div.pictures_block > div.items > div.item-container > a > div.thumb_container > div.img > img")) {
-                String image = thumb.attr("src");
-                // replace thumbnail urls with the urls to the full sized images
-                image = image.replaceAll(
-                        "https://upt.xhcdn\\.",
-                        "http://up.xhamster.");
-                image = image.replaceAll("ept\\.xhcdn", "ep.xhamster");
-                image = image.replaceAll(
-                        "_160\\.",
-                        "_1000.");
-                // Xhamster has bad cert management and uses invalid certs for some cdns, so we change all our requests to http
-                image = image.replaceAll("https", "http");
-                result.add(image);
-            }
+          for (Element page : doc.select("div.items > div.item-container > a.item")) {
+              String pageWithImageUrl = page.attr("href");
+              try {
+                  String image = Http.url(new URL(pageWithImageUrl)).get().select("div.picture_container > a > img").attr("src");
+                  downloadFile(image);
+              } catch (IOException e) {
+                  LOGGER.error("Was unable to load page " + pageWithImageUrl);
+              }
+          }
         } else {
-            result.add(doc.select("div.player-container > a").attr("href"));
+            String imgUrl = doc.select("div.player-container > a").attr("href");
+            downloadFile(imgUrl);
         }
         return result;
     }
@@ -169,6 +172,15 @@ public class XhamsterRipper extends AbstractHTMLRipper {
     @Override
     public void downloadURL(URL url, int index) {
         addURLToDownload(url, getPrefix(index));
+    }
+
+    private void downloadFile(String url) {
+        try {
+            addURLToDownload(new URL(url), getPrefix(index));
+            index = index + 1;
+        } catch (MalformedURLException e) {
+            LOGGER.error("The url \"" + url + "\" is malformed");
+        }
     }
     
     @Override
