@@ -43,6 +43,9 @@ public class XhamsterRipper extends AbstractHTMLRipper {
         URLToReturn = URLToReturn.replaceAll("\\w\\w.xhamster.com", "xhamster.com");
         URL san_url = new URL(URLToReturn.replaceAll("xhamster.com", "m.xhamster.com"));
         LOGGER.info("sanitized URL is " + san_url.toExternalForm());
+        if (isVideoUrl(url)) {
+            return url;
+        }
         return san_url;
     }
 
@@ -58,7 +61,13 @@ public class XhamsterRipper extends AbstractHTMLRipper {
         if (m.matches()) {
             return "user_" + m.group(1);
         }
-        throw new MalformedURLException(
+        p = Pattern.compile("^https?://.*xhamster\\.com/(movies|videos)/(.*)$");
+        m = p.matcher(url.toExternalForm());
+        if (m.matches()) {
+            return m.group(2);
+        }
+
+            throw new MalformedURLException(
                 "Expected xhamster.com gallery formats: "
                         + "xhamster.com/photos/gallery/xxxxx-#####"
                         + " Got: " + url);
@@ -108,7 +117,18 @@ public class XhamsterRipper extends AbstractHTMLRipper {
         if (m.matches()) {
             return true;
         }
+        p = Pattern.compile("^https?://.*xhamster\\.com/(movies|videos)/.*$");
+        m = p.matcher(url.toExternalForm());
+        if (m.matches()) {
+            return true;
+        }
         return false;
+    }
+
+    private boolean isVideoUrl(URL url) {
+        Pattern p = Pattern.compile("^https?://.*xhamster\\.com/(movies|videos)/.*$");
+        Matcher m = p.matcher(url.toExternalForm());
+        return m.matches();
     }
 
     @Override
@@ -126,14 +146,17 @@ public class XhamsterRipper extends AbstractHTMLRipper {
     public List<String> getURLsFromPage(Document doc) {
         LOGGER.debug("Checking for urls");
         List<String> result = new ArrayList<>();
-        for (Element page : doc.select("div.items > div.item-container > a.item")) {
-            String pageWithImageUrl = page.attr("href");
-            try {
-                String image = Http.url(new URL(pageWithImageUrl)).get().select("div.picture_container > a > img").attr("src");
-                result.add(image);
-            } catch (IOException e) {
-                LOGGER.error("Was unable to load page " + pageWithImageUrl);
-            }
+        if (!isVideoUrl(url)) {
+          for (Element page : doc.select("div.items > div.item-container > a.item")) {
+              String pageWithImageUrl = page.attr("href");
+              try {
+                  String image = Http.url(new URL(pageWithImageUrl)).get().select("div.picture_container > a > img").attr("src");
+                  result.add(image);
+              } catch (IOException e) {
+                  LOGGER.error("Was unable to load page " + pageWithImageUrl);
+              }
+        } else {
+            result.add(doc.select("div.player-container > a").attr("href"));
         }
         return result;
     }
