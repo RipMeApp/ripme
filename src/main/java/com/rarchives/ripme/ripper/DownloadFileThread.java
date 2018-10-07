@@ -214,27 +214,24 @@ class DownloadFileThread extends Thread {
                 }
                 byte[] data = new byte[1024 * 256];
                 int bytesRead;
-                boolean shouldSkipFileDownload = huc.getContentLength() / 10000000 >= 10;
-                while ( (bytesRead = bis.read(data)) != -1) {
-                    try {
-                        observer.stopCheck();
-                    } catch (IOException e) {
-                        observer.downloadErrored(url, rb.getString("download.interrupted"));
-                        return;
-                    }
-                    fos.write(data, 0, bytesRead);
-                    if (observer.useByteProgessBar()) {
-                        bytesDownloaded += bytesRead;
-                        observer.setBytesCompleted(bytesDownloaded);
-                        observer.sendUpdate(STATUS.COMPLETED_BYTES, bytesDownloaded);
-                    }
-                    // If this is a test and we're downloading a large file
-                    if (AbstractRipper.isThisATest() && shouldSkipFileDownload) {
-                        logger.debug("Not downloading whole file because it is over 10mb and this is a test");
-                        bis.close();
-                        fos.close();
-                        break;
-
+                boolean shouldSkipFileDownload = huc.getContentLength() / 10000000 >= 10 && AbstractRipper.isThisATest();
+                // If this is a test rip we skip large downloads
+                if (shouldSkipFileDownload) {
+                    logger.debug("Not downloading whole file because it is over 10mb and this is a test");
+                } else {
+                    while ((bytesRead = bis.read(data)) != -1) {
+                        try {
+                            observer.stopCheck();
+                        } catch (IOException e) {
+                            observer.downloadErrored(url, rb.getString("download.interrupted"));
+                            return;
+                        }
+                        fos.write(data, 0, bytesRead);
+                        if (observer.useByteProgessBar()) {
+                            bytesDownloaded += bytesRead;
+                            observer.setBytesCompleted(bytesDownloaded);
+                            observer.sendUpdate(STATUS.COMPLETED_BYTES, bytesDownloaded);
+                        }
                     }
                 }
                 bis.close();
