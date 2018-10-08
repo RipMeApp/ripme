@@ -86,7 +86,6 @@ public class ChanRipper extends AbstractHTMLRipper {
     @Override
     public boolean canRip(URL url) {
         for (ChanSite _chanSite : explicit_domains) {
-            LOGGER.info(_chanSite.domains);
             if (_chanSite.domains.contains(url.getHost())) {
                 return true;
             }
