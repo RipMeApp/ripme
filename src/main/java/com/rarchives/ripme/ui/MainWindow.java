@@ -154,6 +154,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
             "fi_FI",
             "fr_CH",
             "in_ID",
+            "it_IT",
             "kr_KR",
             "nl_NL",
             "pl_PL",
