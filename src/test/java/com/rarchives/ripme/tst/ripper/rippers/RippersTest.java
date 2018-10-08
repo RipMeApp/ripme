@@ -2,7 +2,9 @@ package com.rarchives.ripme.tst.ripper.rippers;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
+import com.rarchives.ripme.ripper.rippers.ChanRipper;
 import junit.framework.TestCase;
 
 import org.apache.log4j.ConsoleAppender;
@@ -35,6 +37,38 @@ public class RippersTest extends TestCase {
             ripper.markAsTest();
             ripper.rip();
             assertTrue("Failed to download a single file from " + ripper.getURL(), ripper.getWorkingDir().listFiles().length >= 1);
+        } catch (IOException e) {
+            if (e.getMessage().contains("Ripping interrupted")) {
+                // We expect some rips to get interrupted
+            }
+            else {
+                e.printStackTrace();
+                fail("Failed to rip " + ripper.getURL() + " : " + e.getMessage());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail("Failed to rip " + ripper.getURL() + " : " + e.getMessage());
+        }
+        finally {
+            deleteDir(ripper.getWorkingDir());
+        }
+    }
+
+    // We have a special test for chan rippers because we can't assume that content will be downloadable, as content
+    // is often removed within mere hours of it being posted. So instead of trying to download any content we just check
+    // that we found links to it
+    void testChanRipper(ChanRipper ripper) {
+        try {
+            // Turn on Debug logging
+            ((ConsoleAppender)Logger.getRootLogger().getAppender("stdout")).setThreshold(Level.DEBUG);
+
+            // Decrease timeout
+            Utils.setConfigInteger("page.timeout", 20 * 1000);
+
+            ripper.setup();
+            ripper.markAsTest();
+            List<String> foundUrls = ripper.getURLsFromPage(ripper.getFirstPage());
+            assertTrue("Failed to find single url on page " + ripper.getURL(), foundUrls.size() >= 1);
         } catch (IOException e) {
             if (e.getMessage().contains("Ripping interrupted")) {
                 // We expect some rips to get interrupted
