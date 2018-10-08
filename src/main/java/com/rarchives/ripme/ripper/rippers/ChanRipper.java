@@ -17,10 +17,16 @@ import org.jsoup.nodes.Element;
 
 public class ChanRipper extends AbstractHTMLRipper {
     private static List<ChanSite> explicit_domains = Arrays.asList(
-        new ChanSite(Arrays.asList("boards.4chan.org"),   Arrays.asList("4cdn.org", "is.4chan.org", "is2.4chan.org", "is3.4chan.org")),
-        new ChanSite(Arrays.asList("4archive.org"),       Arrays.asList("imgur.com")),
-        new ChanSite(Arrays.asList("archive.4plebs.org"), Arrays.asList("img.4plebs.org")),
-        new ChanSite(Arrays.asList("yuki.la"), Arrays.asList("55chan.org"))
+            new ChanSite("boards.4chan.org",   Arrays.asList("4cdn.org", "is.4chan.org", "is2.4chan.org", "is3.4chan.org")),
+            new ChanSite("4archive.org",  "imgur.com"),
+            new ChanSite("archive.4plebs.org", "img.4plebs.org"),
+            new ChanSite("yuki.la", "ii.yuki.la"),
+            new ChanSite("55chan.org"),
+            new ChanSite("desuchan.net"),
+            new ChanSite("boards.420chan.org"),
+            new ChanSite("7chan.org"),
+            new ChanSite("desuarchive.org", "desu-usergeneratedcontent.xyz"),
+            new ChanSite("8ch.net", "media.8ch.net")
         );
 
     private static List<String> url_piece_blacklist = Arrays.asList(
@@ -80,32 +86,12 @@ public class ChanRipper extends AbstractHTMLRipper {
     @Override
     public boolean canRip(URL url) {
         for (ChanSite _chanSite : explicit_domains) {
+            LOGGER.info(_chanSite.domains);
             if (_chanSite.domains.contains(url.getHost())) {
                 return true;
             }
         }
 
-        if (url.toExternalForm().contains("desuchan.net") && url.toExternalForm().contains("/res/")) {
-            return true;
-        }
-        if (url.toExternalForm().contains("boards.420chan.org") && url.toExternalForm().contains("/res/")) {
-            return true;
-        }
-        if (url.toExternalForm().contains("7chan.org") && url.toExternalForm().contains("/res/")) {
-            return true;
-        }
-        if (url.toExternalForm().contains("xchan.pw") && url.toExternalForm().contains("/board/")) {
-            return true;
-        }
-        if (url.toExternalForm().contains("desuarchive.org")) {
-            return true;
-        }
-        if (url.toExternalForm().contains("8ch.net") && url.toExternalForm().contains("/res/")) {
-            return true;
-        }
-        if (url.toExternalForm().contains("55chan.org") && url.toExternalForm().contains("/res/")) {
-            return true;
-        }
         return false;
     }
 
@@ -209,7 +195,7 @@ public class ChanRipper extends AbstractHTMLRipper {
             }
 
             if (self_hosted || generalChanSite) {
-                p = Pattern.compile("^.*\\.(jpg|jpeg|png|gif|apng|webp|tif|tiff|webm)$", Pattern.CASE_INSENSITIVE);
+                p = Pattern.compile("^.*\\.(jpg|jpeg|png|gif|apng|webp|tif|tiff|webm|mp4)$", Pattern.CASE_INSENSITIVE);
                 m = p.matcher(href);
                 if (m.matches()) {
                     if (href.startsWith("//")) {
