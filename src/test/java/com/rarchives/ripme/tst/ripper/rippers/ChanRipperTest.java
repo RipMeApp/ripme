@@ -32,7 +32,6 @@ public class ChanRipperTest extends RippersTest {
         passURLs.add(new URL("https://boards.4chan.org/hr/thread/3015701"));
         passURLs.add(new URL("https://boards.420chan.org/420/res/232066.php"));
         passURLs.add(new URL("http://7chan.org/gif/res/25873.html"));
-        passURLs.add(new URL("https://xchan.pw/board/porn/thread/874116/"));
         for (URL url : passURLs) {
             ChanRipper ripper = new ChanRipper(url);
             ripper.setup();
