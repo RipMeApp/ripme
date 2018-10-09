@@ -252,11 +252,6 @@ public class RedditRipper extends AlbumRipper {
                 addURLToDownload(parseRedditVideoMPD(urls.get(0).toExternalForm()), new File(savePath));
             }
             else {
-                // File names longer than this won't work on ext4 file systems
-                if (title.length() >= 235) {
-                    LOGGER.info("File name is more than 254 chars, shortening");
-                    title = title.substring(0,235);
-                }
                 addURLToDownload(urls.get(0), id + title, "", theUrl, null);
             }
         } else if (urls.size() > 1) {
