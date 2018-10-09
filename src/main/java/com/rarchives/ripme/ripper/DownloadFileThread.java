@@ -1,11 +1,6 @@
 package com.rarchives.ripme.ripper;
 
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.lang.reflect.Array;
 import java.net.HttpURLConnection;
 import java.net.SocketTimeoutException;
@@ -210,7 +205,21 @@ class DownloadFileThread extends Thread {
                 if (statusCode == 206) {
                     fos = new FileOutputStream(saveAs, true);
                 } else {
-                    fos = new FileOutputStream(saveAs);
+                    try {
+                        fos = new FileOutputStream(saveAs);
+                    } catch (FileNotFoundException e) {
+                        // We do this because some filesystems have a max name length
+                        if (e.getMessage().contains("File name too long")) {
+                            logger.error("The filename " + saveAs.getName() + " is to long to be saved on this file system.");
+                            logger.info("Shortening filename");
+                            String[] saveAsSplit = saveAs.getName().split("\\.");
+                            String fileExt = saveAsSplit[saveAsSplit.length - 1];
+                            logger.info(saveAs.getName().substring(0, 254 - fileExt.length()) + fileExt);
+                            String filename = saveAs.getName().substring(0, 254 - fileExt.length()) + "." + fileExt;
+                            saveAs = new File(saveAs.getParentFile().getAbsolutePath() + "/" + filename);
+                            fos = new FileOutputStream(saveAs);
+                        }
+                    }
                 }
                 byte[] data = new byte[1024 * 256];
                 int bytesRead;
