@@ -213,9 +213,14 @@ class DownloadFileThread extends Thread {
                             logger.error("The filename " + saveAs.getName() + " is to long to be saved on this file system.");
                             logger.info("Shortening filename");
                             String[] saveAsSplit = saveAs.getName().split("\\.");
+                            // Get the file extension so when we shorten the file name we don't cut off the file extension
                             String fileExt = saveAsSplit[saveAsSplit.length - 1];
+                            // The max limit for filenames on Linux with Ext3/4 is 255 bytes, on windows it's 256 chars so rather than
+                            // bother with code with both platforms we just cut the file name down to 254 chars
                             logger.info(saveAs.getName().substring(0, 254 - fileExt.length()) + fileExt);
                             String filename = saveAs.getName().substring(0, 254 - fileExt.length()) + "." + fileExt;
+                            // We can't just use the new file name as the saveAs because the file name doesn't include the
+                            // users save path, so we get the user save path from the old saveAs
                             saveAs = new File(saveAs.getParentFile().getAbsolutePath() + "/" + filename);
                             fos = new FileOutputStream(saveAs);
                         }
