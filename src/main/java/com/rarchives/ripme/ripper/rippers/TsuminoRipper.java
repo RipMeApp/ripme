@@ -47,7 +47,7 @@ public class TsuminoRipper extends AbstractHTMLRipper {
         try {
             // This sessionId will expire and need to be replaced
             cookies.put("ASP.NET_SessionId","c4rbzccf0dvy3e0cloolmlkq");
-            Document doc = Jsoup.connect(postURL).data("q", getAlbumID()).userAgent(USER_AGENT).cookies(cookies).referrer("http://www.tsumino.com/Read/View/" + getAlbumID()).post();
+            Document doc = Jsoup.connect(postURL).data("q", getAlbumID()).userAgent(USER_AGENT).cookies(cookies).referrer("http://www.tsumino.com/Read/View/" + getAlbumID()).get();
             String jsonInfo = doc.html().replaceAll("<html>","").replaceAll("<head></head>", "").replaceAll("<body>", "").replaceAll("</body>", "")
                     .replaceAll("</html>", "").replaceAll("\n", "");
             JSONObject json = new JSONObject(jsonInfo);
