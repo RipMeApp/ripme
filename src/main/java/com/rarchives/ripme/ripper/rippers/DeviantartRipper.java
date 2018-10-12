@@ -267,6 +267,8 @@ public class DeviantartRipper extends AbstractJSONRipper {
             try {
                 String imageURL = doc.select("span").first().attr("data-super-full-img");
                 if (!imageURL.isEmpty() && imageURL.startsWith("http")) {
+                    String page = doc.select("span").first().attr("href");
+                    imageURL = smallToFull(imageURL,page);
                     imageURLs.add(imageURL);
                 }
             } catch (NullPointerException e) {
