@@ -1,6 +1,8 @@
 {
-    "currentHash": "cada7abcce3ff2761d3cc1fec15f20c29111acd4ef432fede4be89ce9675376b",
+    "latestVersion": "1.7.68",
+    "currentHash": "cb2707bf298245bb1f549515478ddd0b0e990a3158dec8fe31b65e99e6ec9e76",
     "changeList": [
+        "1.7.68: Added support for 55chan.org; Now limits file name length to 255 chars; fixed Tsumino ripper",
         "1.7.67: Added yuki.la ripper; Fixed xhamster ripper; Fixed instagram ripper; Added porncomix.one ripper; Fixed bug which caused large files to be download when running tests",
         "1.7.66: Added pl_PL translation; Ported various video rippers to AbstractSingleFileRipper; Erome now downloads both HD and SD video; Can now download embedded images from tumblr; Fixed 8muses folder naming; Added ripper for Tubex6.com",
         "1.7.65: removed RajceRipper; Fixed xhamster ripper; Added xhamster QuickQ support; added StickyXXX.com Ripper; added Mulemax.com Ripper; added SpankBang.com Ripper; fixed LusciousRipper",
@@ -238,6 +240,5 @@
         "1.0.4: Fixed spaces-in-directory bug",
         "1.0.3: Added VK.com ripper",
         "1.0.1: Added auto-update functionality"
-    ],
-    "latestVersion": "1.7.67"
+    ]
 }
