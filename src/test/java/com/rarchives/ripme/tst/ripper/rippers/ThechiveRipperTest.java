@@ -1,13 +1,80 @@
+/*
+ * The MIT License
+ *
+ * Copyright 2018 Kevin Jiang <kevin51jiang (at) email.com>.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 package com.rarchives.ripme.tst.ripper.rippers;
 
+import com.rarchives.ripme.ripper.rippers.ThechiveRipper;
 import java.io.IOException;
 import java.net.URL;
+import org.jsoup.nodes.Attributes;
+import org.jsoup.nodes.Element;
+import org.jsoup.parser.Tag;
 
-import com.rarchives.ripme.ripper.rippers.ThechiveRipper;
-
+/**
+ *
+ * @author Kevin Jiang <kevin51jiang (at) email.com>
+ */
 public class ThechiveRipperTest extends RippersTest {
-    public void testPahealRipper() throws IOException {
-        ThechiveRipper ripper = new ThechiveRipper(new URL("https://thechive.com/2018/09/17/daily-morning-awesomeness-35-photos-555/"));
+
+    /**
+     * Tests general ripping for The Chive
+     *
+     * @throws IOException
+     */
+    public void theChiveRip() throws IOException {
+        ThechiveRipper ripper = new ThechiveRipper(new URL("https://thechive.com/2018/10/03/the-definitive-list-of-the-hottest-horror-movie-babes/"));
         testRipper(ripper);
     }
+
+    /*
+    
+    //If anyone figures out how to get JSOUP Elements mocked up, we can use the following methods to test both jpeg + gif ripping.
+    
+    public void testGifRip() throws IOException {
+        String elementInString = "<img width=\"500\" height=\"305\" \n"
+                + "src=\"https://thechive.files.wordpress.com/2018/10/american_mary_crimson_quill-111.jpg?quality=85&amp;strip=info\" \n"
+                + "class=\"attachment-gallery-item-full size-gallery-item-full gif-animate\" \n"
+                + "alt=\"american mary crimson quill 111 The hottest horror movie villains ever according to science (18 Photos)\" \n"
+                + "title=\"\" data-gifsrc=\"https://thechive.files.wordpress.com/2018/10/american_mary_crimson_quill-1.gif?w=500\">"
+        
+        Element el = new Element(
+                new Tag("img"),
+                "",//URI
+                new Attributes());
+        String URL = ThechiveRipper.getImageSource(el);
+        assertTrue(URL.equals("https://thechive.files.wordpress.com/2018/10/american_mary_crimson_quill-1.gif"));
+    }
+
+    public void testGifRip() throws IOException {
+        String elementInString = "<img width=\"600\" height=\"409\" src=\"https://thechive.files.wordpress.com/2018/10/the-definitive-list-of-the-hottest-horror-movie-babes-11.jpg?quality=85&amp;strip=info&amp;w=600\" \n"
+                + "class=\"attachment-gallery-item-full size-gallery-item-full\" \n"
+                + "alt=\"the definitive list of the hottest horror movie babes 11 The hottest horror movie villains ever according to science (18 Photos)\" title=\"\">";
+        Element el = new Element(
+                new Tag("img"),
+                "",//URI
+                new Attributes());
+        String URL = ThechiveRipper.getImageSource(el);
+        assertTrue(URL.equals("https://thechive.files.wordpress.com/2018/10/the-definitive-list-of-the-hottest-horror-movie-babes-11.jpg"));
+    }
+     */
 }
