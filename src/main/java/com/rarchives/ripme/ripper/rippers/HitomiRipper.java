@@ -59,7 +59,7 @@ public class HitomiRipper extends AbstractHTMLRipper {
         LOGGER.info(json);
         JSONArray json_data = new JSONArray(json);
         for (int i = 0; i < json_data.length(); i++) {
-            result.add("https://0a.hitomi.la/galleries/" + galleryId + "/" + json_data.getJSONObject(i).getString("name"));
+            result.add("https://ba.hitomi.la/galleries/" + galleryId + "/" + json_data.getJSONObject(i).getString("name"));
         }
 
         return result;

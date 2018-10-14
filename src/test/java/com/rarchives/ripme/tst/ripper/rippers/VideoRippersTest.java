@@ -7,9 +7,7 @@ import java.util.List;
 
 import com.rarchives.ripme.ripper.VideoRipper;
 import com.rarchives.ripme.ripper.rippers.video.PornhubRipper;
-import com.rarchives.ripme.ripper.rippers.video.XhamsterRipper;
-import com.rarchives.ripme.ripper.rippers.XvideosRipper;
-import com.rarchives.ripme.ripper.rippers.video.YoupornRipper;
+import com.rarchives.ripme.ripper.rippers.YoupornRipper;
 import com.rarchives.ripme.ripper.rippers.video.YuvutuRipper;
 
 public class VideoRippersTest extends RippersTest {
@@ -48,15 +46,6 @@ public class VideoRippersTest extends RippersTest {
 //        }
 //    }
     
-    public void testXhamsterRipper() throws IOException {
-        List<URL> contentURLs = new ArrayList<>();
-        contentURLs.add(new URL("https://xhamster.com/videos/brazzers-busty-big-booty-milf-lisa-ann-fucks-her-masseur-1492828"));
-        for (URL url : contentURLs) {
-            XhamsterRipper ripper = new XhamsterRipper(url);
-            videoTestHelper(ripper);
-        }
-    }
-    
     public void testPornhubRipper() throws IOException {
         List<URL> contentURLs = new ArrayList<>();
         contentURLs.add(new URL("https://www.pornhub.com/view_video.php?viewkey=ph5a329fa707269"));
@@ -66,14 +55,6 @@ public class VideoRippersTest extends RippersTest {
         }
     }
 
-    public void testYoupornRipper() throws IOException {
-        List<URL> contentURLs = new ArrayList<>();
-        contentURLs.add(new URL("http://www.youporn.com/watch/7669155/mrs-li-amateur-69-orgasm/?from=categ"));
-        for (URL url : contentURLs) {
-            YoupornRipper ripper = new YoupornRipper(url);
-            videoTestHelper(ripper);
-        }
-    }
     
     public void testYuvutuRipper() throws IOException {
         List<URL> contentURLs = new ArrayList<>();

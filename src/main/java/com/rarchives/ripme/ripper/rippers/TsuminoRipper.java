@@ -12,6 +12,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.rarchives.ripme.ui.RipStatusMessage;
+import com.rarchives.ripme.utils.RipUtils;
+import com.rarchives.ripme.utils.Utils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.jsoup.Connection;
@@ -21,6 +23,7 @@ import org.jsoup.nodes.Document;
 
 import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 import com.rarchives.ripme.utils.Http;
+import org.jsoup.nodes.Element;
 
 public class TsuminoRipper extends AbstractHTMLRipper {
     private Map<String,String> cookies = new HashMap<>();
@@ -29,12 +32,22 @@ public class TsuminoRipper extends AbstractHTMLRipper {
         super(url);
     }
 
+    public List<String> getTags(Document doc) {
+        List<String> tags = new ArrayList<>();
+        LOGGER.info("Getting tags");
+        for (Element tag : doc.select("div#Tag > a")) {
+            LOGGER.info("Found tag " + tag.text());
+            tags.add(tag.text().toLowerCase());
+        }
+        return tags;
+    }
+
     private JSONArray getPageUrls() {
         String postURL = "http://www.tsumino.com/Read/Load";
         try {
             // This sessionId will expire and need to be replaced
             cookies.put("ASP.NET_SessionId","c4rbzccf0dvy3e0cloolmlkq");
-            Document doc = Jsoup.connect(postURL).data("q", getAlbumID()).userAgent(USER_AGENT).cookies(cookies).referrer("http://www.tsumino.com/Read/View/" + getAlbumID()).post();
+            Document doc = Jsoup.connect(postURL).data("q", getAlbumID()).userAgent(USER_AGENT).cookies(cookies).referrer("http://www.tsumino.com/Read/View/" + getAlbumID()).get();
             String jsonInfo = doc.html().replaceAll("<html>","").replaceAll("<head></head>", "").replaceAll("<body>", "").replaceAll("</body>", "")
                     .replaceAll("</html>", "").replaceAll("\n", "");
             JSONObject json = new JSONObject(jsonInfo);
@@ -86,7 +99,14 @@ public class TsuminoRipper extends AbstractHTMLRipper {
     public Document getFirstPage() throws IOException {
         Connection.Response resp = Http.url(url).response();
         cookies.putAll(resp.cookies());
-        return resp.parse();
+        Document doc =  resp.parse();
+        String blacklistedTag = RipUtils.checkTags(Utils.getConfigStringArray("tsumino.blacklist.tags"), getTags(doc));
+        if (blacklistedTag != null) {
+            sendUpdate(RipStatusMessage.STATUS.DOWNLOAD_WARN, "Skipping " + url.toExternalForm() + " as it " +
+                    "contains the blacklisted tag \"" + blacklistedTag + "\"");
+            return null;
+        }
+        return doc;
     }
 
     @Override

@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Observable;
 
+import com.rarchives.ripme.App;
 import org.apache.log4j.FileAppender;
 import org.apache.log4j.Logger;
 import org.jsoup.HttpStatusException;
@@ -47,7 +48,7 @@ public abstract class AbstractRipper
     // Everytime addUrlToDownload skips a already downloaded url this increases by 1
     public int alreadyDownloadedUrls = 0;
     private boolean shouldStop = false;
-    private boolean thisIsATest = false;
+    private static boolean thisIsATest = false;
 
     public void stop() {
         shouldStop = true;
@@ -255,11 +256,16 @@ public abstract class AbstractRipper
         File saveFileAs;
         try {
             if (!subdirectory.equals("")) {
+                subdirectory = Utils.filesystemSafe(subdirectory);
                 subdirectory = File.separator + subdirectory;
             }
             prefix = Utils.filesystemSanitized(prefix);
+            String topFolderName = workingDir.getCanonicalPath();
+            if (App.stringToAppendToFoldername != null) {
+                topFolderName = topFolderName + App.stringToAppendToFoldername;
+            }
             saveFileAs = new File(
-                    workingDir.getCanonicalPath()
+                    topFolderName
                     + subdirectory
                     + File.separator
                     + prefix
@@ -610,7 +616,7 @@ public abstract class AbstractRipper
         LOGGER.debug("THIS IS A TEST RIP");
         thisIsATest = true;
     }
-    protected boolean isThisATest() {
+    protected static boolean isThisATest() {
         return thisIsATest;
     }
 

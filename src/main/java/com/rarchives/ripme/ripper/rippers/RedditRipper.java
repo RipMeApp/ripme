@@ -158,16 +158,16 @@ public class RedditRipper extends AlbumRipper {
         JSONObject data = child.getJSONObject("data");
         if (kind.equals("t1")) {
             // Comment
-            handleBody(data.getString("body"), data.getString("id"));
+            handleBody(data.getString("body"), data.getString("id"), "");
         }
         else if (kind.equals("t3")) {
             // post
             if (data.getBoolean("is_self")) {
                 // TODO Parse self text
-                handleBody(data.getString("selftext"), data.getString("id"));
+                handleBody(data.getString("selftext"), data.getString("id"), data.getString("title"));
             } else {
                 // Get link
-                handleURL(data.getString("url"), data.getString("id"));
+                handleURL(data.getString("url"), data.getString("id"), data.getString("title"));
             }
             if (data.has("replies") && data.get("replies") instanceof JSONObject) {
                 JSONArray replies = data.getJSONObject("replies")
@@ -180,7 +180,7 @@ public class RedditRipper extends AlbumRipper {
         }
     }
 
-    private void handleBody(String body, String id) {
+    private void handleBody(String body, String id, String title) {
         Pattern p = RipUtils.getURLRegex();
         Matcher m = p.matcher(body);
         while (m.find()) {
@@ -188,7 +188,7 @@ public class RedditRipper extends AlbumRipper {
             while (url.endsWith(")")) {
                 url = url.substring(0, url.length() - 1);
             }
-            handleURL(url, id);
+            handleURL(url, id, title);
         }
     }
 
@@ -218,12 +218,21 @@ public class RedditRipper extends AlbumRipper {
 
     }
 
-    private void handleURL(String theUrl, String id) {
+    private void handleURL(String theUrl, String id, String title) {
         URL originalURL;
         try {
             originalURL = new URL(theUrl);
         } catch (MalformedURLException e) {
             return;
+        }
+        String subdirectory = "";
+        if (Utils.getConfigBoolean("reddit.use_sub_dirs", true)) {
+            if (Utils.getConfigBoolean("album_titles.save", true)) {
+                subdirectory = title;
+                title = "-" + title + "-";
+            } else {
+                title = "";
+            }
         }
 
         List<URL> urls = RipUtils.getFilesFromURL(originalURL);
@@ -234,24 +243,24 @@ public class RedditRipper extends AlbumRipper {
             if (m.matches()) {
                 // It's from reddituploads. Assume .jpg extension.
                 String savePath = this.workingDir + File.separator;
-                savePath += id + "-" + m.group(1) + ".jpg";
+                savePath += id + "-" + m.group(1) + title + ".jpg";
                 addURLToDownload(urls.get(0), new File(savePath));
             }
             if (url.contains("v.redd.it")) {
                 String savePath = this.workingDir + File.separator;
-                savePath += id + "-" + url.split("/")[3] + ".mp4";
+                savePath += id + "-" + url.split("/")[3] + title + ".mp4";
                 addURLToDownload(parseRedditVideoMPD(urls.get(0).toExternalForm()), new File(savePath));
             }
             else {
-                addURLToDownload(urls.get(0), id + "-", "", theUrl, null);
+                addURLToDownload(urls.get(0), id + title, "", theUrl, null);
             }
         } else if (urls.size() > 1) {
             for (int i = 0; i < urls.size(); i++) {
-                String prefix = id + "-";
+                String prefix = id + "";
                 if (Utils.getConfigBoolean("download.save_order", true)) {
                     prefix += String.format("%03d-", i + 1);
                 }
-                addURLToDownload(urls.get(i), prefix, "", theUrl, null);
+                addURLToDownload(urls.get(i), prefix, subdirectory, theUrl, null);
             }
         }
     }

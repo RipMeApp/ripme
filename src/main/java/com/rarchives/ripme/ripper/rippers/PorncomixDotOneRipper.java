@@ -14,59 +14,49 @@ import org.jsoup.nodes.Element;
 import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 import com.rarchives.ripme.utils.Http;
 
-public class RajceRipper extends AbstractHTMLRipper {
+public class PorncomixDotOneRipper extends AbstractHTMLRipper {
 
-    private static final String DOMAIN = "rajce.idnes.cz";
-    private static final String HOST = "rajce.idnes";
-
-    public RajceRipper(URL url) throws IOException {
+    public PorncomixDotOneRipper(URL url) throws IOException {
         super(url);
     }
 
     @Override
     public String getHost() {
-        return HOST;
+        return "porncomix";
     }
 
     @Override
     public String getDomain() {
-        return DOMAIN;
+        return "porncomix.one";
     }
 
     @Override
     public String getGID(URL url) throws MalformedURLException {
-        Pattern p = Pattern.compile("^https?://([^.]+)\\.rajce\\.idnes\\.cz/(([^/]+)/.*)?$");
+        Pattern p = Pattern.compile("https?://www.porncomix.one/gallery/([a-zA-Z0-9_\\-]*)/?$");
         Matcher m = p.matcher(url.toExternalForm());
-
-        if (!m.matches()) {
-            throw new MalformedURLException("Unsupported URL format: " + url.toExternalForm());
+        if (m.matches()) {
+            return m.group(1);
         }
-
-        String user = m.group(1);
-        String album = m.group(3);
-
-        if (album == null) {
-            throw new MalformedURLException("Unsupported URL format (not an album): " + url.toExternalForm());
-        }
-
-        return user + "/" + album;
+        throw new MalformedURLException("Expected proncomix URL format: " +
+                "porncomix.one/gallery/comic - got " + url + " instead");
     }
 
     @Override
     public Document getFirstPage() throws IOException {
+        // "url" is an instance field of the superclass
         return Http.url(url).get();
     }
 
     @Override
-    public Document getNextPage(Document doc) throws IOException {
-        return super.getNextPage(doc);
-    }
-
-    @Override
-    public List<String> getURLsFromPage(Document page) {
+    public List<String> getURLsFromPage(Document doc) {
         List<String> result = new ArrayList<>();
-        for (Element el : page.select("a.photoThumb")) {
+        // We have 2 loops here to cover all the different album types
+        for (Element el : doc.select(".dgwt-jg-gallery > a")) {
             result.add(el.attr("href"));
+        }
+        for (Element el : doc.select(".unite-gallery > img")) {
+            result.add(el.attr("data-image"));
+
         }
         return result;
     }
@@ -75,5 +65,4 @@ public class RajceRipper extends AbstractHTMLRipper {
     public void downloadURL(URL url, int index) {
         addURLToDownload(url, getPrefix(index));
     }
-
 }
