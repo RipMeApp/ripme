@@ -123,7 +123,7 @@ public class EightmusesRipper extends AbstractHTMLRipper {
                     JSONObject json = new JSONObject(rawJson);
                     try {
                         for (int i = 0; i != json.getJSONArray("pictures").length(); i++) {
-                            image = "https://www.8muses.com/image/fm/" + json.getJSONArray("pictures").getJSONObject(i).getString("publicUri");
+                            image = "https://www.8muses.com/image/fl/" + json.getJSONArray("pictures").getJSONObject(i).getString("publicUri");
                             URL imageUrl = new URL(image);
                             if (Utils.getConfigBoolean("8muses.use_short_names", false)) {
                                 addURLToDownload(imageUrl, getPrefixShort(x), getSubdir(page.select("title").text()), this.url.toExternalForm(), cookies, "", null, true);
@@ -150,28 +150,14 @@ public class EightmusesRipper extends AbstractHTMLRipper {
         return imageURLs;
     }
 
-    private String getFullSizeImage(String imageUrl) throws IOException {
-        sendUpdate(STATUS.LOADING_RESOURCE, imageUrl);
-        LOGGER.info("Getting full sized image from " + imageUrl);
-        Document doc = new Http(imageUrl).get(); // Retrieve the webpage  of the image URL
-        String imageName = doc.select("div.photo > a > img").attr("src");
-        return "https://www.8muses.com/image/fm/" + imageName;
-    }
-
-    private String getTitle(String albumTitle) {
-        albumTitle = albumTitle.replace("A huge collection of free porn comics for adults. Read ", "");
-        albumTitle = albumTitle.replace(" online for free at 8muses.com", "");
-        albumTitle = albumTitle.replace(" ", "_");
-        return albumTitle;
-    }
-
-    private String getSubdir(String rawHref) {
+    public String getSubdir(String rawHref) {
         LOGGER.info("Raw title: " + rawHref);
         String title = rawHref;
         title = title.replaceAll("8muses - Sex and Porn Comics", "");
-        title = title.replaceAll("\t\t", "");
+        title = title.replaceAll("\\s+", " ");
         title = title.replaceAll("\n", "");
         title = title.replaceAll("\\| ", "");
+        title = title.replace(" - ", "-");
         title = title.replace(" ", "-");
         LOGGER.info(title);
         return title;

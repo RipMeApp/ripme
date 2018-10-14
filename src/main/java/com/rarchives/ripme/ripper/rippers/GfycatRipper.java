@@ -73,7 +73,7 @@ public class GfycatRipper extends AbstractSingleFileRipper {
     @Override
     public List<String> getURLsFromPage(Document doc) {
         List<String> result = new ArrayList<>();
-        Elements videos = doc.select("source#mp4Source");
+        Elements videos = doc.select("source");
         String vidUrl = videos.first().attr("src");
         if (vidUrl.startsWith("//")) {
             vidUrl = "http:" + vidUrl;
@@ -95,9 +95,9 @@ public class GfycatRipper extends AbstractSingleFileRipper {
         url = new URL(url.toExternalForm().replace("/gifs/detail", ""));
 
         Document doc = Http.url(url).get();
-        Elements videos = doc.select("source#mp4Source");
+        Elements videos = doc.select("source");
         if (videos.isEmpty()) {
-            throw new IOException("Could not find source#mp4source at " + url);
+            throw new IOException("Could not find source at " + url);
         }
         String vidUrl = videos.first().attr("src");
         if (vidUrl.startsWith("//")) {

@@ -1,5 +1,15 @@
 {
+    "latestVersion": "1.7.68",
+    "currentHash": "cb2707bf298245bb1f549515478ddd0b0e990a3158dec8fe31b65e99e6ec9e76",
     "changeList": [
+        "1.7.68: Added support for 55chan.org; Now limits file name length to 255 chars; fixed Tsumino ripper",
+        "1.7.67: Added yuki.la ripper; Fixed xhamster ripper; Fixed instagram ripper; Added porncomix.one ripper; Fixed bug which caused large files to be download when running tests",
+        "1.7.66: Added pl_PL translation; Ported various video rippers to AbstractSingleFileRipper; Erome now downloads both HD and SD video; Can now download embedded images from tumblr; Fixed 8muses folder naming; Added ripper for Tubex6.com",
+        "1.7.65: removed RajceRipper; Fixed xhamster ripper; Added xhamster QuickQ support; added StickyXXX.com Ripper; added Mulemax.com Ripper; added SpankBang.com Ripper; fixed LusciousRipper",
+        "1.7.64: Removed loveroms ripper; Update ru_RU lang file; Removed tumblr raw image downloading; getFilesFromURL now can handle imgur videos; 8muses ripper now gets full sized images; Added -a flag for appending a string to folder name",
+        "1.7.63: Removed line wrapping; Added anillty to rip url ranges; Fixed gfycatRipper",
+        "1.7.62: Added hentai-comic and hentai-image rippers; Fixed HitomiRipper; Added hqporner ripper; Added Gelbooru.com ripper; Added line wrapping in log window",
+        "1.7.61: Re-add 8Chan support; Added kenzato.uk to CheveretoRippers; Added russian translation; Reddit ripper now uses sub folders; fixed JabArchivesRipper regex",
         "1.7.60: Fixed EightmusesRipper; added Jab Archives ripper; loveroms ripper now properly names files; Fixed ArtStationRipper",
         "1.7.59: Added Loverom ripper; added Imagearn ripper; Added support for Desuarchive.org; Fixed erome ripper",
         "1.7.58: Fixed Deviantart ripper; fixed HitomiRipper; Fixed ManganeloRipper; Fixed update box formating",
@@ -230,7 +240,5 @@
         "1.0.4: Fixed spaces-in-directory bug",
         "1.0.3: Added VK.com ripper",
         "1.0.1: Added auto-update functionality"
-    ],
-    "latestVersion": "1.7.60",
-    "currentHash": "f206e478822134328763fc41676f438ee5cc795f31984613619952dab8402301"
+    ]
 }

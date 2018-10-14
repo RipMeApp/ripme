@@ -149,7 +149,11 @@ public class RipUtils {
                         .userAgent(AbstractRipper.USER_AGENT)
                         .get();
                 for (Element el : doc.select("meta")) {
-                    if (el.attr("name").equals("twitter:image:src")) {
+                    if (el.attr("property").equals("og:video")) {
+                        result.add(new URL(el.attr("content")));
+                        return result;
+                    }
+                    else if (el.attr("name").equals("twitter:image:src")) {
                         result.add(new URL(el.attr("content")));
                         return result;
                     }
@@ -300,5 +304,29 @@ public class RipUtils {
             cookies.put(kv[0], kv[1]);
         }
         return cookies;
+    }
+
+    /**
+     * Checks for blacklisted tags on page. If it finds one it returns it, if not it return null
+     *
+     * @param blackListedTags a string array of the blacklisted tags
+     * @param tagsOnPage the tags on the page
+     * @return String
+     */
+    public static String checkTags(String[] blackListedTags, List<String> tagsOnPage) {
+        // If the user hasn't blacklisted any tags we return null;
+        if (blackListedTags == null) {
+            return null;
+        }
+        for (String tag : blackListedTags) {
+            for (String pageTag : tagsOnPage) {
+                // We replace all dashes in the tag with spaces because the tags we get from the site are separated using
+                // dashes
+                if (tag.trim().toLowerCase().equals(pageTag.toLowerCase())) {
+                    return tag.toLowerCase();
+                }
+            }
+        }
+        return null;
     }
 }

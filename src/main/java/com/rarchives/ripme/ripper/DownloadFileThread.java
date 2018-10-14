@@ -1,33 +1,34 @@
 package com.rarchives.ripme.ripper;
 
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.lang.reflect.Array;
 import java.net.HttpURLConnection;
+import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.ResourceBundle;
 
 import javax.net.ssl.HttpsURLConnection;
 
+import com.rarchives.ripme.ui.MainWindow;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 import org.jsoup.HttpStatusException;
 
 import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
 import com.rarchives.ripme.utils.Utils;
+import com.rarchives.ripme.ripper.AbstractRipper;
 
 /**
  * Thread for downloading files.
  * Includes retry logic, observer notifications, and other goodies.
  */
 class DownloadFileThread extends Thread {
+
+    private ResourceBundle rb = MainWindow.rb;
 
     private static final Logger logger = Logger.getLogger(DownloadFileThread.class);
 
@@ -76,16 +77,16 @@ class DownloadFileThread extends Thread {
         try {
             observer.stopCheck();
         } catch (IOException e) {
-            observer.downloadErrored(url, "Download interrupted");
+            observer.downloadErrored(url, rb.getString("download.interrupted"));
             return;
         }
         if (saveAs.exists() && !observer.tryResumeDownload() && !getFileExtFromMIME ||
                 Utils.fuzzyExists(new File(saveAs.getParent()), saveAs.getName()) && getFileExtFromMIME && !observer.tryResumeDownload()) {
             if (Utils.getConfigBoolean("file.overwrite", false)) {
-                logger.info("[!] Deleting existing file" + prettySaveAs);
+                logger.info("[!] " + rb.getString("deleting.existing.file") + prettySaveAs);
                 saveAs.delete();
             } else {
-                logger.info("[!] Skipping " + url + " -- file already exists: " + prettySaveAs);
+                logger.info("[!] " + rb.getString("skipping") + url + " -- " + rb.getString("file.already.exists") + ": " + prettySaveAs);
                 observer.downloadExists(url, saveAs);
                 return;
             }
@@ -109,7 +110,10 @@ class DownloadFileThread extends Thread {
                     huc = (HttpURLConnection) urlToDownload.openConnection();
                 }
                 huc.setInstanceFollowRedirects(true);
+                // It is important to set both ConnectTimeout and ReadTimeout. If you don't then ripme will wait forever
+                // for the server to send data after connecting.
                 huc.setConnectTimeout(TIMEOUT);
+                huc.setReadTimeout(TIMEOUT);
                 huc.setRequestProperty("accept",  "*/*");
                 if (!referrer.equals("")) {
                     huc.setRequestProperty("Referer", referrer); // Sic
@@ -128,14 +132,14 @@ class DownloadFileThread extends Thread {
                         huc.setRequestProperty("Range", "bytes=" + fileSize + "-");
                     }
                 }
-                logger.debug("Request properties: " + huc.getRequestProperties());
+                logger.debug(rb.getString("request.properties") + ": " + huc.getRequestProperties());
                 huc.connect();
 
                 int statusCode = huc.getResponseCode();
                 logger.debug("Status code: " + statusCode);
                 if (statusCode != 206 && observer.tryResumeDownload() && saveAs.exists()) {
                     // TODO find a better way to handle servers that don't support resuming downloads then just erroring out
-                    throw new IOException("Server doesn't support resuming downloads");
+                    throw new IOException(rb.getString("server.doesnt.support.resuming.downloads"));
                 }
                 if (statusCode  / 100 == 3) { // 3xx Redirect
                     if (!redirected) {
@@ -149,14 +153,14 @@ class DownloadFileThread extends Thread {
                     throw new IOException("Redirect status code " + statusCode + " - redirect to " + location);
                 }
                 if (statusCode / 100 == 4) { // 4xx errors
-                    logger.error("[!] Non-retriable status code " + statusCode + " while downloading from " + url);
-                    observer.downloadErrored(url, "Non-retriable status code " + statusCode + " while downloading " + url.toExternalForm());
+                    logger.error("[!] " + rb.getString("nonretriable.status.code") + " " + statusCode + " while downloading from " + url);
+                    observer.downloadErrored(url, rb.getString("nonretriable.status.code") + " " + statusCode + " while downloading " + url.toExternalForm());
                     return; // Not retriable, drop out.
                 }
                 if (statusCode / 100 == 5) { // 5xx errors
-                    observer.downloadErrored(url, "Retriable status code " + statusCode + " while downloading " + url.toExternalForm());
+                    observer.downloadErrored(url, rb.getString("retriable.status.code") + " " + statusCode + " while downloading " + url.toExternalForm());
                     // Throw exception so download can be retried
-                    throw new IOException("Retriable status code " + statusCode);
+                    throw new IOException(rb.getString("retriable.status.code") + " " + statusCode);
                 }
                 if (huc.getContentLength() == 503 && urlToDownload.getHost().endsWith("imgur.com")) {
                     // Imgur image with 503 bytes is "404"
@@ -192,8 +196,8 @@ class DownloadFileThread extends Thread {
                         if (fileExt != null) {
                             saveAs = new File(saveAs.toString() + "." + fileExt);
                         } else {
-                            logger.error("Was unable to get content type using magic number");
-                            logger.error("Magic number was: " + Arrays.toString(magicBytes));
+                            logger.error(rb.getString("was.unable.to.get.content.type.using.magic.number"));
+                            logger.error(rb.getString("magic.number.was") + ": " + Arrays.toString(magicBytes));
                         }
                     }
                 }
@@ -201,15 +205,35 @@ class DownloadFileThread extends Thread {
                 if (statusCode == 206) {
                     fos = new FileOutputStream(saveAs, true);
                 } else {
-                    fos = new FileOutputStream(saveAs);
+                    try {
+                        fos = new FileOutputStream(saveAs);
+                    } catch (FileNotFoundException e) {
+                        // We do this because some filesystems have a max name length
+                        if (e.getMessage().contains("File name too long")) {
+                            logger.error("The filename " + saveAs.getName() + " is to long to be saved on this file system.");
+                            logger.info("Shortening filename");
+                            String[] saveAsSplit = saveAs.getName().split("\\.");
+                            // Get the file extension so when we shorten the file name we don't cut off the file extension
+                            String fileExt = saveAsSplit[saveAsSplit.length - 1];
+                            // The max limit for filenames on Linux with Ext3/4 is 255 bytes, on windows it's 256 chars so rather than
+                            // bother with code with both platforms we just cut the file name down to 254 chars
+                            logger.info(saveAs.getName().substring(0, 254 - fileExt.length()) + fileExt);
+                            String filename = saveAs.getName().substring(0, 254 - fileExt.length()) + "." + fileExt;
+                            // We can't just use the new file name as the saveAs because the file name doesn't include the
+                            // users save path, so we get the user save path from the old saveAs
+                            saveAs = new File(saveAs.getParentFile().getAbsolutePath() + "/" + filename);
+                            fos = new FileOutputStream(saveAs);
+                        }
+                    }
                 }
                 byte[] data = new byte[1024 * 256];
                 int bytesRead;
+                boolean shouldSkipFileDownload = huc.getContentLength() / 10000000 >= 10;
                 while ( (bytesRead = bis.read(data)) != -1) {
                     try {
                         observer.stopCheck();
                     } catch (IOException e) {
-                        observer.downloadErrored(url, "Download interrupted");
+                        observer.downloadErrored(url, rb.getString("download.interrupted"));
                         return;
                     }
                     fos.write(data, 0, bytesRead);
@@ -218,12 +242,25 @@ class DownloadFileThread extends Thread {
                         observer.setBytesCompleted(bytesDownloaded);
                         observer.sendUpdate(STATUS.COMPLETED_BYTES, bytesDownloaded);
                     }
+                    // If this is a test and we're downloading a large file
+                    if (AbstractRipper.isThisATest() && shouldSkipFileDownload) {
+                        logger.debug("Not downloading whole file because it is over 10mb and this is a test");
+                        bis.close();
+                        fos.close();
+                        break;
+
+                    }
                 }
                 bis.close();
                 fos.close();
                 break; // Download successful: break out of infinite loop
+            } catch (SocketTimeoutException timeoutEx) {
+                // Handle the timeout
+                logger.error("[!] " + url.toExternalForm() + " timedout!");
+                // Download failed, break out of loop
+                break;
             } catch (HttpStatusException hse) {
-                logger.debug("HTTP status exception", hse);
+                logger.debug(rb.getString("http.status.exception"), hse);
                 logger.error("[!] HTTP status " + hse.getStatusCode() + " while downloading from " + urlToDownload);
                 if (hse.getStatusCode() == 404 && Utils.getConfigBoolean("errors.skip404", false)) {
                     observer.downloadErrored(url, "HTTP status code " + hse.getStatusCode() + " while downloading " + url.toExternalForm());
@@ -231,7 +268,7 @@ class DownloadFileThread extends Thread {
                 }
             } catch (IOException e) {
                 logger.debug("IOException", e);
-                logger.error("[!] Exception while downloading file: " + url + " - " + e.getMessage());
+                logger.error("[!] " + rb.getString("exception.while.downloading.file") + ": " + url + " - " + e.getMessage());
             } finally {
                 // Close any open streams
                 try {
@@ -242,8 +279,8 @@ class DownloadFileThread extends Thread {
                 } catch (IOException e) { }
             }
             if (tries > this.retries) {
-                logger.error("[!] Exceeded maximum retries (" + this.retries + ") for URL " + url);
-                observer.downloadErrored(url, "Failed to download " + url.toExternalForm());
+                logger.error("[!] " + rb.getString ("exceeded.maximum.retries") + " (" + this.retries + ") for URL " + url);
+                observer.downloadErrored(url, rb.getString("failed.to.download") + " " + url.toExternalForm());
                 return;
             }
         } while (true);

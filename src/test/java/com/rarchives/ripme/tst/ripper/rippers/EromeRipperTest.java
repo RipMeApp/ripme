@@ -33,7 +33,7 @@ public class EromeRipperTest extends RippersTest {
     }
 
     public void testRip() throws IOException {
-        URL url = new URL("https://www.erome.com/a/4FqeUxil");
+        URL url = new URL("https://www.erome.com/a/vlefBdsg");
         EromeRipper ripper = new EromeRipper(url);
         testRipper(ripper);
     }

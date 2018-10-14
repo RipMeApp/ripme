@@ -11,7 +11,7 @@ public class GfycatRipperTest extends RippersTest {
      * Rips correctly formatted URL directly from Gfycat
      * @throws IOException 
      */
-    public void GfycatGoodURL() throws IOException{
+    public void testGfycatGoodURL() throws IOException{
         GfycatRipper ripper = new GfycatRipper(new URL("https://gfycat.com/TemptingExcellentIchthyosaurs"));
         testRipper(ripper);
     }
@@ -19,7 +19,7 @@ public class GfycatRipperTest extends RippersTest {
      * Rips badly formatted URL directly from Gfycat
      * @throws IOException 
      */
-    public void GfycatBadURL() throws IOException {
+    public void testGfycatBadURL() throws IOException {
         GfycatRipper ripper  = new GfycatRipper(new URL("https://gfycat.com/gifs/detail/limitedtestyamericancrow"));
         testRipper(ripper);
     }
