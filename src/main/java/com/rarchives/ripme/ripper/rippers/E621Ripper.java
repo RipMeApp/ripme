@@ -56,7 +56,19 @@ public class E621Ripper extends AbstractHTMLRipper{
 
 	private String getFullSizedImage(String url) {
 	    try {
-            return Http.url("https://e621.net" + url).get().select("div > img#image").attr("src");
+                Document page = Http.url("https://e621.net" + url).get();
+                Elements video = page.select("video > source");
+                Elements flash = page.select("embed");
+                Elements image = page.select("a#highres");
+                if (video.size() > 0) {
+                    return video.attr("src");
+                } else if (flash.size() > 0) {
+                    return flash.attr("src");
+                } else if (image.size() > 0) {
+                    return image.attr("href");
+                } else {
+                    throw new IOException();
+                }
         } catch (IOException e) {
 	        logger.error("Unable to get full sized image from " + url);
 	        return null;
