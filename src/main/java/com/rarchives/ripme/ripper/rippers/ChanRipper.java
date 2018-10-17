@@ -12,11 +12,13 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import com.rarchives.ripme.utils.Utils;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
 public class ChanRipper extends AbstractHTMLRipper {
-    private static List<ChanSite> explicit_domains = Arrays.asList(
+    private static List<ChanSite> bakedin_explicit_domains = Arrays.asList(
             new ChanSite("boards.4chan.org",   Arrays.asList("4cdn.org", "is.4chan.org", "is2.4chan.org", "is3.4chan.org")),
             new ChanSite("4archive.org",  "imgur.com"),
             new ChanSite("archive.4plebs.org", "img.4plebs.org"),
@@ -28,6 +30,34 @@ public class ChanRipper extends AbstractHTMLRipper {
             new ChanSite("desuarchive.org", "desu-usergeneratedcontent.xyz"),
             new ChanSite("8ch.net", "media.8ch.net")
         );
+    private static List<ChanSite> user_give_explicit_domains = getChansFromConfig(Utils.getConfigString("chans.chan_sites", null));
+    private static List<ChanSite> explicit_domains = new ArrayList<>();
+
+    /**
+     * reads a string in the format of site1[cdn|cdn2|cdn3], site2[cdn]
+     */
+    public static List<ChanSite> getChansFromConfig(String rawChanString) {
+        List<ChanSite> userChans = new ArrayList<>();
+        if (rawChanString != null) {
+            String[] listOfChans = rawChanString.split(",");
+            for (String chanInfo : listOfChans) {
+                // If this is true we're parsing a chan with cdns
+                if (chanInfo.contains("[")) {
+                    String siteUrl = chanInfo.split("\\[")[0];
+                    String[] cdns = chanInfo.replaceAll(siteUrl + "\\[", "").replaceAll("]", "").split("\\|");
+                    LOGGER.debug("site url: " + siteUrl);
+                    LOGGER.debug("cdn: " + Arrays.toString(cdns));
+                    userChans.add(new ChanSite(siteUrl, Arrays.asList(cdns)));
+                } else {
+                    // We're parsing a site without cdns
+                    LOGGER.debug("site: " + chanInfo);
+                    userChans.add(new ChanSite(chanInfo));
+                }
+            }
+            return userChans;
+        }
+        return null;
+    }
 
     private static List<String> url_piece_blacklist = Arrays.asList(
         "=http",
@@ -42,6 +72,7 @@ public class ChanRipper extends AbstractHTMLRipper {
     public ChanRipper(URL url) throws IOException {
         super(url);
         for (ChanSite _chanSite : explicit_domains) {
+            LOGGER.info(_chanSite.domains);
             if (_chanSite.domains.contains(url.getHost())) {
                 chanSite = _chanSite;
                 generalChanSite = false;
@@ -85,6 +116,8 @@ public class ChanRipper extends AbstractHTMLRipper {
 
     @Override
     public boolean canRip(URL url) {
+        explicit_domains.addAll(bakedin_explicit_domains);
+        explicit_domains.addAll(user_give_explicit_domains);
         for (ChanSite _chanSite : explicit_domains) {
             if (_chanSite.domains.contains(url.getHost())) {
                 return true;
