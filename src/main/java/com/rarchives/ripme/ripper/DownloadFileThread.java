@@ -82,6 +82,8 @@ class DownloadFileThread extends Thread {
         }
         if (saveAs.exists() && !observer.tryResumeDownload() && !getFileExtFromMIME ||
                 Utils.fuzzyExists(new File(saveAs.getParent()), saveAs.getName()) && getFileExtFromMIME && !observer.tryResumeDownload()) {
+            AbstractRipper.alreadyDownloadedUrls += 1;
+            logger.info("alreadyDownloadedUrls = " + AbstractRipper.alreadyDownloadedUrls);
             if (Utils.getConfigBoolean("file.overwrite", false)) {
                 logger.info("[!] " + rb.getString("deleting.existing.file") + prettySaveAs);
                 saveAs.delete();
@@ -217,7 +219,6 @@ class DownloadFileThread extends Thread {
                             String fileExt = saveAsSplit[saveAsSplit.length - 1];
                             // The max limit for filenames on Linux with Ext3/4 is 255 bytes, on windows it's 256 chars so rather than
                             // bother with code with both platforms we just cut the file name down to 254 chars
-                            logger.info(saveAs.getName().substring(0, 254 - fileExt.length()) + fileExt);
                             String filename = saveAs.getName().substring(0, 254 - fileExt.length()) + "." + fileExt;
                             // We can't just use the new file name as the saveAs because the file name doesn't include the
                             // users save path, so we get the user save path from the old saveAs
