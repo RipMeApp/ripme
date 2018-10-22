@@ -51,7 +51,7 @@ public class MangadexRipper extends AbstractJSONRipper {
     }
 
     private String getChapterID(String url) {
-        Pattern p = Pattern.compile("https://mangadex.org/chapter/([\\d]+)");
+        Pattern p = Pattern.compile("https://mangadex.org/chapter/([\\d]+)/?");
         Matcher m = p.matcher(url);
         if (m.matches()) {
             return m.group(1);
