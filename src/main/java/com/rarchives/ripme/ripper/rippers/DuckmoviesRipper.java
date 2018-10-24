@@ -23,8 +23,16 @@ public class DuckmoviesRipper extends AbstractSingleFileRipper {
 
     private static List<String> explicit_domains = Arrays.asList(
             "vidporntube.fun",
-            "pornbj.fun"
-    );
+            "pornbj.fun",
+            "iwantporn.fun",
+            "neoporn.fun",
+            "yayporn.fun",
+            "freshporn.co",
+            "palapaja.stream",
+            "freshporn.co",
+            "pornvidx.fun",
+            "palapaja.com"
+            );
 
     @Override
     public String getHost() {
@@ -69,7 +77,7 @@ public class DuckmoviesRipper extends AbstractSingleFileRipper {
 
     @Override
     public String getGID(URL url) throws MalformedURLException {
-        Pattern p = Pattern.compile("https://[a-zA-Z0-9]+.fun/([a-zA-Z0-9\\-_]+)/?");
+        Pattern p = Pattern.compile("https://[a-zA-Z0-9]+\\.[a-zA-Z]+/([a-zA-Z0-9\\-_]+)/?");
         Matcher m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             return m.group(1);
@@ -85,4 +93,7 @@ public class DuckmoviesRipper extends AbstractSingleFileRipper {
     public void downloadURL(URL url, int index) {
         addURLToDownload(url, getPrefix(index));
     }
+
+    @Override
+    public boolean tryResumeDownload() {return true;}
 }
