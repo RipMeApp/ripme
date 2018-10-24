@@ -1,5 +1,6 @@
 package com.rarchives.ripme.ripper.rippers;
 
+import com.rarchives.ripme.ripper.AbstractRipper;
 import com.rarchives.ripme.ripper.AbstractSingleFileRipper;
 import com.rarchives.ripme.utils.Http;
 import org.jsoup.nodes.Document;
@@ -130,7 +131,7 @@ public class DuckmoviesRipper extends AbstractSingleFileRipper {
 
     @Override
     public void downloadURL(URL url, int index) {
-        addURLToDownload(url, getPrefix(index));
+        addURLToDownload(url, "", "", null, null, AbstractRipper.getFileName(url, null, null).replaceAll("%20", "_"));
     }
 
     @Override
