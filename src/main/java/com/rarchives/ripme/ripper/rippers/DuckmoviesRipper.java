@@ -20,6 +20,27 @@ public class DuckmoviesRipper extends AbstractSingleFileRipper {
         super(url);
     }
 
+    @Override
+    public boolean hasQueueSupport() {
+        return true;
+    }
+
+    @Override
+    public boolean pageContainsAlbums(URL url) {
+        Pattern pa = Pattern.compile("https?://[a-zA-Z0-9]+.[a-zA-Z]+/models/([a-zA-Z0-9_-])+/?");
+        Matcher ma = pa.matcher(url.toExternalForm());
+        return ma.matches();
+    }
+
+    @Override
+    public List<String> getAlbumsToQueue(Document doc) {
+        List<String> urlsToAddToQueue = new ArrayList<>();
+        for (Element elem : doc.select(".post > li > div > div > a")) {
+            urlsToAddToQueue.add(elem.attr("href"));
+        }
+        return urlsToAddToQueue;
+    }
+
 
     private static List<String> explicit_domains = Arrays.asList(
             "vidporntube.fun",
@@ -79,6 +100,11 @@ public class DuckmoviesRipper extends AbstractSingleFileRipper {
     public String getGID(URL url) throws MalformedURLException {
         Pattern p = Pattern.compile("https://[a-zA-Z0-9]+\\.[a-zA-Z]+/([a-zA-Z0-9\\-_]+)/?");
         Matcher m = p.matcher(url.toExternalForm());
+        if (m.matches()) {
+            return m.group(1);
+        }
+        p = Pattern.compile("https?://[a-zA-Z0-9]+.[a-zA-Z]+/models/([a-zA-Z0-9_-])+/?");
+        m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             return m.group(1);
         }
