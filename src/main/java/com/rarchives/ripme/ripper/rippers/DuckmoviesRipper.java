@@ -29,6 +29,11 @@ public class DuckmoviesRipper extends AbstractSingleFileRipper {
     public boolean pageContainsAlbums(URL url) {
         Pattern pa = Pattern.compile("https?://[a-zA-Z0-9]+.[a-zA-Z]+/models/([a-zA-Z0-9_-])+/?");
         Matcher ma = pa.matcher(url.toExternalForm());
+        if (ma.matches()) {
+            return true;
+        }
+        pa = Pattern.compile("https?://[a-zA-Z0-9]+.[a-zA-Z]+/models/([a-zA-Z0-9_-])+/page/\\d+/?");
+        ma = pa.matcher(url.toExternalForm());
         return ma.matches();
     }
 
@@ -104,6 +109,11 @@ public class DuckmoviesRipper extends AbstractSingleFileRipper {
             return m.group(1);
         }
         p = Pattern.compile("https?://[a-zA-Z0-9]+.[a-zA-Z]+/models/([a-zA-Z0-9_-])+/?");
+        m = p.matcher(url.toExternalForm());
+        if (m.matches()) {
+            return m.group(1);
+        }
+        p = Pattern.compile("https?://[a-zA-Z0-9]+.[a-zA-Z]+/models/([a-zA-Z0-9_-])+/page/\\d+");
         m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             return m.group(1);
