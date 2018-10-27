@@ -3,27 +3,30 @@ package com.rarchives.ripme.ripper.rippers;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
 
-import com.rarchives.ripme.ripper.AlbumRipper;
-import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
 import com.rarchives.ripme.utils.Http;
 import com.rarchives.ripme.utils.Utils;
 
-public class TeenplanetRipper extends AlbumRipper {
+public class TeenplanetRipper extends AbstractHTMLRipper {
 
     private static final String DOMAIN = "teenplanet.org",
                                 HOST   = "teenplanet";
 
-    private Document albumDoc = null;
-
     public TeenplanetRipper(URL url) throws IOException {
         super(url);
+    }
+
+    @Override
+    protected String getDomain() {
+        return DOMAIN;
     }
 
     @Override
@@ -31,23 +34,35 @@ public class TeenplanetRipper extends AlbumRipper {
         return HOST;
     }
 
-    public URL sanitizeURL(URL url) throws MalformedURLException {
-        return url;
+    @Override
+    protected Document getFirstPage() throws IOException {
+        return Http.url(url).get();
     }
 
-    public String getAlbumTitle(URL url) throws MalformedURLException {
-        try {
-            // Attempt to use album title as GID
-            if (albumDoc == null) {
-                albumDoc = Http.url(url).get();
+    @Override
+    protected List<String> getURLsFromPage(Document page) {
+        List<String> imageURLs = new ArrayList<>();
+        for (Element thumb : page.select("#galleryImages > a > img")) {
+            if (!thumb.hasAttr("src")) {
+                continue;
             }
-            Elements elems = albumDoc.select("div.header > h2");
-            return HOST + "_" + elems.get(0).text();
-        } catch (Exception e) {
-            // Fall back to default album naming convention
-            e.printStackTrace();
+            String imageURL = thumb.attr("src");
+            imageURL = imageURL.replace(
+                    "/thumbs/",
+                    "/");
+            imageURLs.add(imageURL);
         }
-        return super.getAlbumTitle(url);
+        System.out.println("Found" + imageURLs.size() + " image urls");
+        return imageURLs;
+    }
+
+    @Override
+    protected void downloadURL(URL url, int index) {
+        String prefix = "";
+        if (Utils.getConfigBoolean("download.save_order", true)) {
+            prefix = String.format("%03d_", index);
+        }
+        addURLToDownload(url, prefix);
     }
 
     @Override
@@ -65,38 +80,4 @@ public class TeenplanetRipper extends AlbumRipper {
                         + "teenplanet.org/galleries/....html"
                         + " Got: " + url);
     }
-
-    @Override
-    public void rip() throws IOException {
-        int index = 0;
-        LOGGER.info("Retrieving " + this.url);
-        sendUpdate(STATUS.LOADING_RESOURCE, this.url.toExternalForm());
-        if (albumDoc == null) {
-            albumDoc = Http.url(url).get();
-        }
-        for (Element thumb : albumDoc.select("#galleryImages > a > img")) {
-            if (!thumb.hasAttr("src")) {
-                continue;
-            }
-            String image = thumb.attr("src");
-            image = image.replace(
-                    "/thumbs/",
-                    "/");
-            index += 1;
-            String prefix = "";
-            if (Utils.getConfigBoolean("download.save_order", true)) {
-                prefix = String.format("%03d_", index);
-            }
-            addURLToDownload(new URL(image), prefix);
-            if (isThisATest()) {
-                break;
-            }
-        }
-        waitForThreads();
-    }
-
-    public boolean canRip(URL url) {
-        return url.getHost().endsWith(DOMAIN);
-    }
-
 }
