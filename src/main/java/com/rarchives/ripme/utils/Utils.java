@@ -11,10 +11,7 @@ import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
 import javax.sound.sampled.Line;
 import javax.sound.sampled.LineEvent;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.net.URISyntaxException;
@@ -32,6 +29,8 @@ import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+
+import static java.lang.Math.toIntExact;
 
 /**
  * Common utility functions used in various places throughout the project.
@@ -179,7 +178,7 @@ public class Utils {
     /**
      * Determines if your current system is a Windows system.
      */
-    private static boolean isWindows() {
+    public static boolean isWindows() {
         return OS.contains("win");
     }
 
@@ -771,6 +770,37 @@ public class Utils {
             }
         }
         return false;
+    }
+
+    public static String sanitizeSaveAs(String fileNameToSan) {
+        return fileNameToSan.replaceAll("[\\\\/:*?\"<>|]", "_");
+    }
+
+    public static File shortenSaveAsWindows(String ripsDirPath, String fileName) throws FileNotFoundException {
+//        int ripDirLength = ripsDirPath.length();
+//        int maxFileNameLength = 260 - ripDirLength;
+//        LOGGER.info(maxFileNameLength);
+        LOGGER.error("The filename " + fileName + " is to long to be saved on this file system.");
+        LOGGER.info("Shortening filename");
+        String fullPath = ripsDirPath + File.separator + fileName;
+        // How long the path without the file name is
+        int pathLength = ripsDirPath.length();
+        int fileNameLength = fileName.length();
+        LOGGER.info(pathLength);
+        LOGGER.info(fileNameLength);
+        if (pathLength == 260) {
+            // We've reached the max length, there's nothing more we can do
+            throw new FileNotFoundException("File path is too long for this OS");
+        }
+        String[] saveAsSplit = fileName.split("\\.");
+        // Get the file extension so when we shorten the file name we don't cut off the file extension
+        String fileExt = saveAsSplit[saveAsSplit.length - 1];
+        // The max limit for paths on Windows is 260 chars
+        LOGGER.info(fullPath.substring(0, 260 - pathLength - fileExt.length() + 1) + "." + fileExt);
+        fullPath = fullPath.substring(0, 260 - pathLength - fileExt.length() + 1) + "." + fileExt;
+        LOGGER.info(fullPath);
+        LOGGER.info(fullPath.length());
+        return new File(fullPath);
     }
 
 }
