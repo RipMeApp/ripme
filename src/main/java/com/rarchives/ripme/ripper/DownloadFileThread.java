@@ -62,12 +62,19 @@ class DownloadFileThread extends Thread {
         this.cookies = cookies;
     }
 
+    public File sanitizeSaveAs(File fileToSan) {
+        String fileName = fileToSan.getName().replaceAll("[\\\\/:*?\"<>|]", "_");
+        return new File(saveAs.getParentFile().getAbsolutePath() + File.separator + fileName);
+    }
+
 
     /**
      * Attempts to download the file. Retries as needed.
      * Notifies observers upon completion/error/warn.
      */
     public void run() {
+        // First thing we make sure the file name doesn't have any illegal chars in it
+        saveAs = sanitizeSaveAs(saveAs);
         long fileSize = 0;
         int bytesTotal = 0;
         int bytesDownloaded = 0;
