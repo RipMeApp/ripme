@@ -125,7 +125,7 @@ public class SinnercomicsRipper extends AbstractHTMLRipper {
                 nextUrl = elem.attr("href");
                 break;
 
-            case HOMEPAGE:
+            default: // case HOMEPAGE:
                 this.pageNum++;
                 nextUrl = "https://sinnercomics.com/page/" + String.valueOf(this.pageNum);
                 break;
