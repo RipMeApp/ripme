@@ -1,7 +1,7 @@
 {
-    "latestVersion": "1.7.68",
-    "currentHash": "cb2707bf298245bb1f549515478ddd0b0e990a3158dec8fe31b65e99e6ec9e76",
+    "latestVersion": "1.7.69",
     "changeList": [
+        "1.7.69: Fixes TheChive bug so that it can now rip gifs; e621 ripper now rips all media types; Upgraded org.apache.httpcomponents to 4.3.6; Added ripper for Mangadex.org; Added ripper for various duckmovie frontends; reddit ripper no longer freezes when ripping certain links",
         "1.7.68: Added support for 55chan.org; Now limits file name length to 255 chars; fixed Tsumino ripper",
         "1.7.67: Added yuki.la ripper; Fixed xhamster ripper; Fixed instagram ripper; Added porncomix.one ripper; Fixed bug which caused large files to be download when running tests",
         "1.7.66: Added pl_PL translation; Ported various video rippers to AbstractSingleFileRipper; Erome now downloads both HD and SD video; Can now download embedded images from tumblr; Fixed 8muses folder naming; Added ripper for Tubex6.com",
@@ -240,5 +240,6 @@
         "1.0.4: Fixed spaces-in-directory bug",
         "1.0.3: Added VK.com ripper",
         "1.0.1: Added auto-update functionality"
-    ]
+    ],
+    "currentHash": "5c312c50aed4a33112d3c77cf9cae68be1793b167ba2a741c33453e556a66c73"
 }
