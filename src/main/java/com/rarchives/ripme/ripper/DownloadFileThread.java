@@ -20,7 +20,7 @@ import org.jsoup.HttpStatusException;
 
 import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
 import com.rarchives.ripme.utils.Utils;
-import static java.lang.Math.toIntExact;
+import com.rarchives.ripme.ripper.AbstractRipper;
 
 /**
  * Thread for downloading files.
@@ -34,6 +34,7 @@ class DownloadFileThread extends Thread {
 
     private String referrer = "";
     private Map<String,String> cookies = new HashMap<>();
+    private Map<String,String> additionalHeaders = new HashMap<>();
 
     private URL url;
     private File saveAs;
@@ -61,6 +62,9 @@ class DownloadFileThread extends Thread {
     public void setCookies(Map<String,String> cookies) {
         this.cookies = cookies;
     }
+    public void setAdditionalHeaders(Map<String,String> headers) {
+        this.additionalHeaders = headers;
+    }
 
 
     /**
@@ -68,8 +72,6 @@ class DownloadFileThread extends Thread {
      * Notifies observers upon completion/error/warn.
      */
     public void run() {
-        // First thing we make sure the file name doesn't have any illegal chars in it
-        saveAs = new File(saveAs.getParentFile().getAbsolutePath() + File.separator + Utils.sanitizeSaveAs(saveAs.getName()));
         long fileSize = 0;
         int bytesTotal = 0;
         int bytesDownloaded = 0;
@@ -134,6 +136,11 @@ class DownloadFileThread extends Thread {
                         huc.setRequestProperty("Range", "bytes=" + fileSize + "-");
                     }
                 }
+
+                for (String key : additionalHeaders.keySet()) {
+                    huc.setRequestProperty(key, additionalHeaders.get(key));
+                }
+
                 logger.debug(rb.getString("request.properties") + ": " + huc.getRequestProperties());
                 huc.connect();
 
@@ -217,16 +224,14 @@ class DownloadFileThread extends Thread {
                             String[] saveAsSplit = saveAs.getName().split("\\.");
                             // Get the file extension so when we shorten the file name we don't cut off the file extension
                             String fileExt = saveAsSplit[saveAsSplit.length - 1];
-                            // The max limit for filenames on Linux with Ext3/4 is 255 bytes
+                            // The max limit for filenames on Linux with Ext3/4 is 255 bytes, on windows it's 256 chars so rather than
+                            // bother with code with both platforms we just cut the file name down to 254 chars
                             logger.info(saveAs.getName().substring(0, 254 - fileExt.length()) + fileExt);
                             String filename = saveAs.getName().substring(0, 254 - fileExt.length()) + "." + fileExt;
                             // We can't just use the new file name as the saveAs because the file name doesn't include the
                             // users save path, so we get the user save path from the old saveAs
-                            saveAs = new File(saveAs.getParentFile().getAbsolutePath() + File.separator + filename);
+                            saveAs = new File(saveAs.getParentFile().getAbsolutePath() + "/" + filename);
                             fos = new FileOutputStream(saveAs);
-                        } else if (saveAs.getAbsolutePath().length() > 259 && Utils.isWindows()) {
-                            // This if is for when the file path has gone above 260 chars which windows does not allow
-                            fos = new FileOutputStream(Utils.shortenSaveAsWindows(saveAs.getParentFile().getPath(), saveAs.getName()));
                         }
                     }
                 }

@@ -47,10 +47,14 @@ public abstract class AlbumRipper extends AbstractRipper {
     }
 
     @Override
+    public boolean addURLToDownload(URL url, File saveAs, String referrer, Map<String,String> cookies, Boolean getFileExtFromMIME) {
+        return addURLToDownload(url, saveAs, referrer, cookies, getFileExtFromMIME, null);
+    }
+
     /**
      * Queues multiple URLs of single images to download from a single Album URL
      */
-    public boolean addURLToDownload(URL url, File saveAs, String referrer, Map<String,String> cookies, Boolean getFileExtFromMIME) {
+    public boolean addURLToDownload(URL url, File saveAs, String referrer, Map<String,String> cookies, Boolean getFileExtFromMIME, Map<String,String> additionalHeaders) {
         // Only download one file if this is a test.
         if (super.isThisATest() &&
                 (itemsPending.size() > 0 || itemsCompleted.size() > 0 || itemsErrored.size() > 0)) {
@@ -84,6 +88,9 @@ public abstract class AlbumRipper extends AbstractRipper {
             }
             if (cookies != null) {
                 dft.setCookies(cookies);
+            }
+            if (additionalHeaders != null) {
+                dft.setAdditionalHeaders(additionalHeaders);
             }
             threadPool.addThread(dft);
         }
