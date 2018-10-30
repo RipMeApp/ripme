@@ -252,8 +252,26 @@ public abstract class AbstractRipper
             return false;
         }
         LOGGER.debug("url: " + url + ", prefix: " + prefix + ", subdirectory" + subdirectory + ", referrer: " + referrer + ", cookies: " + cookies + ", fileName: " + fileName);
-        String saveAs = getFileName(url, fileName, extension);
+        
+        File saveFileAs = getSaveFile(prefix, subdirectory, fileName, extension);
+        if(saveFileAs == null)
+            return false;
+        
+        LOGGER.debug("Downloading " + url + " to " + saveFileAs);
+        if (Utils.getConfigBoolean("remember.url_history", true) && !isThisATest()) {
+            try {
+                writeDownloadedURL(url.toExternalForm() + "\n");
+            } catch (IOException e) {
+                LOGGER.debug("Unable to write URL history file");
+            }
+        }
+        return addURLToDownload(url, saveFileAs, referrer, cookies, getFileExtFromMIME);
+    }
+
+    protected File getSaveFile(String prefix, String subdirectory, String fileName, String extension)
+    {
         File saveFileAs;
+        String saveAs = getFileName(url, fileName, extension);
         try {
             if (!subdirectory.equals("")) {
                 subdirectory = Utils.filesystemSafe(subdirectory);
@@ -270,23 +288,16 @@ public abstract class AbstractRipper
                     + File.separator
                     + prefix
                     + saveAs);
+
+            if (!saveFileAs.getParentFile().exists()) {
+                LOGGER.info("[+] Creating directory: " + Utils.removeCWD(saveFileAs.getParent()));
+                saveFileAs.getParentFile().mkdirs();
+            }
         } catch (IOException e) {
             LOGGER.error("[!] Error creating save file path for URL '" + url + "':", e);
-            return false;
-        }
-        LOGGER.debug("Downloading " + url + " to " + saveFileAs);
-        if (!saveFileAs.getParentFile().exists()) {
-            LOGGER.info("[+] Creating directory: " + Utils.removeCWD(saveFileAs.getParent()));
-            saveFileAs.getParentFile().mkdirs();
-        }
-        if (Utils.getConfigBoolean("remember.url_history", true) && !isThisATest()) {
-            try {
-                writeDownloadedURL(url.toExternalForm() + "\n");
-            } catch (IOException e) {
-                LOGGER.debug("Unable to write URL history file");
-            }
-        }
-        return addURLToDownload(url, saveFileAs, referrer, cookies, getFileExtFromMIME);
+            return null;
+        }        
+        return saveFileAs;
     }
 
     protected boolean addURLToDownload(URL url, String prefix, String subdirectory, String referrer, Map<String,String> cookies, String fileName, String extension) {
