@@ -198,7 +198,7 @@ public class UpdateUtils {
     }
 
     // Code take from https://stackoverflow.com/a/30925550
-    private static String createSha256(File file)  {
+    public static String createSha256(File file)  {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
             InputStream fis = new FileInputStream(file);
@@ -210,8 +210,14 @@ public class UpdateUtils {
                     digest.update(buffer, 0, n);
                 }
             }
+            byte[] hash = digest.digest();
+            StringBuilder sb = new StringBuilder(2 * hash.length);
+            for (byte b : hash) {
+                sb.append("0123456789ABCDEF".charAt((b & 0xF0) >> 4));
+                sb.append("0123456789ABCDEF".charAt((b & 0x0F)));
+            }
             // As patch.py writes the hash in lowercase this must return the has in lowercase
-            return new HexBinaryAdapter().marshal(digest.digest()).toLowerCase();
+            return sb.toString().toLowerCase();
         } catch (NoSuchAlgorithmException e) {
             logger.error("Got error getting file hash " + e.getMessage());
         } catch (FileNotFoundException e) {
