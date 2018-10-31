@@ -15,7 +15,51 @@ public class PhotobucketRipperTest extends RippersTest {
         deleteDir(ripper.getWorkingDir());
     }
     */
+
+    /*
+    // new test, still commented out because of the issue above,
+    // since this test also involves network IO.
+    public void testGetNextPage() throws IOException {
+        // this album should have more than enough sub-albums and pages
+        // to serve as a pretty good iteration test (barring server or
+        // network errors)
+        String baseURL = "http://s1255.photobucket.com/user/mimajki/library/Movie%20gifs?sort=6&page=1";
+        URL url = new URL(baseURL);
+        PhotobucketRipper ripper = new PhotobucketRipper(url);
+        org.jsoup.nodes.Document page = null;
+        try {
+            // I'm not sure it makes much sense that getFirstPage()
+            // is not public while getNextPage() is.
+            java.lang.reflect.Method method = ripper.getClass()
+                                                    .getDeclaredMethod("getFirstPage");
+            method.setAccessible(true);
+            page = (org.jsoup.nodes.Document) method.invoke(ripper);
+        } catch (Exception e){
+            e.printStackTrace();
+            fail("Calling getFirstPage() failed");
+        }
+        int numPagesRemaining = 38;
+        for (int idx = 0; idx < numPagesRemaining; idx++){
+            page = ripper.getNextPage(page);
+            System.out.println("URL: " + page.location());
+        }
+        try {
+            page = ripper.getNextPage(page);
+            fail("Get next page did not throw an exception on the last page");
+        } catch(IOException e){
+            assertEquals(e.getMessage(), "No more pages");
+        }
+    }*/
+
+    public void testGetGID() throws IOException {
+        URL url = new URL("http://s732.photobucket.com/user/doublesix66/library/Army%20Painter%20examples?sort=3&page=1");
+        PhotobucketRipper ripper = new PhotobucketRipper(url);
+        assertEquals("doublesix66", ripper.getGID(url));
+        url = new URL("http://s732.photobucket.com/user/doublesix66/library/Army%20Painter%20examples/Painting%20examples?page=1&sort=3");
+        assertEquals("doublesix66", ripper.getGID(url));
+        url = new URL("http://s844.photobucket.com/user/SpazzySpizzy/library/Album%20Covers");
+        assertEquals("SpazzySpizzy", ripper.getGID(url));
+        url = new URL("http://s844.photobucket.com/user/SpazzySpizzy/library");
+        assertEquals("SpazzySpizzy", ripper.getGID(url));
+    }
 }
-
-
-
