@@ -2,8 +2,10 @@ package com.rarchives.ripme.ripper.rippers;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -20,18 +22,19 @@ import com.rarchives.ripme.utils.Http;
 import com.rarchives.ripme.utils.Utils;
 
 public class MadokamiRipper extends AbstractHTMLRipper {
-    private static String API_KEY;
+    private static String header;
     private Map<String, String> headers;
 
     public MadokamiRipper(URL url) throws IOException {
         super(url);
-        API_KEY = Utils.getConfigString("madokami.auth", null);
-        if (API_KEY == null) {
+        String authKey = Utils.getConfigString("madokami.auth", null);
+        if (authKey == null) {
             throw new IOException("Could not find madokami authentication key (madokami.auth) in configuration in the form of user:password");
         }
-        headers = new HashMap<String, String>();
-        String encoded = Base64.encode(API_KEY.getBytes());
-        headers.put("Authorization", "Basic " + encoded);
+        headers = new HashMap<>();
+        String encoded = Base64.encode(authKey.getBytes());
+        header = "Basic " + encoded;
+        headers.put("Authorization", header);
     }
 
     @Override
@@ -49,31 +52,58 @@ public class MadokamiRipper extends AbstractHTMLRipper {
         Pattern p = Pattern.compile("^https://manga\\.madokami\\.al/Manga/./.*/.*/(.*)$");
         Matcher m = p.matcher(url.toExternalForm());
         if (m.matches()) {
-            return m.group(1);
+            String galleryId = m.group(1);
+            try {
+                galleryId = URLDecoder.decode(galleryId, "UTF-8");
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+            return galleryId;
         }
         throw new MalformedURLException("Expected madokami URL format: " +
-                        "https://manga.madokami.al/Manga/./.*/.*/albumid - got " + url + " instead");
+                "https://manga.madokami.al/Manga/./.*/.*/albumid - got " + url + " instead");
     }
 
     @Override
     public Document getFirstPage() throws IOException {
-        return Http.url(url).get();
+        Http client = Http.url(url);
+        client.header("Authorization", header);
+        return client.get();
     }
 
     @Override
     public List<String> getURLsFromPage(Document doc) {
         List<String> fileURLs = new ArrayList<>();
-        for (Element link : doc.select("#index-table > tbody > tr > td:nth-child(1) > a")) {
-            String href = link.attr("href");
-            if(href.endsWith(".zip") || href.endsWith(".rar") || href.endsWith(".cbr") || href.endsWith(".cbz"))
-                fileURLs.add(href);
+        try {
+            URL baseUrl = new URL(url.getProtocol() + "://" + url.getHost());
+            for (Element link : doc.select("#index-table > tbody > tr > td:nth-child(1) > a")) {
+                String href = link.attr("href");
+                if (href.endsWith(".zip") || href.endsWith(".rar") || href.endsWith(".cbr") || href.endsWith(".cbz")) {
+                    URL url = new URL(baseUrl, href);
+                    fileURLs.add(url.toString());
+                }
+            }
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
         }
         return fileURLs;
     }
 
     @Override
     public void downloadURL(URL url, int index) {
-        File saveFile = getSaveFile(getPrefix(index), "", "", "");
+        File saveFile = getSaveFile("", "", getFileName(url), null);
         addURLToDownload(url, saveFile, null, null, false, headers);
+    }
+
+    public static String getFileName(URL url) {
+        String saveAs;
+        saveAs = url.toExternalForm();
+        saveAs = saveAs.substring(saveAs.lastIndexOf('/') + 1);
+        try {
+            saveAs = URLDecoder.decode(saveAs, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        return saveAs;
     }
 }
