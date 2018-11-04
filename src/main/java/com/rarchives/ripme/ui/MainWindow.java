@@ -149,6 +149,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
     // All the langs ripme has been translated into
     private static String[] supportedLanges = new String[] {
             "de_DE",
+            "ar_AR",
             "en_US",
             "es_ES",
             "fi_FI",
