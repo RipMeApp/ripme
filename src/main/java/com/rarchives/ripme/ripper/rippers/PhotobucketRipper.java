@@ -16,6 +16,8 @@ import org.jsoup.nodes.Element;
 import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 import com.rarchives.ripme.utils.Http;
 
+// TODO: Probably want to add queue support for cases like this:
+// http://s732.photobucket.com/user/doublesix66/library/WARZONE?sort=3&page=1
 public class PhotobucketRipper extends AbstractHTMLRipper {
 
     private static final String DOMAIN = "photobucket.com",
@@ -281,7 +283,4 @@ public class PhotobucketRipper extends AbstractHTMLRipper {
         }
         return subalbumJSONs;
     }
-
-    // TODO: Probably want to add queue support for cases like this:
-    // http://s732.photobucket.com/user/doublesix66/library/WARZONE?sort=3&page=1
 }
