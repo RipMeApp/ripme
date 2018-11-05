@@ -249,7 +249,10 @@ public class RedditRipper extends AlbumRipper {
             if (url.contains("v.redd.it")) {
                 String savePath = this.workingDir + File.separator;
                 savePath += id + "-" + url.split("/")[3] + title + ".mp4";
-                addURLToDownload(parseRedditVideoMPD(urls.get(0).toExternalForm()), new File(savePath));
+                URL urlToDownload = parseRedditVideoMPD(urls.get(0).toExternalForm());
+                if (urlToDownload != null) {
+                    addURLToDownload(urlToDownload, new File(savePath));
+                }
             }
             else {
                 addURLToDownload(urls.get(0), id + title, "", theUrl, null);

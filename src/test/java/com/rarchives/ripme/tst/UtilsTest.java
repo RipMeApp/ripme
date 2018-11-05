@@ -3,6 +3,8 @@ package com.rarchives.ripme.tst;
 import junit.framework.TestCase;
 import com.rarchives.ripme.utils.Utils;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -42,6 +44,17 @@ public class UtilsTest extends TestCase {
 
     public void testBetween() {
         assertEquals(Arrays.asList(" is a "), Utils.between("This is a test", "This", "test"));
+    }
+
+    public void testShortenFileNameWindows() throws FileNotFoundException {
+        String filename = "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff.png";
+        // Test filename shortening for windows
+        File f = Utils.shortenSaveAsWindows("D:/rips/test/reddit/deep", filename );
+        assertEquals(new File("D:/rips/test/reddit/deep/fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff.png"), f);
+    }
+
+    public void testSanitizeSaveAs() {
+        assertEquals("This is a _ !__ test", Utils.sanitizeSaveAs("This is a \" !<? test"));
     }
 
 }
