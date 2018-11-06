@@ -6,5 +6,9 @@ import java.net.URL;
 import com.rarchives.ripme.ripper.rippers.NewsfilterRipper;
 
 public class NewsfilterRipperTest extends RippersTest {
-    // TODO add a test
+
+    public void testNewsfilterRip() throws IOException {
+        NewsfilterRipper ripper = new NewsfilterRipper(new URL("http://newsfilter.org/gallery/he-doubted-she-would-fuck-on-cam-happy-to-be-proven-wrong-216799"));
+        testRipper(ripper);
+    }
 }
