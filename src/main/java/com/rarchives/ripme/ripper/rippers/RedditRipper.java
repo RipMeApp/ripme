@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.rarchives.ripme.ripper.AbstractRipper;
 import com.rarchives.ripme.ui.RipStatusMessage;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -208,7 +209,6 @@ public class RedditRipper extends AlbumRipper {
                     largestHeight = Integer.parseInt(height);
                     baseURL = doc.select("MPD > Period > AdaptationSet > Representation[height=" + height + "]").select("BaseURL").text();
                 }
-                LOGGER.info("H " + e.attr("height") + " V " + e.attr("width"));
             }
             return new URL(vidURL + "/" + baseURL);
         } catch (IOException e) {
@@ -251,6 +251,7 @@ public class RedditRipper extends AlbumRipper {
                 savePath += id + "-" + url.split("/")[3] + title + ".mp4";
                 URL urlToDownload = parseRedditVideoMPD(urls.get(0).toExternalForm());
                 if (urlToDownload != null) {
+                    LOGGER.info("url: " + urlToDownload + " file: " + savePath);
                     addURLToDownload(urlToDownload, new File(savePath));
                 }
             }

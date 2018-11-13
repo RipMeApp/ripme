@@ -131,7 +131,7 @@ public abstract class AbstractRipper
      *      Returns true if previously downloaded.
      *      Returns false if not yet downloaded.
      */
-    private boolean hasDownloadedURL(String url) {
+    protected boolean hasDownloadedURL(String url) {
         File file = new File(URLHistoryFile);
         url = normalizeUrl(url);
 
@@ -280,6 +280,7 @@ public abstract class AbstractRipper
             saveFileAs.getParentFile().mkdirs();
         }
         if (Utils.getConfigBoolean("remember.url_history", true) && !isThisATest()) {
+            LOGGER.info("Writing " + url.toExternalForm() + " to file");
             try {
                 writeDownloadedURL(url.toExternalForm() + "\n");
             } catch (IOException e) {
