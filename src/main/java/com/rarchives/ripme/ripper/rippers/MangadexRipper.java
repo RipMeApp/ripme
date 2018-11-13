@@ -19,8 +19,8 @@ import java.util.regex.Pattern;
 public class MangadexRipper extends AbstractJSONRipper {
     private String chapterApiEndPoint = "https://mangadex.org/api/chapter/";
 
-    private String getImageUrl(String chapterHash, String imageName) {
-        return "https://mangadex.org/data/" + chapterHash + "/" + imageName;
+    private String getImageUrl(String chapterHash, String imageName, String server) {
+        return server + chapterHash + "/" + imageName;
     }
 
     public MangadexRipper(URL url) throws IOException {
@@ -72,11 +72,13 @@ public class MangadexRipper extends AbstractJSONRipper {
         JSONArray currentObject;
 
         String chapterHash = json.getString("hash");
+        // Server is the cdn hosting the images.
+        String server = json.getString("server");
 
         for (int i = 0; i < json.getJSONArray("page_array").length(); i++) {
             currentObject = json.getJSONArray("page_array");
 
-            assetURLs.add(getImageUrl(chapterHash, currentObject.getString(i)));
+            assetURLs.add(getImageUrl(chapterHash, currentObject.getString(i), server));
         }
 
         return assetURLs;
