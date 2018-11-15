@@ -19,8 +19,6 @@ import org.jsoup.nodes.Element;
 
 public class FlickrRipper extends AbstractHTMLRipper {
 
-    private int page = 1;
-    private Set<String> attempted = new HashSet<>();
     private Document albumDoc = null;
     private final DownloadThreadPool flickrThreadPool;
     @Override
@@ -61,9 +59,11 @@ public class FlickrRipper extends AbstractHTMLRipper {
         }
         return new URL(sUrl);
     }
-
+    // FLickr is one of those sites what includes a api key in sites javascript
+    // TODO let the user provide their own api key
     private String getAPIKey(Document doc) {
-        Pattern p; Matcher m;
+        Pattern p;
+        Matcher m;
         p = Pattern.compile("root.YUI_config.flickr.api.site_key = \"([a-zA-Z0-9]*)\";");
         for (Element e : doc.select("script")) {
             // You have to use .html here as .text will strip most of the javascript
@@ -204,38 +204,6 @@ public class FlickrRipper extends AbstractHTMLRipper {
         return albumDoc;
     }
 
-//    @Override
-//    public Document getNextPage(Document doc) throws IOException {
-//        if (isThisATest()) {
-//            return null;
-//        }
-//        // Find how many pages there are
-//        int lastPage = 0;
-//        for (Element apage : doc.select("a[data-track^=page-]")) {
-//            String lastPageStr = apage.attr("data-track").replace("page-", "");
-//            lastPage = Integer.parseInt(lastPageStr);
-//        }
-//        // If we're at the last page, stop.
-//        if (page >= lastPage) {
-//            throw new IOException("No more pages");
-//        }
-//        // Load the next page
-//        page++;
-//        albumDoc = null;
-//        String nextURL = this.url.toExternalForm();
-//        if (!nextURL.endsWith("/")) {
-//            nextURL += "/";
-//        }
-//        nextURL += "page" + page + "/";
-//        // Wait a bit
-//        try {
-//            Thread.sleep(1000);
-//        } catch (InterruptedException e) {
-//            throw new IOException("Interrupted while waiting to load next page " + nextURL);
-//        }
-//        return Http.url(nextURL).get();
-//    }
-
     @Override
     public List<String> getURLsFromPage(Document doc) {
         List<String> imageURLs = new ArrayList<>();
@@ -246,13 +214,14 @@ public class FlickrRipper extends AbstractHTMLRipper {
             if (jsonData.has("stat") && jsonData.getString("stat").equals("fail")) {
                 break;
             } else {
+                int totalPages = jsonData.getJSONObject("photoset").getInt("pages");
                 LOGGER.info(jsonData);
                 JSONArray pictures = jsonData.getJSONObject("photoset").getJSONArray("photo");
                 for (int i = 0; i < pictures.length(); i++) {
                     LOGGER.info(i);
                     JSONObject data = (JSONObject) pictures.get(i);
-                    // flickr has a real funny way listing the image sizes, so we have to loop over all these until we
-                    // find one that works
+                    // TODO this is a total hack, we should loop over all image sizes and pick the biggest one and not
+                    // just assume
                     List<String> imageSizes = Arrays.asList("k", "h", "l", "n", "c", "z", "t");
                     for ( String imageSize : imageSizes) {
                         try {
@@ -260,11 +229,17 @@ public class FlickrRipper extends AbstractHTMLRipper {
                             LOGGER.info("Adding picture " + data.getString("url_" + imageSize));
                             break;
                         } catch (org.json.JSONException ignore) {
-
+                        // TODO warn the user when we hit a Malformed url
                         } catch (MalformedURLException e) {}
                     }
                 }
-                break;
+                if (x >= totalPages) {
+                    // The rips done
+                    break;
+                }
+                // We have more pages to download so we rerun the loop
+                x++;
+
             }
         }
 
