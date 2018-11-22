@@ -18,6 +18,7 @@ import org.jsoup.nodes.Element;
 public class ChanRipper extends AbstractHTMLRipper {
     private static List<ChanSite> explicit_domains = Arrays.asList(
             new ChanSite("boards.4chan.org",   Arrays.asList("4cdn.org", "is.4chan.org", "is2.4chan.org", "is3.4chan.org")),
+            new ChanSite("boards.4channel.org",   Arrays.asList("4cdn.org", "is.4chan.org", "is2.4chan.org", "is3.4chan.org")),
             new ChanSite("4archive.org",  "imgur.com"),
             new ChanSite("archive.4plebs.org", "img.4plebs.org"),
             new ChanSite("yuki.la", "ii.yuki.la"),
