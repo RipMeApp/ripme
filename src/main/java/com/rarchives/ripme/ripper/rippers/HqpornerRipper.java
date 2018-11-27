@@ -39,6 +39,26 @@ public class HqpornerRipper extends AbstractSingleFileRipper {
             return null;
         }
 
+        private String getVideoFromFlyFlv(String url) {
+            try {
+                logger.info("Downloading " + url);
+                Document page = Http.url(url).referrer(url).get();
+                String[] videoSizes = { "1080p","720p","360p"};
+                for (String videoSize : videoSizes) {
+                    String urlToReturn = page.select("video > source[label=" + videoSize).attr("src");
+                    if (urlToReturn != null && !urlToReturn.equals("")) {
+                        return urlToReturn;
+                    }
+                }
+
+
+
+            } catch (IOException e) {
+                logger.error("Unable to get page with video");
+            }
+            return null;
+        }
+
         private String getVideoName() {
             try {
                 String filename = getGID(url);
@@ -77,8 +97,19 @@ public class HqpornerRipper extends AbstractSingleFileRipper {
 
         @Override
         public List<String> getURLsFromPage(Document doc) {
+            String videoUrl = null;
             List<String> result = new ArrayList<>();
-            result.add("https:" + getVideoFromMyDaddycc("https:" + doc.select("div.videoWrapper > iframe").attr("src")));
+            String videoPageUrl = "https:" + doc.select("div.videoWrapper > iframe").attr("src");
+
+            if (videoPageUrl.contains("mydaddy")) {
+                videoUrl = getVideoFromMyDaddycc(videoPageUrl);
+            } else if (videoPageUrl.contains("flyflv")) {
+                videoUrl = getVideoFromFlyFlv(videoPageUrl);
+            }
+
+            if (videoUrl != null) {
+                result.add("https:" + videoUrl);
+            }
             return result;
         }
 
