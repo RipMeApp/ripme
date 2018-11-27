@@ -563,10 +563,6 @@ public abstract class AbstractRipper
             LOGGER.error("Got exception while running ripper:", e);
             waitForThreads();
             sendUpdate(STATUS.RIP_ERRORED, "HTTP status code " + e.getStatusCode() + " for URL " + e.getUrl());
-        }catch(NullPointerException e){
-            LOGGER.error("Got null pointer exception while running ripper:", e);
-            waitForThreads();
-            sendUpdate(STATUS.NO_ALBUM_OR_USER, "Album or user doesn't exist!");
         } catch (Exception e) {
             LOGGER.error("Got exception while running ripper:", e);
             waitForThreads();
