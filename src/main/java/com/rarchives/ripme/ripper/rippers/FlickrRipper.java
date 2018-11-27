@@ -3,37 +3,32 @@ package com.rarchives.ripme.ripper.rippers;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.jsoup.Connection.Method;
-import org.jsoup.Connection.Response;
-import org.jsoup.Jsoup;
+import com.rarchives.ripme.ui.RipStatusMessage;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
 
 import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 import com.rarchives.ripme.ripper.DownloadThreadPool;
-import com.rarchives.ripme.utils.Base64;
 import com.rarchives.ripme.utils.Http;
-import com.rarchives.ripme.utils.Utils;
+import org.jsoup.nodes.Element;
 
 public class FlickrRipper extends AbstractHTMLRipper {
 
-    private int page = 1;
-    private Set<String> attempted = new HashSet<>();
     private Document albumDoc = null;
     private final DownloadThreadPool flickrThreadPool;
     @Override
     public DownloadThreadPool getThreadPool() {
         return flickrThreadPool;
+    }
+
+    @Override
+    public boolean hasASAPRipping() {
+        return true;
     }
 
     public FlickrRipper(URL url) throws IOException {
@@ -50,6 +45,7 @@ public class FlickrRipper extends AbstractHTMLRipper {
         return "flickr.com";
     }
 
+    @Override
     public URL sanitizeURL(URL url) throws MalformedURLException {
         String sUrl = url.toExternalForm();
         // Strip out https
@@ -63,7 +59,87 @@ public class FlickrRipper extends AbstractHTMLRipper {
         }
         return new URL(sUrl);
     }
+    // FLickr is one of those sites what includes a api key in sites javascript
+    // TODO let the user provide their own api key
+    private String getAPIKey(Document doc) {
+        Pattern p;
+        Matcher m;
+        p = Pattern.compile("root.YUI_config.flickr.api.site_key = \"([a-zA-Z0-9]*)\";");
+        for (Element e : doc.select("script")) {
+            // You have to use .html here as .text will strip most of the javascript
+            m = p.matcher(e.html());
+            if (m.find()) {
+                LOGGER.info("Found api key:" + m.group(1));
+                return m.group(1);
+            }
+        }
+        LOGGER.error("Unable to get api key");
+        // A nice error message to tell our users what went wrong
+        sendUpdate(RipStatusMessage.STATUS.DOWNLOAD_WARN, "Unable to extract api key from flickr");
+        sendUpdate(RipStatusMessage.STATUS.DOWNLOAD_WARN, "Using hardcoded api key");
+        return "935649baf09b2cc50628e2b306e4da5d";
+    }
 
+    // The flickr api is a monster of weird settings so we just request everything that the webview does
+    private String apiURLBuilder(String photoset, String pageNumber, String apiKey) {
+        LOGGER.info("https://api.flickr.com/services/rest?extras=can_addmeta," +
+                "can_comment,can_download,can_share,contact,count_comments,count_faves,count_views,date_taken," +
+                "date_upload,icon_urls_deep,isfavorite,ispro,license,media,needs_interstitial,owner_name," +
+                "owner_datecreate,path_alias,realname,rotation,safety_level,secret_k,secret_h,url_c,url_f,url_h,url_k," +
+                "url_l,url_m,url_n,url_o,url_q,url_s,url_sq,url_t,url_z,visibility,visibility_source,o_dims," +
+                "is_marketplace_printable,is_marketplace_licensable,publiceditability&per_page=100&page="+ pageNumber + "&" +
+                "get_user_info=1&primary_photo_extras=url_c,%20url_h,%20url_k,%20url_l,%20url_m,%20url_n,%20url_o" +
+                ",%20url_q,%20url_s,%20url_sq,%20url_t,%20url_z,%20needs_interstitial,%20can_share&jump_to=&" +
+                "photoset_id=" + photoset + "&viewerNSID=&method=flickr.photosets.getPhotos&csrf=&" +
+                "api_key=" + apiKey + "&format=json&hermes=1&hermesClient=1&reqId=358ed6a0&nojsoncallback=1");
+        return "https://api.flickr.com/services/rest?extras=can_addmeta," +
+                "can_comment,can_download,can_share,contact,count_comments,count_faves,count_views,date_taken," +
+                "date_upload,icon_urls_deep,isfavorite,ispro,license,media,needs_interstitial,owner_name," +
+                "owner_datecreate,path_alias,realname,rotation,safety_level,secret_k,secret_h,url_c,url_f,url_h,url_k," +
+                "url_l,url_m,url_n,url_o,url_q,url_s,url_sq,url_t,url_z,visibility,visibility_source,o_dims," +
+                "is_marketplace_printable,is_marketplace_licensable,publiceditability&per_page=100&page="+ pageNumber + "&" +
+                "get_user_info=1&primary_photo_extras=url_c,%20url_h,%20url_k,%20url_l,%20url_m,%20url_n,%20url_o" +
+                ",%20url_q,%20url_s,%20url_sq,%20url_t,%20url_z,%20needs_interstitial,%20can_share&jump_to=&" +
+                "photoset_id=" + photoset + "&viewerNSID=&method=flickr.photosets.getPhotos&csrf=&" +
+                "api_key=" + apiKey + "&format=json&hermes=1&hermesClient=1&reqId=358ed6a0&nojsoncallback=1";
+    }
+
+    private JSONObject getJSON(String page, String apiKey) {
+        URL pageURL = null;
+        String apiURL = null;
+        try {
+            apiURL = apiURLBuilder(getPhotosetID(url.toExternalForm()), page, apiKey);
+            pageURL = new URL(apiURL);
+        }  catch (MalformedURLException e) {
+            LOGGER.error("Unable to get api link " + apiURL + " is malformed");
+        }
+        try {
+            LOGGER.info(Http.url(pageURL).ignoreContentType().get().text());
+            return new JSONObject(Http.url(pageURL).ignoreContentType().get().text());
+        } catch (IOException e) {
+            LOGGER.error("Unable to get api link " + apiURL + " is malformed");
+            return null;
+        }
+    }
+
+    private String getPhotosetID(String url) {
+        Pattern p; Matcher m;
+
+        // Root:  https://www.flickr.com/photos/115858035@N04/
+        // Album: https://www.flickr.com/photos/115858035@N04/sets/72157644042355643/
+
+        final String domainRegex = "https?://[wm.]*flickr.com";
+        final String userRegex = "[a-zA-Z0-9@_-]+";
+        // Album
+        p = Pattern.compile("^" + domainRegex + "/photos/(" + userRegex + ")/(sets|albums)/([0-9]+)/?.*$");
+        m = p.matcher(url);
+        if (m.matches()) {
+            return m.group(3);
+        }
+        return null;
+    }
+
+    @Override
     public String getAlbumTitle(URL url) throws MalformedURLException {
         if (!url.toExternalForm().contains("/sets/")) {
             return super.getAlbumTitle(url);
@@ -92,7 +168,7 @@ public class FlickrRipper extends AbstractHTMLRipper {
         // Album: https://www.flickr.com/photos/115858035@N04/sets/72157644042355643/
 
         final String domainRegex = "https?://[wm.]*flickr.com";
-        final String userRegex = "[a-zA-Z0-9@]+";
+        final String userRegex = "[a-zA-Z0-9@_-]+";
         // Album
         p = Pattern.compile("^" + domainRegex + "/photos/(" + userRegex + ")/sets/([0-9]+)/?.*$");
         m = p.matcher(url.toExternalForm());
@@ -129,167 +205,49 @@ public class FlickrRipper extends AbstractHTMLRipper {
     }
 
     @Override
-    public Document getNextPage(Document doc) throws IOException {
-        if (isThisATest()) {
-            return null;
-        }
-        // Find how many pages there are
-        int lastPage = 0;
-        for (Element apage : doc.select("a[data-track^=page-]")) {
-            String lastPageStr = apage.attr("data-track").replace("page-", "");
-            lastPage = Integer.parseInt(lastPageStr);
-        }
-        // If we're at the last page, stop.
-        if (page >= lastPage) {
-            throw new IOException("No more pages");
-        }
-        // Load the next page
-        page++;
-        albumDoc = null;
-        String nextURL = this.url.toExternalForm();
-        if (!nextURL.endsWith("/")) {
-            nextURL += "/";
-        }
-        nextURL += "page" + page + "/";
-        // Wait a bit
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            throw new IOException("Interrupted while waiting to load next page " + nextURL);
-        }
-        return Http.url(nextURL).get();
-    }
-
-    @Override
-    public List<String> getURLsFromPage(Document page) {
+    public List<String> getURLsFromPage(Document doc) {
         List<String> imageURLs = new ArrayList<>();
-        for (Element thumb : page.select("a[data-track=photo-click]")) {
-            /* TODO find a way to persist the image title
-            String imageTitle = null;
-            if (thumb.hasAttr("title")) {
-                imageTitle = thumb.attr("title");
-            }
-            */
-            String imagePage = thumb.attr("href");
-            if (imagePage.startsWith("/")) {
-                imagePage = "http://www.flickr.com" + imagePage;
-            }
-            if (imagePage.contains("/in/")) {
-                imagePage = imagePage.substring(0, imagePage.indexOf("/in/") + 1);
-            }
-            if (!imagePage.endsWith("/")) {
-                imagePage += "/";
-            }
-            imagePage += "sizes/o/";
 
-            // Check for duplicates
-            if (attempted.contains(imagePage)) {
-                continue;
-            }
-            attempted.add(imagePage);
-            imageURLs.add(imagePage);
-            if (isThisATest()) {
+        int x = 1;
+        while (true) {
+            JSONObject jsonData = getJSON(String.valueOf(x), getAPIKey(doc));
+            if (jsonData.has("stat") && jsonData.getString("stat").equals("fail")) {
                 break;
+            } else {
+                int totalPages = jsonData.getJSONObject("photoset").getInt("pages");
+                LOGGER.info(jsonData);
+                JSONArray pictures = jsonData.getJSONObject("photoset").getJSONArray("photo");
+                for (int i = 0; i < pictures.length(); i++) {
+                    LOGGER.info(i);
+                    JSONObject data = (JSONObject) pictures.get(i);
+                    // TODO this is a total hack, we should loop over all image sizes and pick the biggest one and not
+                    // just assume
+                    List<String> imageSizes = Arrays.asList("k", "h", "l", "n", "c", "z", "t");
+                    for ( String imageSize : imageSizes) {
+                        try {
+                            addURLToDownload(new URL(data.getString("url_" + imageSize)));
+                            LOGGER.info("Adding picture " + data.getString("url_" + imageSize));
+                            break;
+                        } catch (org.json.JSONException ignore) {
+                        // TODO warn the user when we hit a Malformed url
+                        } catch (MalformedURLException e) {}
+                    }
+                }
+                if (x >= totalPages) {
+                    // The rips done
+                    break;
+                }
+                // We have more pages to download so we rerun the loop
+                x++;
+
             }
         }
+
         return imageURLs;
     }
 
     @Override
     public void downloadURL(URL url, int index) {
-        // Add image page to threadpool to grab the image & download it
-        FlickrImageThread mit = new FlickrImageThread(url, index);
-        flickrThreadPool.addThread(mit);
-    }
-
-    /**
-     * Login to Flickr.
-     * @return Cookies for logged-in session
-     * @throws IOException
-     */
-    @SuppressWarnings("unused")
-    private Map<String,String> signinToFlickr() throws IOException {
-        Response resp = Jsoup.connect("http://www.flickr.com/signin/")
-                            .userAgent(USER_AGENT)
-                            .followRedirects(true)
-                            .method(Method.GET)
-                            .execute();
-        Document doc = resp.parse();
-        Map<String,String> postData = new HashMap<>();
-        for (Element input : doc.select("input[type=hidden]")) {
-            postData.put(input.attr("name"),  input.attr("value"));
-        }
-        postData.put("passwd_raw",  "");
-        postData.put(".save",   "");
-        postData.put("login",   new String(Base64.decode("bGVmYWtlZGVmYWtl")));
-        postData.put("passwd",  new String(Base64.decode("MUZha2V5ZmFrZQ==")));
-        String action = doc.select("form[method=post]").get(0).attr("action");
-        resp = Jsoup.connect(action)
-                    .cookies(resp.cookies())
-                    .data(postData)
-                    .method(Method.POST)
-                    .execute();
-        return resp.cookies();
-    }
-
-    /**
-     * Helper class to find and download images found on "image" pages
-     */
-    private class FlickrImageThread extends Thread {
-        private URL    url;
-        private int    index;
-
-        FlickrImageThread(URL url, int index) {
-            super();
-            this.url = url;
-            this.index = index;
-        }
-
-        @Override
-        public void run() {
-            try {
-                Document doc = getLargestImagePageDocument(this.url);
-                Elements fullsizeImages = doc.select("div#allsizes-photo img");
-                if (fullsizeImages.isEmpty()) {
-                    LOGGER.error("Could not find flickr image at " + doc.location() + " - missing 'div#allsizes-photo img'");
-                }
-                else {
-                    String prefix = "";
-                    if (Utils.getConfigBoolean("download.save_order", true)) {
-                        prefix = String.format("%03d_", index);
-                    }
-                    synchronized (flickrThreadPool) {
-                        addURLToDownload(new URL(fullsizeImages.first().attr("src")), prefix);
-                    }
-                }
-            } catch (IOException e) {
-                LOGGER.error("[!] Exception while loading/parsing " + this.url, e);
-            }
-        }
-
-        private Document getLargestImagePageDocument(URL url) throws IOException {
-            // Get current page
-            Document doc = Http.url(url).get();
-            // Look for larger image page
-            String largestImagePage = this.url.toExternalForm();
-            for (Element olSize : doc.select("ol.sizes-list > li > ol > li")) {
-                Elements ola = olSize.select("a");
-                if (ola.isEmpty()) {
-                    largestImagePage = this.url.toExternalForm();
-                }
-                else {
-                    String candImage = ola.get(0).attr("href");
-                    if (candImage.startsWith("/")) {
-                        candImage = "http://www.flickr.com" + candImage;
-                    }
-                    largestImagePage = candImage;
-                }
-            }
-            if (!largestImagePage.equals(this.url.toExternalForm())) {
-                // Found larger image page, get it.
-                doc = Http.url(largestImagePage).get();
-            }
-            return doc;
-        }
+        addURLToDownload(url, getPrefix(index));
     }
 }
