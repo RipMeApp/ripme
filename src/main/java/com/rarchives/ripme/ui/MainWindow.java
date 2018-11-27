@@ -1404,6 +1404,17 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         case TOTAL_BYTES:
             // Update total bytes
             break;
+        case NO_ALBUM_OR_USER:
+            if (LOGGER.isEnabledFor(Level.ERROR)) {
+                appendLog((String) msg.getObject(), Color.RED);
+            }
+            stopButton.setEnabled(false);
+            statusProgress.setValue(0);
+            statusProgress.setVisible(false);
+            openButton.setVisible(false);
+            pack();
+            statusWithColor("Error: " + msg.getObject(), Color.RED);
+            break;
         }
     }
 
