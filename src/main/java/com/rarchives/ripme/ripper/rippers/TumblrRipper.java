@@ -130,7 +130,8 @@ public class TumblrRipper extends AlbumRipper {
     @Override
     public void rip() throws IOException {
         String[] mediaTypes;
-        boolean exceededRateLimit = false;
+        // If true the rip loop won't be run
+        boolean shouldStopRipping = false;
         if (albumType == ALBUM_TYPE.POST) {
             mediaTypes = new String[] { "post" };
         } else {
@@ -142,7 +143,7 @@ public class TumblrRipper extends AlbumRipper {
                 break;
             }
 
-            if (exceededRateLimit) {
+            if (shouldStopRipping) {
                 break;
             }
             offset = 0;
@@ -151,7 +152,7 @@ public class TumblrRipper extends AlbumRipper {
                     break;
                 }
 
-                if (exceededRateLimit) {
+                if (shouldStopRipping) {
                     break;
                 }
 
@@ -174,11 +175,12 @@ public class TumblrRipper extends AlbumRipper {
                         } else if (status.getStatusCode() == 404) {
                             LOGGER.error("No user or album found!");
                             sendUpdate(STATUS.NO_ALBUM_OR_USER, "Album or user doesn't exist!");
+                            shouldStopRipping = true;
                             break;
                         } else if (status.getStatusCode() == 429) {
                             LOGGER.error("Tumblr rate limit has been exceeded");
                             sendUpdate(STATUS.DOWNLOAD_ERRORED,"Tumblr rate limit has been exceeded");
-                            exceededRateLimit = true;
+                            shouldStopRipping = true;
                             break;
                         }
                     }
