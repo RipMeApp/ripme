@@ -15,7 +15,8 @@ public class RipStatusMessage {
         DOWNLOAD_WARN("Download problem"),
         TOTAL_BYTES("Total bytes"),
         COMPLETED_BYTES("Completed bytes"),
-        RIP_ERRORED("Rip Errored");
+        RIP_ERRORED("Rip Errored"),
+        NO_ALBUM_OR_USER("No album or user");
 
         String value;
         STATUS(String value) {
