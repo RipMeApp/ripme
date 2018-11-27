@@ -171,6 +171,10 @@ public class TumblrRipper extends AlbumRipper {
                         HttpStatusException status = (HttpStatusException)cause;
                         if (status.getStatusCode() == HttpURLConnection.HTTP_UNAUTHORIZED && !useDefaultApiKey) {
                             retry = true;
+                        } else if (status.getStatusCode() == 404) {
+                            LOGGER.error("No user or album found!");
+                            sendUpdate(STATUS.NO_ALBUM_OR_USER, "Album or user doesn't exist!");
+                            break;
                         } else if (status.getStatusCode() == 429) {
                             LOGGER.error("Tumblr rate limit has been exceeded");
                             sendUpdate(STATUS.DOWNLOAD_ERRORED,"Tumblr rate limit has been exceeded");
