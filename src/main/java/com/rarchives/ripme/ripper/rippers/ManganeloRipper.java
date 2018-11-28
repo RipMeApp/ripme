@@ -39,7 +39,7 @@ public class ManganeloRipper extends AbstractHTMLRipper {
             return m.group(1);
         }
 
-        p = Pattern.compile("http://manganelo.com/chapter/([\\S]+)/([\\S]+)/?$");
+        p = Pattern.compile("https?://manganelo.com/chapter/([\\S]+)/([\\S_\\-]+)/?$");
         m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             return m.group(1);
@@ -65,14 +65,11 @@ public class ManganeloRipper extends AbstractHTMLRipper {
     }
 
     private List<String> getURLsFromChap(String url) {
-        LOGGER.debug("Getting urls from " + url);
         List<String> result = new ArrayList<>();
         try {
             Document doc = Http.url(url).get();
-            for (Element el : doc.select("img.img_content")) {
-                result.add(el.attr("src"));
-            }
-            return result;
+
+            return getURLsFromChap(doc);
         } catch (IOException e) {
             return null;
         }
@@ -80,9 +77,9 @@ public class ManganeloRipper extends AbstractHTMLRipper {
     }
 
     private List<String> getURLsFromChap(Document doc) {
-        LOGGER.debug("Getting urls from " + url);
+        LOGGER.debug("Getting urls from " + doc.location());
         List<String> result = new ArrayList<>();
-        for (Element el : doc.select("img.img_content")) {
+        for (Element el : doc.select(".vung-doc > img")) {
             result.add(el.attr("src"));
         }
         return result;
