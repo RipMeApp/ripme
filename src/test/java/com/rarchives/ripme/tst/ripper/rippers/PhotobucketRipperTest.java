@@ -26,18 +26,9 @@ public class PhotobucketRipperTest extends RippersTest {
         String baseURL = "http://s1255.photobucket.com/user/mimajki/library/Movie%20gifs?sort=6&page=1";
         URL url = new URL(baseURL);
         PhotobucketRipper ripper = new PhotobucketRipper(url);
-        org.jsoup.nodes.Document page = null;
-        try {
-            // I'm not sure it makes much sense that getFirstPage()
-            // is not public while getNextPage() is.
-            java.lang.reflect.Method method = ripper.getClass()
-                                                    .getDeclaredMethod("getFirstPage");
-            method.setAccessible(true);
-            page = (org.jsoup.nodes.Document) method.invoke(ripper);
-        } catch (Exception e){
-            e.printStackTrace();
-            fail("Calling getFirstPage() failed");
-        }
+        org.jsoup.nodes.Document page = ripper.getFirstPage();
+        // NOTE: number of pages remaining includes the subalbums
+        // of the current album
         int numPagesRemaining = 38;
         for (int idx = 0; idx < numPagesRemaining; idx++){
             page = ripper.getNextPage(page);

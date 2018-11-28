@@ -5,11 +5,13 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.jsoup.Connection;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
@@ -26,22 +28,25 @@ public class PhotobucketRipper extends AbstractHTMLRipper {
     private static final int WAIT_BEFORE_NEXT_PAGE = 2000;
 
     private final class AlbumMetadata {
-        private final String url;
+        private final String baseURL;
         private final String location;
         private final int sortOrder;
-        private int currPage = 1;
+        // cookies for the current page of this album
+        private Map<String, String> cookies;
+        private Document currPage;
         private int numPages;
+        private int pageIndex = 1;
 
         private AlbumMetadata(JSONObject data) {
-            this.url = data.getString("url");
+            this.baseURL = data.getString("url");
             this.location = data.getString("location")
                                 .replace(" ", "_");
             this.sortOrder = data.getInt("sortOrder");
         }
 
         private String getCurrPageURL(){
-            return url + String.format("?sort=%d&page=%d",
-                                       sortOrder, currPage);
+            return baseURL + String.format("?sort=%d&page=%d",
+                                       sortOrder, pageIndex);
         }
     }
 
@@ -120,7 +125,7 @@ public class PhotobucketRipper extends AbstractHTMLRipper {
 
 
     @Override
-    protected Document getFirstPage() throws IOException {
+    public Document getFirstPage() throws IOException {
         if (this.currAlbum == null) {
             this.albums = getAlbumMetadata(this.url.toExternalForm());
             LOGGER.info("Detected " + albums.size() + " albums in total");
@@ -136,19 +141,21 @@ public class PhotobucketRipper extends AbstractHTMLRipper {
         // http://s1255.photobucket.com/api/user/mimajki/album/Movie%20gifs/get?subAlbums=48&json=1
         // Actual item count when looking at the album url: 131 items/6 pages
         // http://s1255.photobucket.com/user/mimajki/library/Movie%20gifs?sort=6&page=1
-        Document page = Http.url(currAlbum.getCurrPageURL()).get();
-        JSONObject collectionData = getCollectionData(page);
+        Connection.Response resp = Http.url(currAlbum.getCurrPageURL()).response();
+        this.currAlbum.cookies = resp.cookies();
+        this.currAlbum.currPage = resp.parse();
+        JSONObject collectionData = getCollectionData(currAlbum.currPage);
         int totalNumItems = collectionData.getInt("total");
         this.currAlbum.numPages = (int) Math.ceil(
-                (double)totalNumItems / (double) ITEMS_PER_PAGE);
+                (double)totalNumItems / (double)ITEMS_PER_PAGE);
         this.index = 0;
-        return page;
+        return currAlbum.currPage;
     }
 
     @Override
     public Document getNextPage(Document page) throws IOException {
-        currAlbum.currPage++;
-        boolean endOfAlbum = currAlbum.currPage > currAlbum.numPages;
+        this.currAlbum.pageIndex++;
+        boolean endOfAlbum = currAlbum.pageIndex > currAlbum.numPages;
         boolean noMoreSubalbums = albums.isEmpty();
         if (endOfAlbum && noMoreSubalbums){
             throw new IOException("No more pages");
@@ -159,12 +166,15 @@ public class PhotobucketRipper extends AbstractHTMLRipper {
             LOGGER.info("Interrupted while waiting before getting next page");
         }
         if (endOfAlbum){
-            LOGGER.info("Turning to next album " + albums.get(0).url);
+            LOGGER.info("Turning to next album " + albums.get(0).baseURL);
             return getFirstPage();
         } else {
-            LOGGER.info("Turning to page " + currAlbum.currPage +
-                    " of album " + currAlbum.url);
-            return Http.url(currAlbum.getCurrPageURL()).get();
+            LOGGER.info("Turning to page " + currAlbum.pageIndex +
+                    " of album " + currAlbum.baseURL);
+            Connection.Response resp = Http.url(currAlbum.getCurrPageURL()).response();
+            currAlbum.cookies = resp.cookies();
+            currAlbum.currPage = resp.parse();
+            return currAlbum.currPage;
         }
     }
 
@@ -179,7 +189,9 @@ public class PhotobucketRipper extends AbstractHTMLRipper {
         JSONObject collectionData = getCollectionData(page);
         if (collectionData == null) {
             LOGGER.error("Unable to find JSON data at URL: " + page.location());
-            return null;
+            // probably better than returning null, as the ripper will display
+            // that nothing was found instead of a NullPointerException
+            return new ArrayList<>();
         } else {
             return getImageURLs(collectionData);
         }
@@ -198,12 +210,12 @@ public class PhotobucketRipper extends AbstractHTMLRipper {
                 }
             }
         }
-        return  null;
+        return null;
     }
 
-    private List<String> getImageURLs(JSONObject json){
+    private List<String> getImageURLs(JSONObject collectionData){
         List<String> results = new ArrayList<>();
-        JSONObject items = json.getJSONObject("items");
+        JSONObject items = collectionData.getJSONObject("items");
         JSONArray objects = items.getJSONArray("objects");
         for (int i = 0; i < objects.length(); i++) {
             JSONObject object = objects.getJSONObject(i);
@@ -215,7 +227,8 @@ public class PhotobucketRipper extends AbstractHTMLRipper {
 
     @Override
     protected void downloadURL(URL url, int index) {
-        addURLToDownload(url, getPrefix(++this.index), currAlbum.location);
+        addURLToDownload(url, getPrefix(++this.index), currAlbum.location,
+                currAlbum.currPage.location(), currAlbum.cookies);
     }
 
 
