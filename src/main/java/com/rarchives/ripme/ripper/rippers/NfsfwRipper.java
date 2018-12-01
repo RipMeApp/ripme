@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -18,13 +19,22 @@ import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
 import com.rarchives.ripme.utils.Http;
 import com.rarchives.ripme.utils.Utils;
 
-public class NfsfwRipper extends AlbumRipper {
+public class NfsfwRipper extends AbstractHTMLRipper {
 
     private static final String DOMAIN = "nfsfw.com",
                                 HOST   = "nfsfw";
 
-    private Document albumDoc = null;
 
+    private int index = 0;
+    private String currentDir = "";
+    private List<String> subalbumURLs = new ArrayList<>();
+    private Pattern subalbumURLPattern = Pattern.compile(
+            "https?://[wm.]*nfsfw.com/gallery/v/[^/]+/(.+)$"
+    );
+
+    // cached first page
+    private Document fstPage;
+    // threads pool for downloading images from image pages
     private DownloadThreadPool nfsfwThreadPool;
 
     public NfsfwRipper(URL url) throws IOException {
@@ -33,38 +43,103 @@ public class NfsfwRipper extends AlbumRipper {
     }
 
     @Override
+    protected String getDomain() {
+        return DOMAIN;
+    }
+
+    @Override
     public String getHost() {
         return HOST;
     }
 
     @Override
-    public URL sanitizeURL(URL url) throws MalformedURLException {
-        return url;
+    protected Document getFirstPage() throws IOException {
+        // cache the first page
+        this.fstPage = Http.url(url).get();
+        return fstPage;
     }
 
     @Override
-    public String getAlbumTitle(URL url) throws MalformedURLException {
-        try {
-            // Attempt to use album title as GID
-            if (albumDoc == null) {
-                albumDoc = Http.url(url).get();
+    public Document getNextPage(Document page) throws IOException {
+        String nextURL = null;
+        Elements a = page.select("a.next");
+        if (!a.isEmpty()){
+            // Get next page of current album
+            nextURL = "http://nfsfw.com" + a.first().attr("href");
+        } else if (!subalbumURLs.isEmpty()){
+            // Get next sub-album
+            nextURL = subalbumURLs.remove(0);
+            LOGGER.info("Detected subalbum URL at:" + nextURL);
+            Matcher m = subalbumURLPattern.matcher(nextURL);
+            if (m.matches()) {
+                // Set the new save directory and save images with a new index
+                this.currentDir = m.group(1);
+                this.index = 0;
+            } else {
+                LOGGER.error("Invalid sub-album URL: " + nextURL);
+                nextURL = null;
             }
-            String title = albumDoc.select("h2").first().text().trim();
-            return "nfsfw_" + Utils.filesystemSafe(title);
-        } catch (Exception e) {
-            // Fall back to default album naming convention
         }
-        return super.getAlbumTitle(url);
+        // Wait
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            LOGGER.error("Interrupted while waiting to load next page", e);
+        }
+        if (nextURL == null){
+            throw new IOException("No more pages");
+        } else {
+            return Http.url(nextURL).get();
+        }
+    }
+
+    @Override
+    protected List<String> getURLsFromPage(Document page) {
+        List<String> imagePageURLs = getImagePageURLs(page);
+
+        // Check if any sub-albums are present on this page
+        List<String> subalbumURLs = getSubalbumURLs(page);
+        this.subalbumURLs.addAll(subalbumURLs);
+
+        return imagePageURLs;
+    }
+
+    @Override
+    protected void downloadURL(URL url, int index) {
+        // if we are now downloading a sub-album, all images in it
+        // should be indexed starting from 0
+        if (!this.currentDir.equals("")){
+            index = ++this.index;
+        }
+        NfsfwImageThread t = new NfsfwImageThread(url, currentDir, index);
+        nfsfwThreadPool.addThread(t);
+    }
+
+    @Override
+    public URL sanitizeURL(URL url) throws MalformedURLException {
+        // always start on the first page of an album
+        // (strip the options after the '?')
+        String u = url.toExternalForm();
+        if (u.contains("?")) {
+            u = u.substring(0, u.indexOf("?"));
+            return new URL(u);
+        } else {
+            return url;
+        }
     }
 
     @Override
     public String getGID(URL url) throws MalformedURLException {
         Pattern p; Matcher m;
 
-        p = Pattern.compile("https?://[wm.]*nfsfw.com/gallery/v/([a-zA-Z0-9\\-_]+).*");
+        p = Pattern.compile("https?://[wm.]*nfsfw.com/gallery/v/(.*)$");
         m = p.matcher(url.toExternalForm());
         if (m.matches()) {
-            return m.group(1);
+            String group = m.group(1);
+            if (group.endsWith("/")) {
+                group = group.substring(0, group.length() - 1);
+            }
+            return group.replaceAll("/", "__");
         }
 
         throw new MalformedURLException(
@@ -74,75 +149,51 @@ public class NfsfwRipper extends AlbumRipper {
     }
 
     @Override
-    public void rip() throws IOException {
-        List<Pair> subAlbums = new ArrayList<>();
-        int index = 0;
-        subAlbums.add(new Pair(this.url.toExternalForm(), ""));
-        while (!subAlbums.isEmpty()) {
-            if (isStopped()) {
-                break;
-            }
-            Pair nextAlbum = subAlbums.remove(0);
-            String nextURL = nextAlbum.first;
-            String nextSubalbum = nextAlbum.second;
-            sendUpdate(STATUS.LOADING_RESOURCE, nextURL);
-            LOGGER.info("    Retrieving " + nextURL);
-            if (albumDoc == null) {
-                albumDoc = Http.url(nextURL).get();
-            }
-            // Subalbums
-            for (Element suba : albumDoc.select("td.IMG > a")) {
-                if (isStopped() || isThisATest()) {
-                    break;
-                }
-                String subURL = "http://nfsfw.com" + suba.attr("href");
-                String subdir = subURL;
-                while (subdir.endsWith("/")) {
-                    subdir = subdir.substring(0, subdir.length() - 1);
-                }
-                subdir = subdir.substring(subdir.lastIndexOf("/") + 1);
-                subAlbums.add(new Pair(subURL, subdir));
-            }
-            // Images
-            for (Element thumb : albumDoc.select("td.giItemCell > div > a")) {
-                if (isStopped()) {
-                    break;
-                }
-                String imagePage = "http://nfsfw.com" + thumb.attr("href");
-                try {
-                    NfsfwImageThread t = new NfsfwImageThread(new URL(imagePage), nextSubalbum, ++index);
-                    nfsfwThreadPool.addThread(t);
-                    if (isThisATest()) {
-                        break;
-                    }
-                } catch (MalformedURLException mue) {
-                    LOGGER.warn("Invalid URL: " + imagePage);
-                }
-            }
-            if (isThisATest()) {
-                break;
-            }
-            // Get next page
-            for (Element a : albumDoc.select("a.next")) {
-                subAlbums.add(0, new Pair("http://nfsfw.com" + a.attr("href"), ""));
-                break;
-            }
-            // Insert next page at the top
-            albumDoc = null;
-            // Wait
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                LOGGER.error("Interrupted while waiting to load next page", e);
-                throw new IOException(e);
-            }
-        }
-        nfsfwThreadPool.waitForThreads();
-        waitForThreads();
+    public DownloadThreadPool getThreadPool() {
+        return nfsfwThreadPool;
     }
 
-    public boolean canRip(URL url) {
-        return url.getHost().endsWith(DOMAIN);
+    @Override
+    public boolean hasQueueSupport() {
+        return true;
+    }
+
+    @Override
+    public boolean pageContainsAlbums(URL url) {
+        List<String> imageURLs = getImagePageURLs(fstPage);
+        List<String> subalbumURLs = getSubalbumURLs(fstPage);
+        return imageURLs.isEmpty() && !subalbumURLs.isEmpty();
+    }
+
+    @Override
+    public List<String> getAlbumsToQueue(Document doc) {
+        return getSubalbumURLs(doc);
+    }
+
+    // helper methods
+
+    private List<String> getImagePageURLs(Document page){
+        // get image pages
+        // NOTE: It might be possible to get the (non-thumbnail) image URL
+        // without going to its page first as there seems to be a pattern
+        // between the thumb and actual image URLs, but that is outside the
+        // scope of the current issue being solved.
+        List<String> imagePageURLs = new ArrayList<>();
+        for (Element thumb : page.select("td.giItemCell > div > a")) {
+            String imagePage = "http://nfsfw.com" + thumb.attr("href");
+            imagePageURLs.add(imagePage);
+        }
+        return imagePageURLs;
+    }
+
+    private List<String> getSubalbumURLs(Document page){
+        // Check if sub-albums are present on this page
+        List<String> subalbumURLs = new ArrayList<>();
+        for (Element suba : page.select("td.IMG > a")) {
+            String subURL = "http://nfsfw.com" + suba.attr("href");
+            subalbumURLs.add(subURL);
+        }
+        return subalbumURLs;
     }
 
     /**
@@ -175,23 +226,10 @@ public class NfsfwRipper extends AlbumRipper {
                 if (file.startsWith("/")) {
                     file = "http://nfsfw.com" + file;
                 }
-                String prefix = "";
-                if (Utils.getConfigBoolean("download.save_order", true)) {
-                    prefix = String.format("%03d_", index);
-                }
-                addURLToDownload(new URL(file), prefix, this.subdir);
+                addURLToDownload(new URL(file), getPrefix(index), this.subdir);
             } catch (IOException e) {
                 LOGGER.error("[!] Exception while loading/parsing " + this.url, e);
             }
-        }
-    }
-
-    private class Pair {
-        String first;
-        String second;
-        Pair(String first, String second) {
-            this.first = first;
-            this.second = second;
         }
     }
 }

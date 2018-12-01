@@ -149,6 +149,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
     // All the langs ripme has been translated into
     private static String[] supportedLanges = new String[] {
             "de_DE",
+            "ar_AR",
             "en_US",
             "es_ES",
             "fi_FI",
@@ -1402,6 +1403,17 @@ public final class MainWindow implements Runnable, RipStatusHandler {
             break;
         case TOTAL_BYTES:
             // Update total bytes
+            break;
+        case NO_ALBUM_OR_USER:
+            if (LOGGER.isEnabledFor(Level.ERROR)) {
+                appendLog((String) msg.getObject(), Color.RED);
+            }
+            stopButton.setEnabled(false);
+            statusProgress.setValue(0);
+            statusProgress.setVisible(false);
+            openButton.setVisible(false);
+            pack();
+            statusWithColor("Error: " + msg.getObject(), Color.RED);
             break;
         }
     }
