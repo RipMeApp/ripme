@@ -6,7 +6,6 @@ import java.security.NoSuchAlgorithmException;
 
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
-import javax.xml.bind.annotation.adapters.HexBinaryAdapter;
 
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
