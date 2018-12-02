@@ -50,20 +50,26 @@ public class JagodibujaRipper extends AbstractHTMLRipper {
     public List<String> getURLsFromPage(Document doc) {
         List<String> result = new ArrayList<>();
         for (Element comicPageUrl : doc.select("div.gallery-icon > a")) {
+            // Check if the ripper has been stopped
+            try {
+                stopCheck();
+            } catch (IOException e) {
+                return result;
+            }
             try {
                 sleep(500);
                 Document comicPage = Http.url(comicPageUrl.attr("href")).get();
                 Element elem = comicPage.select("span.full-size-link > a").first();
-                logger.info("Got link " + elem.attr("href"));
+                LOGGER.info("Got link " + elem.attr("href"));
                 try {
                     addURLToDownload(new URL(elem.attr("href")), "");
                 } catch (MalformedURLException e) {
-                    logger.warn("Malformed URL");
+                    LOGGER.warn("Malformed URL");
                     e.printStackTrace();
                 }
                 result.add(elem.attr("href"));
             } catch (IOException e) {
-                logger.info("Error loading " + comicPageUrl);
+                LOGGER.info("Error loading " + comicPageUrl);
             }
         }
         return result;

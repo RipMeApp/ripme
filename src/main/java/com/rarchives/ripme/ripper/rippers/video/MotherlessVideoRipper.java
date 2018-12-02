@@ -52,13 +52,13 @@ public class MotherlessVideoRipper extends VideoRipper {
 
     @Override
     public void rip() throws IOException {
-        logger.info("    Retrieving " + this.url);
+        LOGGER.info("    Retrieving " + this.url);
         String html = Http.url(this.url).get().toString();
         if (html.contains("__fileurl = '")) {
-            logger.error("WTF");
+            LOGGER.error("WTF");
         }
         List<String> vidUrls = Utils.between(html, "__fileurl = '", "';");
-        if (vidUrls.size() == 0) {
+        if (vidUrls.isEmpty()) {
             throw new IOException("Could not find video URL at " + url);
         }
         String vidUrl = vidUrls.get(0);

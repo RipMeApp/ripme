@@ -28,7 +28,7 @@ public class CheveretoRipper extends AbstractHTMLRipper {
         super(url);
     }
 
-    private static List<String> explicit_domains_1 = Arrays.asList("tag-fox.com");
+    private static List<String> explicit_domains = Arrays.asList("tag-fox.com", "kenzato.uk");
 
     @Override
     public String getHost() {
@@ -43,12 +43,8 @@ public class CheveretoRipper extends AbstractHTMLRipper {
     @Override
     public boolean canRip(URL url) {
         String url_name = url.toExternalForm();
-        if (explicit_domains_1.contains(url_name.split("/")[2])) {
-            Pattern pa = Pattern.compile("(?:https?://)?(?:www\\.)?[a-z1-9-]*\\.[a-z1-9]*/album/([a-zA-Z1-9]*)/?$");
-            Matcher ma = pa.matcher(url.toExternalForm());
-            if (ma.matches()) {
+        if (explicit_domains.contains(url_name.split("/")[2])) {
                 return true;
-            }
         }
         return false;
     }
@@ -63,14 +59,14 @@ public class CheveretoRipper extends AbstractHTMLRipper {
             return getHost() + "_" + title.trim();
         } catch (IOException e) {
             // Fall back to default album naming convention
-            logger.info("Unable to find title at " + url);
+            LOGGER.info("Unable to find title at " + url);
         }
         return super.getAlbumTitle(url);
     }
 
     @Override
     public String getGID(URL url) throws MalformedURLException {
-        Pattern p = Pattern.compile("(?:https?://)?(?:www\\.)?[a-z1-9-]*\\.[a-z1-9]*/album/([a-zA-Z1-9]*)/?$");
+        Pattern p = Pattern.compile("(?:https?://)?(?:www\\.)?[a-z1-9-]*\\.[a-z1-9]*(?:[a-zA-Z1-9]*)/album/([a-zA-Z1-9]*)/?$");
         Matcher m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             return m.group(1);

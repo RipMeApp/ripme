@@ -11,6 +11,7 @@ import org.jsoup.nodes.Document;
 
 import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
 import com.rarchives.ripme.utils.Utils;
+import com.rarchives.ripme.ui.MainWindow;
 
 /**
  * Simplified ripper, designed for ripping from sites by parsing HTML.
@@ -53,23 +54,50 @@ public abstract class AbstractHTMLRipper extends AlbumRipper {
     protected boolean hasDescriptionSupport() {
         return false;
     }
+
     protected String[] getDescription(String url, Document page) throws IOException {
         throw new IOException("getDescription not implemented"); // Do I do this or make an abstract function?
     }
     protected int descSleepTime() {
         return 100;
     }
+
+    protected List<String> getAlbumsToQueue(Document doc) {
+        return null;
+    }
+
+    // If a page has Queue support then it has no images we want to download, just a list of urls we want to add to
+    // the queue
+    protected boolean hasQueueSupport() {
+        return false;
+    }
+
+    // Takes a url and checks if it is for a page of albums
+    protected boolean pageContainsAlbums(URL url) {
+        return false;
+    }
+
     @Override
     public void rip() throws IOException {
         int index = 0;
         int textindex = 0;
-        logger.info("Retrieving " + this.url);
+        LOGGER.info("Retrieving " + this.url);
         sendUpdate(STATUS.LOADING_RESOURCE, this.url.toExternalForm());
         Document doc = getFirstPage();
 
+        if (hasQueueSupport() && pageContainsAlbums(this.url)) {
+            List<String> urls = getAlbumsToQueue(doc);
+            for (String url : urls) {
+                MainWindow.addUrlToQueue(url);
+            }
+
+            // We set doc to null here so the while loop below this doesn't fire
+            doc = null;
+        }
+
         while (doc != null) {
             if (alreadyDownloadedUrls >= Utils.getConfigInteger("history.end_rip_after_already_seen", 1000000000) && !isThisATest()) {
-                sendUpdate(STATUS.DOWNLOAD_COMPLETE, "Already seen the last " + alreadyDownloadedUrls + " images ending rip");
+                sendUpdate(STATUS.DOWNLOAD_COMPLETE_HISTORY, "Already seen the last " + alreadyDownloadedUrls + " images ending rip");
                 break;
             }
             List<String> imageURLs = getURLsFromPage(doc);
@@ -83,13 +111,13 @@ public abstract class AbstractHTMLRipper extends AlbumRipper {
                     }
                 }
 
-                if (imageURLs.size() == 0) {
+                if (imageURLs.isEmpty()) {
                     throw new IOException("No images found at " + doc.location());
                 }
 
                 for (String imageURL : imageURLs) {
                     index += 1;
-                    logger.debug("Found image url #" + index + ": " + imageURL);
+                    LOGGER.debug("Found image url #" + index + ": " + imageURL);
                     downloadURL(new URL(imageURL), index);
                     if (isStopped()) {
                         break;
@@ -97,16 +125,16 @@ public abstract class AbstractHTMLRipper extends AlbumRipper {
                 }
             }
             if (hasDescriptionSupport() && Utils.getConfigBoolean("descriptions.save", false)) {
-                logger.debug("Fetching description(s) from " + doc.location());
+                LOGGER.debug("Fetching description(s) from " + doc.location());
                 List<String> textURLs = getDescriptionsFromPage(doc);
-                if (textURLs.size() > 0) {
-                    logger.debug("Found description link(s) from " + doc.location());
+                if (!textURLs.isEmpty()) {
+                    LOGGER.debug("Found description link(s) from " + doc.location());
                     for (String textURL : textURLs) {
                         if (isStopped()) {
                             break;
                         }
                         textindex += 1;
-                        logger.debug("Getting description from " + textURL);
+                        LOGGER.debug("Getting description from " + textURL);
                         String[] tempDesc = getDescription(textURL,doc);
                         if (tempDesc != null) {
                             if (Utils.getConfigBoolean("file.overwrite", false) || !(new File(
@@ -116,11 +144,11 @@ public abstract class AbstractHTMLRipper extends AlbumRipper {
                                             + getPrefix(index)
                                             + (tempDesc.length > 1 ? tempDesc[1] : fileNameFromURL(new URL(textURL)))
                                             + ".txt").exists())) {
-                                logger.debug("Got description from " + textURL);
+                                LOGGER.debug("Got description from " + textURL);
                                 saveText(new URL(textURL), "", tempDesc[0], textindex, (tempDesc.length > 1 ? tempDesc[1] : fileNameFromURL(new URL(textURL))));
                                 sleep(descSleepTime());
                             } else {
-                                logger.debug("Description from " + textURL + " already exists.");
+                                LOGGER.debug("Description from " + textURL + " already exists.");
                             }
                         }
 
@@ -136,14 +164,14 @@ public abstract class AbstractHTMLRipper extends AlbumRipper {
                 sendUpdate(STATUS.LOADING_RESOURCE, "next page");
                 doc = getNextPage(doc);
             } catch (IOException e) {
-                logger.info("Can't get next page: " + e.getMessage());
+                LOGGER.info("Can't get next page: " + e.getMessage());
                 break;
             }
         }
 
         // If they're using a thread pool, wait for it.
         if (getThreadPool() != null) {
-            logger.debug("Waiting for threadpool " + getThreadPool().getClass().getName());
+            LOGGER.debug("Waiting for threadpool " + getThreadPool().getClass().getName());
             getThreadPool().waitForThreads();
         }
         waitForThreads();
@@ -196,7 +224,6 @@ public abstract class AbstractHTMLRipper extends AlbumRipper {
             if (!subdirectory.equals("")) { // Not sure about this part
                 subdirectory = File.separator + subdirectory;
             }
-            // TODO Get prefix working again, probably requires reworking a lot of stuff! (Might be fixed now)
             saveFileAs = new File(
                     workingDir.getCanonicalPath()
                     + subdirectory
@@ -209,12 +236,12 @@ public abstract class AbstractHTMLRipper extends AlbumRipper {
             out.write(text.getBytes());
             out.close();
         } catch (IOException e) {
-            logger.error("[!] Error creating save file path for description '" + url + "':", e);
+            LOGGER.error("[!] Error creating save file path for description '" + url + "':", e);
             return false;
         }
-        logger.debug("Downloading " + url + "'s description to " + saveFileAs);
+        LOGGER.debug("Downloading " + url + "'s description to " + saveFileAs);
         if (!saveFileAs.getParentFile().exists()) {
-            logger.info("[+] Creating directory: " + Utils.removeCWD(saveFileAs.getParent()));
+            LOGGER.info("[+] Creating directory: " + Utils.removeCWD(saveFileAs.getParent()));
             saveFileAs.getParentFile().mkdirs();
         }
         return true;

@@ -1,5 +1,9 @@
 package com.rarchives.ripme.ripper.rippers;
 
+import com.rarchives.ripme.ripper.AbstractHTMLRipper;
+import com.rarchives.ripme.ripper.DownloadThreadPool;
+import com.rarchives.ripme.utils.Http;
+import com.rarchives.ripme.utils.Utils;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -7,15 +11,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-
-import com.rarchives.ripme.ripper.AbstractHTMLRipper;
-import com.rarchives.ripme.ripper.DownloadThreadPool;
-import com.rarchives.ripme.utils.Http;
-import com.rarchives.ripme.utils.Utils;
 
 public class ImagebamRipper extends AbstractHTMLRipper {
 
@@ -71,7 +69,7 @@ public class ImagebamRipper extends AbstractHTMLRipper {
     public Document getNextPage(Document doc) throws IOException {
         // Find next page
         Elements hrefs = doc.select("a.pagination_current + a.pagination_link");
-        if (hrefs.size() == 0) {
+        if (hrefs.isEmpty()) {
             throw new IOException("No more pages");
         }
         String nextUrl = "http://www.imagebam.com" + hrefs.first().attr("href");
@@ -101,16 +99,16 @@ public class ImagebamRipper extends AbstractHTMLRipper {
             // Attempt to use album title as GID
             Elements elems = getFirstPage().select("legend");
             String title = elems.first().text();
-            logger.info("Title text: '" + title + "'");
+            LOGGER.info("Title text: '" + title + "'");
             Pattern p = Pattern.compile("^(.*)\\s\\d* image.*$");
             Matcher m = p.matcher(title);
             if (m.matches()) {
                 return getHost() + "_" + getGID(url) + " (" + m.group(1).trim() + ")";
             }
-            logger.info("Doesn't match " + p.pattern());
+            LOGGER.info("Doesn't match " + p.pattern());
         } catch (Exception e) {
             // Fall back to default album naming convention
-            logger.warn("Failed to get album title from " + url, e);
+            LOGGER.warn("Failed to get album title from " + url, e);
         }
         return super.getAlbumTitle(url);
     }
@@ -121,8 +119,8 @@ public class ImagebamRipper extends AbstractHTMLRipper {
      * Handles case when site has IP-banned the user.
      */
     private class ImagebamImageThread extends Thread {
-        private URL url;
-        private int index;
+        private URL url; //link to "image page"
+        private int index; //index in album
 
         ImagebamImageThread(URL url, int index) {
             super();
@@ -134,27 +132,42 @@ public class ImagebamRipper extends AbstractHTMLRipper {
         public void run() {
             fetchImage();
         }
-
+        
+        /**
+         * Rips useful image from "image page"
+         */
         private void fetchImage() {
             try {
                 Document doc = Http.url(url).get();
                 // Find image
-                Elements images = doc.select(".image-container img");
-                if (images.size() == 0) {
-                    logger.warn("Image not found at " + this.url);
+                Elements metaTags = doc.getElementsByTag("meta");
+                
+                String imgsrc = "";//initialize, so no NullPointerExceptions should ever happen.
+                
+                for (Element metaTag: metaTags) {
+                    //the direct link to the image seems to always be linked in the <meta> part of the html.
+                    if (metaTag.attr("property").equals("og:image")) {
+                        imgsrc = metaTag.attr("content");
+                        LOGGER.info("Found URL " + imgsrc);
+                        break;//only one (useful) image possible for an "image page".
+                    }
+                }
+               
+                //for debug, or something goes wrong.
+                if (imgsrc.isEmpty()) {
+                    LOGGER.warn("Image not found at " + this.url);
                     return;
                 }
-                Element image = images.first();
-                String imgsrc = image.attr("src");
-                logger.info("Found URL " + imgsrc);
+               
                 // Provide prefix and let the AbstractRipper "guess" the filename
                 String prefix = "";
                 if (Utils.getConfigBoolean("download.save_order", true)) {
                     prefix = String.format("%03d_", index);
                 }
+                
                 addURLToDownload(new URL(imgsrc), prefix);
             } catch (IOException e) {
-                logger.error("[!] Exception while loading/parsing " + this.url, e);
+                LOGGER.error("[!] Exception while loading/parsing " + this.url, e);
             }
         }
     }

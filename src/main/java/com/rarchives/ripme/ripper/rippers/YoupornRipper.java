@@ -1,11 +1,14 @@
-package com.rarchives.ripme.ripper.rippers.video;
+package com.rarchives.ripme.ripper.rippers;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.rarchives.ripme.ripper.AbstractSingleFileRipper;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -13,9 +16,8 @@ import org.jsoup.select.Elements;
 import com.rarchives.ripme.ripper.VideoRipper;
 import com.rarchives.ripme.utils.Http;
 
-public class YoupornRipper extends VideoRipper {
+public class YoupornRipper extends AbstractSingleFileRipper {
 
-    private static final String HOST = "youporn";
 
     public YoupornRipper(URL url) throws IOException {
         super(url);
@@ -23,7 +25,12 @@ public class YoupornRipper extends VideoRipper {
 
     @Override
     public String getHost() {
-        return HOST;
+        return "youporn";
+    }
+
+    @Override
+    public String getDomain() {
+        return "youporn.com";
     }
 
     @Override
@@ -34,9 +41,20 @@ public class YoupornRipper extends VideoRipper {
     }
 
     @Override
-    public URL sanitizeURL(URL url) throws MalformedURLException {
-        return url;
+    public Document getFirstPage() throws IOException {
+        return Http.url(this.url).get();
     }
+
+    @Override
+    public List<String> getURLsFromPage(Document doc) {
+        List<String> results = new ArrayList<>();
+        Elements videos = doc.select("video");
+
+        Element video = videos.get(0);
+        results.add(video.attr("src"));
+        return results;
+    }
+
 
     @Override
     public String getGID(URL url) throws MalformedURLException {
@@ -53,16 +71,7 @@ public class YoupornRipper extends VideoRipper {
     }
 
     @Override
-    public void rip() throws IOException {
-        logger.info("    Retrieving " + this.url);
-        Document doc = Http.url(this.url).get();
-        Elements videos = doc.select("video");
-        if (videos.size() == 0) {
-            throw new IOException("Could not find Embed code at " + url);
-        }
-        Element video = videos.get(0);
-        String vidUrl = video.attr("src");
-        addURLToDownload(new URL(vidUrl), HOST + "_" + getGID(this.url));
-        waitForThreads();
+    public void downloadURL(URL url, int index) {
+        addURLToDownload(url, getPrefix(index));
     }
 }

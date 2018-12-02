@@ -11,6 +11,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.rarchives.ripme.utils.Utils;
+import org.json.JSONObject;
 import org.jsoup.Connection.Response;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -70,7 +71,7 @@ public class EightmusesRipper extends AbstractHTMLRipper {
             return getHost() + "_" + title.trim();
         } catch (IOException e) {
             // Fall back to default album naming convention
-            logger.info("Unable to find title at " + url);
+            LOGGER.info("Unable to find title at " + url);
         }
         return super.getAlbumTitle(url);
     }
@@ -96,19 +97,19 @@ public class EightmusesRipper extends AbstractHTMLRipper {
             if (thumb.attr("href").contains("/comics/album/")) {
                 String subUrl = "https://www.8muses.com" + thumb.attr("href");
                 try {
-                    logger.info("Retrieving " + subUrl);
+                    LOGGER.info("Retrieving " + subUrl);
                     sendUpdate(STATUS.LOADING_RESOURCE, subUrl);
                     Document subPage = Http.url(subUrl).get();
                     // If the page below this one has images this line will download them
                     List<String> subalbumImages = getURLsFromPage(subPage);
-                    logger.info("Found " + subalbumImages.size() + " images in subalbum");
+                    LOGGER.info("Found " + subalbumImages.size() + " images in subalbum");
                 } catch (IOException e) {
-                    logger.warn("Error while loading subalbum " + subUrl, e);
+                    LOGGER.warn("Error while loading subalbum " + subUrl, e);
                 }
 
             } else if (thumb.attr("href").contains("/comics/picture/")) {
-                logger.info("This page is a album");
-                logger.info("Ripping image");
+                LOGGER.info("This page is a album");
+                LOGGER.info("Ripping image");
                 if (super.isStopped()) break;
                 // Find thumbnail image source
                 String image = null;
@@ -116,25 +117,24 @@ public class EightmusesRipper extends AbstractHTMLRipper {
                     image = thumb.attr("data-cfsrc");
                 }
                 else {
-                    String imageHref = thumb.attr("href");
-                    if (imageHref.equals("")) continue;
-                    if (imageHref.startsWith("/")) {
-                        imageHref = "https://www.8muses.com" + imageHref;
-                    }
+                    // Deobfustace the json data
+                    String rawJson = deobfuscateJSON(page.select("script#ractive-public").html()
+                            .replaceAll("&gt;", ">").replaceAll("&lt;", "<").replace("&amp;", "&"));
+                    JSONObject json = new JSONObject(rawJson);
                     try {
-                        logger.info("Retrieving full-size image location from " + imageHref);
-                        image = getFullSizeImage(imageHref);
-                        URL imageUrl = new URL(image);
-                        if (Utils.getConfigBoolean("8muses.use_short_names", false)) {
-                            addURLToDownload(imageUrl, getPrefixShort(x), getSubdir(page.select("title").text()), this.url.toExternalForm(), cookies, "");
-                        } else {
-                            addURLToDownload(imageUrl, getPrefixLong(x), getSubdir(page.select("title").text()), this.url.toExternalForm(), cookies);
+                        for (int i = 0; i != json.getJSONArray("pictures").length(); i++) {
+                            image = "https://www.8muses.com/image/fl/" + json.getJSONArray("pictures").getJSONObject(i).getString("publicUri");
+                            URL imageUrl = new URL(image);
+                            if (Utils.getConfigBoolean("8muses.use_short_names", false)) {
+                                addURLToDownload(imageUrl, getPrefixShort(x), getSubdir(page.select("title").text()), this.url.toExternalForm(), cookies, "", null, true);
+                            } else {
+                                addURLToDownload(imageUrl, getPrefixLong(x), getSubdir(page.select("title").text()), this.url.toExternalForm(), cookies, "", null, true);
+                            }
+                            // X is our page index
+                            x++;
                         }
-                        // X is our page index
-                        x++;
 
                     } catch (IOException e) {
-                        logger.error("Failed to get full-size image from " + imageHref);
                         continue;
                     }
                 }
@@ -150,30 +150,16 @@ public class EightmusesRipper extends AbstractHTMLRipper {
         return imageURLs;
     }
 
-    private String getFullSizeImage(String imageUrl) throws IOException {
-        sendUpdate(STATUS.LOADING_RESOURCE, imageUrl);
-        logger.info("Getting full sized image from " + imageUrl);
-        Document doc = new Http(imageUrl).get(); // Retrieve the webpage  of the image URL
-        String imageName = doc.select("input[id=imageName]").attr("value"); // Select the "input" element from the page
-        return "https://www.8muses.com/image/fm/" + imageName;
-    }
-
-    private String getTitle(String albumTitle) {
-        albumTitle = albumTitle.replace("A huge collection of free porn comics for adults. Read ", "");
-        albumTitle = albumTitle.replace(" online for free at 8muses.com", "");
-        albumTitle = albumTitle.replace(" ", "_");
-        return albumTitle;
-    }
-
-    private String getSubdir(String rawHref) {
-        logger.info("Raw title: " + rawHref);
+    public String getSubdir(String rawHref) {
+        LOGGER.info("Raw title: " + rawHref);
         String title = rawHref;
         title = title.replaceAll("8muses - Sex and Porn Comics", "");
-        title = title.replaceAll("\t\t", "");
+        title = title.replaceAll("\\s+", " ");
         title = title.replaceAll("\n", "");
         title = title.replaceAll("\\| ", "");
+        title = title.replace(" - ", "-");
         title = title.replace(" ", "-");
-        logger.info(title);
+        LOGGER.info(title);
         return title;
     }
 
@@ -188,5 +174,26 @@ public class EightmusesRipper extends AbstractHTMLRipper {
 
     public String getPrefixShort(int index) {
         return String.format("%03d", index);
+    }
+
+    private String deobfuscateJSON(String obfuscatedString) {
+        StringBuilder deobfuscatedString = new StringBuilder();
+        // The first char in one of 8muses obfuscated strings is always ! so we replace it
+        for (char ch : obfuscatedString.replaceFirst("!", "").toCharArray()){
+            deobfuscatedString.append(deobfuscateChar(ch));
+        }
+        return deobfuscatedString.toString();
+    }
+
+    private String deobfuscateChar(char c) {
+        if ((int) c == 32) {
+            return fromCharCode(32);
+        }
+        return fromCharCode(33 + (c + 14) % 94);
+
+    }
+
+    private static String fromCharCode(int... codePoints) {
+        return new String(codePoints, 0, codePoints.length);
     }
 }
