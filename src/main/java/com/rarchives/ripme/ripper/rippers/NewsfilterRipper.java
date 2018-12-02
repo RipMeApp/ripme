@@ -3,9 +3,13 @@ package com.rarchives.ripme.ripper.rippers;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.rarchives.ripme.ripper.AbstractHTMLRipper;
+import com.rarchives.ripme.utils.Http;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -14,19 +18,13 @@ import org.jsoup.select.Elements;
 
 import com.rarchives.ripme.ripper.AlbumRipper;
 
-public class NewsfilterRipper extends AlbumRipper {
+public class NewsfilterRipper extends AbstractHTMLRipper {
+
     private static final String HOST = "newsfilter";
+    private static final String DOMAIN = "newsfilter.org";
 
     public NewsfilterRipper(URL url) throws IOException {
         super(url);
-    }
-
-    @Override
-    public boolean canRip(URL url) {
-        //http://newsfilter.org/gallery/he-doubted-she-would-fuck-on-cam-happy-to-be-proven-wrong-216799
-        Pattern p = Pattern.compile("^https?://([wm]+\\.)?newsfilter\\.org/gallery/.+$");
-        Matcher m = p.matcher(url.toExternalForm());
-        return m.matches();
     }
 
     @Override
@@ -40,27 +38,15 @@ public class NewsfilterRipper extends AlbumRipper {
     }
 
     @Override
-    public void rip() throws IOException {
-        String gid = getGID(this.url);
-        String theurl = "http://newsfilter.org/gallery/" + gid;
-        logger.info("Loading " + theurl);
-
-        Connection.Response resp = Jsoup.connect(theurl)
-            .timeout(5000)
-            .referrer("")
-            .userAgent(USER_AGENT)
-            .method(Connection.Method.GET)
-            .execute();
-        Document doc = resp.parse();
-
-        Elements thumbnails = doc.select("#galleryImages .inner-block img");
-        for (Element thumb : thumbnails) {
-            String thumbUrl = thumb.attr("src");
-            String picUrl = thumbUrl.replace("thumbs/", "");
-            addURLToDownload(new URL(picUrl));
+    public String getGID(URL url) throws MalformedURLException {
+        Pattern p = Pattern.compile("^https?://([wm]+\\.)?newsfilter\\.org/gallery/([^/]+)$");
+        Matcher m = p.matcher(url.toExternalForm());
+        if (m.matches()) {
+            return m.group(2);
         }
-
-        waitForThreads();
+        throw new MalformedURLException(
+                "Expected newsfilter gallery format: http://newsfilter.org/gallery/galleryid" +
+                        " Got: " + url);
     }
 
     @Override
@@ -69,14 +55,30 @@ public class NewsfilterRipper extends AlbumRipper {
     }
 
     @Override
-    public String getGID(URL url) throws MalformedURLException {
-        Pattern p = Pattern.compile("^https?://([wm]+\\.)?newsfilter\\.org/gallery/([^/]+)$");
-        Matcher m = p.matcher(url.toExternalForm());
-        if (m.matches()) {
-            return m.group(2);
+    protected String getDomain() {
+        return DOMAIN;
+    }
+
+    @Override
+    protected Document getFirstPage() throws IOException {
+        return Http.url(url).get();
+    }
+
+    @Override
+    protected List<String> getURLsFromPage(Document page) {
+        List<String> imgURLs = new ArrayList<>();
+        Elements thumbnails = page.select("#galleryImages .inner-block img");
+        for (Element thumb : thumbnails) {
+            String thumbUrl = thumb.attr("src");
+            String picUrl = thumbUrl.replace("thumbs/", "");
+            // use HTTP instead of HTTPS (less headaches)
+            imgURLs.add(picUrl.replaceFirst("https://", "http://"));
         }
-        throw new MalformedURLException(
-            "Expected newsfilter gallery format: http://newsfilter.org/gallery/galleryid" +
-            " Got: " + url);
+        return imgURLs;
+    }
+
+    @Override
+    protected void downloadURL(URL url, int index) {
+        addURLToDownload(url, getPrefix(index));
     }
 }

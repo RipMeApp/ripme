@@ -5,6 +5,7 @@ This change is exactly one of the following (please change `[ ]` to `[x]`) to in
 * [ ] a new Ripper
 * [ ] a refactoring
 * [ ] a style change/fix
+* [ ] a new feature
 
 
 # Description

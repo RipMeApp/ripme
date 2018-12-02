@@ -5,7 +5,7 @@
 
 # Contribute
 
-RipMe is maintained with ♥️ and in our limited free time by **[@MetaPrime](https://github.com/metaprime)** and **[@cyian-1756](https://github.com/cyian-1756)**. If you'd like to contribute but aren't good with code, help keep us happy with a small contribution!
+RipMe is maintained with ♥️ and in our limited free time by **[@MetaPrime](https://github.com/metaprime)**, **[@cyian-1756](https://github.com/cyian-1756)** and **[@kevin51jiang](https://github.com/kevin51jiang)**. If you'd like to contribute but aren't good with code, help keep us happy with a small contribution!
 
 [![Tip with PayPal](https://img.shields.io/badge/PayPal-Buy_us...-lightgrey.svg)](https://www.paypal.me/ripmeapp)
 [![Tip with PayPal](https://img.shields.io/badge/coffee-%245-green.svg)](https://www.paypal.com/paypalme/ripmeapp/send?amount=5.00&currencyCode=USD&locale.x=en_US&country.x=US)
@@ -17,14 +17,15 @@ RipMe is maintained with ♥️ and in our limited free time by **[@MetaPrime](h
 # About
 
 RipMe is an album ripper for various websites. Runs on your computer. Requires Java 8.
+RipMe is a cross-platform tool. It has been tested and confirmed working on Windows, Linux and MacOS. 
 
-![Screenshot](http://i.imgur.com/kWzhsIu.png)
+![Screenshot](https://i.imgur.com/UCQNjeg.png)
 
 ## [Downloads](https://github.com/ripmeapp/ripme/releases)
 
 Download `ripme.jar` from the [latest release](https://github.com/ripmeapp/ripme/releases).
 
-**Note: If you're currently using version 1.2.x or 1.3.x, you will not automatically get updates to the newest versions. We recommend downloading the latest version from the link above.**
+**Note: If you're currently using version 1.2.x, 1.3.x or 1.7.49, you will not automatically get updates to the newest versions. We recommend downloading the latest version from the link above.**
 
 For information about running the `.jar` file, see [the How To Run wiki](https://github.com/ripmeapp/ripme/wiki/How-To-Run-RipMe).
 
@@ -35,8 +36,9 @@ For information about running the `.jar` file, see [the How To Run wiki](https:/
 * Quickly downloads all images in an online album (see supported sites below)
 * Easily re-rip albums to fetch new content
 * Built in updater
-* Can rip images from tumblr in the size they were uploaded in [See here for how to enable](https://github.com/RipMeApp/ripme/wiki/Config-options#tumblrget_raw_image)
 * Skips already downloaded images by default
+* Can auto skip e-hentai and nhentai albums containing certain tags [See here for how to enable](https://github.com/RipMeApp/ripme/wiki/Config-options#nhentaiblacklisttags)
+* Download a range of urls [See here for how](https://github.com/RipMeApp/ripme/wiki/How-To-Run-RipMe#downloading-a-url-range)
 
 ## [List of Supported Sites](https://github.com/ripmeapp/ripme/wiki/Supported-Sites)
 

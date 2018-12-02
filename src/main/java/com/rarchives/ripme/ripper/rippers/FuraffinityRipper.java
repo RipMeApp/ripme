@@ -12,8 +12,10 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.rarchives.ripme.ui.RipStatusMessage;
 import com.rarchives.ripme.utils.Utils;
 import org.jsoup.Connection.Response;
+import org.jsoup.HttpStatusException;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -24,13 +26,27 @@ import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 import com.rarchives.ripme.ripper.DownloadThreadPool;
 import com.rarchives.ripme.utils.Http;
 
+import static com.rarchives.ripme.utils.RipUtils.getCookiesFromString;
+
 public class FuraffinityRipper extends AbstractHTMLRipper {
 
     private static final String urlBase = "https://www.furaffinity.net";
-    private static Map<String,String> cookies = new HashMap<>();
-    static {
-        cookies.put("b", "bd5ccac8-51dc-4265-8ae1-7eac685ad667");
-        cookies.put("a", "7c41b782-d01d-4b0e-b45b-62a4f0b2a369");
+    private  Map<String,String> cookies = new HashMap<>();
+
+    private void setCookies() {
+        if (Utils.getConfigBoolean("furaffinity.login", true)) {
+            LOGGER.info("Logging in using cookies");
+            String faCookies = Utils.getConfigString("furaffinity.cookies", "a=897bc45b-1f87-49f1-8a85-9412bc103e7a;b=c8807f36-7a85-4caf-80ca-01c2a2368267");
+            warnAboutSharedAccount(faCookies);
+            cookies = getCookiesFromString(faCookies);
+        }
+    }
+
+    private void warnAboutSharedAccount(String loginCookies) {
+        if (loginCookies.equals("a=897bc45b-1f87-49f1-8a85-9412bc103e7a;b=c8807f36-7a85-4caf-80ca-01c2a2368267")) {
+            sendUpdate(RipStatusMessage.STATUS.DOWNLOAD_ERRORED,
+                    "WARNING: Using the shared furaffinity account exposes both your IP and how many items you downloaded to the other users of the share account");
+        }
     }
 
     // Thread pool for finding direct image links from "image" pages (html)
@@ -61,6 +77,8 @@ public class FuraffinityRipper extends AbstractHTMLRipper {
     }
     @Override
     public Document getFirstPage() throws IOException {
+        setCookies();
+        LOGGER.info(Http.url(url).cookies(cookies).get().html());
         return Http.url(url).cookies(cookies).get();
     }
 
@@ -68,7 +86,7 @@ public class FuraffinityRipper extends AbstractHTMLRipper {
     public Document getNextPage(Document doc) throws IOException {
         // Find next page
         Elements nextPageUrl = doc.select("a.right");
-        if (nextPageUrl.size() == 0) {
+        if (nextPageUrl.isEmpty()) {
             throw new IOException("No more pages");
         }
         String nextUrl = urlBase + nextPageUrl.first().attr("href");
@@ -80,12 +98,21 @@ public class FuraffinityRipper extends AbstractHTMLRipper {
     }
 
     private String getImageFromPost(String url) {
+        sleep(1000);
+        Document d = null;
         try {
-            logger.info("found url " + Http.url(url).cookies(cookies).get().select("meta[property=og:image]").attr("content"));
-            return Http.url(url).cookies(cookies).get().select("meta[property=og:image]").attr("content");
+            d = Http.url(url).cookies(cookies).get();
+            Elements links = d.getElementsByTag("a");
+            for (Element link : links) {
+                if (link.text().equals("Download")) {
+                    LOGGER.info("Found image " + link.attr("href"));
+                   return "https:" + link.attr("href");
+                }
+            }
         } catch (IOException e) {
-            return "";
+            return null;
         }
+        return null;
     }
 
     @Override
@@ -93,7 +120,12 @@ public class FuraffinityRipper extends AbstractHTMLRipper {
         List<String> urls = new ArrayList<>();
         Elements urlElements = page.select("figure.t-image > b > u > a");
         for (Element e : urlElements) {
-            urls.add(getImageFromPost(urlBase + e.select("a").first().attr("href")));
+            String urlToAdd = getImageFromPost(urlBase + e.select("a").first().attr("href"));
+            if (url != null) {
+                if (urlToAdd.startsWith("http")) {
+                    urls.add(urlToAdd);
+                }
+            }
         }
         return urls;
     }
@@ -103,7 +135,7 @@ public class FuraffinityRipper extends AbstractHTMLRipper {
         Elements urlElements = page.select("figure.t-image > b > u > a");
         for (Element e : urlElements) {
             urls.add(urlBase + e.select("a").first().attr("href"));
-            logger.debug("Desc2 " + urlBase + e.select("a").first().attr("href"));
+            LOGGER.debug("Desc2 " + urlBase + e.select("a").first().attr("href"));
         }
         return urls;
     }
@@ -121,22 +153,22 @@ public class FuraffinityRipper extends AbstractHTMLRipper {
 
             // Try to find the description
             Elements els = resp.parse().select("td[class=alt1][width=\"70%\"]");
-            if (els.size() == 0) {
-                logger.debug("No description at " + page);
+            if (els.isEmpty()) {
+                LOGGER.debug("No description at " + page);
                 throw new IOException("No description found");
             }
-            logger.debug("Description found!");
+            LOGGER.debug("Description found!");
             Document documentz = resp.parse();
             Element ele = documentz.select("td[class=alt1][width=\"70%\"]").get(0); // This is where the description is.
             // Would break completely if FurAffinity changed site layout.
             documentz.outputSettings(new Document.OutputSettings().prettyPrint(false));
             ele.select("br").append("\\n");
             ele.select("p").prepend("\\n\\n");
-            logger.debug("Returning description at " + page);
+            LOGGER.debug("Returning description at " + page);
             String tempPage = Jsoup.clean(ele.html().replaceAll("\\\\n", System.getProperty("line.separator")), "", Whitelist.none(), new Document.OutputSettings().prettyPrint(false));
             return documentz.select("meta[property=og:title]").attr("content") + "\n" + tempPage; // Overridden saveText takes first line and makes it the file name.
         } catch (IOException ioe) {
-            logger.info("Failed to get description " + page + " : '" + ioe.getMessage() + "'");
+            LOGGER.info("Failed to get description " + page + " : '" + ioe.getMessage() + "'");
             return null;
         }
     }
@@ -171,12 +203,12 @@ public class FuraffinityRipper extends AbstractHTMLRipper {
             out.write(text.getBytes());
             out.close();
         } catch (IOException e) {
-            logger.error("[!] Error creating save file path for description '" + url + "':", e);
+            LOGGER.error("[!] Error creating save file path for description '" + url + "':", e);
             return false;
         }
-        logger.debug("Downloading " + url + "'s description to " + saveFileAs);
+        LOGGER.debug("Downloading " + url + "'s description to " + saveFileAs);
         if (!saveFileAs.getParentFile().exists()) {
-            logger.info("[+] Creating directory: " + Utils.removeCWD(saveFileAs.getParent()));
+            LOGGER.info("[+] Creating directory: " + Utils.removeCWD(saveFileAs.getParent()));
             saveFileAs.getParentFile().mkdirs();
         }
         return true;
@@ -198,17 +230,6 @@ public class FuraffinityRipper extends AbstractHTMLRipper {
         throw new MalformedURLException("Expected furaffinity.net URL format: "
                 + "www.furaffinity.net/gallery/username  - got " + url
                 + " instead");
-    }
-
-    private class FuraffinityDocumentThread extends Thread {
-        private URL url;
-
-        FuraffinityDocumentThread(URL url) {
-            super();
-            this.url = url;
-        }
-
-
     }
 
 

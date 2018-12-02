@@ -10,4 +10,9 @@ public class CheveretoRipperTest extends RippersTest {
         CheveretoRipper ripper = new CheveretoRipper(new URL("http://tag-fox.com/album/Thjb"));
         testRipper(ripper);
     }
+
+    public void testSubdirAlbum() throws IOException {
+        CheveretoRipper ripper = new CheveretoRipper(new URL("https://kenzato.uk/booru/album/TnEc"));
+        testRipper(ripper);
+    }
 }

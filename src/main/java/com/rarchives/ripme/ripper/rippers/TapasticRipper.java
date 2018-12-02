@@ -56,7 +56,7 @@ public class TapasticRipper extends AbstractHTMLRipper {
         List<String> urls = new ArrayList<>();
         String html = page.data();
         if (!html.contains("episodeList : ")) {
-            logger.error("No 'episodeList' found at " + this.url);
+            LOGGER.error("No 'episodeList' found at " + this.url);
             return urls;
         }
         String jsonString = Utils.between(html, "episodeList : ", ",\n").get(0);
@@ -93,7 +93,7 @@ public class TapasticRipper extends AbstractHTMLRipper {
                 }
             }
         } catch (IOException e) {
-            logger.error("[!] Exception while downloading " + url, e);
+            LOGGER.error("[!] Exception while downloading " + url, e);
         }
 
     }

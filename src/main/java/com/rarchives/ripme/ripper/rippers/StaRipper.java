@@ -65,9 +65,9 @@ public class StaRipper extends AbstractHTMLRipper {
                     cookies.putAll(resp.cookies());
                     thumbPage = resp.parse();
                 } catch (MalformedURLException e) {
-                    logger.info(thumbPageURL + " is a malformed URL");
+                    LOGGER.info(thumbPageURL + " is a malformed URL");
                 } catch (IOException e) {
-                    logger.info(e.getMessage());
+                    LOGGER.info(e.getMessage());
                 }
                 String imageDownloadUrl = thumbPage.select("a.dev-page-download").attr("href");
                 if (imageDownloadUrl != null && !imageDownloadUrl.equals("")) {
@@ -97,10 +97,10 @@ public class StaRipper extends AbstractHTMLRipper {
                     .followRedirects(false)
                     .execute();
             String imageURL = response.header("Location");
-            logger.info(imageURL);
+            LOGGER.info(imageURL);
             return imageURL;
             } catch (IOException e) {
-                logger.info("Got error message " + e.getMessage() + " trying to download " + url);
+                LOGGER.info("Got error message " + e.getMessage() + " trying to download " + url);
                 return null;
             }
     }

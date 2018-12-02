@@ -43,7 +43,7 @@ public class ImagefapRipper extends AbstractHTMLRipper {
             newURL += "p";
         }
         newURL += "gid=" + gid + "&view=2";
-        logger.debug("Changed URL from " + url + " to " + newURL);
+        LOGGER.debug("Changed URL from " + url + " to " + newURL);
         return new URL(newURL);
     }
 
@@ -125,11 +125,7 @@ public class ImagefapRipper extends AbstractHTMLRipper {
             if (!thumb.hasAttr("src") || !thumb.hasAttr("width")) {
                 continue;
             }
-            String image = thumb.attr("src");
-            image = image.replaceAll(
-                    "http://x.*.fap.to/images/thumb/",
-                    "http://fap.to/images/full/");
-            image = image.replaceAll("w[0-9]+-h[0-9]+/", "");
+            String image = getFullSizedImage("https://www.imagefap.com" + thumb.parent().attr("href"));
             imageURLs.add(image);
             if (isThisATest()) {
                 break;
@@ -158,6 +154,15 @@ public class ImagefapRipper extends AbstractHTMLRipper {
             // Fall back to default album naming convention
         }
         return super.getAlbumTitle(url);
+    }
+
+    private String getFullSizedImage(String pageURL) {
+        try {
+            Document doc = Http.url(pageURL).get();
+            return doc.select("img#mainPhoto").attr("src");
+        } catch (IOException e) {
+            return null;
+        }
     }
 
 }

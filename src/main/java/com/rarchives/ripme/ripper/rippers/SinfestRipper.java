@@ -50,7 +50,7 @@ public class SinfestRipper extends AbstractHTMLRipper {
     @Override
     public Document getNextPage(Document doc) throws IOException {
         Element elem = doc.select("td.style5 > a > img").last();
-        logger.info(elem.parent().attr("href"));
+        LOGGER.info(elem.parent().attr("href"));
         if (elem == null || elem.parent().attr("href").equals("view.php?date=")) {
             throw new IOException("No more pages");
         }

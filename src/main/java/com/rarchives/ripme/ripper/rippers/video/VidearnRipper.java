@@ -54,10 +54,10 @@ public class VidearnRipper extends VideoRipper {
 
     @Override
     public void rip() throws IOException {
-        logger.info("Retrieving " + this.url);
+        LOGGER.info("Retrieving " + this.url);
         Document doc = Http.url(url).get();
         List<String> mp4s = Utils.between(doc.html(), "file:\"", "\"");
-        if (mp4s.size() == 0) {
+        if (mp4s.isEmpty()) {
             throw new IOException("Could not find files at " + url);
         }
         String vidUrl = mp4s.get(0);

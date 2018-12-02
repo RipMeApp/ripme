@@ -103,7 +103,7 @@ public class EroShareRipper extends AbstractHTMLRipper {
                 return getHost() + "_" + getGID(url) + "_" + title.trim();
             } catch (IOException e) {
                 // Fall back to default album naming convention
-                logger.info("Unable to find title at " + url);
+                LOGGER.info("Unable to find title at " + url);
             }
             return super.getAlbumTitle(url);
         }
@@ -139,7 +139,7 @@ public class EroShareRipper extends AbstractHTMLRipper {
             try {
                 video_page = Http.url("eroshae.com" + link.attr("href")).get();
             } catch (IOException e) {
-                logger.warn("Failed to log link in Jsoup");
+                LOGGER.warn("Failed to log link in Jsoup");
                 video_page = null;
                 e.printStackTrace();
             }

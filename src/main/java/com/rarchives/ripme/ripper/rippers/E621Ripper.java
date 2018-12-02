@@ -56,7 +56,19 @@ public class E621Ripper extends AbstractHTMLRipper{
 
 	private String getFullSizedImage(String url) {
 	    try {
-            return Http.url("https://e621.net" + url).get().select("div > img#image").attr("src");
+                Document page = Http.url("https://e621.net" + url).get();
+                Elements video = page.select("video > source");
+                Elements flash = page.select("embed");
+                Elements image = page.select("a#highres");
+                if (video.size() > 0) {
+                    return video.attr("src");
+                } else if (flash.size() > 0) {
+                    return flash.attr("src");
+                } else if (image.size() > 0) {
+                    return image.attr("href");
+                } else {
+                    throw new IOException();
+                }
         } catch (IOException e) {
 	        logger.error("Unable to get full sized image from " + url);
 	        return null;
@@ -96,40 +108,40 @@ public class E621Ripper extends AbstractHTMLRipper{
 
 	private String getTerm(URL url) throws MalformedURLException{
 		if(gidPattern==null)
-			gidPattern=Pattern.compile("^https?://(www\\.)?e621\\.net/post/index/[^/]+/([a-zA-Z0-9$_.+!*'(),%-]+)(/.*)?(#.*)?$");
+			gidPattern=Pattern.compile("^https?://(www\\.)?e621\\.net/post/index/[^/]+/([a-zA-Z0-9$_.+!*'():,%\\-]+)(/.*)?(#.*)?$");
 		if(gidPatternPool==null)
-			gidPatternPool=Pattern.compile("^https?://(www\\.)?e621\\.net/pool/show/([a-zA-Z0-9$_.+!*'(),%-]+)(\\?.*)?(/.*)?(#.*)?$");
+			gidPatternPool=Pattern.compile("^https?://(www\\.)?e621\\.net/pool/show/([a-zA-Z0-9$_.+!*'(),%:\\-]+)(\\?.*)?(/.*)?(#.*)?$");
 
 		Matcher m = gidPattern.matcher(url.toExternalForm());
-		if(m.matches())
-			return m.group(2);
+		if(m.matches()) {
+            LOGGER.info(m.group(2));
+            return m.group(2);
+        }
 
 		m = gidPatternPool.matcher(url.toExternalForm());
-		if(m.matches())
-			return m.group(2);
+		if(m.matches()) {
+            return m.group(2);
+        }
 
 		throw new MalformedURLException("Expected e621.net URL format: e621.net/post/index/1/searchterm - got "+url+" instead");
 	}
 
 	@Override
 	public String getGID(URL url) throws MalformedURLException {
-		try {
+
 			String prefix="";
-			if(url.getPath().startsWith("/pool/show/"))
-				prefix="pool_";
+			if (url.getPath().startsWith("/pool/show/")) {
+                prefix = "pool_";
+            }
 
-			return Utils.filesystemSafe(prefix+new URI(getTerm(url)).getPath());
-		} catch (URISyntaxException ex) {
-			logger.error(ex);
-		}
+			return Utils.filesystemSafe(prefix+getTerm(url));
 
-		throw new MalformedURLException("Expected e621.net URL format: e621.net/post/index/1/searchterm - got "+url+" instead");
 	}
 
 	@Override
 	public URL sanitizeURL(URL url) throws MalformedURLException {
 		if(gidPattern2==null)
-			gidPattern2=Pattern.compile("^https?://(www\\.)?e621\\.net/post/search\\?tags=([a-zA-Z0-9$_.+!*'(),%-]+)(/.*)?(#.*)?$");
+			gidPattern2=Pattern.compile("^https?://(www\\.)?e621\\.net/post/search\\?tags=([a-zA-Z0-9$_.+!*'():,%-]+)(/.*)?(#.*)?$");
 
 		Matcher m = gidPattern2.matcher(url.toExternalForm());
 		if(m.matches())

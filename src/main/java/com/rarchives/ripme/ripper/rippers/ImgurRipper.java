@@ -108,24 +108,24 @@ public class ImgurRipper extends AlbumRipper {
                 String title = null;
                 final String defaultTitle1 = "Imgur: The most awesome images on the Internet";
                 final String defaultTitle2 = "Imgur: The magic of the Internet";
-                logger.info("Trying to get album title");
+                LOGGER.info("Trying to get album title");
                 elems = albumDoc.select("meta[property=og:title]");
                 if (elems != null) {
                     title = elems.attr("content");
-                    logger.debug("Title is " + title);
+                    LOGGER.debug("Title is " + title);
                 }
                 // This is here encase the album is unnamed, to prevent
                 // Imgur: The most awesome images on the Internet from being added onto the album name
                 if (title.contains(defaultTitle1) || title.contains(defaultTitle2)) {
-                    logger.debug("Album is untitled or imgur is returning the default title");
+                    LOGGER.debug("Album is untitled or imgur is returning the default title");
                     // We set the title to "" here because if it's found in the next few attempts it will be changed
                     // but if it's nto found there will be no reason to set it later
                     title = "";
-                    logger.debug("Trying to use title tag to get title");
+                    LOGGER.debug("Trying to use title tag to get title");
                     elems = albumDoc.select("title");
                     if (elems != null) {
                         if (elems.text().contains(defaultTitle1) || elems.text().contains(defaultTitle2)) {
-                            logger.debug("Was unable to get album title or album was untitled");
+                            LOGGER.debug("Was unable to get album title or album was untitled");
                         }
                         else {
                             title = elems.text();
@@ -159,29 +159,29 @@ public class ImgurRipper extends AlbumRipper {
             case ALBUM:
                 // Fall-through
             case USER_ALBUM:
-                logger.info("Album type is USER_ALBUM");
+                LOGGER.info("Album type is USER_ALBUM");
                 // Don't call getAlbumTitle(this.url) with this
                 // as it seems to cause the album to be downloaded to a subdir.
                 ripAlbum(this.url);
                 break;
             case SERIES_OF_IMAGES:
-                logger.info("Album type is SERIES_OF_IMAGES");
+                LOGGER.info("Album type is SERIES_OF_IMAGES");
                 ripAlbum(this.url);
                 break;
             case SINGLE_IMAGE:
-                logger.info("Album type is SINGLE_IMAGE");
+                LOGGER.info("Album type is SINGLE_IMAGE");
                 ripSingleImage(this.url);
                 break;
             case USER:
-                logger.info("Album type is USER");
+                LOGGER.info("Album type is USER");
                 ripUserAccount(url);
                 break;
             case SUBREDDIT:
-                logger.info("Album type is SUBREDDIT");
+                LOGGER.info("Album type is SUBREDDIT");
                 ripSubreddit(url);
                 break;
             case USER_IMAGES:
-                logger.info("Album type is USER_IMAGES");
+                LOGGER.info("Album type is USER_IMAGES");
                 ripUserImages(url);
                 break;
         }
@@ -241,7 +241,7 @@ public class ImgurRipper extends AlbumRipper {
             String[] imageIds = m.group(1).split(",");
             for (String imageId : imageIds) {
                 // TODO: Fetch image with ID imageId
-                logger.debug("Fetching image info for ID " + imageId);
+                LOGGER.debug("Fetching image info for ID " + imageId);
                 try {
                     JSONObject json = Http.url("https://api.imgur.com/2/image/" + imageId + ".json").getJSON();
                     if (!json.has("image")) {
@@ -259,7 +259,7 @@ public class ImgurRipper extends AlbumRipper {
                     ImgurImage theImage = new ImgurImage(new URL(original));
                     album.addImage(theImage);
                 } catch (Exception e) {
-                    logger.error("Got exception while fetching imgur ID " + imageId, e);
+                    LOGGER.error("Got exception while fetching imgur ID " + imageId, e);
                 }
             }
         }
@@ -271,7 +271,7 @@ public class ImgurRipper extends AlbumRipper {
         if (!strUrl.contains(",")) {
             strUrl += "/all";
         }
-        logger.info("    Retrieving " + strUrl);
+        LOGGER.info("    Retrieving " + strUrl);
         Document doc = getDocument(strUrl);
         // Try to use embedded JSON to retrieve images
         Matcher m = getEmbeddedJsonMatcher(doc);
@@ -283,7 +283,7 @@ public class ImgurRipper extends AlbumRipper {
                                        .getJSONArray("images");
                 return createImgurAlbumFromJsonArray(url, jsonImages);
             } catch (JSONException e) {
-                logger.debug("Error while parsing JSON at " + url + ", continuing", e);
+                LOGGER.debug("Error while parsing JSON at " + url + ", continuing", e);
             }
         }
 
@@ -291,10 +291,10 @@ public class ImgurRipper extends AlbumRipper {
         // http://i.rarchives.com/search.cgi?cache=http://imgur.com/a/albumID
         // At the least, get the thumbnails.
 
-        logger.info("[!] Falling back to /noscript method");
+        LOGGER.info("[!] Falling back to /noscript method");
 
         String newUrl = url.toExternalForm() + "/noscript";
-        logger.info("    Retrieving " + newUrl);
+        LOGGER.info("    Retrieving " + newUrl);
         doc = Jsoup.connect(newUrl)
                             .userAgent(USER_AGENT)
                             .get();
@@ -304,14 +304,14 @@ public class ImgurRipper extends AlbumRipper {
         ImgurAlbum imgurAlbum = new ImgurAlbum(url);
         for (Element thumb : doc.select("div.image")) {
             String image;
-            if (thumb.select("a.zoom").size() > 0) {
+            if (!thumb.select("a.zoom").isEmpty()) {
                 // Clickably full-size
                 image = "http:" + thumb.select("a").attr("href");
-            } else if (thumb.select("img").size() > 0) {
+            } else if (!thumb.select("img").isEmpty()) {
                 image = "http:" + thumb.select("img").attr("src");
             } else {
                 // Unable to find image in this div
-                logger.error("[!] Unable to find image in div: " + thumb.toString());
+                LOGGER.error("[!] Unable to find image in div: " + thumb.toString());
                 continue;
             }
             if (image.endsWith(".gif") && Utils.getConfigBoolean("prefer.mp4", false)) {
@@ -368,7 +368,7 @@ public class ImgurRipper extends AlbumRipper {
      * @throws IOException
      */
     private void ripUserAccount(URL url) throws IOException {
-        logger.info("Retrieving " + url);
+        LOGGER.info("Retrieving " + url);
         sendUpdate(STATUS.LOADING_RESOURCE, url.toExternalForm());
         Document doc = Http.url(url).get();
         for (Element album : doc.select("div.cover a")) {
@@ -383,7 +383,7 @@ public class ImgurRipper extends AlbumRipper {
                 ripAlbum(albumURL, albumID);
                 Thread.sleep(SLEEP_BETWEEN_ALBUMS * 1000);
             } catch (Exception e) {
-                logger.error("Error while ripping album: " + e.getMessage(), e);
+                LOGGER.error("Error while ripping album: " + e.getMessage(), e);
             }
         }
     }
@@ -420,7 +420,7 @@ public class ImgurRipper extends AlbumRipper {
                 }
                 Thread.sleep(1000);
             } catch (Exception e) {
-                logger.error("Error while ripping user images: " + e.getMessage(), e);
+                LOGGER.error("Error while ripping user images: " + e.getMessage(), e);
                 break;
             }
         }
@@ -435,7 +435,7 @@ public class ImgurRipper extends AlbumRipper {
                 pageURL += "/";
             }
             pageURL += "page/" + page + "/miss?scrolled";
-            logger.info("    Retrieving " + pageURL);
+            LOGGER.info("    Retrieving " + pageURL);
             Document doc = Http.url(pageURL).get();
             Elements imgs = doc.select(".post img");
             for (Element img : imgs) {
@@ -449,14 +449,14 @@ public class ImgurRipper extends AlbumRipper {
                 URL imageURL = new URL(image);
                 addURLToDownload(imageURL);
             }
-            if (imgs.size() == 0) {
+            if (imgs.isEmpty()) {
                 break;
             }
             page++;
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
-                logger.error("Interrupted while waiting to load next album: ", e);
+                LOGGER.error("Interrupted while waiting to load next album: ", e);
                 break;
             }
         }

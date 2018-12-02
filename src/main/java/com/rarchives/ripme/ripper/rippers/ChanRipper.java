@@ -1,5 +1,9 @@
 package com.rarchives.ripme.ripper.rippers;
 
+import com.rarchives.ripme.ripper.AbstractHTMLRipper;
+import com.rarchives.ripme.ripper.rippers.ripperhelpers.ChanSite;
+import com.rarchives.ripme.utils.Http;
+import com.rarchives.ripme.utils.RipUtils;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -8,20 +12,22 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
-import com.rarchives.ripme.ripper.AbstractHTMLRipper;
-import com.rarchives.ripme.ripper.rippers.ripperhelpers.ChanSite;
-import com.rarchives.ripme.utils.Http;
-import com.rarchives.ripme.utils.RipUtils;
-
 public class ChanRipper extends AbstractHTMLRipper {
     private static List<ChanSite> explicit_domains = Arrays.asList(
-        new ChanSite(Arrays.asList("boards.4chan.org"),   Arrays.asList("4cdn.org", "is.4chan.org", "is2.4chan.org")),
-        new ChanSite(Arrays.asList("4archive.org"),       Arrays.asList("imgur.com")),
-        new ChanSite(Arrays.asList("archive.4plebs.org"), Arrays.asList("img.4plebs.org"))
+            new ChanSite("boards.4chan.org",   Arrays.asList("4cdn.org", "is.4chan.org", "is2.4chan.org", "is3.4chan.org")),
+            new ChanSite("boards.4channel.org",   Arrays.asList("4cdn.org", "is.4chan.org", "is2.4chan.org", "is3.4chan.org")),
+            new ChanSite("4archive.org",  "imgur.com"),
+            new ChanSite("archive.4plebs.org", "img.4plebs.org"),
+            new ChanSite("yuki.la", "ii.yuki.la"),
+            new ChanSite("55chan.org"),
+            new ChanSite("desuchan.net"),
+            new ChanSite("boards.420chan.org"),
+            new ChanSite("7chan.org"),
+            new ChanSite("desuarchive.org", "desu-usergeneratedcontent.xyz"),
+            new ChanSite("8ch.net", "media.8ch.net")
         );
 
     private static List<String> url_piece_blacklist = Arrays.asList(
@@ -68,11 +74,11 @@ public class ChanRipper extends AbstractHTMLRipper {
                 String subject = doc.select(".post.op > .postinfo > .subject").first().text();
                 return getHost() + "_" + getGID(url) + "_" + subject;
             } catch (NullPointerException e) {
-                logger.warn("Failed to get thread title from " + url);
+                LOGGER.warn("Failed to get thread title from " + url);
             }
         } catch (Exception e) {
             // Fall back to default album naming convention
-            logger.warn("Failed to get album title from " + url, e);
+            LOGGER.warn("Failed to get album title from " + url, e);
         }
         // Fall back on the GID
         return getHost() + "_" + getGID(url);
@@ -85,8 +91,8 @@ public class ChanRipper extends AbstractHTMLRipper {
                 return true;
             }
         }
-        return  url.toExternalForm().contains("/res/")     // Most chans
-             || url.toExternalForm().contains("/thread/"); // 4chan, archive.moe
+
+        return false;
     }
 
     /**
@@ -104,7 +110,8 @@ public class ChanRipper extends AbstractHTMLRipper {
         Matcher m;
 
         String u = url.toExternalForm();
-        if (u.contains("/thread/") || u.contains("/res/")) {
+        if (u.contains("/thread/") || u.contains("/res/") || u.contains("yuki.la") || u.contains("55chan.org")) {
+            LOGGER.debug("U: " + u);
             p = Pattern.compile("^.*\\.[a-z]{1,3}/[a-zA-Z0-9]+/(thread|res)/([0-9]+)(\\.html|\\.php)?.*$");
             m = p.matcher(u);
             if (m.matches()) {
@@ -119,6 +126,20 @@ public class ChanRipper extends AbstractHTMLRipper {
             }
             // xchan
             p = Pattern.compile("^.*\\.[a-z]{1,3}/board/[a-zA-Z0-9]+/thread/([0-9]+)/?.*$");
+            m = p.matcher(u);
+            if (m.matches()) {
+                return m.group(1);
+            }
+
+            // yuki.la
+            p = Pattern.compile("https?://yuki.la/[a-zA-Z0-9]+/([0-9]+)");
+            m = p.matcher(u);
+            if (m.matches()) {
+                return m.group(1);
+            }
+
+            //55chan.org
+            p = Pattern.compile("https?://55chan.org/[a-z0-9]+/(res|thread)/[0-9]+.html");
             m = p.matcher(u);
             if (m.matches()) {
                 return m.group(1);
@@ -144,7 +165,7 @@ public class ChanRipper extends AbstractHTMLRipper {
     private boolean isURLBlacklisted(String url) {
         for (String blacklist_item : url_piece_blacklist) {
             if (url.contains(blacklist_item)) {
-                logger.debug("Skipping link that contains '"+blacklist_item+"': " + url);
+                LOGGER.debug("Skipping link that contains '"+blacklist_item+"': " + url);
                 return true;
             }
         }
@@ -174,7 +195,7 @@ public class ChanRipper extends AbstractHTMLRipper {
             }
 
             if (self_hosted || generalChanSite) {
-                p = Pattern.compile("^.*\\.(jpg|jpeg|png|gif|apng|webp|tif|tiff|webm)$", Pattern.CASE_INSENSITIVE);
+                p = Pattern.compile("^.*\\.(jpg|jpeg|png|gif|apng|webp|tif|tiff|webm|mp4)$", Pattern.CASE_INSENSITIVE);
                 m = p.matcher(href);
                 if (m.matches()) {
                     if (href.startsWith("//")) {
@@ -185,7 +206,7 @@ public class ChanRipper extends AbstractHTMLRipper {
                     }
                     // Don't download the same URL twice
                     if (imageURLs.contains(href)) {
-                        logger.debug("Already attempted: " + href);
+                        LOGGER.debug("Already attempted: " + href);
                         continue;
                     }
                     imageURLs.add(href);

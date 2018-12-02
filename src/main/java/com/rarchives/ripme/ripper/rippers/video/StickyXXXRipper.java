@@ -12,11 +12,11 @@ import org.jsoup.select.Elements;
 import com.rarchives.ripme.ripper.VideoRipper;
 import com.rarchives.ripme.utils.Http;
 
-public class VineRipper extends VideoRipper {
+public class StickyXXXRipper extends VideoRipper {
 
-    private static final String HOST = "vine";
+    private static final String HOST = "stickyxxx";
 
-    public VineRipper(URL url) throws IOException {
+    public StickyXXXRipper(URL url) throws IOException {
         super(url);
     }
 
@@ -27,8 +27,7 @@ public class VineRipper extends VideoRipper {
 
     @Override
     public boolean canRip(URL url) {
-        // https://vine.co/v/hiqQrP0eUZx
-        Pattern p = Pattern.compile("^https?://[wm.]*vine\\.co/v/[a-zA-Z0-9]+.*$");
+        Pattern p = Pattern.compile("^https?://.*stickyxxx\\.com(/)(.*)/$");
         Matcher m = p.matcher(url.toExternalForm());
         return m.matches();
     }
@@ -40,27 +39,27 @@ public class VineRipper extends VideoRipper {
 
     @Override
     public String getGID(URL url) throws MalformedURLException {
-        Pattern p = Pattern.compile("^https?://[wm.]*vine\\.co/v/([a-zA-Z0-9]+).*$");
+        Pattern p = Pattern.compile("^https?://.*stickyxxx\\.com(/)(.*)/$");
         Matcher m = p.matcher(url.toExternalForm());
         if (m.matches()) {
-            return m.group(1);
+            return m.group(2);
         }
 
         throw new MalformedURLException(
-                "Expected vine format:"
-                        + "vine.co/v/####"
+                "Expected stickyxxx format:"
+                        + "stickyxxx.com/####"
                         + " Got: " + url);
     }
 
     @Override
     public void rip() throws IOException {
-        logger.info("    Retrieving " + this.url.toExternalForm());
-        Document doc = Http.url(this.url).get();
-        Elements props = doc.select("meta[property=twitter:player:stream]");
-        if (props.size() == 0) {
-            throw new IOException("Could not find meta property 'twitter:player:stream' at " + url);
+        LOGGER.info("Retrieving " + this.url);
+        Document doc = Http.url(url).get();
+        Elements videos = doc.select(".wp-video > video > source");
+        if (videos.isEmpty()) {
+            throw new IOException("Could not find Embed code at " + url);
         }
-        String vidUrl = props.get(0).attr("content");
+        String vidUrl = videos.attr("src");
         addURLToDownload(new URL(vidUrl), HOST + "_" + getGID(this.url));
         waitForThreads();
     }

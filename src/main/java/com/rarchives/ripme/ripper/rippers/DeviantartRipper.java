@@ -1,5 +1,10 @@
 package com.rarchives.ripme.ripper.rippers;
 
+import com.rarchives.ripme.ripper.AbstractJSONRipper;
+import com.rarchives.ripme.utils.Base64;
+import com.rarchives.ripme.utils.Http;
+import com.rarchives.ripme.utils.RipUtils;
+import com.rarchives.ripme.utils.Utils;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -14,20 +19,22 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.jsoup.Connection.Method;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.jsoup.Connection.Response;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
-import org.jsoup.safety.Whitelist;
 import org.jsoup.select.Elements;
 
-import com.rarchives.ripme.ripper.AbstractHTMLRipper;
-import com.rarchives.ripme.utils.Base64;
-import com.rarchives.ripme.utils.Http;
-import com.rarchives.ripme.utils.Utils;
 
-public class DeviantartRipper extends AbstractHTMLRipper {
+public class DeviantartRipper extends AbstractJSONRipper {
+    String requestID;
+    String galleryID;
+    String username;
+    String baseApiUrl = "https://www.deviantart.com/dapi/v1/gallery/";
+    String csrf;
+    Map<String, String> pageCookies = new HashMap<>();
 
     private static final int PAGE_SLEEP_TIME  = 3000,
                              IMAGE_SLEEP_TIME = 2000;
@@ -39,31 +46,37 @@ public class DeviantartRipper extends AbstractHTMLRipper {
         super(url);
     }
 
+    String loginCookies = "auth=__0f9158aaec09f417b235%3B%221ff79836392a515d154216d919eae573%22;" +
+            "auth_secure=__41d14dd0da101f411bb0%3B%2281cf2cf9477776162a1172543aae85ce%22;" +
+            "userinfo=__bf84ac233bfa8ae642e8%3B%7B%22username%22%3A%22grabpy%22%2C%22uniqueid%22%3A%22a0a876aa37dbd4b30e1c80406ee9c280%22%2C%22vd%22%3A%22BbHUXZ%2CBbHUXZ%2CA%2CU%2CA%2C%2CB%2CA%2CB%2CBbHUXZ%2CBbHUdj%2CL%2CL%2CA%2CBbHUdj%2C13%2CA%2CB%2CA%2C%2CA%2CA%2CB%2CA%2CA%2C%2CA%22%2C%22attr%22%3A56%7D";
+
     @Override
     public String getHost() {
         return "deviantart";
     }
+
     @Override
     public String getDomain() {
         return "deviantart.com";
     }
-    @Override
-    public boolean hasDescriptionSupport() {
-        return true;
-    }
+
     @Override
     public URL sanitizeURL(URL url) throws MalformedURLException {
         String u = url.toExternalForm();
-
-        if (u.replace("/", "").endsWith(".deviantart.com")) {
-            // Root user page, get all albums
-            if (!u.endsWith("/")) {
-                u += "/";
-            }
-            u += "gallery/?";
+        if (u.contains("/gallery/")) {
+            return url;
         }
 
-        Pattern p = Pattern.compile("^https?://([a-zA-Z0-9\\-]+)\\.deviantart\\.com/favou?rites/([0-9]+)/*?$");
+        if (!u.endsWith("/gallery/") && !u.endsWith("/gallery")) {
+            if (!u.endsWith("/")) {
+                u += "/gallery/";
+            } else {
+                u += "gallery/";
+            }
+        }
+
+
+        Pattern p = Pattern.compile("^https?://www\\.deviantart\\.com/([a-zA-Z0-9\\-]+)/favou?rites/([0-9]+)/*?$");
         Matcher m = p.matcher(url.toExternalForm());
         if (!m.matches()) {
             String subdir = "/";
@@ -77,7 +90,7 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 
     @Override
     public String getGID(URL url) throws MalformedURLException {
-        Pattern p = Pattern.compile("^https?://([a-zA-Z0-9\\-]+)\\.deviantart\\.com(/gallery)?/?(\\?.*)?$");
+        Pattern p = Pattern.compile("^https?://www\\.deviantart\\.com/([a-zA-Z0-9\\-]+)(/gallery)?/?(\\?.*)?$");
         Matcher m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             // Root gallery
@@ -88,153 +101,191 @@ public class DeviantartRipper extends AbstractHTMLRipper {
                 return m.group(1);
             }
         }
-        p = Pattern.compile("^https?://([a-zA-Z0-9\\-]+)\\.deviantart\\.com/gallery/([0-9]+).*$");
+        p = Pattern.compile("^https?://www\\.deviantart\\.com/([a-zA-Z0-9\\-]+)/gallery/([0-9]+).*$");
         m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             // Subgallery
             return m.group(1) + "_" + m.group(2);
         }
-        p = Pattern.compile("^https?://([a-zA-Z0-9\\-]+)\\.deviantart\\.com/favou?rites/([0-9]+)/.*?$");
+        p = Pattern.compile("^https?://www\\.deviantart\\.com/([a-zA-Z0-9\\-]+)/favou?rites/([0-9]+)/.*?$");
         m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             return m.group(1) + "_faves_" + m.group(2);
         }
-        p = Pattern.compile("^https?://([a-zA-Z0-9\\-]+)\\.deviantart\\.com/favou?rites/?$");
+        p = Pattern.compile("^https?://www\\.deviantart\\.com/([a-zA-Z0-9\\-]+)/favou?rites/?$");
         m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             // Subgallery
             return m.group(1) + "_faves";
         }
-        throw new MalformedURLException("Expected URL format: http://username.deviantart.com/[/gallery/#####], got: " + url);
+        throw new MalformedURLException("Expected URL format: http://www.deviantart.com/username[/gallery/#####], got: " + url);
     }
 
-    @Override
-    public Document getFirstPage() throws IOException {
-        // Login
-        try {
-            cookies = loginToDeviantart();
-        } catch (Exception e) {
-            logger.warn("Failed to login: ", e);
-            cookies.put("agegate_state","1"); // Bypasses the age gate
+    private String getUsernameFromURL(String u) {
+        Pattern p = Pattern.compile("^https?://www\\.deviantart\\.com/([a-zA-Z0-9\\-]+)/gallery/?(\\S+)?");
+        Matcher m = p.matcher(url.toExternalForm());
+        if (m.matches()) {
+            return m.group(1);
         }
-        return Http.url(this.url)
-                   .cookies(cookies)
-                   .get();
+        return null;
+
     }
-    private String jsonToImage(Document page, String id) {
-        Elements js = page.select("script[type=\"text/javascript\"]");
-        for (Element tag : js) {
-            if (tag.html().contains("window.__pageload")) {
-                try {
-                    String script = tag.html();
-                    script = script.substring(script.indexOf("window.__pageload"));
-                    if (!script.contains(id)) {
-                        continue;
-                    }
-                    script = script.substring(script.indexOf(id));
-                    // first },"src":"url" after id
-                    script = script.substring(script.indexOf("},\"src\":\"") + 9, script.indexOf("\",\"type\""));
-                    return script.replace("\\/", "/");
-                } catch (StringIndexOutOfBoundsException e) {
-                    logger.debug("Unable to get json link from " + page.location());
-                }
+
+    private String getFullsizedNSFWImage(String pageURL) {
+        try {
+            Document doc = Http.url(pageURL).cookies(cookies).get();
+            String imageToReturn = "";
+            String[] d = doc.select("img").attr("srcset").split(",");
+
+            String s = d[d.length -1].split(" ")[0];
+            LOGGER.info("2:" + s);
+
+            if (s == null || s.equals("")) {
+                LOGGER.error("Could not find full sized image at " + pageURL);
+            }
+            return s;
+        } catch (IOException e) {
+            LOGGER.error("Could not find full sized image at " + pageURL);
+            return null;
+        }
+    }
+
+    /**
+     * Gets first page.
+     * Will determine if login is supplied,
+     * if there is a login, then login and add that login cookies.
+     * Otherwise, just bypass the age gate with an anonymous flag.
+     * @return
+     * @throws IOException 
+     */
+    @Override
+    public JSONObject getFirstPage() throws IOException {
+        
+        // Base64 da login
+        // username: Z3JhYnB5
+        // password: ZmFrZXJz
+
+
+        cookies = getDACookies();
+            if (cookies.isEmpty()) {
+                LOGGER.warn("Failed to get login cookies");
+                cookies.put("agegate_state","1"); // Bypasses the age gate
+            }
+        cookies.put("agegate_state", "1");
+            
+        Response res = Http.url(this.url)
+                   .cookies(cookies)
+                   .response();
+        Document page = res.parse();
+
+        JSONObject firstPageJSON = getFirstPageJSON(page);
+        requestID = firstPageJSON.getJSONObject("dapx").getString("requestid");
+        galleryID = getGalleryID(page);
+        username = getUsernameFromURL(url.toExternalForm());
+        csrf = firstPageJSON.getString("csrf");
+        pageCookies = res.cookies();
+
+        return requestPage(0, galleryID, username, requestID, csrf, pageCookies);
+    }
+
+    private JSONObject requestPage(int offset, String galleryID, String username, String requestID, String csfr, Map<String, String> c) {
+        LOGGER.debug("offset: " + Integer.toString(offset));
+        LOGGER.debug("galleryID: " + galleryID);
+        LOGGER.debug("username: " + username);
+        LOGGER.debug("requestID: " + requestID);
+        String url = baseApiUrl + galleryID + "?iid=" + requestID;
+        try {
+            Document doc = Http.url(url).cookies(c).data("username", username).data("offset", Integer.toString(offset))
+                    .data("limit", "24").data("_csrf", csfr).data("id", requestID)
+                    .ignoreContentType().post();
+            return new JSONObject(doc.body().text());
+        } catch (IOException e) {
+            LOGGER.error("Got error trying to get page: " + e.getMessage());
+            e.printStackTrace();
+            return null;
+        }
+
+
+    }
+
+    private JSONObject getFirstPageJSON(Document doc) {
+        for (Element js : doc.select("script")) {
+            if (js.html().contains("requestid")) {
+                String json = js.html().replaceAll("window.__initial_body_data=", "").replaceAll("\\);", "")
+                        .replaceAll(";__wake\\(.+", "");
+                LOGGER.info("json: " + json);
+                JSONObject j = new JSONObject(json);
+                return j;
             }
         }
         return null;
     }
-    @Override
-    public List<String> getURLsFromPage(Document page) {
-        List<String> imageURLs = new ArrayList<>();
 
-        // Iterate over all thumbnails
-        for (Element thumb : page.select("div.zones-container span.thumb")) {
-            if (isStopped()) {
-                break;
-            }
-            Element img = thumb.select("img").get(0);
-            if (img.attr("transparent").equals("false")) {
-                continue; // a.thumbs to other albums are invisible
-            }
-            // Get full-sized image via helper methods
-            String fullSize = null;
-            if (thumb.attr("data-super-full-img").contains("//orig")) {
-                fullSize = thumb.attr("data-super-full-img");
-            } else {
-                String spanUrl = thumb.attr("href");
-                String fullSize1 = jsonToImage(page,spanUrl.substring(spanUrl.lastIndexOf('-') + 1));
-                if (fullSize1 == null || !fullSize1.contains("//orig")) {
-                    fullSize = smallToFull(img.attr("src"), spanUrl);
-                }
-                if (fullSize == null && fullSize1 != null) {
-                    fullSize = fullSize1;
-                }
-            }
-            if (fullSize == null) {
-                if (thumb.attr("data-super-full-img") != null) {
-                    fullSize = thumb.attr("data-super-full-img");
-                } else if (thumb.attr("data-super-img") != null) {
-                    fullSize = thumb.attr("data-super-img");
-                } else {
-                    continue;
-                }
-            }
-            if (triedURLs.contains(fullSize)) {
-                logger.warn("Already tried to download " + fullSize);
+    public String getGalleryID(Document doc) {
+        // If the url contains catpath we return 0 as the DA api will provide all galery images if you sent the
+        // gallery id to 0
+        if (url.toExternalForm().contains("catpath=")) {
+            return "0";
+        }
+        Pattern p = Pattern.compile("^https?://www\\.deviantart\\.com/[a-zA-Z0-9\\-]+/gallery/([0-9]+)/?\\S+");
+        Matcher m = p.matcher(url.toExternalForm());
+        if (m.matches()) {
+            return m.group(1);
+        }
+        for (Element el : doc.select("input[name=set]")) {
+            try {
+                String galleryID = el.attr("value");
+                return galleryID;
+            } catch (NullPointerException e) {
                 continue;
             }
-            triedURLs.add(fullSize);
-            imageURLs.add(fullSize);
+        }
+        LOGGER.error("Could not find gallery ID");
+        return null;
+    }
 
-            if (isThisATest()) {
-                // Only need one image for a test
-                break;
+    public String getUsername(Document doc) {
+        return doc.select("meta[property=og:title]").attr("content")
+                .replaceAll("'s DeviantArt gallery", "").replaceAll("'s DeviantArt Gallery", "");
+    }
+    
+
+    @Override
+    public List<String> getURLsFromJSON(JSONObject json) {
+        List<String> imageURLs = new ArrayList<>();
+        LOGGER.info(json);
+        JSONArray results = json.getJSONObject("content").getJSONArray("results");
+        for (int i = 0; i < results.length(); i++) {
+            Document doc = Jsoup.parseBodyFragment(results.getJSONObject(i).getString("html"));
+            if (doc.html().contains("ismature")) {
+                LOGGER.info("Downloading nsfw image");
+                String nsfwImage = getFullsizedNSFWImage(doc.select("span").attr("href"));
+                if (nsfwImage != null && nsfwImage.startsWith("http")) {
+                    imageURLs.add(nsfwImage);
+                }
             }
+            try {
+                String imageURL = doc.select("span").first().attr("data-super-full-img");
+                if (!imageURL.isEmpty() && imageURL.startsWith("http")) {
+                    imageURLs.add(imageURL);
+                }
+            } catch (NullPointerException e) {
+               LOGGER.info(i + " does not contain any images");
+            }
+
         }
         return imageURLs;
     }
-    @Override
-    public List<String> getDescriptionsFromPage(Document page) {
-        List<String> textURLs = new ArrayList<>();
-        // Iterate over all thumbnails
-        for (Element thumb : page.select("div.zones-container span.thumb")) {
-            logger.info(thumb.attr("href"));
-            if (isStopped()) {
-                break;
-            }
-            Element img = thumb.select("img").get(0);
-            if (img.attr("transparent").equals("false")) {
-                continue; // a.thumbs to other albums are invisible
-            }
-            textURLs.add(thumb.attr("href"));
 
-        }
-        return textURLs;
-    }
+
     @Override
-    public Document getNextPage(Document page) throws IOException {
-        if (isThisATest()) {
-            return null;
+    public JSONObject getNextPage(JSONObject page) throws IOException {
+        boolean hasMore = page.getJSONObject("content").getBoolean("has_more");
+        if (hasMore) {
+            return requestPage(page.getJSONObject("content").getInt("next_offset"), galleryID, username, requestID, csrf, pageCookies);
         }
-        Elements nextButtons = page.select("link[rel=\"next\"]");
-        if (nextButtons.size() == 0) {
-            if (page.select("link[rel=\"prev\"]").size() == 0) {
-                throw new IOException("No next page found");
-            } else {
-                throw new IOException("Hit end of pages");
-            }
-        }
-        Element a = nextButtons.first();
-        String nextPage = a.attr("href");
-        if (nextPage.startsWith("/")) {
-            nextPage = "http://" + this.url.getHost() + nextPage;
-        }
-        if (!sleep(PAGE_SLEEP_TIME)) {
-            throw new IOException("Interrupted while waiting to load next page: " + nextPage);
-        }
-        logger.info("Found next page: " + nextPage);
-        return Http.url(nextPage)
-                   .cookies(cookies)
-                   .get();
+
+        throw new IOException("No more pages");
     }
 
     @Override
@@ -275,61 +326,7 @@ public class DeviantartRipper extends AbstractHTMLRipper {
         return result.toString();
     }
 
-    /**
-     * Attempts to download description for image.
-     * Comes in handy when people put entire stories in their description.
-     * If no description was found, returns null.
-     * @param url The URL the description will be retrieved from
-     * @param page The gallery page the URL was found on
-     * @return A String[] with first object being the description, and the second object being image file name if found.
-     */
-    @Override
-    public String[] getDescription(String url,Document page) {
-        if (isThisATest()) {
-            return null;
-        }
-        try {
-            // Fetch the image page
-            Response resp = Http.url(url)
-                                .referrer(this.url)
-                                .cookies(cookies)
-                                .response();
-            cookies.putAll(resp.cookies());
 
-            // Try to find the description
-            Document documentz = resp.parse();
-            Element ele = documentz.select("div.dev-description").first();
-            if (ele == null) {
-                throw new IOException("No description found");
-            }
-            documentz.outputSettings(new Document.OutputSettings().prettyPrint(false));
-            ele.select("br").append("\\n");
-            ele.select("p").prepend("\\n\\n");
-            String fullSize = null;
-            Element thumb = page.select("div.zones-container span.thumb[href=\"" + url + "\"]").get(0);
-            if (!thumb.attr("data-super-full-img").isEmpty()) {
-                fullSize = thumb.attr("data-super-full-img");
-                String[] split = fullSize.split("/");
-                fullSize = split[split.length - 1];
-            } else {
-                String spanUrl = thumb.attr("href");
-                fullSize = jsonToImage(page,spanUrl.substring(spanUrl.lastIndexOf('-') + 1));
-                if (fullSize != null) {
-                    String[] split = fullSize.split("/");
-                    fullSize = split[split.length - 1];
-                }
-            }
-            if (fullSize == null) {
-                return new String[] {Jsoup.clean(ele.html().replaceAll("\\\\n", System.getProperty("line.separator")), "", Whitelist.none(), new Document.OutputSettings().prettyPrint(false))};
-            }
-            fullSize = fullSize.substring(0, fullSize.lastIndexOf("."));
-            return new String[] {Jsoup.clean(ele.html().replaceAll("\\\\n", System.getProperty("line.separator")), "", Whitelist.none(), new Document.OutputSettings().prettyPrint(false)),fullSize};
-            // TODO Make this not make a newline if someone just types \n into the description.
-        } catch (IOException ioe) {
-                logger.info("Failed to get description at " + url + ": '" + ioe.getMessage() + "'");
-                return null;
-        }
-    }
 
     /**
      * If largest resolution for image at 'thumb' is found, starts downloading
@@ -351,20 +348,20 @@ public class DeviantartRipper extends AbstractHTMLRipper {
             Elements els = doc.select("img.dev-content-full");
             String fsimage = null;
             // Get the largest resolution image on the page
-            if (els.size() > 0) {
+            if (!els.isEmpty()) {
                 // Large image
                 fsimage = els.get(0).attr("src");
-                logger.info("Found large-scale: " + fsimage);
+                LOGGER.info("Found large-scale: " + fsimage);
                 if (fsimage.contains("//orig")) {
                     return fsimage;
                 }
             }
             // Try to find the download button
             els = doc.select("a.dev-page-download");
-            if (els.size() > 0) {
+            if (!els.isEmpty()) {
                 // Full-size image
                 String downloadLink = els.get(0).attr("href");
-                logger.info("Found download button link: " + downloadLink);
+                LOGGER.info("Found download button link: " + downloadLink);
                 HttpURLConnection con = (HttpURLConnection) new URL(downloadLink).openConnection();
                 con.setRequestProperty("Referer",this.url.toString());
                 String cookieString = "";
@@ -381,7 +378,7 @@ public class DeviantartRipper extends AbstractHTMLRipper {
                 con.disconnect();
                 if (location.contains("//orig")) {
                     fsimage = location;
-                    logger.info("Found image download: " + location);
+                    LOGGER.info("Found image download: " + location);
                 }
             }
             if (fsimage != null) {
@@ -390,9 +387,9 @@ public class DeviantartRipper extends AbstractHTMLRipper {
             throw new IOException("No download page found");
         } catch (IOException ioe) {
             try {
-                logger.info("Failed to get full size download image at " + page + " : '" + ioe.getMessage() + "'");
+                LOGGER.info("Failed to get full size download image at " + page + " : '" + ioe.getMessage() + "'");
                 String lessThanFull = thumbToFull(thumb, false);
-                logger.info("Falling back to less-than-full-size image " + lessThanFull);
+                LOGGER.info("Falling back to less-than-full-size image " + lessThanFull);
                 return lessThanFull;
             } catch (Exception e) {
                 return null;
@@ -401,47 +398,10 @@ public class DeviantartRipper extends AbstractHTMLRipper {
     }
 
     /**
-     * Logs into deviant art. Required to rip full-size NSFW content.
+     * Returns DA cookies.
      * @return Map of cookies containing session data.
      */
-    private Map<String, String> loginToDeviantart() throws IOException {
-        // Populate postData fields
-        Map<String,String> postData = new HashMap<>();
-        String username = Utils.getConfigString("deviantart.username", new String(Base64.decode("Z3JhYnB5")));
-        String password = Utils.getConfigString("deviantart.password", new String(Base64.decode("ZmFrZXJz")));
-        if (username == null || password == null) {
-            throw new IOException("could not find username or password in config");
-        }
-        Response resp = Http.url("http://www.deviantart.com/")
-                            .response();
-        for (Element input : resp.parse().select("form#form-login input[type=hidden]")) {
-            postData.put(input.attr("name"), input.attr("value"));
-        }
-        postData.put("username", username);
-        postData.put("password", password);
-        postData.put("remember_me", "1");
-
-        // Send login request
-        resp = Http.url("https://www.deviantart.com/users/login")
-                    .userAgent(USER_AGENT)
-                    .data(postData)
-                    .cookies(resp.cookies())
-                    .method(Method.POST)
-                    .response();
-
-        // Assert we are logged in
-        if (resp.hasHeader("Location") && resp.header("Location").contains("password")) {
-            // Wrong password
-            throw new IOException("Wrong password");
-        }
-        if (resp.url().toExternalForm().contains("bad_form")) {
-            throw new IOException("Login form was incorrectly submitted");
-        }
-        if (resp.cookie("auth_secure") == null ||
-            resp.cookie("auth") == null) {
-            throw new IOException("No auth_secure or auth cookies received");
-        }
-        // We are logged in, save the cookies
-        return resp.cookies();
+    private Map<String, String> getDACookies() {
+        return RipUtils.getCookiesFromString(Utils.getConfigString("deviantart.cookies", loginCookies));
     }
 }
