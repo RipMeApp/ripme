@@ -10,4 +10,10 @@ public class HentaicafeRipperTest extends RippersTest {
         HentaiCafeRipper ripper = new HentaiCafeRipper(new URL("https://hentai.cafe/kikuta-the-oni-in-the-room/"));
         testRipper(ripper);
     }
+    // This album has a line break (<br />) in the url. Test it to make sure ripme can handle these invalid urls
+    public void testAlbumWithInvalidChars() throws IOException {
+        HentaiCafeRipper ripper = new HentaiCafeRipper(new URL("https://hentai.cafe/chobipero-club/"));
+        testRipper(ripper);
+
+    }
 }
