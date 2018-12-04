@@ -25,6 +25,8 @@ import org.jsoup.nodes.Element;
 
 public class TumblrRipper extends AlbumRipper {
 
+    int index = 1;
+
     private static final String DOMAIN = "tumblr.com",
             HOST   = "tumblr",
             IMAGE_PATTERN = "([^\\s]+(\\.(?i)(jpg|png|gif|bmp))$)";
@@ -252,10 +254,10 @@ public class TumblrRipper extends AlbumRipper {
 
                         m = p.matcher(fileURL.toString());
                         if (m.matches()) {
-                            addURLToDownload(fileURL);
+                            downloadURL(fileURL);
                         } else {
                             URL redirectedURL = Http.url(fileURL).ignoreContentType().response().url();
-                            addURLToDownload(redirectedURL);
+                            downloadURL(redirectedURL);
                         }
                     } catch (Exception e) {
                         LOGGER.error("[!] Error while parsing photo in " + photo, e);
@@ -264,7 +266,7 @@ public class TumblrRipper extends AlbumRipper {
             } else if (post.has("video_url")) {
                 try {
                     fileURL = new URL(post.getString("video_url").replaceAll("http:", "https:"));
-                    addURLToDownload(fileURL);
+                    downloadURL(fileURL);
                 } catch (Exception e) {
                     LOGGER.error("[!] Error while parsing video in " + post, e);
                     return true;
@@ -273,7 +275,7 @@ public class TumblrRipper extends AlbumRipper {
                 Document d = Jsoup.parse(post.getString("body"));
                 if (!d.select("img").attr("src").isEmpty()) {
                     try {
-                        addURLToDownload(new URL(d.select("img").attr("src")));
+                        downloadURL(new URL(d.select("img").attr("src")));
                     } catch (MalformedURLException e) {
                         LOGGER.error("[!] Error while getting embedded image at " + post, e);
                         return true;
@@ -353,6 +355,19 @@ public class TumblrRipper extends AlbumRipper {
             return this.subdomain;
         }
         throw new MalformedURLException("Expected format: http://subdomain[.tumblr.com][/tagged/tag|/post/postno]");
+    }
+
+    private String getPrefix(int i) {
+        String prefix = "";
+        if (Utils.getConfigBoolean("download.save_order", true)) {
+            prefix = String.format("%03d_", i);
+        }
+        return prefix;
+    }
+
+    public void downloadURL(URL url) {
+        addURLToDownload(url, getPrefix(index));
+        index++;
     }
 
 }
