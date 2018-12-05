@@ -1,6 +1,8 @@
 {
-    "latestVersion": "1.7.71",
+    "latestVersion": "1.7.72",
+    "currentHash": "64b3bb094b70f17c0e77f8921025213a4c6135ab75e2e6fac697f24985012a73",
     "changeList": [
+        "1.7.72: tumblr ripper now respects download.save_order; Tumblr ripper now can rip from liked pages",
         "1.7.71: Fixed Erome ripper; Remove HexBinaryAdapter import remnant; fized photobucket watermark issue; add derpi ripper; added support for 4channel.org",
         "1.7.70: Added arabic translation; Updater now works on java 10; Fixed mangadex ripper",
         "1.7.69: Fixes TheChive bug so that it can now rip gifs; e621 ripper now rips all media types; Upgraded org.apache.httpcomponents to 4.3.6; Added ripper for Mangadex.org; Added ripper for various duckmovie frontends; reddit ripper no longer freezes when ripping certain links",
@@ -242,6 +244,5 @@
         "1.0.4: Fixed spaces-in-directory bug",
         "1.0.3: Added VK.com ripper",
         "1.0.1: Added auto-update functionality"
-    ],
-    "currentHash": "c34c6a40b471cd5cbdefdaadf6eacdad4c6b87ff12797daff7f2edc79b6fe176"
+    ]
 }
