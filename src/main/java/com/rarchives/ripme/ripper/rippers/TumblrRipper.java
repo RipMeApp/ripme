@@ -240,7 +240,6 @@ public class TumblrRipper extends AlbumRipper {
 
         if (albumType == ALBUM_TYPE.LIKED) {
             posts = json.getJSONObject("response").getJSONArray("liked_posts");
-
         } else {
             posts = json.getJSONObject("response").getJSONArray("posts");
         }
@@ -373,6 +372,15 @@ public class TumblrRipper extends AlbumRipper {
         }
         // Likes url
         p = Pattern.compile("https?://([a-z0-9_-]+).tumblr.com/likes");
+        m = p.matcher(url.toExternalForm());
+        if (m.matches()) {
+            this.albumType = ALBUM_TYPE.LIKED;
+            this.subdomain = m.group(1);
+            return this.subdomain + "_liked";
+        }
+
+        // Likes url different format
+        p = Pattern.compile("https://www.tumblr.com/liked/by/([a-z0-9_-]+)");
         m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             this.albumType = ALBUM_TYPE.LIKED;
