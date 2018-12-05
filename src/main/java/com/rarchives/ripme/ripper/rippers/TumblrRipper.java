@@ -34,7 +34,8 @@ public class TumblrRipper extends AlbumRipper {
     private enum ALBUM_TYPE {
         SUBDOMAIN,
         TAG,
-        POST
+        POST,
+        LIKED
     }
     private ALBUM_TYPE albumType;
     private String subdomain, tagName, postNumber;
@@ -237,7 +238,12 @@ public class TumblrRipper extends AlbumRipper {
 
         URL fileURL;
 
-        posts = json.getJSONObject("response").getJSONArray("posts");
+        if (albumType == ALBUM_TYPE.LIKED) {
+            posts = json.getJSONObject("response").getJSONArray("liked_posts");
+
+        } else {
+            posts = json.getJSONObject("response").getJSONArray("posts");
+        }
         if (posts.length() == 0) {
             LOGGER.info("   Zero posts returned.");
             return false;
@@ -291,6 +297,16 @@ public class TumblrRipper extends AlbumRipper {
 
     private String getTumblrApiURL(String mediaType, int offset) {
         StringBuilder sb = new StringBuilder();
+        if (albumType == ALBUM_TYPE.LIKED) {
+            sb.append("http://api.tumblr.com/v2/blog/")
+                    .append(subdomain)
+                    .append("/likes")
+                    .append("?api_key=")
+                    .append(getApiKey())
+                    .append("&offset=")
+                    .append(offset);
+            return sb.toString();
+        }
         if (albumType == ALBUM_TYPE.POST) {
             sb.append("http://api.tumblr.com/v2/blog/")
                     .append(subdomain)
@@ -312,6 +328,7 @@ public class TumblrRipper extends AlbumRipper {
             sb.append("&tag=")
                     .append(tagName);
         }
+
         return sb.toString();
     }
 
@@ -354,6 +371,15 @@ public class TumblrRipper extends AlbumRipper {
             this.subdomain = m.group(1);
             return this.subdomain;
         }
+        // Likes url
+        p = Pattern.compile("https?://([a-z0-9_-]+).tumblr.com/likes");
+        m = p.matcher(url.toExternalForm());
+        if (m.matches()) {
+            this.albumType = ALBUM_TYPE.LIKED;
+            this.subdomain = m.group(1);
+            return this.subdomain + "_liked";
+        }
+
         throw new MalformedURLException("Expected format: http://subdomain[.tumblr.com][/tagged/tag|/post/postno]");
     }
 
