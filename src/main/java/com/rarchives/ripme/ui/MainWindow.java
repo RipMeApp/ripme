@@ -8,10 +8,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
@@ -1386,6 +1383,41 @@ public final class MainWindow implements Runnable, RipStatusHandler {
                 Image folderIcon = ImageIO.read(getClass().getClassLoader().getResource("folder.png"));
                 openButton.setIcon(new ImageIcon(folderIcon));
             } catch (Exception e) { }
+            /* content key
+            * %path% the path to the album folder
+            * %url% is the album url
+             */
+            if (Utils.getConfigBoolean("enable.finish.command", false)) {
+                try {
+                    String commandToRun = Utils.getConfigString("finish.command", "ls");
+                    commandToRun = commandToRun.replaceAll("%url%", url);
+                    commandToRun = commandToRun.replaceAll("%path%", f.getAbsolutePath());
+                    LOGGER.info("RUnning command " + commandToRun);
+                    // code from: https://stackoverflow.com/questions/5711084/java-runtime-getruntime-getting-output-from-executing-a-command-line-program
+                    Process proc = Runtime.getRuntime().exec(commandToRun);
+                    BufferedReader stdInput = new BufferedReader(new
+                            InputStreamReader(proc.getInputStream()));
+
+                    BufferedReader stdError = new BufferedReader(new
+                            InputStreamReader(proc.getErrorStream()));
+
+                    // read the output from the command
+                    LOGGER.info("Command output:\n");
+                    String s = null;
+                    while ((s = stdInput.readLine()) != null) {
+                        LOGGER.info(s);
+                    }
+
+                    // read any errors from the attempted command
+                    LOGGER.error("Command error:\n");
+                    while ((s = stdError.readLine()) != null) {
+                        System.out.println(s);
+                    }
+                } catch (IOException e) {
+                    LOGGER.error("Was unable to run command \"" + Utils.getConfigString("finish.command", "ls"));
+                    LOGGER.error(e.getStackTrace());
+                }
+            }
             appendLog("Rip complete, saved to " + f.getAbsolutePath(), Color.GREEN);
             openButton.setActionCommand(f.toString());
             openButton.addActionListener(event -> {
