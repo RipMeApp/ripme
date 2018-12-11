@@ -250,6 +250,7 @@ public class TumblrRipper extends AlbumRipper {
 
         for (int i = 0; i < posts.length(); i++) {
             post = posts.getJSONObject(i);
+            String date = post.getString("date");
             if (post.has("photos")) {
                 photos = post.getJSONArray("photos");
                 for (int j = 0; j < photos.length(); j++) {
@@ -259,10 +260,10 @@ public class TumblrRipper extends AlbumRipper {
 
                         m = p.matcher(fileURL.toString());
                         if (m.matches()) {
-                            downloadURL(fileURL);
+                            downloadURL(fileURL, date);
                         } else {
                             URL redirectedURL = Http.url(fileURL).ignoreContentType().response().url();
-                            downloadURL(redirectedURL);
+                            downloadURL(redirectedURL, date);
                         }
                     } catch (Exception e) {
                         LOGGER.error("[!] Error while parsing photo in " + photo, e);
@@ -271,7 +272,7 @@ public class TumblrRipper extends AlbumRipper {
             } else if (post.has("video_url")) {
                 try {
                     fileURL = new URL(post.getString("video_url").replaceAll("http:", "https:"));
-                    downloadURL(fileURL);
+                    downloadURL(fileURL, date);
                 } catch (Exception e) {
                     LOGGER.error("[!] Error while parsing video in " + post, e);
                     return true;
@@ -280,7 +281,7 @@ public class TumblrRipper extends AlbumRipper {
                 Document d = Jsoup.parse(post.getString("body"));
                 if (!d.select("img").attr("src").isEmpty()) {
                     try {
-                        downloadURL(new URL(d.select("img").attr("src")));
+                        downloadURL(new URL(d.select("img").attr("src")), date);
                     } catch (MalformedURLException e) {
                         LOGGER.error("[!] Error while getting embedded image at " + post, e);
                         return true;
@@ -399,7 +400,11 @@ public class TumblrRipper extends AlbumRipper {
         return prefix;
     }
 
-    public void downloadURL(URL url) {
+    public void downloadURL(URL url, String date) {
+        LOGGER.info(albumType);
+        if (albumType == ALBUM_TYPE.TAG) {
+            addURLToDownload(url, date + " ");
+        }
         addURLToDownload(url, getPrefix(index));
         index++;
     }
