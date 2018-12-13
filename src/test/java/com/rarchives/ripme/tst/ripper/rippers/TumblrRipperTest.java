@@ -20,8 +20,10 @@ public class TumblrRipperTest extends RippersTest {
 //        TumblrRipper ripper = new TumblrRipper(new URL("http://sadbaffoon.tumblr.com/post/132045920789/what-a-hoe"));
 //        testRipper(ripper);
 //    }
-    public void testEmbeddedImage() throws IOException {
-        TumblrRipper ripper = new TumblrRipper(new URL("https://these-are-my-b-sides.tumblr.com/post/178225921524/this-was-fun"));
-        testRipper(ripper);
-    }
+
+    // Commented out because the test link is 404ing
+//    public void testEmbeddedImage() throws IOException {
+//        TumblrRipper ripper = new TumblrRipper(new URL("https://these-are-my-b-sides.tumblr.com/post/178225921524/this-was-fun"));
+//        testRipper(ripper);
+//    }
 }
