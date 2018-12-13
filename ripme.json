@@ -1,5 +1,9 @@
 {
+    "latestVersion": "1.7.73",
     "changeList": [
+        "1.7.73: Tumblr tags are now downloaded in right order; Added xcartx ripper; Can now run command when rips complete",
+        "1.7.72: tumblr ripper now respects download.save_order; Tumblr ripper now can rip from liked pages",
+        "1.7.71: Fixed Erome ripper; Remove HexBinaryAdapter import remnant; fized photobucket watermark issue; add derpi ripper; added support for 4channel.org",
         "1.7.70: Added arabic translation; Updater now works on java 10; Fixed mangadex ripper",
         "1.7.69: Fixes TheChive bug so that it can now rip gifs; e621 ripper now rips all media types; Upgraded org.apache.httpcomponents to 4.3.6; Added ripper for Mangadex.org; Added ripper for various duckmovie frontends; reddit ripper no longer freezes when ripping certain links",
         "1.7.68: Added support for 55chan.org; Now limits file name length to 255 chars; fixed Tsumino ripper",
@@ -241,6 +245,5 @@
         "1.0.3: Added VK.com ripper",
         "1.0.1: Added auto-update functionality"
     ],
-    "latestVersion": "1.7.70",
-    "currentHash": "d838bc3a6ed86bb422dd53dbd58f11e28001cd844dc1f2fdee98fe004d1bc237"
+    "currentHash": "d29423f8ee0fc6a458397ba1f4a308ae167153f0bed815c634fb8d03dc146c98"
 }
