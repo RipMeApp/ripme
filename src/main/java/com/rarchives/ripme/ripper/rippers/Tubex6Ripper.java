@@ -54,6 +54,7 @@ public class Tubex6Ripper extends AbstractSingleFileRipper {
 
     @Override
     public void downloadURL(URL url, int index) {
-        addURLToDownload(url, getPrefix(index));
+        // We have to send a referrer or the site returns a 403 error
+        addURLToDownload(url, getPrefix(index), "", this.url.toExternalForm(), null);
     }
 }
