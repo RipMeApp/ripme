@@ -1,6 +1,8 @@
 {
-    "latestVersion": "1.7.73",
+    "currentHash": "50de31e2f82726f073ac30d4f87318f461a321c11e2babc7894322a5795f53ef",
+    "latestVersion": "1.7.74",
     "changeList": [
+        "1.7.74: Added support for hentai foundry stories; Fixed tubex6 ripper; Fixed instagram ripper",
         "1.7.73: Tumblr tags are now downloaded in right order; Added xcartx ripper; Can now run command when rips complete",
         "1.7.72: tumblr ripper now respects download.save_order; Tumblr ripper now can rip from liked pages",
         "1.7.71: Fixed Erome ripper; Remove HexBinaryAdapter import remnant; fized photobucket watermark issue; add derpi ripper; added support for 4channel.org",
@@ -244,6 +246,5 @@
         "1.0.4: Fixed spaces-in-directory bug",
         "1.0.3: Added VK.com ripper",
         "1.0.1: Added auto-update functionality"
-    ],
-    "currentHash": "d29423f8ee0fc6a458397ba1f4a308ae167153f0bed815c634fb8d03dc146c98"
+    ]
 }
