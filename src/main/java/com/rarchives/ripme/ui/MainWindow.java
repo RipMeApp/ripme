@@ -245,6 +245,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         Utils.setConfigBoolean("descriptions.save", configSaveDescriptions.isSelected());
         Utils.setConfigBoolean("prefer.mp4", configPreferMp4.isSelected());
         Utils.setConfigBoolean("remember.url_history", configURLHistoryCheckbox.isSelected());
+        Utils.setConfigString("lang", configSelectLangComboBox.getSelectedItem().toString());
         saveWindowPosition(mainFrame);
         saveHistory();
         Utils.saveConfig();
@@ -517,6 +518,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
 
         configLogLevelCombobox = new JComboBox<>(new String[] {"Log level: Error", "Log level: Warn", "Log level: Info", "Log level: Debug"});
         configSelectLangComboBox = new JComboBox<>(supportedLanges);
+        configSelectLangComboBox.setSelectedItem(rb.getLocale().toString());
         configLogLevelCombobox.setSelectedItem(Utils.getConfigString("log.level", "Log level: Debug"));
         setLogLevel(configLogLevelCombobox.getSelectedItem().toString());
         configSaveDirLabel = new JLabel();
