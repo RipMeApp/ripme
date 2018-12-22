@@ -96,6 +96,14 @@ public abstract class AlbumRipper extends AbstractRipper {
             }
             threadPool.addThread(dft);
         }
+        if (Utils.getConfigBoolean("remember.url_history", true) && !isThisATest()) {
+            LOGGER.info("Writing " + url.toExternalForm() + " to file");
+            try {
+                writeDownloadedURL(url.toExternalForm() + "\n");
+            } catch (IOException e) {
+                LOGGER.debug("Unable to write URL history file");
+            }
+        }
         return true;
     }
 
