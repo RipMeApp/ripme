@@ -1,11 +1,14 @@
 package com.rarchives.ripme.ui;
 
+import java.awt.Dimension;
 import java.io.*;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
+import javax.swing.JEditorPane;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.JScrollPane;
 
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
@@ -125,13 +128,15 @@ public class UpdateUtils {
         String latestVersion = ripmeJson.getString("latestVersion");
         if (UpdateUtils.isNewerVersion(latestVersion)) {
             logger.info("Found newer version: " + latestVersion);
-            int result = JOptionPane.showConfirmDialog(
-                    null,
-                    String.format("<html><font color=\"green\">New version (%s) is available!</font>"
-                            + "<br><br>Recent changes: %s"
-                            + "<br><br>Do you want to download and run the newest version?</html>", latestVersion, changeList.replaceAll("\n", "")),
-                    "RipMe Updater",
-                    JOptionPane.YES_NO_OPTION);
+            JEditorPane changeListPane = new JEditorPane("text/html", String.format(
+					"<html><font color=\"green\">New version (%s) is available!</font>" + "<br><br>Recent changes: %s"
+							+ "<br><br>Do you want to download and run the newest version?</html>",
+					latestVersion, changeList.replaceAll("\n", "<br><br>")));
+			changeListPane.setEditable(false);
+			JScrollPane changeListScrollPane = new JScrollPane(changeListPane);
+			changeListScrollPane.setPreferredSize(new Dimension(250, 200));
+			int result = JOptionPane.showConfirmDialog(null, changeListScrollPane, "RipMe Updater",
+					JOptionPane.YES_NO_OPTION);
             if (result != JOptionPane.YES_OPTION) {
                 configUpdateLabel.setText("<html>Current Version: " + getThisJarVersion()
                         + "<br><font color=\"green\">Latest version: " + latestVersion + "</font></html>");
