@@ -67,7 +67,7 @@ public abstract class AbstractRipper
      * Adds a URL to the url history file
      * @param downloadedURL URL to check if downloaded
      */
-    private void writeDownloadedURL(String downloadedURL) throws IOException {
+    protected void writeDownloadedURL(String downloadedURL) throws IOException {
         // If "save urls only" is checked don't write to the url history file
         if (Utils.getConfigBoolean("urls_only.save", false)) {
             return;
@@ -131,7 +131,7 @@ public abstract class AbstractRipper
      *      Returns true if previously downloaded.
      *      Returns false if not yet downloaded.
      */
-    private boolean hasDownloadedURL(String url) {
+    protected boolean hasDownloadedURL(String url) {
         File file = new File(URLHistoryFile);
         url = normalizeUrl(url);
 
@@ -280,6 +280,7 @@ public abstract class AbstractRipper
             saveFileAs.getParentFile().mkdirs();
         }
         if (Utils.getConfigBoolean("remember.url_history", true) && !isThisATest()) {
+            LOGGER.info("Writing " + url.toExternalForm() + " to file");
             try {
                 writeDownloadedURL(url.toExternalForm() + "\n");
             } catch (IOException e) {
