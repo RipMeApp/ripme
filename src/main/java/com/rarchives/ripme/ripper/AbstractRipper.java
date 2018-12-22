@@ -67,7 +67,7 @@ public abstract class AbstractRipper
      * Adds a URL to the url history file
      * @param downloadedURL URL to check if downloaded
      */
-    private void writeDownloadedURL(String downloadedURL) throws IOException {
+    protected void writeDownloadedURL(String downloadedURL) throws IOException {
         // If "save urls only" is checked don't write to the url history file
         if (Utils.getConfigBoolean("urls_only.save", false)) {
             return;
