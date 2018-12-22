@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.rarchives.ripme.ripper.AbstractRipper;
 import com.rarchives.ripme.ui.RipStatusMessage;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -19,10 +18,6 @@ import com.rarchives.ripme.ui.UpdateUtils;
 import com.rarchives.ripme.utils.Http;
 import com.rarchives.ripme.utils.RipUtils;
 import com.rarchives.ripme.utils.Utils;
-import org.jsoup.Jsoup;
-
-import javax.swing.text.Document;
-import javax.swing.text.Element;
 
 public class RedditRipper extends AlbumRipper {
 
