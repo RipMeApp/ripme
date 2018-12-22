@@ -51,7 +51,16 @@ public abstract class AlbumRipper extends AbstractRipper {
      * Queues multiple URLs of single images to download from a single Album URL
      */
     public boolean addURLToDownload(URL url, File saveAs, String referrer, Map<String,String> cookies, Boolean getFileExtFromMIME) {
-        // Only download one file if this is a test.
+        // Don't re-add the url if it was downloaded in a previous rip
+        if (Utils.getConfigBoolean("remember.url_history", true) && !isThisATest()) {
+            if (hasDownloadedURL(url.toExternalForm())) {
+                sendUpdate(STATUS.DOWNLOAD_WARN, "Already downloaded " + url.toExternalForm());
+                alreadyDownloadedUrls += 1;
+                return false;
+            }
+        }
+
+            // Only download one file if this is a test.
         if (super.isThisATest() &&
                 (itemsPending.size() > 0 || itemsCompleted.size() > 0 || itemsErrored.size() > 0)) {
             stop();
@@ -86,6 +95,14 @@ public abstract class AlbumRipper extends AbstractRipper {
                 dft.setCookies(cookies);
             }
             threadPool.addThread(dft);
+        }
+        if (Utils.getConfigBoolean("remember.url_history", true) && !isThisATest()) {
+            LOGGER.info("Writing " + url.toExternalForm() + " to file");
+            try {
+                writeDownloadedURL(url.toExternalForm() + "\n");
+            } catch (IOException e) {
+                LOGGER.debug("Unable to write URL history file");
+            }
         }
         return true;
     }
