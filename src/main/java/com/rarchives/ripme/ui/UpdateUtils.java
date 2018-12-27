@@ -131,10 +131,10 @@ public class UpdateUtils {
             JEditorPane changeListPane = new JEditorPane("text/html", String.format(
 					"<html><font color=\"green\">New version (%s) is available!</font>" + "<br><br>Recent changes: %s"
 							+ "<br><br>Do you want to download and run the newest version?</html>",
-					latestVersion, changeList.replaceAll("\n", "<br><br>")));
+					latestVersion, changeList.replaceAll("\\n", "<br><br>")));
 			changeListPane.setEditable(false);
 			JScrollPane changeListScrollPane = new JScrollPane(changeListPane);
-			changeListScrollPane.setPreferredSize(new Dimension(250, 200));
+			changeListScrollPane.setPreferredSize(new Dimension(300, 300));
 			int result = JOptionPane.showConfirmDialog(null, changeListScrollPane, "RipMe Updater",
 					JOptionPane.YES_NO_OPTION);
             if (result != JOptionPane.YES_OPTION) {
