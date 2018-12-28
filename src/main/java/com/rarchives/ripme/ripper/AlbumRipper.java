@@ -79,7 +79,7 @@ public abstract class AlbumRipper extends AbstractRipper {
             String urlFile = this.workingDir + File.separator + "urls.txt";
             try (FileWriter fw = new FileWriter(urlFile, true)) {
                 fw.write(url.toExternalForm());
-                fw.write("\n");
+                fw.write(System.lineSeparator());
                 itemsCompleted.put(url, new File(urlFile));
             } catch (IOException e) {
                 LOGGER.error("Error while writing to " + urlFile, e);
