@@ -7,6 +7,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Locale;
+import java.text.Normalizer;
+import java.text.Normalizer.Form;
 
 import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 import com.rarchives.ripme.utils.Http;
@@ -16,6 +22,11 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 public class JabArchivesRipper extends AbstractHTMLRipper {
+
+    private static final Pattern NONLATIN = Pattern.compile("[^\\w-]");
+    private static final Pattern WHITESPACE = Pattern.compile("[\\s]");
+
+    private Map<String, String> itemPrefixes = Collections.synchronizedMap(new HashMap<String, String>());
 
     public JabArchivesRipper(URL url) throws IOException {
         super(url);
@@ -62,17 +73,35 @@ public class JabArchivesRipper extends AbstractHTMLRipper {
         return Http.url(nextUrl).get();
     }
 
+    protected String getSlug(String input) {
+        // Get a URL/file-safe version of a string
+        String nowhitespace = WHITESPACE.matcher(input).replaceAll("-");
+        String normalized = Normalizer.normalize(nowhitespace, Form.NFD);
+        String slug = NONLATIN.matcher(normalized).replaceAll("");
+        return slug.toLowerCase(Locale.ENGLISH);
+    }
+
     @Override
     public List<String> getURLsFromPage(Document doc) {
         List<String> result = new ArrayList<String>();
         for (Element el : doc.select("#contentMain img")) {
-            result.add("https://jabarchives.com" + el.attr("src").replace("thumb", "large"));
+            String url = "https://jabarchives.com" + el.attr("src").replace("thumb", "large");
+            result.add(url);
+
+            String title = el.parent().attr("title");
+            itemPrefixes.put(url, getSlug(title) + "_");
         }
         return result;
     }
 
     @Override
     public void downloadURL(URL url, int index) {
-        addURLToDownload(url, getPrefix(index));
+        String prefix = "";
+        if (itemPrefixes.containsKey(url.toString())) {
+            System.out.println("Found matching prefix:");
+            prefix = itemPrefixes.get(url.toString());
+            System.out.println(prefix);
+        }
+        addURLToDownload(url, prefix);
     }
 }
