@@ -44,7 +44,8 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
         "thisis.delvecomic.com",
         "shipinbottle.pepsaga.com",
         "8muses.download",
-        "spyingwithlana.com"
+        "spyingwithlana.com",
+        "comixfap.net"
     );
 
     private static List<String> theme1 = Arrays.asList(
@@ -169,6 +170,12 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
             if (mat.matches()) {
                 return true;
             }
+
+            pat = Pattern.compile("https?://comixfap.net/([a-zA-Z0-9-]*)/?");
+            mat = pat.matcher(url.toExternalForm());
+            if (mat.matches()) {
+                return true;
+            }
         }
 
 
@@ -286,6 +293,12 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
             return "spyingwithlana_" + spyingwithlanaMat.group(1).replaceAll("-page-\\d", "");
         }
 
+        Pattern pat = Pattern.compile("https?://comixfap.net/([a-zA-Z0-9-]*)/?");
+        Matcher mat = pat.matcher(url.toExternalForm());
+        if (mat.matches()) {
+            return "comixfap_" + mat.group(1);
+        }
+
         return super.getAlbumTitle(url);
     }
 
@@ -366,25 +379,29 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
             for (Element elem : doc.select("div.single-post > p > img.aligncenter")) {
                 result.add(elem.attr("src"));
             }
-        }
-
-        if (url.toExternalForm().contains("comics-xxx.com")) {
+        } else if (url.toExternalForm().contains("comics-xxx.com")) {
             for (Element elem : doc.select("div.single-post > center > p > img")) {
                 result.add(elem.attr("src"));
             }
-        }
-
-        if (url.toExternalForm().contains("shipinbottle.pepsaga.com")) {
+        } else if (url.toExternalForm().contains("shipinbottle.pepsaga.com")) {
             for (Element elem : doc.select("div#comic > div.comicpane > a > img")) {
+                result.add(elem.attr("src"));
+            }
+        } else if (url.toExternalForm().contains("8muses.download")) {
+            for (Element elem : doc.select("div.popup-gallery > figure > a")) {
+                result.add(elem.attr("href"));
+            }
+        } else if (url.toExternalForm().contains("http://comixfap.net")) {
+            // Some pages on comixfap do use unite-gallery and others don't, so we have a loop for each
+            for (Element elem : doc.select("div.entry-content > div.dgwt-jg-gallery > figure > a")) {
+                result.add(elem.attr("href"));
+            }
+            for (Element elem : doc.select(".unite-gallery > img")) {
                 result.add(elem.attr("src"));
             }
         }
 
-        if (url.toExternalForm().contains("8muses.download")) {
-            for (Element elem : doc.select("div.popup-gallery > figure > a")) {
-                result.add(elem.attr("href"));
-            }
-        }
+
 
         return result;
     }
