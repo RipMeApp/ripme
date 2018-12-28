@@ -81,7 +81,7 @@ public class EHentaiRipper extends AbstractHTMLRipper {
         Pattern p;
         Matcher m;
 
-        p = Pattern.compile("^https?://e-hentai\\.org/g/([0-9]+)/([a-fA-F0-9]+)/$");
+        p = Pattern.compile("^https?://e-hentai\\.org/g/([0-9]+)/([a-fA-F0-9]+)/?");
         m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             return m.group(1) + "-" + m.group(2);
