@@ -96,12 +96,6 @@ public class JabArchivesRipper extends AbstractHTMLRipper {
 
     @Override
     public void downloadURL(URL url, int index) {
-        String prefix = "";
-        if (itemPrefixes.containsKey(url.toString())) {
-            System.out.println("Found matching prefix:");
-            prefix = itemPrefixes.get(url.toString());
-            System.out.println(prefix);
-        }
-        addURLToDownload(url, prefix);
+        addURLToDownload(url, itemPrefixes.get(url.toString()));
     }
 }
