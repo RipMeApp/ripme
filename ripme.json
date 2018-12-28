@@ -1,7 +1,7 @@
 {
-    "currentHash": "50de31e2f82726f073ac30d4f87318f461a321c11e2babc7894322a5795f53ef",
-    "latestVersion": "1.7.74",
+    "currentHash": "d1924b2de9801b9b858822bc75484d6a6509556870ec74b17d0a654e7d3b4187",
     "changeList": [
+        "1.7.75: Fix e-hentai ripper; added comixfap ripper; fixed writting urls to files on windows; Fixed update screen issues; Added support for hentaidude; Fixed erome ripper",
         "1.7.74: Added support for hentai foundry stories; Fixed tubex6 ripper; Fixed instagram ripper",
         "1.7.73: Tumblr tags are now downloaded in right order; Added xcartx ripper; Can now run command when rips complete",
         "1.7.72: tumblr ripper now respects download.save_order; Tumblr ripper now can rip from liked pages",
@@ -246,5 +246,6 @@
         "1.0.4: Fixed spaces-in-directory bug",
         "1.0.3: Added VK.com ripper",
         "1.0.1: Added auto-update functionality"
-    ]
+    ],
+    "latestVersion": "1.7.75"
 }
