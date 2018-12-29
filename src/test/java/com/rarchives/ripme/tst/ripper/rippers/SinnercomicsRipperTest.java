@@ -32,11 +32,6 @@ public class SinnercomicsRipperTest extends RippersTest {
         ripper = new SinnercomicsRipper(url);
         assertEquals("beyond-the-hotel", ripper.getGID(url));
 
-        // Homepage test
-        url = new URL("https://sinnercomics.com/page/2/");
-        ripper = new SinnercomicsRipper(url);
-        assertEquals("homepage", ripper.getGID(url));
-
         // Comic test
         url = new URL("https://sinnercomics.com/elza-frozen-2/#comments");
         ripper = new SinnercomicsRipper(url);
