@@ -11,6 +11,12 @@ public class HentaifoundryRipperTest extends RippersTest {
         testRipper(ripper);
     }
 
+    public void testHentaifoundryGetGID() throws IOException {
+        HentaifoundryRipper ripper = new HentaifoundryRipper(new URL("https://www.hentai-foundry.com/stories/user/Rakked"));
+        testRipper(ripper);
+        assertEquals("Rakked", ripper.getGID(new URL("https://www.hentai-foundry.com/stories/user/Rakked")));
+    }
+
     public void testHentaifoundryPdfRip() throws IOException {
         HentaifoundryRipper ripper = new HentaifoundryRipper(new URL("https://www.hentai-foundry.com/stories/user/Rakked"));
         testRipper(ripper);
