@@ -45,15 +45,17 @@ public class VideoRippersTest extends RippersTest {
 //            videoTestHelper(ripper);
 //        }
 //    }
+
+    // Test disabled see https://github.com/RipMeApp/ripme/issues/1095
     
-    public void testPornhubRipper() throws IOException {
-        List<URL> contentURLs = new ArrayList<>();
-        contentURLs.add(new URL("https://www.pornhub.com/view_video.php?viewkey=ph5a329fa707269"));
-        for (URL url : contentURLs) {
-            PornhubRipper ripper = new PornhubRipper(url);
-            videoTestHelper(ripper);
-        }
-    }
+//    public void testPornhubRipper() throws IOException {
+//        List<URL> contentURLs = new ArrayList<>();
+//        contentURLs.add(new URL("https://www.pornhub.com/view_video.php?viewkey=ph5a329fa707269"));
+//        for (URL url : contentURLs) {
+//            PornhubRipper ripper = new PornhubRipper(url);
+//            videoTestHelper(ripper);
+//        }
+//    }
 
     
     public void testYuvutuRipper() throws IOException {
