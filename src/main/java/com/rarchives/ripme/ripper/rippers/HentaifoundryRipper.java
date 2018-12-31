@@ -40,7 +40,7 @@ public class HentaifoundryRipper extends AbstractHTMLRipper {
         Pattern p = Pattern.compile("^.*hentai-foundry\\.com/(pictures|stories)/user/([a-zA-Z0-9\\-_]+).*$");
         Matcher m = p.matcher(url.toExternalForm());
         if (m.matches()) {
-            return m.group(1);
+            return m.group(2);
         }
         throw new MalformedURLException(
                 "Expected hentai-foundry.com gallery format: "
