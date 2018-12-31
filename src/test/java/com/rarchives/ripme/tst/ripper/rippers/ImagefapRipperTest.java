@@ -24,4 +24,9 @@ public class ImagefapRipperTest extends RippersTest {
             testRipper(ripper);
         }
     }
+    public void testImagefapGetAlbumTitle() throws IOException {
+        URL url = new URL("https://www.imagefap.com/gallery.php?gid=7789753");
+        ImagefapRipper ripper = new ImagefapRipper(url);
+        assertEquals("imagefap_Red.Heels.Lover.In.Love_7789753", ripper.getAlbumTitle(url));
+    }
 }
