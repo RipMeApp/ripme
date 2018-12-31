@@ -135,6 +135,7 @@ public class HentaifoundryRipper extends AbstractHTMLRipper {
         // this if is for ripping pdf stories
         if (url.toExternalForm().contains("/stories/")) {
             for (Element pdflink : doc.select("a.pdfLink")) {
+                LOGGER.info("grabbing " + "http://www.hentai-foundry.com" + pdflink.attr("href"));
                 imageURLs.add("http://www.hentai-foundry.com" + pdflink.attr("href"));
             }
             return imageURLs;
@@ -177,8 +178,9 @@ public class HentaifoundryRipper extends AbstractHTMLRipper {
         // When downloading pdfs you *NEED* to end the cookies with the request or you just get the consent page
         if (url.toExternalForm().endsWith(".pdf")) {
             addURLToDownload(url, getPrefix(index), "", this.url.toExternalForm(), cookies);
+        } else {
+            addURLToDownload(url, getPrefix(index));
         }
-        addURLToDownload(url, getPrefix(index));
     }
 
 }
