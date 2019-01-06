@@ -283,8 +283,7 @@ public class UpdateUtils {
                 script = "#!/bin/sh\n"
                         + "sleep 1" + "\n"
                         + "cd " + new File(mainFileName).getAbsoluteFile().getParent() + "\n"
-                        + "cp -f " + updateFileName + " " + mainFileName + "\n"
-                        + "rm -f " + updateFileName + "\n"
+                        + "mv -f " +new File(updateFileName).getAbsoluteFile() + " " + new File(mainFileName).getAbsoluteFile() + "\n"
                         + "java -jar \"" + new File(mainFileName).getAbsolutePath() + "\" &\n"
                         + "sleep 1" + "\n"
                         + "rm -f " + batchPath + "\n";
