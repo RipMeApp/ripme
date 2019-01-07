@@ -279,11 +279,12 @@ public class UpdateUtils {
             } else {
                 // Mac / Linux
                 batchFile = "update_ripme.sh";
+                String currentFilePath = new File(System.getProperty("java.class.path")).getAbsolutePath();
                 String batchPath = new File(batchFile).getAbsolutePath();
                 script = "#!/bin/sh\n"
                         + "sleep 1" + "\n"
                         + "cd " + new File(mainFileName).getAbsoluteFile().getParent() + "\n"
-                        + "mv -f " +new File(updateFileName).getAbsoluteFile() + " " + new File(mainFileName).getAbsoluteFile() + "\n"
+                        + "mv -f " +new File(updateFileName).getAbsolutePath() + " " + new File(currentFilePath).getAbsolutePath() + "\n"
                         + "java -jar \"" + new File(mainFileName).getAbsolutePath() + "\" &\n"
                         + "sleep 1" + "\n"
                         + "rm -f " + batchPath + "\n";
