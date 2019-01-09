@@ -79,7 +79,6 @@ public class ZizkiRipper extends AbstractHTMLRipper {
         // Page contains images
         LOGGER.info("Look for images.");
         for (Element thumb : page.select("img")) {
-            LOGGER.info("Img");
             if (super.isStopped()) break;
             // Find thumbnail image source
             String image = null;
