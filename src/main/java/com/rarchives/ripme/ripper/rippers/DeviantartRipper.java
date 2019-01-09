@@ -213,7 +213,6 @@ public class DeviantartRipper extends AbstractJSONRipper {
             if (js.html().contains("requestid")) {
                 String json = js.html().replaceAll("window.__initial_body_data=", "").replaceAll("\\);", "")
                         .replaceAll(";__wake\\(.+", "");
-                LOGGER.info("json: " + json);
                 JSONObject j = new JSONObject(json);
                 return j;
             }
@@ -253,7 +252,6 @@ public class DeviantartRipper extends AbstractJSONRipper {
     @Override
     public List<String> getURLsFromJSON(JSONObject json) {
         List<String> imageURLs = new ArrayList<>();
-        LOGGER.info(json);
         JSONArray results = json.getJSONObject("content").getJSONArray("results");
         for (int i = 0; i < results.length(); i++) {
             Document doc = Jsoup.parseBodyFragment(results.getJSONObject(i).getString("html"));
