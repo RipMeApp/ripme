@@ -78,7 +78,6 @@ public class FuraffinityRipper extends AbstractHTMLRipper {
     @Override
     public Document getFirstPage() throws IOException {
         setCookies();
-        LOGGER.info(Http.url(url).cookies(cookies).get().html());
         return Http.url(url).cookies(cookies).get();
     }
 
