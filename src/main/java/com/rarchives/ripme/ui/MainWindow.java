@@ -8,10 +8,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
@@ -149,6 +146,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
     // All the langs ripme has been translated into
     private static String[] supportedLanges = new String[] {
             "de_DE",
+            "ar_AR",
             "en_US",
             "es_ES",
             "fi_FI",
@@ -247,6 +245,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         Utils.setConfigBoolean("descriptions.save", configSaveDescriptions.isSelected());
         Utils.setConfigBoolean("prefer.mp4", configPreferMp4.isSelected());
         Utils.setConfigBoolean("remember.url_history", configURLHistoryCheckbox.isSelected());
+        Utils.setConfigString("lang", configSelectLangComboBox.getSelectedItem().toString());
         saveWindowPosition(mainFrame);
         saveHistory();
         Utils.saveConfig();
@@ -519,6 +518,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
 
         configLogLevelCombobox = new JComboBox<>(new String[] {"Log level: Error", "Log level: Warn", "Log level: Info", "Log level: Debug"});
         configSelectLangComboBox = new JComboBox<>(supportedLanges);
+        configSelectLangComboBox.setSelectedItem(rb.getLocale().toString());
         configLogLevelCombobox.setSelectedItem(Utils.getConfigString("log.level", "Log level: Debug"));
         setLogLevel(configLogLevelCombobox.getSelectedItem().toString());
         configSaveDirLabel = new JLabel();
@@ -1385,6 +1385,41 @@ public final class MainWindow implements Runnable, RipStatusHandler {
                 Image folderIcon = ImageIO.read(getClass().getClassLoader().getResource("folder.png"));
                 openButton.setIcon(new ImageIcon(folderIcon));
             } catch (Exception e) { }
+            /* content key
+            * %path% the path to the album folder
+            * %url% is the album url
+             */
+            if (Utils.getConfigBoolean("enable.finish.command", false)) {
+                try {
+                    String commandToRun = Utils.getConfigString("finish.command", "ls");
+                    commandToRun = commandToRun.replaceAll("%url%", url);
+                    commandToRun = commandToRun.replaceAll("%path%", f.getAbsolutePath());
+                    LOGGER.info("RUnning command " + commandToRun);
+                    // code from: https://stackoverflow.com/questions/5711084/java-runtime-getruntime-getting-output-from-executing-a-command-line-program
+                    Process proc = Runtime.getRuntime().exec(commandToRun);
+                    BufferedReader stdInput = new BufferedReader(new
+                            InputStreamReader(proc.getInputStream()));
+
+                    BufferedReader stdError = new BufferedReader(new
+                            InputStreamReader(proc.getErrorStream()));
+
+                    // read the output from the command
+                    LOGGER.info("Command output:\n");
+                    String s = null;
+                    while ((s = stdInput.readLine()) != null) {
+                        LOGGER.info(s);
+                    }
+
+                    // read any errors from the attempted command
+                    LOGGER.error("Command error:\n");
+                    while ((s = stdError.readLine()) != null) {
+                        System.out.println(s);
+                    }
+                } catch (IOException e) {
+                    LOGGER.error("Was unable to run command \"" + Utils.getConfigString("finish.command", "ls"));
+                    LOGGER.error(e.getStackTrace());
+                }
+            }
             appendLog("Rip complete, saved to " + f.getAbsolutePath(), Color.GREEN);
             openButton.setActionCommand(f.toString());
             openButton.addActionListener(event -> {
@@ -1402,6 +1437,17 @@ public final class MainWindow implements Runnable, RipStatusHandler {
             break;
         case TOTAL_BYTES:
             // Update total bytes
+            break;
+        case NO_ALBUM_OR_USER:
+            if (LOGGER.isEnabledFor(Level.ERROR)) {
+                appendLog((String) msg.getObject(), Color.RED);
+            }
+            stopButton.setEnabled(false);
+            statusProgress.setValue(0);
+            statusProgress.setVisible(false);
+            openButton.setVisible(false);
+            pack();
+            statusWithColor("Error: " + msg.getObject(), Color.RED);
             break;
         }
     }

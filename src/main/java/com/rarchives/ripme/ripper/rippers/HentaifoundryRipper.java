@@ -37,10 +37,10 @@ public class HentaifoundryRipper extends AbstractHTMLRipper {
 
     @Override
     public String getGID(URL url) throws MalformedURLException {
-        Pattern p = Pattern.compile("^.*hentai-foundry\\.com/pictures/user/([a-zA-Z0-9\\-_]+).*$");
+        Pattern p = Pattern.compile("^.*hentai-foundry\\.com/(pictures|stories)/user/([a-zA-Z0-9\\-_]+).*$");
         Matcher m = p.matcher(url.toExternalForm());
         if (m.matches()) {
-            return m.group(1);
+            return m.group(2);
         }
         throw new MalformedURLException(
                 "Expected hentai-foundry.com gallery format: "
@@ -132,6 +132,14 @@ public class HentaifoundryRipper extends AbstractHTMLRipper {
     @Override
     public List<String> getURLsFromPage(Document doc) {
         List<String> imageURLs = new ArrayList<>();
+        // this if is for ripping pdf stories
+        if (url.toExternalForm().contains("/stories/")) {
+            for (Element pdflink : doc.select("a.pdfLink")) {
+                LOGGER.info("grabbing " + "http://www.hentai-foundry.com" + pdflink.attr("href"));
+                imageURLs.add("http://www.hentai-foundry.com" + pdflink.attr("href"));
+            }
+            return imageURLs;
+        }
         Pattern imgRegex = Pattern.compile(".*/user/([a-zA-Z0-9\\-_]+)/(\\d+)/.*");
         for (Element thumb : doc.select("div.thumb_square > a.thumbLink")) {
             if (isStopped()) {
@@ -167,7 +175,12 @@ public class HentaifoundryRipper extends AbstractHTMLRipper {
 
     @Override
     public void downloadURL(URL url, int index) {
-        addURLToDownload(url, getPrefix(index));
+        // When downloading pdfs you *NEED* to end the cookies with the request or you just get the consent page
+        if (url.toExternalForm().endsWith(".pdf")) {
+            addURLToDownload(url, getPrefix(index), "", this.url.toExternalForm(), cookies);
+        } else {
+            addURLToDownload(url, getPrefix(index));
+        }
     }
 
 }

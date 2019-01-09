@@ -20,7 +20,7 @@ import org.jsoup.HttpStatusException;
 
 import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
 import com.rarchives.ripme.utils.Utils;
-import com.rarchives.ripme.ripper.AbstractRipper;
+import static java.lang.Math.toIntExact;
 
 /**
  * Thread for downloading files.
@@ -68,6 +68,8 @@ class DownloadFileThread extends Thread {
      * Notifies observers upon completion/error/warn.
      */
     public void run() {
+        // First thing we make sure the file name doesn't have any illegal chars in it
+        saveAs = new File(saveAs.getParentFile().getAbsolutePath() + File.separator + Utils.sanitizeSaveAs(saveAs.getName()));
         long fileSize = 0;
         int bytesTotal = 0;
         int bytesDownloaded = 0;
@@ -219,11 +221,15 @@ class DownloadFileThread extends Thread {
                             String fileExt = saveAsSplit[saveAsSplit.length - 1];
                             // The max limit for filenames on Linux with Ext3/4 is 255 bytes, on windows it's 256 chars so rather than
                             // bother with code with both platforms we just cut the file name down to 254 chars
+                            logger.info(saveAs.getName().substring(0, 254 - fileExt.length()) + fileExt);
                             String filename = saveAs.getName().substring(0, 254 - fileExt.length()) + "." + fileExt;
                             // We can't just use the new file name as the saveAs because the file name doesn't include the
                             // users save path, so we get the user save path from the old saveAs
-                            saveAs = new File(saveAs.getParentFile().getAbsolutePath() + "/" + filename);
+                            saveAs = new File(saveAs.getParentFile().getAbsolutePath() + File.separator + filename);
                             fos = new FileOutputStream(saveAs);
+                        } else if (saveAs.getAbsolutePath().length() > 259 && Utils.isWindows()) {
+                            // This if is for when the file path has gone above 260 chars which windows does not allow
+                            fos = new FileOutputStream(Utils.shortenSaveAsWindows(saveAs.getParentFile().getPath(), saveAs.getName()));
                         }
                     }
                 }

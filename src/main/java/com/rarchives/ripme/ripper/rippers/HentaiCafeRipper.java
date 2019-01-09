@@ -44,7 +44,12 @@ public class HentaiCafeRipper extends AbstractHTMLRipper {
         public Document getFirstPage() throws IOException {
             // "url" is an instance field of the superclass
             Document tempDoc = Http.url(url).get();
-            return Http.url(tempDoc.select("div.last > p > a.x-btn").attr("href")).get();
+            String firstPageUrl = tempDoc.select("div.last > p > a.x-btn").attr("href");
+            // workaround for https://github.com/RipMeApp/ripme/issues/1083
+            if (firstPageUrl.contains("<br />")) {
+                firstPageUrl = firstPageUrl.replaceAll("<br />", "");
+            }
+            return Http.url(firstPageUrl).get();
         }
 
         @Override

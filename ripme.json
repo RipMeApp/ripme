@@ -1,7 +1,13 @@
 {
-    "latestVersion": "1.7.68",
-    "currentHash": "cb2707bf298245bb1f549515478ddd0b0e990a3158dec8fe31b65e99e6ec9e76",
     "changeList": [
+        "1.7.76: Fixed remember url history",
+        "1.7.75: Fix e-hentai ripper; added comixfap ripper; fixed writting urls to files on windows; Fixed update screen issues; Added support for hentaidude; Fixed erome ripper",
+        "1.7.74: Added support for hentai foundry stories; Fixed tubex6 ripper; Fixed instagram ripper",
+        "1.7.73: Tumblr tags are now downloaded in right order; Added xcartx ripper; Can now run command when rips complete",
+        "1.7.72: tumblr ripper now respects download.save_order; Tumblr ripper now can rip from liked pages",
+        "1.7.71: Fixed Erome ripper; Remove HexBinaryAdapter import remnant; fized photobucket watermark issue; add derpi ripper; added support for 4channel.org",
+        "1.7.70: Added arabic translation; Updater now works on java 10; Fixed mangadex ripper",
+        "1.7.69: Fixes TheChive bug so that it can now rip gifs; e621 ripper now rips all media types; Upgraded org.apache.httpcomponents to 4.3.6; Added ripper for Mangadex.org; Added ripper for various duckmovie frontends; reddit ripper no longer freezes when ripping certain links",
         "1.7.68: Added support for 55chan.org; Now limits file name length to 255 chars; fixed Tsumino ripper",
         "1.7.67: Added yuki.la ripper; Fixed xhamster ripper; Fixed instagram ripper; Added porncomix.one ripper; Fixed bug which caused large files to be download when running tests",
         "1.7.66: Added pl_PL translation; Ported various video rippers to AbstractSingleFileRipper; Erome now downloads both HD and SD video; Can now download embedded images from tumblr; Fixed 8muses folder naming; Added ripper for Tubex6.com",
@@ -240,5 +246,7 @@
         "1.0.4: Fixed spaces-in-directory bug",
         "1.0.3: Added VK.com ripper",
         "1.0.1: Added auto-update functionality"
-    ]
+    ],
+    "currentHash": "06fdc6290ea7d517baf91929dbb5789daa0177a01e7a37a7f5941910a25fdd71",
+    "latestVersion": "1.7.76"
 }

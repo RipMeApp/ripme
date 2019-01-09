@@ -1,12 +1,14 @@
 package com.rarchives.ripme.ui;
 
+import java.awt.Dimension;
 import java.io.*;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
+import javax.swing.JEditorPane;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
-import javax.xml.bind.annotation.adapters.HexBinaryAdapter;
+import javax.swing.JScrollPane;
 
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
@@ -20,7 +22,7 @@ import com.rarchives.ripme.utils.Utils;
 public class UpdateUtils {
 
     private static final Logger logger = Logger.getLogger(UpdateUtils.class);
-    private static final String DEFAULT_VERSION = "1.7.68";
+    private static final String DEFAULT_VERSION = "1.7.76";
     private static final String REPO_NAME = "ripmeapp/ripme";
     private static final String updateJsonURL = "https://raw.githubusercontent.com/" + REPO_NAME + "/master/ripme.json";
     private static final String mainFileName = "ripme.jar";
@@ -126,13 +128,15 @@ public class UpdateUtils {
         String latestVersion = ripmeJson.getString("latestVersion");
         if (UpdateUtils.isNewerVersion(latestVersion)) {
             logger.info("Found newer version: " + latestVersion);
-            int result = JOptionPane.showConfirmDialog(
-                    null,
-                    String.format("<html><font color=\"green\">New version (%s) is available!</font>"
-                            + "<br><br>Recent changes: %s"
-                            + "<br><br>Do you want to download and run the newest version?</html>", latestVersion, changeList.replaceAll("\n", "")),
-                    "RipMe Updater",
-                    JOptionPane.YES_NO_OPTION);
+            JEditorPane changeListPane = new JEditorPane("text/html", String.format(
+					"<html><font color=\"green\">New version (%s) is available!</font>" + "<br><br>Recent changes: %s"
+							+ "<br><br>Do you want to download and run the newest version?</html>",
+					latestVersion, changeList.replaceAll("\\n", "<br><br>")));
+			changeListPane.setEditable(false);
+			JScrollPane changeListScrollPane = new JScrollPane(changeListPane);
+			changeListScrollPane.setPreferredSize(new Dimension(300, 300));
+			int result = JOptionPane.showConfirmDialog(null, changeListScrollPane, "RipMe Updater",
+					JOptionPane.YES_NO_OPTION);
             if (result != JOptionPane.YES_OPTION) {
                 configUpdateLabel.setText("<html>Current Version: " + getThisJarVersion()
                         + "<br><font color=\"green\">Latest version: " + latestVersion + "</font></html>");
@@ -198,7 +202,7 @@ public class UpdateUtils {
     }
 
     // Code take from https://stackoverflow.com/a/30925550
-    private static String createSha256(File file)  {
+    public static String createSha256(File file)  {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
             InputStream fis = new FileInputStream(file);
@@ -210,8 +214,14 @@ public class UpdateUtils {
                     digest.update(buffer, 0, n);
                 }
             }
+            byte[] hash = digest.digest();
+            StringBuilder sb = new StringBuilder(2 * hash.length);
+            for (byte b : hash) {
+                sb.append("0123456789ABCDEF".charAt((b & 0xF0) >> 4));
+                sb.append("0123456789ABCDEF".charAt((b & 0x0F)));
+            }
             // As patch.py writes the hash in lowercase this must return the has in lowercase
-            return new HexBinaryAdapter().marshal(digest.digest()).toLowerCase();
+            return sb.toString().toLowerCase();
         } catch (NoSuchAlgorithmException e) {
             logger.error("Got error getting file hash " + e.getMessage());
         } catch (FileNotFoundException e) {

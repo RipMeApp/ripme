@@ -18,10 +18,6 @@ import com.rarchives.ripme.ui.UpdateUtils;
 import com.rarchives.ripme.utils.Http;
 import com.rarchives.ripme.utils.RipUtils;
 import com.rarchives.ripme.utils.Utils;
-import org.jsoup.Jsoup;
-
-import javax.swing.text.Document;
-import javax.swing.text.Element;
 
 public class RedditRipper extends AlbumRipper {
 
@@ -208,7 +204,6 @@ public class RedditRipper extends AlbumRipper {
                     largestHeight = Integer.parseInt(height);
                     baseURL = doc.select("MPD > Period > AdaptationSet > Representation[height=" + height + "]").select("BaseURL").text();
                 }
-                LOGGER.info("H " + e.attr("height") + " V " + e.attr("width"));
             }
             return new URL(vidURL + "/" + baseURL);
         } catch (IOException e) {
@@ -249,7 +244,11 @@ public class RedditRipper extends AlbumRipper {
             if (url.contains("v.redd.it")) {
                 String savePath = this.workingDir + File.separator;
                 savePath += id + "-" + url.split("/")[3] + title + ".mp4";
-                addURLToDownload(parseRedditVideoMPD(urls.get(0).toExternalForm()), new File(savePath));
+                URL urlToDownload = parseRedditVideoMPD(urls.get(0).toExternalForm());
+                if (urlToDownload != null) {
+                    LOGGER.info("url: " + urlToDownload + " file: " + savePath);
+                    addURLToDownload(urlToDownload, new File(savePath));
+                }
             }
             else {
                 addURLToDownload(urls.get(0), id + title, "", theUrl, null);

@@ -51,7 +51,7 @@ public abstract class AlbumRipper extends AbstractRipper {
      * Queues multiple URLs of single images to download from a single Album URL
      */
     public boolean addURLToDownload(URL url, File saveAs, String referrer, Map<String,String> cookies, Boolean getFileExtFromMIME) {
-        // Only download one file if this is a test.
+            // Only download one file if this is a test.
         if (super.isThisATest() &&
                 (itemsPending.size() > 0 || itemsCompleted.size() > 0 || itemsErrored.size() > 0)) {
             stop();
@@ -70,7 +70,7 @@ public abstract class AlbumRipper extends AbstractRipper {
             String urlFile = this.workingDir + File.separator + "urls.txt";
             try (FileWriter fw = new FileWriter(urlFile, true)) {
                 fw.write(url.toExternalForm());
-                fw.write("\n");
+                fw.write(System.lineSeparator());
                 itemsCompleted.put(url, new File(urlFile));
             } catch (IOException e) {
                 LOGGER.error("Error while writing to " + urlFile, e);
@@ -87,6 +87,7 @@ public abstract class AlbumRipper extends AbstractRipper {
             }
             threadPool.addThread(dft);
         }
+
         return true;
     }
 
