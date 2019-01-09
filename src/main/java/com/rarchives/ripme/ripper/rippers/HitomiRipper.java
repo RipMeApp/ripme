@@ -56,7 +56,6 @@ public class HitomiRipper extends AbstractHTMLRipper {
     public List<String> getURLsFromPage(Document doc) {
         List<String> result = new ArrayList<>();
         String json = doc.text().replaceAll("var galleryinfo =", "");
-        LOGGER.info(json);
         JSONArray json_data = new JSONArray(json);
         for (int i = 0; i < json_data.length(); i++) {
             result.add("https://ba.hitomi.la/galleries/" + galleryId + "/" + json_data.getJSONObject(i).getString("name"));
