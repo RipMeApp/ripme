@@ -58,7 +58,6 @@ public class ChanRipperTest extends RippersTest {
     public String getRandomThreadDesuarchive() {
         try {
             Document doc = Http.url(new URL("https://desuarchive.org/wsg/")).get();
-            System.out.println(doc);
             return doc.select("div.post_data > a").first().attr("href");
         } catch (IOException e) {
             e.printStackTrace();

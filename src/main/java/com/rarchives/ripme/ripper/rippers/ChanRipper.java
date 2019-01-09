@@ -111,7 +111,6 @@ public class ChanRipper extends AbstractHTMLRipper {
 
         String u = url.toExternalForm();
         if (u.contains("/thread/") || u.contains("/res/") || u.contains("yuki.la") || u.contains("55chan.org")) {
-            LOGGER.debug("U: " + u);
             p = Pattern.compile("^.*\\.[a-z]{1,3}/[a-zA-Z0-9]+/(thread|res)/([0-9]+)(\\.html|\\.php)?.*$");
             m = p.matcher(u);
             if (m.matches()) {
