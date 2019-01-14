@@ -872,9 +872,9 @@ public final class MainWindow implements Runnable, RipStatusHandler {
                 LOGGER.error("Error while getting selected path: ", e);
                 return;
             }
-            try {
-                BufferedReader br = new BufferedReader(new FileReader(chosenPath));
+            try (BufferedReader br = new BufferedReader(new FileReader(chosenPath))) {
                 for (String line = br.readLine(); line != null; line = br.readLine()) {
+                    line = line.trim();
                     if (line.startsWith("http")) {
                         MainWindow.addUrlToQueue(line);
                     } else {
