@@ -42,18 +42,18 @@ public class HqpornerRipperTest extends RippersTest {
 		}
 	}
 
-	//	public void testDifferentVideoHost() throws IOException {
-	//		URL myDaddyUrl = new URL("https://hqporner.com/hdporn/90598-gangbang_with_Kali_Roses.html");
-	//		HqpornerRipper myDaddyRipper = new HqpornerRipper(myDaddyUrl);
-	//		testRipper(myDaddyRipper);
-	//
-	//		URL flyFlvUrl = new URL(
-	//				"https://hqporner.com/hdporn/69862-bangbros_-_amy_reid_taking_off_a_tight_sexy_swimsuit.html");
-	//		HqpornerRipper flyFlvRipper = new HqpornerRipper(flyFlvUrl);
-	//		testRipper(flyFlvRipper);
-	//
-	//		URL unknownHostUrl = new URL("https://hqporner.com/hdporn/79528-Kayden_Kross_-_Serious_Masturbation.html"); // howq.cc
-	//		HqpornerRipper unknownHostRipper = new HqpornerRipper(unknownHostUrl);
-	//		testRipper(unknownHostRipper);
-	//	}
+	public void testDifferentVideoHost() throws IOException {
+		URL myDaddyUrl = new URL("https://hqporner.com/hdporn/90598-gangbang_with_Kali_Roses.html");
+		HqpornerRipper myDaddyRipper = new HqpornerRipper(myDaddyUrl);
+		testRipper(myDaddyRipper);
+
+		URL flyFlvUrl = new URL(
+				"https://hqporner.com/hdporn/69862-bangbros_-_amy_reid_taking_off_a_tight_sexy_swimsuit.html");
+		HqpornerRipper flyFlvRipper = new HqpornerRipper(flyFlvUrl);
+		testRipper(flyFlvRipper);
+
+		URL unknownHostUrl = new URL("https://hqporner.com/hdporn/79528-Kayden_Kross_-_Serious_Masturbation.html"); // howq.cc
+		HqpornerRipper unknownHostRipper = new HqpornerRipper(unknownHostUrl);
+		testRipper(unknownHostRipper);
+	}
 }
