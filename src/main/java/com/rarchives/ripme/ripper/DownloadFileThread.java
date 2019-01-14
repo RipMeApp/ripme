@@ -232,7 +232,7 @@ class DownloadFileThread extends Thread {
                 }
                 byte[] data = new byte[1024 * 256];
                 int bytesRead;
-                boolean shouldSkipFileDownload = huc.getContentLength() / 10000000 >= 10 && AbstractRipper.isThisATest();
+                boolean shouldSkipFileDownload = huc.getContentLength() / 1000000 >= 10 && AbstractRipper.isThisATest();
                 // If this is a test rip we skip large downloads
                 if (shouldSkipFileDownload) {
                     logger.debug("Not downloading whole file because it is over 10mb and this is a test");
