@@ -121,8 +121,13 @@ public class HqpornerRipper extends AbstractHTMLRipper {
 	}
 
 	@Override
-	protected DownloadThreadPool getThreadPool() {
+	public DownloadThreadPool getThreadPool() {
 		return hqpornerThreadPool;
+	}
+
+	@Override
+	public boolean useByteProgessBar() {
+		return true;
 	}
 
 	private class HqpornerDownloadThread extends Thread {
