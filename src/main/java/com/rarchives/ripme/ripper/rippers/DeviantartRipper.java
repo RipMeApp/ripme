@@ -65,6 +65,10 @@ public class DeviantartRipper extends AbstractJSONRipper {
         String u = url.toExternalForm();
         if (u.contains("/gallery/")) {
             return url;
+        } else if (u.contains("/favourites")) {
+            return url;
+        } else if (u.contains("/favorites")) {
+            return url;
         }
 
         if (!u.endsWith("/gallery/") && !u.endsWith("/gallery")) {
