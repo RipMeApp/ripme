@@ -29,7 +29,7 @@ public class TumblrRipper extends AlbumRipper {
 
     private static final String DOMAIN = "tumblr.com",
             HOST   = "tumblr",
-            IMAGE_PATTERN = "([^\\s]+(\\.(?i)(jpg|png|gif|bmp))$)";
+            IMAGE_PATTERN = "([^\\s]+(\\.(?i)(?:jpg|png|gif|bmp))$)";
 
     private enum ALBUM_TYPE {
         SUBDOMAIN,
@@ -262,9 +262,7 @@ public class TumblrRipper extends AlbumRipper {
                     try {
                         fileLocation = photo.getJSONObject("original_size").getString("url").replaceAll("http:", "https:");
                         qualM = qualP.matcher(fileLocation);
-                        if (qualM.matches()) {
-                            fileLocation = fileLocation.replaceFirst("_[0-9]+\\.(jpg|png|gif|bmp)$", "_1280." + qualM.group(1));
-                        }
+                        fileLocation = qualM.replaceFirst("_1280.$1");
                         fileURL = new URL(fileLocation);
 
                         m = p.matcher(fileURL.toString());
@@ -294,9 +292,7 @@ public class TumblrRipper extends AlbumRipper {
                         // Set maximum quality, tumblr doesn't go any further
                         // If the image is any smaller, it will still get the largest available size
                         qualM = qualP.matcher(imgSrc);
-                        if (qualM.matches()) {
-                            imgSrc = imgSrc.replaceFirst("_[0-9]+\\.(jpg|png|gif|bmp)$", "_1280." + qualM.group(1));
-                        }
+                        imgSrc = qualM.replaceFirst("_1280.$1");
                         downloadURL(new URL(imgSrc), date);
                     } catch (MalformedURLException e) {
                         LOGGER.error("[!] Error while getting embedded image at " + post, e);
