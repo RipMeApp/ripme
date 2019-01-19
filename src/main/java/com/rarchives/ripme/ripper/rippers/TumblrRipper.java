@@ -236,7 +236,11 @@ public class TumblrRipper extends AlbumRipper {
         Matcher m;
         p = Pattern.compile(IMAGE_PATTERN);
 
+        String fileLocation;
         URL fileURL;
+
+        Pattern qualP = Pattern.compile("_[0-9]+\\.(jpg|png|gif|bmp)$");
+        Matcher qualM;
 
         if (albumType == ALBUM_TYPE.LIKED) {
             posts = json.getJSONObject("response").getJSONArray("liked_posts");
@@ -256,7 +260,12 @@ public class TumblrRipper extends AlbumRipper {
                 for (int j = 0; j < photos.length(); j++) {
                     photo = photos.getJSONObject(j);
                     try {
-                        fileURL = new URL(photo.getJSONObject("original_size").getString("url").replaceAll("http:", "https:"));
+                        fileLocation = photo.getJSONObject("original_size").getString("url").replaceAll("http:", "https:");
+                        qualM = qualP.matcher(fileLocation);
+                        if (qualM.matches()) {
+                            fileLocation = fileLocation.replaceFirst("_[0-9]+\\.(jpg|png|gif|bmp)$", "_1280." + qualM.group(1));
+                        }
+                        fileURL = new URL(fileLocation);
 
                         m = p.matcher(fileURL.toString());
                         if (m.matches()) {
@@ -281,7 +290,14 @@ public class TumblrRipper extends AlbumRipper {
                 Document d = Jsoup.parse(post.getString("body"));
                 if (!d.select("img").attr("src").isEmpty()) {
                     try {
-                        downloadURL(new URL(d.select("img").attr("src")), date);
+                        String imgSrc = d.select("img").attr("src");
+                        // Set maximum quality, tumblr doesn't go any further
+                        // If the image is any smaller, it will still get the largest available size
+                        qualM = qualP.matcher(imgSrc);
+                        if (qualM.matches()) {
+                            imgSrc = imgSrc.replaceFirst("_[0-9]+\\.(jpg|png|gif|bmp)$", "_1280." + qualM.group(1));
+                        }
+                        downloadURL(new URL(imgSrc), date);
                     } catch (MalformedURLException e) {
                         LOGGER.error("[!] Error while getting embedded image at " + post, e);
                         return true;
