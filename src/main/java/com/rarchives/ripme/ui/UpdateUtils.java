@@ -259,38 +259,20 @@ public class UpdateUtils {
                 logger.info("Hash is good");
             }
         }
-        if (shouldLaunch) {
-            // Setup updater script
-            final String batchFile, script;
-            final String[] batchExec;
-            String os = System.getProperty("os.name").toLowerCase();
-            if (os.contains("win")) {
-                // Windows
-                batchFile = "update_ripme.bat";
-                String batchPath = new File(batchFile).getAbsolutePath();
-                script = "@echo off\r\n"
-                        + "timeout 1" + "\r\n"
-                        + "copy " + updateFileName + " " + mainFileName + "\r\n"
-                        + "del " + updateFileName + "\r\n"
-                        + "ripme.jar" + "\r\n"
-                        + "del " + batchPath + "\r\n";
-                batchExec = new String[]{batchPath};
 
-            } else {
-                // Mac / Linux
-                batchFile = "update_ripme.sh";
-                String batchPath = new File(batchFile).getAbsolutePath();
-                script = "#!/bin/sh\n"
-                        + "sleep 1" + "\n"
-                        + "cd " + new File(mainFileName).getAbsoluteFile().getParent() + "\n"
-                        + "cp -f " + updateFileName + " " + mainFileName + "\n"
-                        + "rm -f " + updateFileName + "\n"
-                        + "java -jar \"" + new File(mainFileName).getAbsolutePath() + "\" &\n"
-                        + "sleep 1" + "\n"
-                        + "rm -f " + batchPath + "\n";
-                batchExec = new String[]{"sh", batchPath};
+        if (System.getProperty("os.name").toLowerCase().contains("win")) {
+            // Windows
+            final String batchFile = "update_ripme.bat";
+            final String batchPath = new File(batchFile).getAbsolutePath();
+            String script = "@echo off\r\n"
+                            + "timeout 1\r\n"
+                            + "copy " + updateFileName + " " + mainFileName + "\r\n"
+                            + "del " + updateFileName + "\r\n";
+            if (shouldLaunch) {
+                script += mainFileName + "\r\n";
             }
-
+            script += "del " + batchPath + "\r\n";
+            final String[] batchExec = new String[]{batchPath};
             // Create updater script
             try (BufferedWriter bw = new BufferedWriter(new FileWriter(batchFile))) {
                 bw.write(script);
@@ -311,9 +293,17 @@ public class UpdateUtils {
             logger.info("Exiting older version, should execute update script (" + batchFile + ") during exit");
             System.exit(0);
         } else {
+            // Mac / Linux
+            // Modifying file and launching it: *nix distributions don't have any issues with modifying/deleting files
+            // while they are being run
             new File(mainFileName).delete();
             new File(updateFileName).renameTo(new File(mainFileName));
+            if (shouldLaunch) {
+                // No need to do it during shutdown: the file used will indeed be the new one
+                Runtime.getRuntime().exec("java -jar " + mainFileName);
+            }
+            logger.info("Update installed, newer version should be executed upon relaunch");
+            System.exit(0);
         }
     }
-
 }
