@@ -64,7 +64,7 @@ public class HentaidudeRipper extends AbstractSingleFileRipper {
 			result.add(url.toString());
 		}
 
-		//TODO add support for search  page.
+		//Can add support for search  page.
 		return result;
 	}
 
