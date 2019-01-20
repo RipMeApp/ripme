@@ -43,22 +43,27 @@ public class HqpornerRipperTest extends RippersTest {
 	}
 
 	public void testMyDaddyVideoHost() throws IOException {
-		URL myDaddyUrl = new URL("https://hqporner.com/hdporn/84636-pool_lesson_with_a_cheating_husband.html");
-		HqpornerRipper myDaddyRipper = new HqpornerRipper(myDaddyUrl);
-		testRipper(myDaddyRipper);
+		if (Utils.getConfigBoolean("test.run_flaky_tests", false)) {
+			URL myDaddyUrl = new URL("https://hqporner.com/hdporn/84636-pool_lesson_with_a_cheating_husband.html");
+			HqpornerRipper myDaddyRipper = new HqpornerRipper(myDaddyUrl);
+			testRipper(myDaddyRipper);
+		}
 	}
 
 	public void testFlyFlvVideoHost() throws IOException {
-		URL flyFlvUrl = new URL(
-				"https://hqporner.com/hdporn/69862-bangbros_-_amy_reid_taking_off_a_tight_sexy_swimsuit.html");
-		HqpornerRipper flyFlvRipper = new HqpornerRipper(flyFlvUrl);
-		testRipper(flyFlvRipper);
+		if (Utils.getConfigBoolean("test.run_flaky_tests", false)) {
+			URL flyFlvUrl = new URL(
+					"https://hqporner.com/hdporn/69862-bangbros_-_amy_reid_taking_off_a_tight_sexy_swimsuit.html");
+			HqpornerRipper flyFlvRipper = new HqpornerRipper(flyFlvUrl);
+			testRipper(flyFlvRipper);
+		}
 	}
 
 	public void testUnknownVideoHost() throws IOException {
-		URL unknownHostUrl = new URL("https://hqporner.com/hdporn/79528-Kayden_Kross_-_Serious_Masturbation.html"); // howq.cc
-		HqpornerRipper unknownHostRipper = new HqpornerRipper(unknownHostUrl);
-
-		testRipper(unknownHostRipper);
+		if (Utils.getConfigBoolean("test.run_flaky_tests", false)) {
+			URL unknownHostUrl = new URL("https://hqporner.com/hdporn/79528-Kayden_Kross_-_Serious_Masturbation.html"); // howq.cc
+			HqpornerRipper unknownHostRipper = new HqpornerRipper(unknownHostUrl);
+			testRipper(unknownHostRipper);
+		}
 	}
 }
