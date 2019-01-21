@@ -8,6 +8,7 @@ import java.util.regex.Pattern;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.json.JSONArray;
 import org.jsoup.nodes.Document;
 
 import com.rarchives.ripme.ripper.VideoRipper;
@@ -60,26 +61,24 @@ public class PornhubRipper extends VideoRipper {
         Pattern p = Pattern.compile("^.*flashvars_[0-9]+ = (.+});.*$", Pattern.DOTALL);
         Matcher m = p.matcher(html);
         if (m.matches()) {
-            String title = null, vidUrl = null;
+            String vidUrl = null;
             try {
                 JSONObject json = new JSONObject(m.group(1));
 
-                title = json.getString("video_title");
-                title = title.replaceAll("\\+", " ");
-
-                vidUrl = null;
-                for (String quality : new String[] {"1080", "720", "480", "240"}) {
-                    Pattern pv = Pattern.compile("\"format\":\"\",\"quality\":\"" + quality + "\",\"videoUrl\":\"(.*?)\"");
-                    Matcher mv = pv.matcher(html);
-                    if (mv.find()) {
-                        vidUrl = mv.group(1).replace("\\/", "/");
-                        break;
+                JSONArray mediaDef = (JSONArray) json.get("mediaDefinitions");
+                int bestQual = 0;
+                for (int i = 0; i < mediaDef.length(); i++) {
+                    JSONObject e = (JSONObject) mediaDef.get(i);
+                    int quality = Integer.parseInt((String)e.get("quality"));
+                    if (quality > bestQual) {
+                        bestQual = quality;
+                        vidUrl = (String)e.get("videoUrl");
                     }
                 }
                 if (vidUrl == null) {
                     throw new IOException("Unable to find encrypted video URL at " + this.url);
                 }
-                addURLToDownload(new URL(vidUrl), HOST + "_" + getGID(this.url));
+                addURLToDownload(new URL(vidUrl), HOST + "_" + bestQual + "p_" + getGID(this.url));
             } catch (JSONException e) {
                 LOGGER.error("Error while parsing JSON at " + url, e);
                 throw e;
@@ -94,3 +93,4 @@ public class PornhubRipper extends VideoRipper {
         waitForThreads();
     }
 }
+
