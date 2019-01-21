@@ -5,12 +5,15 @@ import java.net.URL;
 
 import com.rarchives.ripme.ripper.rippers.PornhubRipper;
 import com.rarchives.ripme.utils.Http;
+import com.rarchives.ripme.utils.Utils;
 import org.jsoup.nodes.Document;
 
 public class PornhubRipperTest extends RippersTest {
     public void testPornhubRip() throws IOException {
-        PornhubRipper ripper = new PornhubRipper(new URL("https://www.pornhub.com/album/15680522"));
-        testRipper(ripper);
+        if (Utils.getConfigBoolean("test.run_flaky_tests", false)) {
+            PornhubRipper ripper = new PornhubRipper(new URL("https://www.pornhub.com/album/15680522"));
+            testRipper(ripper);
+        }
     }
 
     public void testGetGID() throws IOException {
