@@ -13,7 +13,6 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
 public class MyhentaigalleryRipper extends AbstractHTMLRipper {
-    private static boolean isTag;
 
     public MyhentaigalleryRipper(URL url) throws IOException {
         super(url);
@@ -37,8 +36,8 @@ public class MyhentaigalleryRipper extends AbstractHTMLRipper {
             return m.group(1);
         }
 
-        throw new MalformedURLException("Expected myhentaicomics.com URL format: " +
-                "myhentaigallery.com/gallery/thumbnails/ID - got " + url + " instead");
+        throw new MalformedURLException("Expected myhentaicomics.com URL format: "
+                + "myhentaigallery.com/gallery/thumbnails/ID - got " + url + " instead");
     }
 
     @Override
@@ -54,7 +53,7 @@ public class MyhentaigalleryRipper extends AbstractHTMLRipper {
             String imageSource = el.attr("src");
             // We replace thumbs with resizes so we can the full sized images
             imageSource = imageSource.replace("thumbnail", "original");
-            result.add("https://" + getDomain() + imageSource);
+            result.add(imageSource);
         }
         return result;
     }
@@ -63,6 +62,5 @@ public class MyhentaigalleryRipper extends AbstractHTMLRipper {
     public void downloadURL(URL url, int index) {
         addURLToDownload(url, getPrefix(index));
     }
-
 
 }
