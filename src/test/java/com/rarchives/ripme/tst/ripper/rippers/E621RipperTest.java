@@ -10,4 +10,26 @@ public class E621RipperTest extends RippersTest {
         E621Ripper ripper = new E621Ripper(new URL("https://e621.net/post/index/1/beach"));
         testRipper(ripper);
     }
+
+    public void testFlashOrWebm() throws IOException {
+        E621Ripper ripper = new E621Ripper(new URL("https://e621.net/post/index/1/gif"));
+        testRipper(ripper);
+    }
+
+    public void testGetNextPage() throws IOException {
+        E621Ripper nextPageRipper = new E621Ripper(new URL("https://e621.net/post/index/1/cosmicminerals"));
+        try {
+            nextPageRipper.getNextPage(nextPageRipper.getFirstPage());
+            assert (true);
+        } catch (IOException e) {
+            throw e;
+        }
+
+        E621Ripper noNextPageRipper = new E621Ripper(new URL("https://e621.net/post/index/1/cosmicminerals"));
+        try {
+            noNextPageRipper.getNextPage(noNextPageRipper.getFirstPage());
+        } catch (IOException e) {
+            assertEquals(e.getMessage(), "No more pages.");
+        }
+    }
 }
