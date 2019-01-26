@@ -10,7 +10,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.rarchives.ripme.ripper.AbstractSingleFileRipper;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import com.rarchives.ripme.utils.Http;
@@ -73,12 +77,14 @@ public class GfycatRipper extends AbstractSingleFileRipper {
     @Override
     public List<String> getURLsFromPage(Document doc) {
         List<String> result = new ArrayList<>();
-        Elements videos = doc.select("source");
-        String vidUrl = videos.first().attr("src");
-        if (vidUrl.startsWith("//")) {
-            vidUrl = "http:" + vidUrl;
+        Elements videos = doc.select("script");
+        for (Element el : videos) {
+            String json = el.html();
+            if (json.startsWith("{")) {
+                JSONObject page = new JSONObject(json);
+                result.add(page.getJSONObject("video").getString("contentUrl"));
+            }
         }
-        result.add(vidUrl);
         return result;
     }
 
@@ -95,14 +101,14 @@ public class GfycatRipper extends AbstractSingleFileRipper {
         url = new URL(url.toExternalForm().replace("/gifs/detail", ""));
 
         Document doc = Http.url(url).get();
-        Elements videos = doc.select("source");
-        if (videos.isEmpty()) {
-            throw new IOException("Could not find source at " + url);
+        Elements videos = doc.select("script");
+        for (Element el : videos) {
+            String json = el.html();
+            if (json.startsWith("{")) {
+                JSONObject page = new JSONObject(json);
+                return page.getJSONObject("video").getString("contentUrl");
+            }
         }
-        String vidUrl = videos.first().attr("src");
-        if (vidUrl.startsWith("//")) {
-            vidUrl = "http:" + vidUrl;
-        }
-        return vidUrl;
+        throw new IOException();
     }
 }
