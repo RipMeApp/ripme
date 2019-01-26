@@ -101,14 +101,14 @@ public class GfycatRipper extends AbstractSingleFileRipper {
         url = new URL(url.toExternalForm().replace("/gifs/detail", ""));
 
         Document doc = Http.url(url).get();
-        Elements videos = doc.select("source");
-        if (videos.isEmpty()) {
-            throw new IOException("Could not find source at " + url);
+        Elements videos = doc.select("script");
+        for (Element el : videos) {
+            String json = el.html();
+            if (json.startsWith("{")) {
+                JSONObject page = new JSONObject(json);
+                return page.getJSONObject("video").getString("contentUrl");
+            }
         }
-        String vidUrl = videos.first().attr("src");
-        if (vidUrl.startsWith("//")) {
-            vidUrl = "http:" + vidUrl;
-        }
-        return vidUrl;
+        throw new IOException();
     }
 }
