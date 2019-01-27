@@ -1,6 +1,5 @@
 package com.rarchives.ripme.ripper.rippers;
 
-
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -11,10 +10,11 @@ import java.util.regex.Pattern;
 
 import com.rarchives.ripme.ripper.AbstractSingleFileRipper;
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import com.rarchives.ripme.utils.Http;
-
+import com.rarchives.ripme.utils.Utils;
 
 public class GfycatRipper extends AbstractSingleFileRipper {
 
@@ -42,7 +42,7 @@ public class GfycatRipper extends AbstractSingleFileRipper {
     @Override
     public URL sanitizeURL(URL url) throws MalformedURLException {
         url = new URL(url.toExternalForm().replace("/gifs/detail", ""));
-        
+
         return url;
     }
 
@@ -64,17 +64,23 @@ public class GfycatRipper extends AbstractSingleFileRipper {
             return m.group(1);
         }
 
-        throw new MalformedURLException(
-                "Expected gfycat.com format:"
-                        + "gfycat.com/id"
-                        + " Got: " + url);
+        throw new MalformedURLException("Expected gfycat.com format:" + "gfycat.com/id" + " Got: " + url);
     }
 
     @Override
     public List<String> getURLsFromPage(Document doc) {
         List<String> result = new ArrayList<>();
-        Elements videos = doc.select("source");
+        Elements videos = doc.select("video source");
         String vidUrl = videos.first().attr("src");
+        // Check preference for mp4 over webm/gif.
+        if (Utils.getConfigBoolean("prefer.mp4", false)) {
+            for (Element e : videos) {
+                if (e.hasAttr("src") && e.attr("src").endsWith(".mp4")) {
+                    vidUrl = e.attr("src");
+                    break;
+                }
+            }
+        }
         if (vidUrl.startsWith("//")) {
             vidUrl = "http:" + vidUrl;
         }
@@ -84,22 +90,33 @@ public class GfycatRipper extends AbstractSingleFileRipper {
 
     /**
      * Helper method for retrieving video URLs.
-     * @param url URL to gfycat page
+     * 
+     * @param url
+     *            URL to gfycat page
      * @return URL to video
      * @throws IOException
      */
     public static String getVideoURL(URL url) throws IOException {
         LOGGER.info("Retrieving " + url.toExternalForm());
 
-        //Sanitize the URL first
+        // Sanitize the URL first
         url = new URL(url.toExternalForm().replace("/gifs/detail", ""));
 
         Document doc = Http.url(url).get();
-        Elements videos = doc.select("source");
+        Elements videos = doc.select("video source");
         if (videos.isEmpty()) {
             throw new IOException("Could not find source at " + url);
         }
         String vidUrl = videos.first().attr("src");
+        // Check preference for mp4 over webm/gif.
+        if (Utils.getConfigBoolean("prefer.mp4", false)) {
+            for (Element e : videos) {
+                if (e.hasAttr("src") && e.attr("src").endsWith(".mp4")) {
+                    vidUrl = e.attr("src");
+                    break;
+                }
+            }
+        }
         if (vidUrl.startsWith("//")) {
             vidUrl = "http:" + vidUrl;
         }
