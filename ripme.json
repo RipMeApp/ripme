@@ -1,6 +1,8 @@
 {
-    "currentHash": "34f326ec23f3c1ce8df1147c1d9660a1dd7b85074e79351c9295bd74ac8f127a",
+    "latestVersion": "1.7.78",
+    "currentHash": "957e7362f7f4a567883cc92368e5bb543c8a277c37f913b5752cee6ec43f611c",
     "changeList": [
+        "1.7.78: Fixed gfycat ripper; Fixed E621 ripper; Added support for new xhamster url format; Now supports furaffinty scraps",
         "1.7.77: Reduced log spam; HQporner now supports actress/category/studio/top links; Improved luscious ripper; Fixed Pornhub video ripper; Tumblr ripper now always downloads highest quality available",
         "1.7.76: Fixed remember url history",
         "1.7.75: Fix e-hentai ripper; added comixfap ripper; fixed writting urls to files on windows; Fixed update screen issues; Added support for hentaidude; Fixed erome ripper",
@@ -248,6 +250,5 @@
         "1.0.4: Fixed spaces-in-directory bug",
         "1.0.3: Added VK.com ripper",
         "1.0.1: Added auto-update functionality"
-    ],
-    "latestVersion": "1.7.77"
+    ]
 }
