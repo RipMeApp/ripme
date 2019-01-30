@@ -29,7 +29,7 @@ public abstract class AbstractRipper
                 implements RipperInterface, Runnable {
 
     protected static final Logger LOGGER = Logger.getLogger(AbstractRipper.class);
-    private final String URLHistoryFile = Utils.getURLHistoryFile();
+    private String URLHistoryFile = Utils.getURLHistoryFile();
 
     public static final String USER_AGENT =
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36";
@@ -77,6 +77,8 @@ public abstract class AbstractRipper
         FileWriter fw = null;
         try {
             File file = new File(URLHistoryFile);
+            LOGGER.debug("url_history.txt file: " + file.toString());
+
             if (!new File(Utils.getConfigDir()).exists()) {
                 LOGGER.error("Config dir doesn't exist");
                 LOGGER.info("Making config dir");
@@ -237,6 +239,19 @@ public abstract class AbstractRipper
      *      False if failed to download
      */
     protected boolean addURLToDownload(URL url, String prefix, String subdirectory, String referrer, Map<String, String> cookies, String fileName, String extension, Boolean getFileExtFromMIME) {
+      
+        // if a url_history.txt file exists in the default location, continue using that.
+        // otherwise, save the url_history.txt file to each individual directory
+        try {
+            if (!new File(Utils.getURLHistoryFile()).exists()) {
+                LOGGER.debug("Using " + workingDir.getCanonicalPath() + " for url_history.txt");
+                URLHistoryFile = workingDir.getCanonicalPath() + File.separator + "url_history.txt";
+            }
+        } catch (IOException e) {
+            LOGGER.debug("IOException. Will not process.");
+            return false;
+        }
+        
         // Don't re-add the url if it was downloaded in a previous rip
         if (Utils.getConfigBoolean("remember.url_history", true) && !isThisATest()) {
             if (hasDownloadedURL(url.toExternalForm())) {
