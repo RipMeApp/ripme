@@ -1,5 +1,6 @@
 package com.rarchives.ripme.ripper.rippers;
 
+
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
