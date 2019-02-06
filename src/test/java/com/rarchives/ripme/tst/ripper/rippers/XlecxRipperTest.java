@@ -7,7 +7,7 @@ import com.rarchives.ripme.ripper.rippers.XlecxRipper;
 
 public class XlecxRipperTest extends RippersTest {
     public void testAlbum() throws IOException {
-        XlecxRipper ripper = new XlecxRipper(new URL("http://xlecx.com/4937-tokimeki-nioi.html"));
+        XlecxRipper ripper = new XlecxRipper(new URL("http://xlecx.com/4274-black-canary-ravished-prey.html"));
         testRipper(ripper);
     }
 }
