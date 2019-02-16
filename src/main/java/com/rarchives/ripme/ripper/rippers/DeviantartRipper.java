@@ -32,8 +32,6 @@ import org.jsoup.select.Elements;
  * 
  *         NOT using Deviantart API like the old JSON ripper because it is SLOW
  *         and somehow annoying to use.
- *
- *
  *         Things to consider: Using the API might be less work/maintenance later because APIs do not change as frequently as HTML source code...?
  * 
  * 
@@ -308,7 +306,7 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 			artist = m.group(1);
 		} else {
 			throw new MalformedURLException("Expected deviantart.com URL format: "
-					+ "www.deviantart.com/<ARTIST>/gallery/<NUMBERS>/<NAME>\nOR\nwww.deviantart.com/<ARTIST>/favourites/<NUMBERS>/<NAME> - got "
+					+ "www.deviantart.com/<ARTIST>/gallery/<NUMBERS>/<NAME>\nOR\nwww.deviantart.com/<ARTIST>/favourites/<NUMBERS>/<NAME>\\nOr simply the gallery or favorites of some artist - got "
 					+ url + " instead");
 		}
 
@@ -319,7 +317,7 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 			what = "favourites";
 		} else {
 			throw new MalformedURLException("Expected deviantart.com URL format: "
-					+ "www.deviantart.com/<ARTIST>/gallery/<NUMBERS>/<NAME>\nOR\nwww.deviantart.com/<ARTIST>/favourites/<NUMBERS>/<NAME> - got "
+					+ "www.deviantart.com/<ARTIST>/gallery/<NUMBERS>/<NAME>\nOR\nwww.deviantart.com/<ARTIST>/favourites/<NUMBERS>/<NAME>\nOr simply the gallery or favorites of some artist - got "
 					+ url + " instead");
 		}
 
@@ -524,6 +522,7 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 
 				addURLToDownload(new URL(parts[0]), "", "", "", new HashMap<String, String>(),
 						title + "." + tmpParts[tmpParts.length - 1]);
+				return;
 
 			} catch (IOException e) {
 				e.printStackTrace();
