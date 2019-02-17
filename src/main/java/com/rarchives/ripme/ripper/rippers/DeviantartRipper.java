@@ -31,8 +31,9 @@ import org.jsoup.select.Elements;
  * @author MrPlaygon
  * 
  *         NOT using Deviantart API like the old JSON ripper because it is SLOW
- *         and somehow annoying to use.
- *         Things to consider: Using the API might be less work/maintenance later because APIs do not change as frequently as HTML source code...?
+ *         and somehow annoying to use. Things to consider: Using the API might
+ *         be less work/maintenance later because APIs do not change as
+ *         frequently as HTML source code...?
  * 
  * 
  * 
@@ -75,6 +76,10 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 	private DownloadThreadPool deviantartThreadPool = new DownloadThreadPool("deviantart");
 	private ArrayList<String> names = new ArrayList<String>();
 
+	// Constants
+	private final String referer = "https://www.deviantart.com/";
+	private final String userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:65.0) Gecko/20100101 Firefox/65.0";
+
 	@Override
 	public DownloadThreadPool getThreadPool() {
 		return deviantartThreadPool;
@@ -97,8 +102,7 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 	@Override
 	protected Document getFirstPage() throws IOException {
 		login();
-		return Http.url(urlWithParams(this.offset)).cookies(getDACookie()).referrer("https://www.deviantart.com/")
-				.userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:65.0) Gecko/20100101 Firefox/65.0").get();
+		return Http.url(urlWithParams(this.offset)).cookies(getDACookie()).referrer(referer).userAgent(userAgent).get();
 	}
 
 	/**
@@ -119,9 +123,7 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 
 			// Load login page
 			Response res = Http.url("https://www.deviantart.com/users/login").connection().method(Method.GET)
-					.referrer("https://www.deviantart.com/")
-					.userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:65.0) Gecko/20100101 Firefox/65.0")
-					.execute();
+					.referrer(referer).userAgent(userAgent).execute();
 
 			// Find tokens
 			Document doc = res.parse();
@@ -142,14 +144,11 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 			Map<String, String> cookies = res.cookies();
 
 			// Log in using data. Handle redirect
-			res = Http.url("https://www.deviantart.com/users/login").connection()
-					.referrer("https://www.deviantart.com/")
-					.userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:65.0) Gecko/20100101 Firefox/65.0")
+			res = Http.url("https://www.deviantart.com/users/login").connection().referrer(referer).userAgent(userAgent)
 					.method(Method.POST).data(loginData).cookies(cookies).followRedirects(false).execute();
 			this.cookies = res.cookies();
 
-			res = Http.url(res.header("location")).connection().referrer("https://www.deviantart.com/")
-					.userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:65.0) Gecko/20100101 Firefox/65.0")
+			res = Http.url(res.header("location")).connection().referrer(referer).userAgent(userAgent)
 					.method(Method.GET).cookies(cookies).followRedirects(false).execute();
 
 			// Store cookies
@@ -195,9 +194,8 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 	@Override
 	public Document getNextPage(Document doc) throws IOException {
 		this.offset += 24;
-		Response re = Http.url(urlWithParams(this.offset)).cookies(getDACookie())
-				.referrer("https://www.deviantart.com/")
-				.userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:65.0) Gecko/20100101 Firefox/65.0").response();
+		Response re = Http.url(urlWithParams(this.offset)).cookies(getDACookie()).referrer(referer).userAgent(userAgent)
+				.response();
 		updateCookie(re.cookies());
 		Document docu = re.parse();
 		Elements messages = docu.getElementsByClass("message");
@@ -212,9 +210,7 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 			throw new IOException("No more pages");
 		}
 
-		return Http.url(urlWithParams(this.offset)).referrer("https://www.deviantart.com/")
-				.userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:65.0) Gecko/20100101 Firefox/65.0")
-				.cookies(getDACookie()).get();
+		return Http.url(urlWithParams(this.offset)).referrer(referer).userAgent(userAgent).cookies(getDACookie()).get();
 
 	}
 
@@ -260,10 +256,8 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 		System.out.println(
 				"------------------------------DAURL: " + url.toExternalForm() + "------------------------------");
 		try {
-			Response re = Http.url(urlWithParams(this.offset)).cookies(getDACookie())
-					.referrer("https://www.deviantart.com/")
-					.userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:65.0) Gecko/20100101 Firefox/65.0")
-					.response();
+			Response re = Http.url(urlWithParams(this.offset)).cookies(getDACookie()).referrer(referer)
+					.userAgent(userAgent).response();
 			updateCookie(re.cookies());
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -431,9 +425,8 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 					+ "------------------------------");
 			sendUpdate(STATUS.LOADING_RESOURCE, "Searching max. resolution for " + url);
 			try {
-				Response re = Http.url(url).connection().referrer("https://www.deviantart.com/")
-						.userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:65.0) Gecko/20100101 Firefox/65.0")
-						.cookies(getDACookie()).execute();
+				Response re = Http.url(url).connection().referrer(referer).userAgent(userAgent).cookies(getDACookie())
+						.execute();
 				Document doc = re.parse();
 
 				// Artwork Title
@@ -460,9 +453,8 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 							+ downloadButton.attr("href") + "------------------------------");
 
 					Response download = Http.url(downloadButton.attr("href")).connection().cookies(getDACookie())
-							.method(Method.GET).referrer("https://www.deviantart.com/")
-							.userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:65.0) Gecko/20100101 Firefox/65.0")
-							.ignoreContentType(true).followRedirects(true).execute();
+							.method(Method.GET).referrer(referer).userAgent(userAgent).ignoreContentType(true)
+							.followRedirects(true).execute();
 					URL location = download.url();
 
 					String[] filetypePart = download.header("Content-Disposition").split("\\.");
