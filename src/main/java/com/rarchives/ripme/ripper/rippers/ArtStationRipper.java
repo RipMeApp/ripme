@@ -12,6 +12,9 @@ import com.rarchives.ripme.ripper.AbstractJSONRipper;
 import com.rarchives.ripme.utils.Http;
 
 import org.json.JSONObject;
+import org.jsoup.Connection;
+import org.jsoup.Connection.Method;
+import org.jsoup.Connection.Response;
 
 public class ArtStationRipper extends AbstractJSONRipper {
     enum URL_TYPE {
@@ -67,7 +70,7 @@ public class ArtStationRipper extends AbstractJSONRipper {
 
         // No JSON found in the URL entered, can't rip
         throw new MalformedURLException(
-                "Expected URL to an ArtStation project or user profile - got " + url + " instead");
+                "Expected URL to an ArtStation 'project url' or 'user profile url' - got " + url + " instead");
     }
 
     @Override
@@ -181,9 +184,12 @@ public class ArtStationRipper extends AbstractJSONRipper {
         /**
          * Construct a new ParsedURL object.
          * 
-         * @param urlType URL_TYPE enum containing the URL type
-         * @param jsonURL String containing the JSON URL location
-         * @param urlID   String containing the ID of this URL
+         * @param urlType
+         *            URL_TYPE enum containing the URL type
+         * @param jsonURL
+         *            String containing the JSON URL location
+         * @param urlID
+         *            String containing the ID of this URL
          * 
          */
         ParsedURL(URL_TYPE urlType, String jsonURL, String urlID) {
@@ -226,7 +232,8 @@ public class ArtStationRipper extends AbstractJSONRipper {
     /**
      * Parses an ArtStation URL.
      * 
-     * @param url URL to an ArtStation user profile
+     * @param url
+     *            URL to an ArtStation user profile
      *            (https://www.artstation.com/username) or single project
      *            (https://www.artstation.com/artwork/projectid)
      * @return ParsedURL object containing URL type, JSON location and ID (stores
@@ -239,7 +246,25 @@ public class ArtStationRipper extends AbstractJSONRipper {
 
         // Load HTML Source of the specified URL
         try {
-            htmlSource = Http.url(url).get().html();
+            // htmlSource = Http.url(url).get().html();
+            Connection con = Http.url(url).method(Method.GET).connection();
+            con.ignoreHttpErrors(true);
+            Response res = con.execute();
+            int status = res.statusCode();
+
+            if (status / 100 == 2) {
+                htmlSource = res.parse().html();
+            } else if (status == 403 && url.toString().contains("artwork/")) {
+                // Catches cloudflare page. Error 403.
+                // Usually caused by artwork URLs( arstation.com/artwork/someProjectId)
+                String urlId = url.toString().substring(url.toString().lastIndexOf("/") + 1);
+                String jsonURL = "https://www.artstation.com/projects/" + urlId + ".json";
+                parsedURL = new ParsedURL(URL_TYPE.SINGLE_PROJECT, jsonURL, urlId);
+                return parsedURL;
+            } else {
+                LOGGER.error("Couldnt fetch URL: " + url);
+                throw new IOException("Error fetching URL: " + url + " Status Code: " + status);
+            }
         } catch (IOException e) {
             htmlSource = "";
         }
