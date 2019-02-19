@@ -1,7 +1,8 @@
 {
-    "latestVersion": "1.7.78",
-    "currentHash": "957e7362f7f4a567883cc92368e5bb543c8a277c37f913b5752cee6ec43f611c",
+    "latestVersion": "1.7.79",
+    "currentHash": "d7b9410db12d6a28b017ee2bbdd757a40cde6c4b1be70deeb7c4dc532a61a46e",
     "changeList": [
+        "1.7.79: Fixed artstation ripper; Fixed imagefap ripper folder naming; Can now filter reddit posts by votes; Added Ripper for Xlecx; Linux/Mac updater is now pure java",
         "1.7.78: Fixed gfycat ripper; Fixed E621 ripper; Added support for new xhamster url format; Now supports furaffinty scraps",
         "1.7.77: Reduced log spam; HQporner now supports actress/category/studio/top links; Improved luscious ripper; Fixed Pornhub video ripper; Tumblr ripper now always downloads highest quality available",
         "1.7.76: Fixed remember url history",
