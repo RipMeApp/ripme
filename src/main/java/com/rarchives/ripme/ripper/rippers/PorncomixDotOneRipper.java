@@ -51,7 +51,7 @@ public class PorncomixDotOneRipper extends AbstractHTMLRipper {
     public List<String> getURLsFromPage(Document doc) {
         List<String> result = new ArrayList<>();
         // We have 2 loops here to cover all the different album types
-        for (Element el : doc.select(".dgwt-jg-gallery > a")) {
+        for (Element el : doc.select(".dgwt-jg-item > a")) {
             result.add(el.attr("href"));
         }
         for (Element el : doc.select(".unite-gallery > img")) {
