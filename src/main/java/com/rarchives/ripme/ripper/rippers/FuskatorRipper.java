@@ -1,22 +1,29 @@
 package com.rarchives.ripme.ripper.rippers;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.jsoup.Connection.Method;
+import org.jsoup.Connection.Response;
 import org.jsoup.nodes.Document;
 
 import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 import com.rarchives.ripme.utils.Http;
-import com.rarchives.ripme.utils.Utils;
 
 public class FuskatorRipper extends AbstractHTMLRipper {
+
+    private String jsonurl = "https://fuskator.com/ajax/gal.aspx";
+    private String xAuthUrl = "https://fuskator.com/ajax/auth.aspx";
+    private String xAuthToken;
+    private Map<String, String> cookies;
 
     public FuskatorRipper(URL url) throws IOException {
         super(url);
@@ -26,6 +33,7 @@ public class FuskatorRipper extends AbstractHTMLRipper {
     public String getHost() {
         return "fuskator";
     }
+
     @Override
     public String getDomain() {
         return "fuskator.com";
@@ -36,6 +44,9 @@ public class FuskatorRipper extends AbstractHTMLRipper {
         String u = url.toExternalForm();
         if (u.contains("/thumbs/")) {
             u = u.replace("/thumbs/", "/full/");
+        }
+        if (u.contains("/expanded/")) {
+            u = u.replaceAll("/expanded/", "/full/");
         }
         return new URL(u);
     }
@@ -48,39 +59,54 @@ public class FuskatorRipper extends AbstractHTMLRipper {
             return m.group(1);
         }
         throw new MalformedURLException(
-                "Expected fuskator.com gallery formats: "
-                        + "fuskator.com/full/id/..."
-                        + " Got: " + url);
+                "Expected fuskator.com gallery formats: " + "fuskator.com/full/id/..." + " Got: " + url);
     }
 
     @Override
     public Document getFirstPage() throws IOException {
-        return Http.url(url).get();
+        // return Http.url(url).get();
+        Response res = Http.url(url).response();
+        cookies = res.cookies();
+        return res.parse();
     }
 
     @Override
     public List<String> getURLsFromPage(Document doc) {
         List<String> imageURLs = new ArrayList<>();
-        String html = doc.html();
-        // Get "baseUrl"
-        String baseUrl = Utils.between(html, "unescape('", "'").get(0);
+        JSONObject json;
+
         try {
-            baseUrl = URLDecoder.decode(baseUrl, "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            LOGGER.warn("Error while decoding " + baseUrl, e);
+            getXAuthToken();
+            if (xAuthToken == null || xAuthToken.isEmpty()) {
+                throw new IOException("No xAuthToken found.");
+            }
+
+            // All good. Fetch JSON data from jsonUrl.
+            json = Http.url(jsonurl).cookies(cookies).data("X-Auth", xAuthToken).data("hash", getGID(url))
+                    .data("_", Long.toString(System.currentTimeMillis())).getJSON();
+        } catch (IOException e) {
+            LOGGER.error("Couldnt fetch images.", e.getCause());
+            return imageURLs;
         }
-        if (baseUrl.startsWith("//")) {
-            baseUrl = "http:" + baseUrl;
+
+        JSONArray imageArray = json.getJSONArray("images");
+        for (int i = 0; i < imageArray.length(); i++) {
+            imageURLs.add("https:" + imageArray.getJSONObject(i).getString("imageUrl"));
         }
-        // Iterate over images
-        for (String filename : Utils.between(html, "+'", "'")) {
-            imageURLs.add(baseUrl + filename);
-        }
+
         return imageURLs;
     }
 
     @Override
     public void downloadURL(URL url, int index) {
         addURLToDownload(url, getPrefix(index));
+    }
+
+    private void getXAuthToken() throws IOException {
+        if (cookies == null || cookies.isEmpty()) {
+            throw new IOException("Null cookies or no cookies found.");
+        }
+        Response res = Http.url(xAuthUrl).cookies(cookies).method(Method.POST).response();
+        xAuthToken = res.body();
     }
 }
