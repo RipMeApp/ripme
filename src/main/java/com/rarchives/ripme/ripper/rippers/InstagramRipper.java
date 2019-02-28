@@ -192,6 +192,9 @@ public class InstagramRipper extends AbstractJSONRipper {
         Document p = resp.parse();
         // Get the query hash so we can download the next page
         qHash = getQHash(p);
+        if (qHash == null) {
+            throw new IOException("Unable to extract qhash from page");
+        }
         return getJSONFromPage(p);
     }
 
@@ -398,7 +401,6 @@ public class InstagramRipper extends AbstractJSONRipper {
     }
 
     private boolean pageHasImages(JSONObject json) {
-        LOGGER.info(json);
         int numberOfImages = json.getJSONObject("data").getJSONObject("user")
                 .getJSONObject("edge_owner_to_timeline_media").getJSONArray("edges").length();
         if (numberOfImages == 0) {
@@ -426,19 +428,28 @@ public class InstagramRipper extends AbstractJSONRipper {
             return new JSONObject(sb.toString());
 
         } catch (MalformedURLException e) {
-            LOGGER.info("Unable to get query_hash, " + url + " is a malformed URL");
+            LOGGER.info("Unable to get page, " + url + " is a malformed URL");
             return null;
         } catch (IOException e) {
-            LOGGER.info("Unable to get query_hash");
+            LOGGER.info("Unable to get page");
             LOGGER.info(e.getMessage());
             return null;
         }
     }
 
+    private String getQhashUrl(Document doc) {
+        for(Element el : doc.select("link[rel=preload]")) {
+            if (el.attr("href").contains("ProfilePageContainer")) {
+                return el.attr("href");
+            }
+        }
+        return null;
+    }
+
     private String getQHash(Document doc) {
-        String jsFileURL = "https://www.instagram.com" + doc.select("link[rel=preload]").attr("href");
+        String jsFileURL = "https://www.instagram.com" + getQhashUrl(doc);
         StringBuilder sb = new StringBuilder();
-        Document jsPage;
+        LOGGER.info(jsFileURL);
         try {
             // We can't use Jsoup here because it won't download a non-html file larger than a MB
             // even if you set maxBodySize to 0
@@ -454,7 +465,7 @@ public class InstagramRipper extends AbstractJSONRipper {
             LOGGER.info("Unable to get query_hash, " + jsFileURL + " is a malformed URL");
             return null;
         } catch (IOException e) {
-            LOGGER.info("Unable to get query_hash");
+            LOGGER.info("Unable to get query_hash from " + jsFileURL);
             LOGGER.info(e.getMessage());
             return null;
         }
