@@ -4,16 +4,18 @@ import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 import com.rarchives.ripme.ripper.DownloadThreadPool;
 import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
 import com.rarchives.ripme.utils.Http;
+import com.rarchives.ripme.utils.Utils;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -72,13 +74,14 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 	private int offset = 0;
 	private boolean usingCatPath = false;
 	private int downloadCount = 0;
-	private Map<String, String> cookies;
+	private Map<String, String> cookies = null;
 	private DownloadThreadPool deviantartThreadPool = new DownloadThreadPool("deviantart");
 	private ArrayList<String> names = new ArrayList<String>();
 
 	// Constants
 	private final String referer = "https://www.deviantart.com/";
 	private final String userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:65.0) Gecko/20100101 Firefox/65.0";
+	private final String utilsKey = "DeviantartLogin.cookies";
 
 	@Override
 	public DownloadThreadPool getThreadPool() {
@@ -116,10 +119,15 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 	 */
 	private void login() throws IOException {
 
-		File f = new File("DACookie.toDelete");
-		if (!f.exists()) {
-			f.createNewFile();
-			f.deleteOnExit();
+		try {
+			String dACookies = Utils.getConfigString(utilsKey, null);
+			this.cookies = dACookies != null ? deserialize(dACookies) : null;
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		}
+		if (this.cookies == null) {
+			LOGGER.info("Log in now");
+			// Do login now
 
 			// Load login page
 			Response res = Http.url("https://www.deviantart.com/users/login").connection().method(Method.GET)
@@ -130,8 +138,7 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 			Element form = doc.getElementById("login");
 			String token = form.select("input[name=\"validate_token\"]").first().attr("value");
 			String key = form.select("input[name=\"validate_key\"]").first().attr("value");
-			System.out.println(
-					"------------------------------" + token + "   &   " + key + "------------------------------");
+			LOGGER.info("Token: " + token + " & Key: " + key);
 
 			// Build Login Data
 			HashMap<String, String> loginData = new HashMap<String, String>();
@@ -156,36 +163,13 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 
 			// Apply agegate
 			this.cookies.put("agegate_state", "1");
+			// Write Cookie to file for other RipMe Instances or later use
+			Utils.setConfigString(utilsKey, serialize(new HashMap<String, String>(this.cookies)));
+			Utils.saveConfig(); // save now because of other instances that might work simultaneously
 
-			// Write Cookie to file for other RipMe Instances
-			try {
-				FileOutputStream fileOut = new FileOutputStream(f);
-				ObjectOutputStream out = new ObjectOutputStream(fileOut);
-				out.writeObject(this.cookies);
-				out.close();
-				fileOut.close();
-			} catch (IOException i) {
-				i.printStackTrace();
-			}
-
-		} else {
-
-			// When cookie file already exists (from another RipMe instance)
-			while (this.cookies == null) {
-				try {
-					Thread.sleep(2000);
-					FileInputStream fileIn = new FileInputStream(f);
-					ObjectInputStream in = new ObjectInputStream(fileIn);
-					this.cookies = (Map<String, String>) in.readObject();
-					in.close();
-					fileIn.close();
-				} catch (IOException | ClassNotFoundException | InterruptedException i) {
-					i.printStackTrace();
-				}
-			}
 		}
 
-		System.out.println("------------------------------" + this.cookies + "------------------------------");
+		LOGGER.info("DA Cookies: " + this.cookies);
 	}
 
 	/**
@@ -199,14 +183,12 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 		updateCookie(re.cookies());
 		Document docu = re.parse();
 		Elements messages = docu.getElementsByClass("message");
-		System.out.println("------------------------------Current Offset: " + this.offset
-				+ " - More Pages?------------------------------");
+		LOGGER.info("Current Offset: " + this.offset);
 
 		if (messages.size() > 0) {
 
 			// if message exists -> last page
-			System.out.println("------------------------------Messages amount: " + messages.size()
-					+ " - Next Page does not exists------------------------------");
+			LOGGER.info("Messages amount: " + messages.size() + " - Next Page does not exists");
 			throw new IOException("No more pages");
 		}
 
@@ -238,9 +220,8 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 
 		}
 
-		System.out.println("------------------------------Amount of Images on Page: " + result.size()
-				+ "------------------------------");
-		System.out.println("------------------------------" + page.location() + "------------------------------");
+		LOGGER.info("Amount of Images on Page: " + result.size());
+		LOGGER.info(page.location());
 
 		return result;
 	}
@@ -251,10 +232,8 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 	@Override
 	protected void downloadURL(URL url, int index) {
 		this.downloadCount += 1;
-		System.out.println("------------------------------Download URL Number " + this.downloadCount
-				+ "------------------------------");
-		System.out.println(
-				"------------------------------DAURL: " + url.toExternalForm() + "------------------------------");
+		LOGGER.info("Downloading URL Number " + this.downloadCount);
+		LOGGER.info("Deviant Art URL: " + url.toExternalForm());
 		try {
 			Response re = Http.url(urlWithParams(this.offset)).cookies(getDACookie()).referrer(referer)
 					.userAgent(userAgent).response();
@@ -326,8 +305,7 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 		} else if (artistM.matches()) {
 			albumname = artistM.group(1);
 		}
-		System.out.println("------------------------------Album Name: " + artist + "_" + what + "_" + albumname
-				+ "------------------------------");
+		LOGGER.info("Album Name: " + artist + "_" + what + "_" + albumname);
 
 		return artist + "_" + what + "_" + albumname;
 
@@ -372,15 +350,47 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 
 	private void updateCookie(Map<String, String> m) {
 
-		System.out.println("------------------------------Updating Cookies------------------------------");
-		System.out.println(
-				"------------------------------Old Cookies: " + this.cookies + " ------------------------------");
-		System.out.println("------------------------------New Cookies: " + m + " ------------------------------");
+		LOGGER.info("Updating Cookies");
+		LOGGER.info("Old Cookies: " + this.cookies + " ");
+		LOGGER.info("New Cookies: " + m + " ");
 		this.cookies.putAll(m);
 		this.cookies.put("agegate_state", "1");
-		System.out.println(
-				"------------------------------Merged Cookies: " + this.cookies + " ------------------------------");
+		LOGGER.info("Merged Cookies: " + this.cookies + " ");
 
+	}
+
+	/**
+	 * Serializes an Object and returns a String ready to store Used to store
+	 * cookies in the config file because the deviantart cookies contain all sort of
+	 * special characters like ; , = : and so on.
+	 * 
+	 * @param o Object to serialize
+	 * @return The serialized base64 encoded object
+	 * @throws IOException
+	 */
+	private String serialize(Serializable o) throws IOException {
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		ObjectOutputStream oos = new ObjectOutputStream(baos);
+		oos.writeObject(o);
+		oos.close();
+		return Base64.getEncoder().encodeToString(baos.toByteArray());
+	}
+
+	/**
+	 * Recreates the object from the base64 encoded String. Used for Cookies
+	 * 
+	 * @param s the base64 encoded string
+	 * @return the Cookie Map
+	 * @throws IOException
+	 * @throws ClassNotFoundException
+	 */
+	private Map<String, String> deserialize(String s) throws IOException, ClassNotFoundException {
+		byte[] data = Base64.getDecoder().decode(s);
+		ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(data));
+		HashMap<String, String> o = (HashMap<String, String>) ois.readObject(); // Unchecked cast here but should never
+																				// be something else
+		ois.close();
+		return o;
 	}
 
 	/**
@@ -420,9 +430,7 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 		 */
 		private void getFullSizeURL() {
 
-			System.out.println("------------------------------------------------------------");
-			System.out.println("------------------------------Searching max. Resolution for " + url
-					+ "------------------------------");
+			LOGGER.info("Searching max. Resolution for " + url);
 			sendUpdate(STATUS.LOADING_RESOURCE, "Searching max. resolution for " + url);
 			try {
 				Response re = Http.url(url).connection().referrer(referer).userAgent(userAgent).cookies(getDACookie())
@@ -449,8 +457,7 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 
 				// Download Button
 				if (downloadButton != null) {
-					System.out.println("------------------------------Download Button found: "
-							+ downloadButton.attr("href") + "------------------------------");
+					LOGGER.info("Download Button found: " + downloadButton.attr("href"));
 
 					Response download = Http.url(downloadButton.attr("href")).connection().cookies(getDACookie())
 							.method(Method.GET).referrer(referer).userAgent(userAgent).ignoreContentType(true)
@@ -459,9 +466,9 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 
 					String[] filetypePart = download.header("Content-Disposition").split("\\.");
 
-					System.out.println("------------------------------Found Image URL------------------------------");
-					System.out.println("------------------------------" + url + "------------------------------");
-					System.out.println("------------------------------" + location + "------------------------------");
+					LOGGER.info("Found Image URL");
+					LOGGER.info(url);
+					LOGGER.info(location);
 
 					addURLToDownload(location, "", "", "", new HashMap<String, String>(),
 							title + "." + filetypePart[filetypePart.length - 1]);
@@ -475,22 +482,19 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 
 				String source = "";
 				if (image == null) {
-					System.out.println(
-							"------------------------------!!!ERROR on " + url + " !!!------------------------------");
+					LOGGER.error("ERROR on " + url);
 
-					System.out.println("------------------------------!!!Cookies: " + getDACookie()
-							+ "    ------------------------------");
-					System.out.println(div);
-					sendUpdate(STATUS.DOWNLOAD_ERRORED, "!!!ERROR!!!\n" + url);
+					LOGGER.error("Cookies: " + getDACookie() + "    ");
+					LOGGER.error(div);
+					sendUpdate(STATUS.DOWNLOAD_ERRORED, "ERROR at\n" + url);
 					return;
 				}
 
 				// When it is text art (e.g. story) the only image is the avator (profile
 				// picture)
 				if (image.hasClass("avatar")) {
-					System.out.println(
-							"------------------------------No Image found, probably text art------------------------------");
-					System.out.println(url);
+					LOGGER.error("No Image found, probably text art");
+					LOGGER.error(url);
 					return;
 				}
 
@@ -500,17 +504,16 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 
 				// Image page uses scaled down version. Split at /v1/ to receive max size.
 				if (parts.length > 2) {
-					System.out.println(
-							"------------------------------Unexpected URL Format------------------------------");
-					sendUpdate(STATUS.DOWNLOAD_WARN, "Unexpected URL Format - Risky Try");
+					LOGGER.error("Unexpected URL Format");
+					sendUpdate(STATUS.DOWNLOAD_ERRORED, "Unexpected URL Format");
 					return;
 				}
 
 				String[] tmpParts = parts[0].split("\\.");
 
-				System.out.println("------------------------------Found Image URL------------------------------");
-				System.out.println("------------------------------" + url + "------------------------------");
-				System.out.println("------------------------------" + parts[0] + "------------------------------");
+				LOGGER.info("Found Image URL");
+				LOGGER.info(url);
+				LOGGER.info(parts[0]);
 
 				addURLToDownload(new URL(parts[0]), "", "", "", new HashMap<String, String>(),
 						title + "." + tmpParts[tmpParts.length - 1]);
@@ -520,8 +523,7 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 				e.printStackTrace();
 			}
 
-			System.out.println(
-					"------------------------------No Full Size URL for: " + url + "------------------------------");
+			LOGGER.error("No Full Size URL for: " + url);
 			sendUpdate(STATUS.DOWNLOAD_ERRORED, "No image found for " + url);
 
 			return;
