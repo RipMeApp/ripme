@@ -39,9 +39,6 @@ public class InstagramRipper extends AbstractJSONRipper {
     private String userID;
     private String rhx_gis = null;
     private String csrftoken;
-    // Run into a weird issue with Jsoup cutting some json pages in half, this is a work around
-    // see https://github.com/RipMeApp/ripme/issues/601
-    private String workAroundJsonString;
 
 
 
@@ -424,7 +421,6 @@ public class InstagramRipper extends AbstractJSONRipper {
 
             }
             in.close();
-            workAroundJsonString = sb.toString();
             return new JSONObject(sb.toString());
 
         } catch (MalformedURLException e) {
