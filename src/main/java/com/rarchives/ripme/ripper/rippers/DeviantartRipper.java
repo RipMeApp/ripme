@@ -15,13 +15,16 @@ import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.jsoup.Connection;
 import org.jsoup.Connection.Method;
 import org.jsoup.Connection.Response;
 import org.jsoup.nodes.Document;
@@ -35,7 +38,7 @@ import org.jsoup.select.Elements;
  *         NOT using Deviantart API like the old JSON ripper because it is SLOW
  *         and somehow annoying to use. Things to consider: Using the API might
  *         be less work/maintenance later because APIs do not change as
- *         frequently as HTML source code...?
+ *         frequently as HTML source code does...?
  * 
  * 
  * 
@@ -53,6 +56,16 @@ import org.jsoup.select.Elements;
  *         NSFW:
  * 
  *         https://www.deviantart.com/revpeng/gallery/67734353/Siren-Lee-Agent-of-S-I-R-E-N-S
+ * 
+ * 
+ *         Deactivated account:
+ * 
+ *         https://www.deviantart.com/gingerbreadpony
+ * 
+ *         Banned Account:
+ * 
+ *         https://www.deviantart.com/ghostofflossenburg
+ * 
  * 
  * 
  * 
@@ -74,9 +87,13 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 	private int offset = 0;
 	private boolean usingCatPath = false;
 	private int downloadCount = 0;
-	private Map<String, String> cookies = null;
+	private Map<String, String> cookies = new HashMap<String, String>();
 	private DownloadThreadPool deviantartThreadPool = new DownloadThreadPool("deviantart");
 	private ArrayList<String> names = new ArrayList<String>();
+
+	List<String> allowedCookies = Arrays.asList("agegate_state", "userinfo", "auth", "auth_secure");
+
+	private Connection conn = null;
 
 	// Constants
 	private final String referer = "https://www.deviantart.com/";
@@ -104,8 +121,29 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 
 	@Override
 	protected Document getFirstPage() throws IOException {
+		if (isDeactivated()) {
+			throw new IOException("Account Deactivated");
+		}
 		login();
-		return Http.url(urlWithParams(this.offset)).cookies(getDACookie()).referrer(referer).userAgent(userAgent).get();
+
+		// Saving connection to reuse later for following pages.
+		this.conn = Http.url(urlWithParams(this.offset)).cookies(getDACookie()).referrer(this.referer)
+				.userAgent(this.userAgent).connection();
+
+		return this.conn.get();
+	}
+
+	/**
+	 * Checks if the URL refers to a deactivated account using the HTTP status Codes
+	 * 
+	 * @return true when the account is good
+	 * @throws IOException when the account is deactivated
+	 */
+	private boolean isDeactivated() throws IOException {
+		Response res = Http.url(this.url).connection().followRedirects(true).referrer(this.referer)
+				.userAgent(this.userAgent).execute();
+		return res.statusCode() != 200 ? true : false;
+
 	}
 
 	/**
@@ -121,17 +159,19 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 
 		try {
 			String dACookies = Utils.getConfigString(utilsKey, null);
-			this.cookies = dACookies != null ? deserialize(dACookies) : null;
+			updateCookie(dACookies != null ? deserialize(dACookies) : null);
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
 		}
-		if (this.cookies == null) {
-			LOGGER.info("Log in now");
+		if (getDACookie() == null || !checkLogin()) {
+			LOGGER.info("Do Login now");
 			// Do login now
 
 			// Load login page
 			Response res = Http.url("https://www.deviantart.com/users/login").connection().method(Method.GET)
 					.referrer(referer).userAgent(userAgent).execute();
+
+			updateCookie(res.cookies());
 
 			// Find tokens
 			Document doc = res.parse();
@@ -143,8 +183,8 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 			// Build Login Data
 			HashMap<String, String> loginData = new HashMap<String, String>();
 			loginData.put("challenge", "");
-			loginData.put("username", username);
-			loginData.put("password", password);
+			loginData.put("username", this.username);
+			loginData.put("password", this.password);
 			loginData.put("remember_me", "1");
 			loginData.put("validate_token", token);
 			loginData.put("validate_key", key);
@@ -153,7 +193,7 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 			// Log in using data. Handle redirect
 			res = Http.url("https://www.deviantart.com/users/login").connection().referrer(referer).userAgent(userAgent)
 					.method(Method.POST).data(loginData).cookies(cookies).followRedirects(false).execute();
-			this.cookies = res.cookies();
+			updateCookie(res.cookies());
 
 			res = Http.url(res.header("location")).connection().referrer(referer).userAgent(userAgent)
 					.method(Method.GET).cookies(cookies).followRedirects(false).execute();
@@ -161,15 +201,15 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 			// Store cookies
 			updateCookie(res.cookies());
 
-			// Apply agegate
-			this.cookies.put("agegate_state", "1");
 			// Write Cookie to file for other RipMe Instances or later use
-			Utils.setConfigString(utilsKey, serialize(new HashMap<String, String>(this.cookies)));
+			Utils.setConfigString(utilsKey, serialize(new HashMap<String, String>(getDACookie())));
 			Utils.saveConfig(); // save now because of other instances that might work simultaneously
 
+		}else {
+			LOGGER.info("No new Login needed");
 		}
 
-		LOGGER.info("DA Cookies: " + this.cookies);
+		LOGGER.info("DA Cookies: " + getDACookie());
 	}
 
 	/**
@@ -178,8 +218,10 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 	@Override
 	public Document getNextPage(Document doc) throws IOException {
 		this.offset += 24;
-		Response re = Http.url(urlWithParams(this.offset)).cookies(getDACookie()).referrer(referer).userAgent(userAgent)
-				.response();
+		this.conn.url(urlWithParams(this.offset)).cookies(getDACookie());
+		Response re = this.conn.execute();
+//		Response re = Http.url(urlWithParams(this.offset)).cookies(getDACookie()).referrer(referer).userAgent(userAgent)
+//				.response();
 		updateCookie(re.cookies());
 		Document docu = re.parse();
 		Elements messages = docu.getElementsByClass("message");
@@ -348,15 +390,36 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 		return this.cookies;
 	}
 
+	/**
+	 * Updates cookies
+	 * @param m new Cookies
+	 */
 	private void updateCookie(Map<String, String> m) {
 
+		Iterator<String> iter = m.keySet().iterator();
+		while (iter.hasNext()) {
+			String current = iter.next();
+			if (!this.allowedCookies.contains(current)) {
+				//m.remove(current);
+				iter.remove();
+			}
+		}
+
 		LOGGER.info("Updating Cookies");
-		LOGGER.info("Old Cookies: " + this.cookies + " ");
+		LOGGER.info("Old Cookies: " + getDACookie() + " ");
 		LOGGER.info("New Cookies: " + m + " ");
 		this.cookies.putAll(m);
 		this.cookies.put("agegate_state", "1");
-		LOGGER.info("Merged Cookies: " + this.cookies + " ");
+		LOGGER.info("Merged Cookies: " + getDACookie() + " ");
 
+		try {
+			Utils.setConfigString(utilsKey, serialize(new HashMap<String, String>(getDACookie())));
+			Utils.saveConfig();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		
 	}
 
 	/**
@@ -379,7 +442,7 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 	/**
 	 * Recreates the object from the base64 encoded String. Used for Cookies
 	 * 
-	 * @param s the base64 encoded string
+	 * @param s the Base64 encoded string
 	 * @return the Cookie Map
 	 * @throws IOException
 	 * @throws ClassNotFoundException
@@ -391,6 +454,41 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 																				// be something else
 		ois.close();
 		return o;
+	}
+
+	/**
+	 * Checks if the current cookies are still valid/usable. Also checks if agegate
+	 * is given.
+	 * 
+	 * @return True when all is good.
+	 */
+	private boolean checkLogin() {
+		if (!getDACookie().containsKey("agegate_state")) {
+			LOGGER.info("No agegate key");
+			return false;
+		} else if (!getDACookie().get("agegate_state").equals("1")) {
+			LOGGER.info("Wrong agegate value");
+			return false;
+		}
+
+		try {
+			LOGGER.info("Login with Cookies: " + getDACookie());
+			Response res = Http.url("https://www.deviantart.com/users/login").connection().followRedirects(true)
+					.cookies(getDACookie()).referrer(this.referer).userAgent(this.userAgent).execute();
+			if (!res.url().toExternalForm().equals("https://www.deviantart.com/users/login")) {
+				LOGGER.info("Cookies are valid");
+				LOGGER.info(res.url());
+				return true;
+			} else {
+				LOGGER.info("Cookies invalid. Wrong URL: " + res.url());
+				LOGGER.info(res.statusCode());
+				LOGGER.info(res.parse());
+				return false;
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+			return false;
+		}
 	}
 
 	/**
