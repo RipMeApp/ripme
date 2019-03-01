@@ -157,6 +157,8 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 	 */
 	private void login() throws IOException {
 
+		String customUsername = Utils.getConfigString("DeviantartCustomLoginUsername", this.username);
+		String customPassword = Utils.getConfigString("DeviantartCustomLoginPassword", this.password);
 		try {
 			String dACookies = Utils.getConfigString(utilsKey, null);
 			updateCookie(dACookies != null ? deserialize(dACookies) : null);
@@ -183,8 +185,8 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 			// Build Login Data
 			HashMap<String, String> loginData = new HashMap<String, String>();
 			loginData.put("challenge", "");
-			loginData.put("username", this.username);
-			loginData.put("password", this.password);
+			loginData.put("username", customUsername);
+			loginData.put("password", customPassword);
 			loginData.put("remember_me", "1");
 			loginData.put("validate_token", token);
 			loginData.put("validate_key", key);
