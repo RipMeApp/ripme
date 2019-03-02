@@ -439,6 +439,11 @@ public class InstagramRipper extends AbstractJSONRipper {
                 return el.attr("href");
             }
         }
+        for(Element el : doc.select("link[rel=preload]")) {
+            if (el.attr("href").contains("metro")) {
+                return el.attr("href");
+            }
+        }
         return null;
     }
 
@@ -475,6 +480,12 @@ public class InstagramRipper extends AbstractJSONRipper {
                 m = jsP.matcher(sb.toString());
                 if (m.find()) {
                     return m.group(1);
+                } else {
+                    jsP = Pattern.compile(",u=.([a-zA-Z0-9]+).");
+                    m = jsP.matcher(sb.toString());
+                    if (m.find()) {
+                        return m.group(1);
+                    }
                 }
             }
 
@@ -484,6 +495,7 @@ public class InstagramRipper extends AbstractJSONRipper {
             if (m.find()) {
                 return m.group(1);
             }
+
         }
         LOGGER.error("Could not find query_hash on " + jsFileURL);
         return null;
