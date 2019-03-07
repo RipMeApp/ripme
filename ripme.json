@@ -2,7 +2,7 @@
     "currentHash": "02e39b3af65329f7dc450abbdc82ff2271e0095f60ec6414d9204bc0934d37da",
     "latestVersion": "1.7.80",
     "changeList": [
-        "1.7.80:  Fixed porncomix.one ripper; Fixed instagram ripper; Fixed Fuskator ripper; Fixed handling of urls with spaces in them",
+        "1.7.80: Fixed porncomix.one ripper; Fixed instagram ripper; Fixed Fuskator ripper; Fixed handling of urls with spaces in them",
         "1.7.79: Fixed artstation ripper; Fixed imagefap ripper folder naming; Can now filter reddit posts by votes; Added Ripper for Xlecx; Linux/Mac updater is now pure java",
         "1.7.78: Fixed gfycat ripper; Fixed E621 ripper; Added support for new xhamster url format; Now supports furaffinty scraps",
         "1.7.77: Reduced log spam; HQporner now supports actress/category/studio/top links; Improved luscious ripper; Fixed Pornhub video ripper; Tumblr ripper now always downloads highest quality available",
