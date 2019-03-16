@@ -431,7 +431,6 @@ public abstract class AbstractRipper
      * Notifies observers and updates state if all files have been ripped.
      */
     void checkIfComplete() {
-        LOGGER.debug("Checkifcomplete was called");
         if (observer == null) {
             LOGGER.debug("observer is null");
             return;
