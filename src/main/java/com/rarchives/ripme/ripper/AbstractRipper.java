@@ -237,6 +237,12 @@ public abstract class AbstractRipper
      *      False if failed to download
      */
     protected boolean addURLToDownload(URL url, String prefix, String subdirectory, String referrer, Map<String, String> cookies, String fileName, String extension, Boolean getFileExtFromMIME) {
+        // A common bug is rippers adding urls that are just "http:". This rejects said urls
+        if (url.toExternalForm().equals("http:") || url.toExternalForm().equals("https:")) {
+            LOGGER.info(url.toExternalForm() + " is a invalid url amd will be changed");
+            return false;
+
+        }
         // Make sure the url doesn't contain any spaces as that can cause a 400 error when requesting the file
         if (url.toExternalForm().contains(" ")) {
             // If for some reason the url with all spaces encoded as %20 is malformed print an error
