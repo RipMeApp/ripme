@@ -12,6 +12,9 @@ from hashlib import sha256
 # - commit all changes
 message = input('message: ')
 
+# Strip any spaces that might've been entered before the message
+message.lstrip()
+
 
 def get_ripme_json():
     with open('ripme.json') as dataFile:
