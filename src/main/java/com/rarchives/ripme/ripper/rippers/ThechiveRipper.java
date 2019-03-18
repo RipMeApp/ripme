@@ -82,8 +82,10 @@ public class ThechiveRipper extends AbstractHTMLRipper {
         Matcher matcher = p1.matcher(url.toExternalForm());
 
         if (matcher.matches()) {
+            // for url type: thechive.com/YEAR/MONTH/DAY/POSTTITLE/
             result = getUrlsFromThechive(doc);
         } else {
+            // for url type: i.thechive.com/username
             result = getUrlsFromIDotThechive();
         }
         return result;
@@ -94,7 +96,7 @@ public class ThechiveRipper extends AbstractHTMLRipper {
         Matcher matcher = p1.matcher(url.toExternalForm());
 
         if (matcher.matches()) {
-            // for pattern p1.
+            // url type thechive.com/YEAR/MONTH/DAY/POSTTITLE/ has a single page.
             return null;
         } else {
             if (nextSeed == null) {
@@ -102,7 +104,9 @@ public class ThechiveRipper extends AbstractHTMLRipper {
             }
         }
 
-        // check if next json has elements.
+        // Following try block checks if the next JSON object has images or not.
+        // This is done to avoid IOException in rip() method, caused when
+        // getURLsFromPage() returns empty list.
         JSONArray imgList;
         try {
             Response response = Http.url(jsonUrl).data("seed", nextSeed).data("queryType", "by-username")
@@ -115,8 +119,10 @@ public class ThechiveRipper extends AbstractHTMLRipper {
         }
 
         if (imgList != null && imgList.length() > 0) {
-            return new Document(url.toString()); // empty document.
+            // Pass empty document as it is of no use for thechive.com/userName url type.
+            return new Document(url.toString());
         } else {
+            // Return null as this is last page.
             return null;
         }
     }
@@ -127,6 +133,14 @@ public class ThechiveRipper extends AbstractHTMLRipper {
     }
 
     private List<String> getUrlsFromThechive(Document doc) {
+        /*
+         * The image urls are stored in a <script> tag of the document. This script
+         * contains a single array var by name CHIVE_GALLERY_ITEMS.
+         * 
+         * We grab all the <img> tags from the particular script, combine them in a
+         * string, parse it, and grab all the img/gif urls.
+         * 
+         */
         List<String> result = new ArrayList<>();
         Elements scripts = doc.getElementsByTag("script");
 
@@ -144,6 +158,7 @@ public class ThechiveRipper extends AbstractHTMLRipper {
             StringBuilder allImgTags = new StringBuilder();
             Matcher matcher = imagePattern.matcher(data);
             while (matcher.find()) {
+                // Unescape '\' from the img tags, which also unescape's img url as well.
                 allImgTags.append(matcher.group(0).replaceAll("\\\\", ""));
             }
 
@@ -152,23 +167,34 @@ public class ThechiveRipper extends AbstractHTMLRipper {
             Elements imgs = imgDoc.getElementsByTag("img");
             for (Element img : imgs) {
                 if (img.hasAttr("data-gifsrc")) {
-                    // result.add(img.attr("data-gifsrc"));
+                    // For gifs.
                     result.add(img.attr("data-gifsrc"));
                 } else {
-                    // result.add(img.attr("src"));
+                    // For jpeg images.
                     result.add(img.attr("src"));
                 }
             }
         }
 
-        // strip all GET parameters from the links( such as quality).
+        // strip all GET parameters from the links( such as quality, width, height as to
+        // get the original image.).
         result.replaceAll(s -> s.substring(0, s.indexOf("?")));
 
         return result;
     }
 
     private List<String> getUrlsFromIDotThechive() {
-        // check for pattern p2.
+        /*
+         * Image urls for i.thechive.com/someUserName as fetched via JSON request. Each
+         * 
+         * JSON request uses the cookies from previous response( which contains the next
+         * CSRF token).
+         * 
+         * JSON request parameters:
+         *  1. seed: activityId of the last url.
+         *  2. queryType: 'by-username' always.
+         *  3. username: username from the url itself.
+         */
         List<String> result = new ArrayList<>();
         try {
             Response response = Http.url(jsonUrl).data("seed", nextSeed).data("queryType", "by-username")
@@ -177,6 +203,7 @@ public class ThechiveRipper extends AbstractHTMLRipper {
             JSONObject json = new JSONObject(response.body());
             JSONArray imgList = json.getJSONArray("uploads");
             nextSeed = null; // if no more images, nextSeed stays null
+            
             for (int i = 0; i < imgList.length(); i++) {
                 JSONObject img = imgList.getJSONObject(i);
                 if (img.getString("mediaType").equals("gif")) {
@@ -186,6 +213,7 @@ public class ThechiveRipper extends AbstractHTMLRipper {
                 }
                 nextSeed = img.getString("activityId");
             }
+            
         } catch (IOException e) {
             LOGGER.error("Unable to fetch JSON data for url: " + url);
         } catch (JSONException e) {
