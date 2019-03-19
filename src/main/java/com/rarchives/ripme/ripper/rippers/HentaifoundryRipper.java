@@ -136,7 +136,7 @@ public class HentaifoundryRipper extends AbstractHTMLRipper {
         // this if is for ripping pdf stories
         if (url.toExternalForm().contains("/stories/")) {
             for (Element pdflink : doc.select("a.pdfLink")) {
-                LOGGER.info("grabbing " + "http://www.hentai-foundry.com" + pdflink.attr("href"));
+                LOGGER.info("grabbing " + "https://www.hentai-foundry.com" + pdflink.attr("href"));
                 imageURLs.add("https://www.hentai-foundry.com" + pdflink.attr("href"));
             }
             return imageURLs;
@@ -165,10 +165,10 @@ public class HentaifoundryRipper extends AbstractHTMLRipper {
             }
             // This is here for when the image is resized to a thumbnail because ripme doesn't report a screensize
             if (imagePage.select("div.boxbody > img.center").attr("src").contains("thumbs.")) {
-                imageURLs.add("http:" + imagePage.select("div.boxbody > img.center").attr("onclick").replace("this.src=", "").replace("'", "").replace("; $(#resize_message).hide();", ""));
+                imageURLs.add("https:" + imagePage.select("div.boxbody > img.center").attr("onclick").replace("this.src=", "").replace("'", "").replace("; $(#resize_message).hide();", ""));
             }
             else {
-                imageURLs.add("http:" + imagePage.select("div.boxbody > img.center").attr("src"));
+                imageURLs.add("https:" + imagePage.select("div.boxbody > img.center").attr("src"));
             }
         }
         return imageURLs;
