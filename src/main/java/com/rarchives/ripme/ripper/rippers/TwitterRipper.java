@@ -26,6 +26,7 @@ public class TwitterRipper extends AlbumRipper {
             HOST = "twitter";
 
     private static final int MAX_REQUESTS = Utils.getConfigInteger("twitter.max_requests", 10);
+    private static final boolean RIP_RETWEETS = Utils.getConfigBoolean("twitter.rip_retweets", true);
     private static final int WAIT_TIME = 2000;
 
     // Base 64 of consumer key : consumer secret
@@ -175,6 +176,11 @@ public class TwitterRipper extends AlbumRipper {
         int parsedCount = 0;
         if (!tweet.has("extended_entities")) {
             LOGGER.error("XXX Tweet doesn't have entitites");
+            return 0;
+        }
+        
+        if (!RIP_RETWEETS && tweet.has("retweeted_status")) {
+            LOGGER.info("Skipping a retweet as twitter.rip_retweet is set to false.");
             return 0;
         }
 
