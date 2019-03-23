@@ -1,7 +1,8 @@
 {
-    "currentHash": "02e39b3af65329f7dc450abbdc82ff2271e0095f60ec6414d9204bc0934d37da",
-    "latestVersion": "1.7.80",
+    "currentHash": "f31d8a6739b2c679da4c08d0b4fa0981741836b2426db1f729265d65916c9a5c",
+    "latestVersion": "1.7.81",
     "changeList": [
+        "1.7.81: Added support for artstn.co; Added new boolean config twitter.rip_retweet; Fixed MulemaxRipper; Fix minor bug that could cause a freeze at pending 1",
         "1.7.80: Fixed porncomix.one ripper; Fixed instagram ripper; Fixed Fuskator ripper; Fixed handling of urls with spaces in them",
         "1.7.79: Fixed artstation ripper; Fixed imagefap ripper folder naming; Can now filter reddit posts by votes; Added Ripper for Xlecx; Linux/Mac updater is now pure java",
         "1.7.78: Fixed gfycat ripper; Fixed E621 ripper; Added support for new xhamster url format; Now supports furaffinty scraps",
