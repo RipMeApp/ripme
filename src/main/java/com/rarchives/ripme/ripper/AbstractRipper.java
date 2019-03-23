@@ -218,6 +218,12 @@ public abstract class AbstractRipper
     protected abstract boolean addURLToDownload(URL url, File saveAs, String referrer, Map<String, String> cookies,
                                                 Boolean getFileExtFromMIME);
 
+
+    protected boolean addURLToDownload(URL url, Map<String, String> options) {
+        return addURLToDownload(url, options.getOrDefault("prefix", ""), options.getOrDefault("subdirectory", ""), options.getOrDefault("referrer", null),
+                null, options.getOrDefault("fileName", ""), options.getOrDefault("extension", null), false);
+    }
+
     /**
      * Queues image to be downloaded and saved.
      * @param url
