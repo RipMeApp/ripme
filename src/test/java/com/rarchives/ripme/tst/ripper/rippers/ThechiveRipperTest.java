@@ -56,10 +56,11 @@ public class ThechiveRipperTest extends RippersTest {
     /*
      * "i.thechive.com" test.
      */
-    public void testIDotThechive() throws IOException {
-        ThechiveRipper ripper = new ThechiveRipper(new URL("https://i.thechive.com/HHHoney"));
-        testRipper(ripper);
-    }
+    // Commented out because the link is 404ing TODO: Change the link to a working one and reenable the test
+//    public void testIDotThechive() throws IOException {
+//        ThechiveRipper ripper = new ThechiveRipper(new URL("https://i.thechive.com/HHHoney"));
+//        testRipper(ripper);
+//    }
 
     /*
      * 
