@@ -1,7 +1,7 @@
 {
-    "currentHash": "f31d8a6739b2c679da4c08d0b4fa0981741836b2426db1f729265d65916c9a5c",
-    "latestVersion": "1.7.81",
+    "latestVersion": "1.7.82",
     "changeList": [
+        "1.7.82: Hentai foundry now rips oldest first by default; 8muses ripper no longer makes unneeded requests; Added support for i.thechive.com",
         "1.7.81: Added support for artstn.co; Added new boolean config twitter.rip_retweet; Fixed MulemaxRipper; Fix minor bug that could cause a freeze at pending 1",
         "1.7.80: Fixed porncomix.one ripper; Fixed instagram ripper; Fixed Fuskator ripper; Fixed handling of urls with spaces in them",
         "1.7.79: Fixed artstation ripper; Fixed imagefap ripper folder naming; Can now filter reddit posts by votes; Added Ripper for Xlecx; Linux/Mac updater is now pure java",
@@ -253,5 +253,6 @@
         "1.0.4: Fixed spaces-in-directory bug",
         "1.0.3: Added VK.com ripper",
         "1.0.1: Added auto-update functionality"
-    ]
+    ],
+    "currentHash": "b4699081f431604f5ff37d95ed5da904f7f89389130741eb001545b6482056cd"
 }
