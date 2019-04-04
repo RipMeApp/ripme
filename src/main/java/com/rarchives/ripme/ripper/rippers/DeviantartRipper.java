@@ -207,7 +207,7 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 			Utils.setConfigString(utilsKey, serialize(new HashMap<String, String>(getDACookie())));
 			Utils.saveConfig(); // save now because of other instances that might work simultaneously
 
-		}else {
+		} else {
 			LOGGER.info("No new Login needed");
 		}
 
@@ -394,6 +394,7 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 
 	/**
 	 * Updates cookies
+	 * 
 	 * @param m new Cookies
 	 */
 	private void updateCookie(Map<String, String> m) {
@@ -402,7 +403,7 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 		while (iter.hasNext()) {
 			String current = iter.next();
 			if (!this.allowedCookies.contains(current)) {
-				//m.remove(current);
+				// m.remove(current);
 				iter.remove();
 			}
 		}
@@ -420,8 +421,7 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
-		
+
 	}
 
 	/**
@@ -564,13 +564,14 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 							.followRedirects(true).execute();
 					URL location = download.url();
 
+					System.out.println("----------------> " + url);
 					String[] filetypePart = download.header("Content-Disposition").split("\\.");
 
 					LOGGER.info("Found Image URL");
 					LOGGER.info(url);
 					LOGGER.info(location);
 
-					addURLToDownload(location, "", "", "", new HashMap<String, String>(),
+					addURLToDownload(location, "", "", "", getDACookie(),
 							title + "." + filetypePart[filetypePart.length - 1]);
 					return;
 				}
@@ -614,7 +615,14 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 				LOGGER.info("Found Image URL");
 				LOGGER.info(url);
 				LOGGER.info(parts[0]);
-
+				while (Http.url(parts[0]).connection().execute().statusCode() == 404) {
+					try {
+						LOGGER.error("404 on " + url);
+						Thread.sleep(1000);
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				}
 				addURLToDownload(new URL(parts[0]), "", "", "", new HashMap<String, String>(),
 						title + "." + tmpParts[tmpParts.length - 1]);
 				return;
