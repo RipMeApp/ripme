@@ -117,7 +117,9 @@ public class ChanRipper extends AbstractHTMLRipper {
     @Override
     public boolean canRip(URL url) {
         explicit_domains.addAll(bakedin_explicit_domains);
-        explicit_domains.addAll(user_give_explicit_domains);
+        if (user_give_explicit_domains != null) {
+            explicit_domains.addAll(user_give_explicit_domains);
+        }
         for (ChanSite _chanSite : explicit_domains) {
             if (_chanSite.domains.contains(url.getHost())) {
                 return true;
