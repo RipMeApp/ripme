@@ -236,7 +236,7 @@ public abstract class AbstractRipper
         // Bit of a hack but this lets us pass a bool using a map<string,String>
         boolean useMIME = options.getOrDefault("getFileExtFromMIME", "false").toLowerCase().equals("true");
         return addURLToDownload(url, options.getOrDefault("prefix", ""), options.getOrDefault("subdirectory", ""), options.getOrDefault("referrer", null),
-                cookies, options.getOrDefault("fileName", ""), options.getOrDefault("extension", null), useMIME);
+                cookies, options.getOrDefault("fileName", null), options.getOrDefault("extension", null), useMIME);
     }
 
 
