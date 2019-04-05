@@ -75,7 +75,7 @@ public class ErofusRipper extends AbstractHTMLRipper {
         int x = 1;
         if (pageContainsImages(page)) {
             LOGGER.info("Page contains images");
-            imageURLs.addAll(ripAlbum(page));
+            ripAlbum(page);
         } else {
             // This contains the thumbnails of all images on the page
             Elements pageImages = page.select("a.a-click");
@@ -100,21 +100,21 @@ public class ErofusRipper extends AbstractHTMLRipper {
         return imageURLs;
     }
 
-    public List<String> ripAlbum(Document page) {
+    public void ripAlbum(Document page) {
         int x = 1;
-        List<String> imageURLs = new ArrayList<>();
         Elements thumbs = page.select("a.a-click > div.thumbnail > img");
         for (Element thumb : thumbs) {
             String image = "https://www.erofus.com" + thumb.attr("src").replaceAll("thumb", "medium");
-            imageURLs.add(image);
             try {
-                addURLToDownload(new URL(image), getPrefix(x));
+                Map<String,String> opts = new HashMap<String, String>();
+                opts.put("subdirectory", page.title().replaceAll(" \\| Erofus - Sex and Porn Comics", "").replaceAll(" ", "_"));
+                opts.put("prefix", getPrefix(x));
+                addURLToDownload(new URL(image), opts);
             } catch (MalformedURLException e) {
                 LOGGER.info(e.getMessage());
             }
             x++;
         }
-        return imageURLs;
     }
 
     private boolean pageContainsImages(Document page) {
