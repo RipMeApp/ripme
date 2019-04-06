@@ -10,4 +10,9 @@ public class ErofusRipperTest extends RippersTest {
         ErofusRipper ripper = new ErofusRipper(new URL("https://www.erofus.com/comics/be-story-club-comics/a-kiss/issue-1"));
         testRipper(ripper);
     }
+
+    public void testGetGID() throws IOException {
+        ErofusRipper ripper = new ErofusRipper(new URL("https://www.erofus.com/comics/be-story-club-comics/a-kiss/issue-1"));
+        assertEquals("be-story-club-comics", ripper.getGID(new URL("https://www.erofus.com/comics/be-story-club-comics/a-kiss/issue-1")));
+    }
 }
