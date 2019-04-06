@@ -399,6 +399,10 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 	 */
 	private void updateCookie(Map<String, String> m) {
 
+		if (m == null) {
+			return;
+		}
+
 		Iterator<String> iter = m.keySet().iterator();
 		while (iter.hasNext()) {
 			String current = iter.next();
