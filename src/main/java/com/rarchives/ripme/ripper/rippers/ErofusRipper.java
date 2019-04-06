@@ -3,8 +3,6 @@ package com.rarchives.ripme.ripper.rippers;
 import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 import com.rarchives.ripme.ui.RipStatusMessage;
 import com.rarchives.ripme.utils.Http;
-import org.json.JSONObject;
-import org.jsoup.Connection;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -20,14 +18,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class ErofusRipper extends AbstractHTMLRipper {
-
-    private Document albumDoc = null;
-    private Map<String,String> cookies = new HashMap<>();
-    // TODO put up a wiki page on using maps to store titles
-    // the map for storing the title of each album when downloading sub albums
-    private Map<URL,String> urlTitles = new HashMap<>();
-
-    private Boolean rippingSubalbums = false;
 
     public ErofusRipper(URL url) throws IOException {
         super(url);
@@ -60,12 +50,7 @@ public class ErofusRipper extends AbstractHTMLRipper {
 
     @Override
     public Document getFirstPage() throws IOException {
-        if (albumDoc == null) {
-            Connection.Response resp = Http.url(url).response();
-            cookies.putAll(resp.cookies());
-            albumDoc = resp.parse();
-        }
-        return albumDoc;
+        return Http.url(url).get();
     }
 
     @Override
@@ -129,6 +114,6 @@ public class ErofusRipper extends AbstractHTMLRipper {
 
     @Override
     public void downloadURL(URL url, int index) {
-        addURLToDownload(url, getPrefix(index), "", this.url.toExternalForm(), cookies);
+        addURLToDownload(url, getPrefix(index));
     }
 }
