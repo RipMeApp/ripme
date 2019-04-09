@@ -10,6 +10,11 @@ public class FuskatorRipperTest extends RippersTest {
         FuskatorRipper ripper = new FuskatorRipper(new URL("https://fuskator.com/thumbs/hqt6pPXAf9z/Shaved-Blonde-Babe-Katerina-Ambre.html"));
         testRipper(ripper);
     }
+    
+    public void testUrlsWithTiled() throws IOException {
+        FuskatorRipper ripper = new FuskatorRipper(new URL("https://fuskator.com/thumbs/hsrzk~UIFmJ/Blonde-Babe-Destiny-Dixon-Playing-With-Black-Dildo.html"));
+        testRipper(ripper);
+    }
 }
 
 // Disabled because of https://github.com/RipMeApp/ripme/issues/393
