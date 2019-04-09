@@ -180,7 +180,12 @@ public class HentaifoundryRipper extends AbstractHTMLRipper {
         if (url.toExternalForm().endsWith(".pdf")) {
             addURLToDownload(url, getPrefix(index), "", this.url.toExternalForm(), cookies);
         } else {
-            addURLToDownload(url, getPrefix(index));
+//            If hentai-foundry.use_prefix is false the ripper will not add a numbered prefix to any images
+            if (Utils.getConfigBoolean("hentai-foundry.use_prefix", true)) {
+                addURLToDownload(url, getPrefix(index));
+            } else {
+                addURLToDownload(url, "");
+            }
         }
     }
 
