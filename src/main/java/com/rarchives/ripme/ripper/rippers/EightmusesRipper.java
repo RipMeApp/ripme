@@ -128,6 +128,9 @@ public class EightmusesRipper extends AbstractHTMLRipper {
                             addURLToDownload(imageUrl, getPrefixShort(x), getSubdir(page.select("title").text()), this.url.toExternalForm(), cookies, "", null, true);
                             // X is our page index
                             x++;
+                            if (isThisATest()) {
+                                break;
+                            }
                         }
                         return imageURLs;
                     } catch (MalformedURLException e) {
