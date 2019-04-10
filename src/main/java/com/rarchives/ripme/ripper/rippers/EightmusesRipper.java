@@ -119,7 +119,6 @@ public class EightmusesRipper extends AbstractHTMLRipper {
                     // Deobfustace the json data
                     String rawJson = deobfuscateJSON(page.select("script#ractive-public").html()
                             .replaceAll("&gt;", ">").replaceAll("&lt;", "<").replace("&amp;", "&"));
-                    LOGGER.info(rawJson);
                     JSONObject json = new JSONObject(rawJson);
                     try {
                         for (int i = 0; i != json.getJSONArray("pictures").length(); i++) {
@@ -128,6 +127,9 @@ public class EightmusesRipper extends AbstractHTMLRipper {
                             addURLToDownload(imageUrl, getPrefixShort(x), getSubdir(page.select("title").text()), this.url.toExternalForm(), cookies, "", null, true);
                             // X is our page index
                             x++;
+                            if (isThisATest()) {
+                                break;
+                            }
                         }
                         return imageURLs;
                     } catch (MalformedURLException e) {
