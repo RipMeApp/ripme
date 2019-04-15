@@ -100,7 +100,9 @@ public class ComicextraRipper extends AbstractHTMLRipper {
         if (urlType == UrlType.COMIC) {
             ++chapterIndex;
             imageIndex = 0; // Resetting the imagesIndex so that images prefix within each chapter starts from '001_'.
-            return Http.url(chaptersList.get(chapterIndex)).get();
+            if (chapterIndex < chaptersList.size()) {
+                return Http.url(chaptersList.get(chapterIndex)).get();
+            }
         }
 
         return super.getNextPage(doc);
