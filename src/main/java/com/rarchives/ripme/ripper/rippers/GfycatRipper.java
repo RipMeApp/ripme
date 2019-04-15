@@ -112,7 +112,6 @@ public class GfycatRipper extends AbstractHTMLRipper {
         List<String> result = new ArrayList<>();
         if (isProfile()) {
             JSONObject page = new JSONObject(stripHTMLTags(doc.html()));
-            LOGGER.info(page);
             JSONArray content = page.getJSONArray("gfycats");
             for (int i = 0; i < content.length(); i++) {
                 result.add(content.getJSONObject(i).getString("mp4Url"));
