@@ -2,6 +2,7 @@ package com.rarchives.ripme.ui;
 
 import java.awt.Dimension;
 import java.io.*;
+import java.net.URISyntaxException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
@@ -25,7 +26,18 @@ public class UpdateUtils {
     private static final String DEFAULT_VERSION = "1.7.82";
     private static final String REPO_NAME = "ripmeapp/ripme";
     private static final String updateJsonURL = "https://raw.githubusercontent.com/" + REPO_NAME + "/master/ripme.json";
-    private static final String mainFileName = "ripme.jar";
+    private static String mainFileName;
+
+    static {
+        try {
+            mainFileName = new File(UpdateUtils.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getAbsolutePath();
+        } catch (URISyntaxException e) {
+            mainFileName = "ripme.jar";
+            logger.error("Unable to get path of jar");
+            e.printStackTrace();
+        }
+    }
+
     private static final String updateFileName = "ripme.jar.update";
     private static JSONObject ripmeJson;
 
@@ -296,8 +308,10 @@ public class UpdateUtils {
             // Mac / Linux
             // Modifying file and launching it: *nix distributions don't have any issues with modifying/deleting files
             // while they are being run
-            new File(mainFileName).delete();
-            new File(updateFileName).renameTo(new File(mainFileName));
+            File mainFile = new File(mainFileName);
+            String mainFilePath = mainFile.getAbsolutePath();
+            mainFile.delete();
+            new File(updateFileName).renameTo(new File(mainFilePath));
             if (shouldLaunch) {
                 // No need to do it during shutdown: the file used will indeed be the new one
                 Runtime.getRuntime().exec("java -jar " + mainFileName);
