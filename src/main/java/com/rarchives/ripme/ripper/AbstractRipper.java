@@ -475,7 +475,8 @@ public abstract class AbstractRipper
         }
 
         if (!completed) {
-            completed = true;
+            // Set alreadyDownloadedUrls to 0 so it doesn't carry over between rips
+            alreadyDownloadedUrls = 0;
             LOGGER.info("   Rip completed!");
 
             RipStatusComplete rsc = new RipStatusComplete(workingDir, getCount());
