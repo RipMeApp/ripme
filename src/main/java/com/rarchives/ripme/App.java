@@ -1,13 +1,11 @@
 package com.rarchives.ripme;
 
 import java.awt.*;
-import java.io.File;
-import java.io.IOException;
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.FileNotFoundException;
+import java.io.*;
 
 import java.net.MalformedURLException;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
@@ -44,6 +42,33 @@ public class App {
     public static String stringToAppendToFoldername = null;
     private static final History HISTORY = new History();
 
+    public static class IPCThread implements Runnable {
+        public void run() {
+            String dataFromProcess;
+            String capitalizedSentence;
+            try {
+                ServerSocket welcomeSocket = new ServerSocket(6789);
+                while (true) {
+                    Socket connectionSocket = welcomeSocket.accept();
+                    BufferedReader inFromClient = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
+
+                    DataOutputStream outToClient = new DataOutputStream(connectionSocket.getOutputStream());
+                    dataFromProcess = inFromClient.readLine();
+                    System.out.println("Received: " + dataFromProcess);
+                    capitalizedSentence = dataFromProcess.toUpperCase() + 'n';
+                    outToClient.writeBytes(capitalizedSentence);
+                    rip(new URL(dataFromProcess));
+                    welcomeSocket.close();
+                }
+            } catch(IOException e) {
+                e.printStackTrace();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+    }
+
     /**
      * Where everything starts. Takes in, and tries to parse as many commandline arguments as possible.
      * Otherwise, it launches a GUI.
@@ -73,6 +98,11 @@ public class App {
         if (GraphicsEnvironment.isHeadless() || args.length > 0) {
             handleArguments(args);
         } else {
+            logger.info("Starting IPC thread...");
+            IPCThread ipcThread = new IPCThread();
+            Thread t = new Thread(ipcThread);
+            t.start();
+            logger.info("IPC thread started");
             if (SystemUtils.IS_OS_MAC_OSX) {
                 System.setProperty("apple.laf.useScreenMenuBar", "true");
                 System.setProperty("com.apple.mrj.application.apple.menu.about.name", "RipMe");
