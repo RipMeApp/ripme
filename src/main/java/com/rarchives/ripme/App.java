@@ -57,7 +57,7 @@ public class App {
                     System.out.println("Received: " + dataFromProcess);
                     capitalizedSentence = dataFromProcess.toUpperCase() + 'n';
                     outToClient.writeBytes(capitalizedSentence);
-                    rip(new URL(dataFromProcess));
+                    MainWindow.queueListModel.add(MainWindow.queueListModel.size(), dataFromProcess);
                     welcomeSocket.close();
                 }
             } catch(IOException e) {
