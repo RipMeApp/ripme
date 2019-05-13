@@ -14,31 +14,31 @@ import org.jsoup.nodes.Element;
 import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 import com.rarchives.ripme.utils.Http;
 
-public class PorncomixDotOneRipper extends AbstractHTMLRipper {
+public class HentaifoxRipper extends AbstractHTMLRipper {
 
-    public PorncomixDotOneRipper(URL url) throws IOException {
+    public HentaifoxRipper(URL url) throws IOException {
         super(url);
     }
 
     @Override
     public String getHost() {
-        return "porncomix";
+        return "hentaifox";
     }
 
     @Override
     public String getDomain() {
-        return "porncomix.one";
+        return "hentaifox.com";
     }
 
     @Override
     public String getGID(URL url) throws MalformedURLException {
-        Pattern p = Pattern.compile("https?://www.porncomix.one/gallery/([a-zA-Z0-9_\\-]*)/?$");
+        Pattern p = Pattern.compile("https://hentaifox.com/gallery/([\\d]+)/?");
         Matcher m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             return m.group(1);
         }
-        throw new MalformedURLException("Expected proncomix URL format: " +
-                "porncomix.one/gallery/comic - got " + url + " instead");
+        throw new MalformedURLException("Expected hentaifox URL format: " +
+                "https://hentaifox.com/gallery/ID - got " + url + " instead");
     }
 
     @Override
@@ -49,16 +49,26 @@ public class PorncomixDotOneRipper extends AbstractHTMLRipper {
 
     @Override
     public List<String> getURLsFromPage(Document doc) {
+        LOGGER.info(doc);
         List<String> result = new ArrayList<>();
-        // We have 2 loops here to cover all the different album types
-        for (Element el : doc.select(".dgwt-jg-item > a")) {
-            result.add(el.attr("href"));
-        }
-        for (Element el : doc.select(".unite-gallery > img")) {
-            result.add(el.attr("data-image"));
-
-        }
+        for (Element el : doc.select("div.preview_thumb > a > img")) {
+                String imageSource = "https:" + el.attr("data-src").replaceAll("t\\.jpg", ".jpg");
+                result.add(imageSource);
+            }
         return result;
+    }
+
+    @Override
+    public String getAlbumTitle(URL url) throws MalformedURLException {
+        try {
+            Document doc = getFirstPage();
+            String title = doc.select("div.info > h1").first().text();
+            return getHost() + "_" + title + "_" + getGID(url);
+        } catch (Exception e) {
+            // Fall back to default album naming convention
+            LOGGER.warn("Failed to get album title from " + url, e);
+        }
+        return super.getAlbumTitle(url);
     }
 
     @Override

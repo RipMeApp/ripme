@@ -74,6 +74,6 @@ public class MulemaxRipper extends AbstractSingleFileRipper {
 
     @Override
     public void downloadURL(URL url, int index) {
-        addURLToDownload(url, getPrefix(index));
+        addURLToDownload(url, getPrefix(index), "", "mulemax.com", null);
     }
 }

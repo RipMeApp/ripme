@@ -2,6 +2,7 @@ package com.rarchives.ripme.ui;
 
 import java.awt.Dimension;
 import java.io.*;
+import java.net.URISyntaxException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
@@ -22,10 +23,21 @@ import com.rarchives.ripme.utils.Utils;
 public class UpdateUtils {
 
     private static final Logger logger = Logger.getLogger(UpdateUtils.class);
-    private static final String DEFAULT_VERSION = "1.7.77";
+    private static final String DEFAULT_VERSION = "1.7.83";
     private static final String REPO_NAME = "ripmeapp/ripme";
     private static final String updateJsonURL = "https://raw.githubusercontent.com/" + REPO_NAME + "/master/ripme.json";
-    private static final String mainFileName = "ripme.jar";
+    private static String mainFileName;
+
+    static {
+        try {
+            mainFileName = new File(UpdateUtils.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getAbsolutePath();
+        } catch (URISyntaxException e) {
+            mainFileName = "ripme.jar";
+            logger.error("Unable to get path of jar");
+            e.printStackTrace();
+        }
+    }
+
     private static final String updateFileName = "ripme.jar.update";
     private static JSONObject ripmeJson;
 
@@ -259,38 +271,20 @@ public class UpdateUtils {
                 logger.info("Hash is good");
             }
         }
-        if (shouldLaunch) {
-            // Setup updater script
-            final String batchFile, script;
-            final String[] batchExec;
-            String os = System.getProperty("os.name").toLowerCase();
-            if (os.contains("win")) {
-                // Windows
-                batchFile = "update_ripme.bat";
-                String batchPath = new File(batchFile).getAbsolutePath();
-                script = "@echo off\r\n"
-                        + "timeout 1" + "\r\n"
-                        + "copy " + updateFileName + " " + mainFileName + "\r\n"
-                        + "del " + updateFileName + "\r\n"
-                        + "ripme.jar" + "\r\n"
-                        + "del " + batchPath + "\r\n";
-                batchExec = new String[]{batchPath};
 
-            } else {
-                // Mac / Linux
-                batchFile = "update_ripme.sh";
-                String batchPath = new File(batchFile).getAbsolutePath();
-                script = "#!/bin/sh\n"
-                        + "sleep 1" + "\n"
-                        + "cd " + new File(mainFileName).getAbsoluteFile().getParent() + "\n"
-                        + "cp -f " + updateFileName + " " + mainFileName + "\n"
-                        + "rm -f " + updateFileName + "\n"
-                        + "java -jar \"" + new File(mainFileName).getAbsolutePath() + "\" &\n"
-                        + "sleep 1" + "\n"
-                        + "rm -f " + batchPath + "\n";
-                batchExec = new String[]{"sh", batchPath};
+        if (System.getProperty("os.name").toLowerCase().contains("win")) {
+            // Windows
+            final String batchFile = "update_ripme.bat";
+            final String batchPath = new File(batchFile).getAbsolutePath();
+            String script = "@echo off\r\n"
+                            + "timeout 1\r\n"
+                            + "copy " + updateFileName + " " + mainFileName + "\r\n"
+                            + "del " + updateFileName + "\r\n";
+            if (shouldLaunch) {
+                script += mainFileName + "\r\n";
             }
-
+            script += "del " + batchPath + "\r\n";
+            final String[] batchExec = new String[]{batchPath};
             // Create updater script
             try (BufferedWriter bw = new BufferedWriter(new FileWriter(batchFile))) {
                 bw.write(script);
@@ -311,9 +305,19 @@ public class UpdateUtils {
             logger.info("Exiting older version, should execute update script (" + batchFile + ") during exit");
             System.exit(0);
         } else {
-            new File(mainFileName).delete();
-            new File(updateFileName).renameTo(new File(mainFileName));
+            // Mac / Linux
+            // Modifying file and launching it: *nix distributions don't have any issues with modifying/deleting files
+            // while they are being run
+            File mainFile = new File(mainFileName);
+            String mainFilePath = mainFile.getAbsolutePath();
+            mainFile.delete();
+            new File(updateFileName).renameTo(new File(mainFilePath));
+            if (shouldLaunch) {
+                // No need to do it during shutdown: the file used will indeed be the new one
+                Runtime.getRuntime().exec("java -jar " + mainFileName);
+            }
+            logger.info("Update installed, newer version should be executed upon relaunch");
+            System.exit(0);
         }
     }
-
 }
