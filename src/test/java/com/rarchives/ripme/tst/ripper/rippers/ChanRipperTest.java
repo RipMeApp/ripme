@@ -4,9 +4,11 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import com.rarchives.ripme.ripper.rippers.ChanRipper;
+import com.rarchives.ripme.ripper.rippers.ripperhelpers.ChanSite;
 import com.rarchives.ripme.utils.Http;
 import org.jsoup.nodes.Document;
 
@@ -40,6 +42,21 @@ public class ChanRipperTest extends RippersTest {
                           ripper.getWorkingDir());
             deleteDir(ripper.getWorkingDir());
         }
+    }
+
+    public void testChanStringParsing() throws IOException {
+        List<String> site1 = Arrays.asList("site1.com");
+        List<String> site1Cdns = Arrays.asList("cnd1.site1.com", "cdn2.site2.biz");
+
+        List<String> site2 = Arrays.asList("site2.co.uk");
+        List<String> site2Cdns = Arrays.asList("cdn.site2.co.uk");
+        ChanRipper ripper = new ChanRipper(new URL("http://desuchan.net/v/res/7034.html"));
+        List<ChanSite> chansFromConfig = ripper.getChansFromConfig("site1.com[cnd1.site1.com|cdn2.site2.biz],site2.co.uk[cdn.site2.co.uk]");
+        assertEquals(chansFromConfig.get(0).getDomains(), site1);
+        assertEquals(chansFromConfig.get(0).getCdns(), site1Cdns);
+
+        assertEquals(chansFromConfig.get(1).getDomains(), site2);
+        assertEquals(chansFromConfig.get(1).getCdns(), site2Cdns);
     }
 
     public void testChanRipper() throws IOException {

@@ -145,15 +145,13 @@ public class ImagefapRipper extends AbstractHTMLRipper {
         try {
             // Attempt to use album title as GID
             String title = getFirstPage().title();
-            Pattern p = Pattern.compile("^Porn pics of (.*) \\(Page 1\\)$");
-            Matcher m = p.matcher(title);
-            if (m.matches()) {
-                return getHost() + "_" + m.group(1) + "_" + getGID(url);
-            }
+            title = title.replace("Porn Pics & Porn GIFs", "");
+            title = title.replace(" ", "_");
+            String toReturn = getHost() + "_" + title + "_" + getGID(url);
+            return toReturn.replaceAll("__", "_");
         } catch (IOException e) {
-            // Fall back to default album naming convention
+            return super.getAlbumTitle(url);
         }
-        return super.getAlbumTitle(url);
     }
 
     private String getFullSizedImage(String pageURL) {

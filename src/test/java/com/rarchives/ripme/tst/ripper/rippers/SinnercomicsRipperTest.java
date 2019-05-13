@@ -9,13 +9,7 @@ public class SinnercomicsRipperTest extends RippersTest {
     public void testSinnercomicsAlbum() throws IOException {
         SinnercomicsRipper ripper;
 
-        // Comic test
-        ripper = new SinnercomicsRipper(new URL("https://sinnercomics.com/comic/beyond-the-hotel-page-01/"));
-        testRipper(ripper);
-        
-
-        // Pinup test
-        ripper = new SinnercomicsRipper(new URL("https://sinnercomics.com/elsa-frozen-2/#comments"));
+        ripper = new SinnercomicsRipper(new URL("https://sinnercomics.com/comic/gw-addendum-page-01/"));
         testRipper(ripper);
 
     }
