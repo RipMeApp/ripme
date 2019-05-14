@@ -174,7 +174,7 @@ public class RedditRipper extends AlbumRipper {
             if (score > maxScore || score < minScore) {
 
                 String message = "Skipping post with score outside specified range of " + minScore + " to " + maxScore;
-                LOGGER.debug(message);
+                sendUpdate(RipStatusMessage.STATUS.DOWNLOAD_WARN, message);
                 return; //Outside specified range, do not download
             }
         }

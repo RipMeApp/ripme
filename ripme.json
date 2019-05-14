@@ -1,7 +1,12 @@
 {
-    "latestVersion": "1.7.78",
-    "currentHash": "957e7362f7f4a567883cc92368e5bb543c8a277c37f913b5752cee6ec43f611c",
+    "currentHash": "4994abc3d8102823c3f35159a0759707fa4c1ccea0746081954f6acfdbe63d8f",
+    "latestVersion": "1.7.83",
     "changeList": [
+        "1.7.83: Added a ripper for hentaifox.com; Added ripper for Erofus.com; Fixed fsktr not ripping some images; Added support for Gfycat profiles; Added opt to disable prefix for HentaifoundryRipper ",
+        "1.7.82: Hentai foundry now rips oldest first by default; 8muses ripper no longer makes unneeded requests; Added support for i.thechive.com",
+        "1.7.81: Added support for artstn.co; Added new boolean config twitter.rip_retweet; Fixed MulemaxRipper; Fix minor bug that could cause a freeze at pending 1",
+        "1.7.80: Fixed porncomix.one ripper; Fixed instagram ripper; Fixed Fuskator ripper; Fixed handling of urls with spaces in them",
+        "1.7.79: Fixed artstation ripper; Fixed imagefap ripper folder naming; Can now filter reddit posts by votes; Added Ripper for Xlecx; Linux/Mac updater is now pure java",
         "1.7.78: Fixed gfycat ripper; Fixed E621 ripper; Added support for new xhamster url format; Now supports furaffinty scraps",
         "1.7.77: Reduced log spam; HQporner now supports actress/category/studio/top links; Improved luscious ripper; Fixed Pornhub video ripper; Tumblr ripper now always downloads highest quality available",
         "1.7.76: Fixed remember url history",

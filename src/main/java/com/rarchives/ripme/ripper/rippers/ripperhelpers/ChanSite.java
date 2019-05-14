@@ -57,4 +57,11 @@ public class ChanSite {
         domains = Domains;
         cdnDomains = Domains;
     }
+    public List<String> getDomains() {
+        return domains;
+    }
+
+    public List<String> getCdns() {
+        return cdnDomains;
+    }
 }

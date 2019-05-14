@@ -23,4 +23,9 @@ public class GfycatRipperTest extends RippersTest {
         GfycatRipper ripper  = new GfycatRipper(new URL("https://gfycat.com/gifs/detail/limitedtestyamericancrow"));
         testRipper(ripper);
     }
+
+    public void testGfycatProfile() throws IOException {
+        GfycatRipper ripper  = new GfycatRipper(new URL("https://gfycat.com/@golbanstorage"));
+        testRipper(ripper);
+    }
 }

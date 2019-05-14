@@ -1,7 +1,6 @@
 package com.rarchives.ripme.ripper;
 
 import java.io.*;
-import java.lang.reflect.Array;
 import java.net.HttpURLConnection;
 import java.net.SocketTimeoutException;
 import java.net.URL;
@@ -14,13 +13,11 @@ import java.util.ResourceBundle;
 import javax.net.ssl.HttpsURLConnection;
 
 import com.rarchives.ripme.ui.MainWindow;
-import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 import org.jsoup.HttpStatusException;
 
 import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
 import com.rarchives.ripme.utils.Utils;
-import static java.lang.Math.toIntExact;
 
 /**
  * Thread for downloading files.
@@ -139,6 +136,7 @@ class DownloadFileThread extends Thread {
 
                 int statusCode = huc.getResponseCode();
                 logger.debug("Status code: " + statusCode);
+                // If the server doesn't allow resuming downloads error out
                 if (statusCode != 206 && observer.tryResumeDownload() && saveAs.exists()) {
                     // TODO find a better way to handle servers that don't support resuming downloads then just erroring out
                     throw new IOException(rb.getString("server.doesnt.support.resuming.downloads"));

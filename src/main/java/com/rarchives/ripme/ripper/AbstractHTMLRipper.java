@@ -93,6 +93,7 @@ public abstract class AbstractHTMLRipper extends AlbumRipper {
 
             // We set doc to null here so the while loop below this doesn't fire
             doc = null;
+            LOGGER.debug("Adding items from " + this.url + " to queue");
         }
 
         while (doc != null) {
