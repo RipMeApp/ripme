@@ -222,6 +222,44 @@ public abstract class AbstractRipper
      * Queues image to be downloaded and saved.
      * @param url
      *      URL of the file
+     * @param options
+     *      A map<String,String> containing any changes to the default options.
+     *      Options are getFileExtFromMIME, prefix, subdirectory, referrer, fileName, extension, getFileExtFromMIME.
+     *      getFileExtFromMIME should be "true" or "false"
+     * @param cookies
+     *      The cookies to send to the server while downloading this file.
+     * @return
+     *      True if downloaded successfully
+     *      False if failed to download
+     */
+    protected boolean addURLToDownload(URL url, Map<String, String> options, Map<String, String> cookies) {
+        // Bit of a hack but this lets us pass a bool using a map<string,String>
+        boolean useMIME = options.getOrDefault("getFileExtFromMIME", "false").toLowerCase().equals("true");
+        return addURLToDownload(url, options.getOrDefault("prefix", ""), options.getOrDefault("subdirectory", ""), options.getOrDefault("referrer", null),
+                cookies, options.getOrDefault("fileName", null), options.getOrDefault("extension", null), useMIME);
+    }
+
+
+    /**
+     * Queues image to be downloaded and saved.
+     * @param url
+     *      URL of the file
+     * @param options
+     *      A map<String,String> containing any changes to the default options.
+     *      Options are getFileExtFromMIME, prefix, subdirectory, referrer, fileName, extension, getFileExtFromMIME.
+     *      getFileExtFromMIME should be "true" or "false"
+     * @return
+     *      True if downloaded successfully
+     *      False if failed to download
+     */
+    protected boolean addURLToDownload(URL url, Map<String, String> options) {
+        return addURLToDownload(url, options, null);
+    }
+
+    /**
+     * Queues image to be downloaded and saved.
+     * @param url
+     *      URL of the file
      * @param prefix
      *      Prefix for the downloaded file
      * @param subdirectory
@@ -237,6 +275,22 @@ public abstract class AbstractRipper
      *      False if failed to download
      */
     protected boolean addURLToDownload(URL url, String prefix, String subdirectory, String referrer, Map<String, String> cookies, String fileName, String extension, Boolean getFileExtFromMIME) {
+        // A common bug is rippers adding urls that are just "http:". This rejects said urls
+        if (url.toExternalForm().equals("http:") || url.toExternalForm().equals("https:")) {
+            LOGGER.info(url.toExternalForm() + " is a invalid url amd will be changed");
+            return false;
+
+        }
+        // Make sure the url doesn't contain any spaces as that can cause a 400 error when requesting the file
+        if (url.toExternalForm().contains(" ")) {
+            // If for some reason the url with all spaces encoded as %20 is malformed print an error
+            try {
+                url = new URL(url.toExternalForm().replaceAll(" ", "%20"));
+            } catch (MalformedURLException e) {
+                LOGGER.error("Unable to remove spaces from url\nURL: " + url.toExternalForm());
+                e.printStackTrace();
+            }
+        }
         // Don't re-add the url if it was downloaded in a previous rip
         if (Utils.getConfigBoolean("remember.url_history", true) && !isThisATest()) {
             if (hasDownloadedURL(url.toExternalForm())) {

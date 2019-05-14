@@ -52,9 +52,9 @@ public class XcartxRipper extends AbstractHTMLRipper {
     @Override
     public List<String> getURLsFromPage(Document page) {
         List<String> imageURLs = new ArrayList<>();
-        Elements albumElements = page.select("a.highslide");
-        for (Element imageBox : albumElements) {
-            String imageUrl = imageBox.attr("href");
+        Elements imageElements = page.select("div.f-desc img");
+        for (Element image : imageElements) {
+            String imageUrl = image.attr("abs:src");
 
             imageURLs.add(imageUrl);
         }

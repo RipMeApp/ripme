@@ -115,8 +115,7 @@ public class EightmusesRipper extends AbstractHTMLRipper {
                 String image = null;
                 if (thumb.hasAttr("data-cfsrc")) {
                     image = thumb.attr("data-cfsrc");
-                }
-                else {
+                } else {
                     // Deobfustace the json data
                     String rawJson = deobfuscateJSON(page.select("script#ractive-public").html()
                             .replaceAll("&gt;", ">").replaceAll("&lt;", "<").replace("&amp;", "&"));
@@ -125,17 +124,16 @@ public class EightmusesRipper extends AbstractHTMLRipper {
                         for (int i = 0; i != json.getJSONArray("pictures").length(); i++) {
                             image = "https://www.8muses.com/image/fl/" + json.getJSONArray("pictures").getJSONObject(i).getString("publicUri");
                             URL imageUrl = new URL(image);
-                            if (Utils.getConfigBoolean("8muses.use_short_names", false)) {
-                                addURLToDownload(imageUrl, getPrefixShort(x), getSubdir(page.select("title").text()), this.url.toExternalForm(), cookies, "", null, true);
-                            } else {
-                                addURLToDownload(imageUrl, getPrefixLong(x), getSubdir(page.select("title").text()), this.url.toExternalForm(), cookies, "", null, true);
-                            }
+                            addURLToDownload(imageUrl, getPrefixShort(x), getSubdir(page.select("title").text()), this.url.toExternalForm(), cookies, "", null, true);
                             // X is our page index
                             x++;
+                            if (isThisATest()) {
+                                break;
+                            }
                         }
-
-                    } catch (IOException e) {
-                        continue;
+                        return imageURLs;
+                    } catch (MalformedURLException e) {
+                        LOGGER.error("\"" + image + "\" is malformed");
                     }
                 }
                 if (!image.contains("8muses.com")) {

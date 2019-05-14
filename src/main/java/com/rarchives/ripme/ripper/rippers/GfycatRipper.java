@@ -9,9 +9,8 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.rarchives.ripme.ripper.AbstractSingleFileRipper;
+import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -20,9 +19,14 @@ import org.jsoup.select.Elements;
 import com.rarchives.ripme.utils.Http;
 
 
-public class GfycatRipper extends AbstractSingleFileRipper {
+public class GfycatRipper extends AbstractHTMLRipper {
 
     private static final String HOST = "gfycat.com";
+    String username = "";
+    String cursor = "";
+    String count = "30";
+
+
 
     public GfycatRipper(URL url) throws IOException {
         super(url);
@@ -49,10 +53,20 @@ public class GfycatRipper extends AbstractSingleFileRipper {
         
         return url;
     }
+    public boolean isProfile() {
+        Pattern p = Pattern.compile("^https?://[wm.]*gfycat\\.com/@([a-zA-Z0-9]+).*$");
+        Matcher m = p.matcher(url.toExternalForm());
+        return m.matches();
+    }
 
     @Override
     public Document getFirstPage() throws IOException {
-        return Http.url(url).get();
+        if (!isProfile()) {
+            return Http.url(url).get();
+        } else {
+            username = getGID(url);
+            return Http.url(new URL("https://api.gfycat.com/v1/users/" +  username + "/gfycats")).ignoreContentType().get();
+        }
     }
 
     @Override
@@ -62,7 +76,7 @@ public class GfycatRipper extends AbstractSingleFileRipper {
 
     @Override
     public String getGID(URL url) throws MalformedURLException {
-        Pattern p = Pattern.compile("^https?://[wm.]*gfycat\\.com/([a-zA-Z0-9]+).*$");
+        Pattern p = Pattern.compile("^https?://[wm.]*gfycat\\.com/@?([a-zA-Z0-9]+).*$");
         Matcher m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             return m.group(1);
@@ -74,15 +88,43 @@ public class GfycatRipper extends AbstractSingleFileRipper {
                         + " Got: " + url);
     }
 
+    private String stripHTMLTags(String t) {
+        t = t.replaceAll("<html>\n" +
+                " <head></head>\n" +
+                " <body>", "");
+        t.replaceAll("</body>\n" +
+                "</html>", "");
+        t = t.replaceAll("\n", "");
+        t = t.replaceAll("=\"\"", "");
+        return t;
+    }
+
+    @Override
+    public Document getNextPage(Document doc) throws IOException {
+        if (cursor.equals("")) {
+            throw new IOException("No more pages");
+        }
+        return Http.url(new URL("https://api.gfycat.com/v1/users/" +  username + "/gfycats?count=" + count + "&cursor=" + cursor)).ignoreContentType().get();
+    }
+
     @Override
     public List<String> getURLsFromPage(Document doc) {
         List<String> result = new ArrayList<>();
-        Elements videos = doc.select("script");
-        for (Element el : videos) {
-            String json = el.html();
-            if (json.startsWith("{")) {
-                JSONObject page = new JSONObject(json);
-                result.add(page.getJSONObject("video").getString("contentUrl"));
+        if (isProfile()) {
+            JSONObject page = new JSONObject(stripHTMLTags(doc.html()));
+            JSONArray content = page.getJSONArray("gfycats");
+            for (int i = 0; i < content.length(); i++) {
+                result.add(content.getJSONObject(i).getString("mp4Url"));
+            }
+            cursor = page.getString("cursor");
+        } else {
+            Elements videos = doc.select("script");
+            for (Element el : videos) {
+                String json = el.html();
+                if (json.startsWith("{")) {
+                    JSONObject page = new JSONObject(json);
+                    result.add(page.getJSONObject("video").getString("contentUrl"));
+                }
             }
         }
         return result;
