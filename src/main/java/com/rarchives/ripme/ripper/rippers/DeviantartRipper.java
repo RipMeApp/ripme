@@ -62,11 +62,11 @@ import org.jsoup.select.Elements;
  * 
  *         Deactivated account:
  * 
- *         https://www.deviantart.com/gingerbreadpony
+ *         https://www.deviantart.com/gingerbreadpony/gallery
  * 
  *         Banned Account:
  * 
- *         https://www.deviantart.com/ghostofflossenburg
+ *         https://www.deviantart.com/ghostofflossenburg/gallery
  * 
  * 
  * 
