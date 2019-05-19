@@ -243,7 +243,14 @@ public class InstagramRipper extends AbstractJSONRipper {
 
         // get the rhx_gis value so we can get the next page later on
         if (rhx_gis == null) {
-            rhx_gis = json.getString("rhx_gis");
+            try {
+                rhx_gis = json.getString("rhx_gis");
+            } catch (JSONException ex) {
+                // Instagram has removed this token, but ...
+                LOGGER.error("Error while getting rhx_gis: " + ex.getMessage());                
+                //... if we set it to "", the next page can still be fetched
+                rhx_gis = "";
+            }
         }
         if (!url.toExternalForm().contains("/p/")) {
             JSONArray datas = new JSONArray();
