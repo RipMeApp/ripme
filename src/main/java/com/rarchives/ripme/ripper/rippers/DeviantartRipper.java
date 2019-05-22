@@ -27,6 +27,8 @@ import java.util.regex.Pattern;
 import org.jsoup.Connection;
 import org.jsoup.Connection.Method;
 import org.jsoup.Connection.Response;
+import org.jsoup.HttpStatusException;
+import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -60,11 +62,11 @@ import org.jsoup.select.Elements;
  * 
  *         Deactivated account:
  * 
- *         https://www.deviantart.com/gingerbreadpony
+ *         https://www.deviantart.com/gingerbreadpony/gallery
  * 
  *         Banned Account:
  * 
- *         https://www.deviantart.com/ghostofflossenburg
+ *         https://www.deviantart.com/ghostofflossenburg/gallery
  * 
  * 
  * 
@@ -98,7 +100,7 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 	// Constants
 	private final String referer = "https://www.deviantart.com/";
 	private final String userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:65.0) Gecko/20100101 Firefox/65.0";
-	private final String utilsKey = "DeviantartLogin.cookies";
+	private final String utilsKey = "DeviantartLogin.cookies"; //for config file
 
 	@Override
 	public DownloadThreadPool getThreadPool() {
@@ -148,7 +150,7 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 
 	/**
 	 * Stores logged in Cookies. Needed for art pieces only visible to logged in
-	 * users.
+	 * users. 
 	 * 
 	 * 
 	 * @throws IOException when failed to load webpage or failed to read/write
@@ -169,14 +171,19 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 			LOGGER.info("Do Login now");
 			// Do login now
 
+			Map<String, String> tmpCookies = new HashMap<String, String>();
+			
 			// Load login page
 			Response res = Http.url("https://www.deviantart.com/users/login").connection().method(Method.GET)
 					.referrer(referer).userAgent(userAgent).execute();
 
-			updateCookie(res.cookies());
+			tmpCookies.putAll(res.cookies());
 
 			// Find tokens
 			Document doc = res.parse();
+			
+			tmpCookies.putAll(res.cookies());
+			
 			Element form = doc.getElementById("login");
 			String token = form.select("input[name=\"validate_token\"]").first().attr("value");
 			String key = form.select("input[name=\"validate_key\"]").first().attr("value");
@@ -190,22 +197,21 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 			loginData.put("remember_me", "1");
 			loginData.put("validate_token", token);
 			loginData.put("validate_key", key);
-			Map<String, String> cookies = res.cookies();
 
 			// Log in using data. Handle redirect
 			res = Http.url("https://www.deviantart.com/users/login").connection().referrer(referer).userAgent(userAgent)
-					.method(Method.POST).data(loginData).cookies(cookies).followRedirects(false).execute();
-			updateCookie(res.cookies());
+					.method(Method.POST).data(loginData).cookies(tmpCookies).followRedirects(false).execute();
+			
+			tmpCookies.putAll(res.cookies());
 
 			res = Http.url(res.header("location")).connection().referrer(referer).userAgent(userAgent)
-					.method(Method.GET).cookies(cookies).followRedirects(false).execute();
+					.method(Method.GET).cookies(tmpCookies).followRedirects(false).execute();
 
 			// Store cookies
-			updateCookie(res.cookies());
-
-			// Write Cookie to file for other RipMe Instances or later use
-			Utils.setConfigString(utilsKey, serialize(new HashMap<String, String>(getDACookie())));
-			Utils.saveConfig(); // save now because of other instances that might work simultaneously
+			tmpCookies.putAll(res.cookies());
+			
+			updateCookie(tmpCookies);
+			
 
 		} else {
 			LOGGER.info("No new Login needed");
@@ -213,6 +219,7 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 
 		LOGGER.info("DA Cookies: " + getDACookie());
 	}
+	
 
 	/**
 	 * Returns next page Document using offset.
@@ -222,9 +229,7 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 		this.offset += 24;
 		this.conn.url(urlWithParams(this.offset)).cookies(getDACookie());
 		Response re = this.conn.execute();
-//		Response re = Http.url(urlWithParams(this.offset)).cookies(getDACookie()).referrer(referer).userAgent(userAgent)
-//				.response();
-		updateCookie(re.cookies());
+		//updateCookie(re.cookies());
 		Document docu = re.parse();
 		Elements messages = docu.getElementsByClass("message");
 		LOGGER.info("Current Offset: " + this.offset);
@@ -243,6 +248,9 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 	/**
 	 * Returns list of Links to the Image pages. NOT links to fullsize image!!! e.g.
 	 * https://www.deviantart.com/kageuri/art/RUBY-568396655
+	 * 
+	 * @param page Page of album with multiple images
+	 * 
 	 */
 	@Override
 	protected List<String> getURLsFromPage(Document page) {
@@ -272,6 +280,8 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 
 	/**
 	 * Starts new Thread to find download link + filename + filetype
+	 * 
+	 * @param url The URL to an image site.
 	 */
 	@Override
 	protected void downloadURL(URL url, int index) {
@@ -281,7 +291,7 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 		try {
 			Response re = Http.url(urlWithParams(this.offset)).cookies(getDACookie()).referrer(referer)
 					.userAgent(userAgent).response();
-			updateCookie(re.cookies());
+			//updateCookie(re.cookies());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -328,9 +338,9 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 		}
 
 		// What is it
-		if (s.contains("/gallery/")) {
+		if (s.contains("/gallery")) {
 			what = "gallery";
-		} else if (s.contains("/favourites/")) {
+		} else if (s.contains("/favourites")) {
 			what = "favourites";
 		} else {
 			throw new MalformedURLException("Expected deviantart.com URL format: "
@@ -344,7 +354,7 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 		Matcher artistM = artistP.matcher(s);
 		if (s.endsWith("?catpath=/")) {
 			albumname = "all";
-		} else if (s.endsWith("/favourites/") || s.endsWith("/gallery/")) {
+		} else if (s.endsWith("/favourites/") || s.endsWith("/gallery/") || s.endsWith("/gallery") || s.endsWith("/favourites")) { //added andings without trailing / because of https://github.com/RipMeApp/ripme/issues/1303
 			albumname = "featured";
 		} else if (artistM.matches()) {
 			albumname = artistM.group(1);
@@ -365,6 +375,7 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 
 	/**
 	 * Return correct url with params (catpath) and current offset
+	 * Offset misleasing because it might say 24 but it is not the 24th image. (DA site is bugged I guess)
 	 * 
 	 * @return URL to page with offset
 	 */
@@ -383,7 +394,7 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 	}
 
 	/**
-	 * Returns Hashmap usable as Cookie for NSFW Artworks Not really needed but
+	 * Returns Hashmap usable as Cookie for NSFW Artworks. Method Not really needed but
 	 * maybe useful later.
 	 * 
 	 * @return Cookie Hashmap
@@ -393,7 +404,7 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 	}
 
 	/**
-	 * Updates cookies
+	 * Updates cookies and saves to config file.
 	 * 
 	 * @param m new Cookies
 	 */
@@ -403,14 +414,13 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 			return;
 		}
 
-		Iterator<String> iter = m.keySet().iterator();
+		/*Iterator<String> iter = m.keySet().iterator();
 		while (iter.hasNext()) {
 			String current = iter.next();
 			if (!this.allowedCookies.contains(current)) {
-				// m.remove(current);
 				iter.remove();
 			}
-		}
+		}*/
 
 		LOGGER.info("Updating Cookies");
 		LOGGER.info("Old Cookies: " + getDACookie() + " ");
@@ -463,8 +473,9 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 	}
 
 	/**
-	 * Checks if the current cookies are still valid/usable. Also checks if agegate
-	 * is given.
+	 * Checks if the current cookies are still valid/usable. 
+	 * Also checks if agegate is given.
+	 * 
 	 * 
 	 * @return True when all is good.
 	 */
@@ -472,7 +483,7 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 		if (!getDACookie().containsKey("agegate_state")) {
 			LOGGER.info("No agegate key");
 			return false;
-		} else if (!getDACookie().get("agegate_state").equals("1")) {
+		} else if (!getDACookie().get("agegate_state").equals("1")) { // agegate == 1 -> all is fine. NSFW is visible
 			LOGGER.info("Wrong agegate value");
 			return false;
 		}
@@ -481,14 +492,11 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 			LOGGER.info("Login with Cookies: " + getDACookie());
 			Response res = Http.url("https://www.deviantart.com/users/login").connection().followRedirects(true)
 					.cookies(getDACookie()).referrer(this.referer).userAgent(this.userAgent).execute();
-			if (!res.url().toExternalForm().equals("https://www.deviantart.com/users/login")) {
-				LOGGER.info("Cookies are valid");
-				LOGGER.info(res.url());
+			if (!res.url().toExternalForm().equals("https://www.deviantart.com/users/login") && !res.url().toExternalForm().startsWith("https://www.deviantart.com/users/wrong-password")) {
+				LOGGER.info("Cookies are valid: " + res.url());
 				return true;
 			} else {
-				LOGGER.info("Cookies invalid. Wrong URL: " + res.url());
-				LOGGER.info(res.statusCode());
-				LOGGER.info(res.parse());
+				LOGGER.info("Cookies invalid. Wrong URL: " + res.url() + "  " + res.statusCode());
 				return false;
 			}
 		} catch (IOException e) {
@@ -545,7 +553,7 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 				String title = doc.select("a.title").first().html();
 				title = title.replaceAll("[^a-zA-Z0-9\\.\\-]", "_").toLowerCase();
 
-				int counter = 1;
+				int counter = 1; // For images with same name add _X (X = number)
 				if (names.contains(title)) {
 					while (names.contains(title + "_" + counter)) {
 						counter++;
@@ -561,14 +569,13 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 
 				// Download Button
 				if (downloadButton != null) {
-					LOGGER.info("Download Button found: " + downloadButton.attr("href"));
+					LOGGER.info("Download Button found for "+ url +" : "  + downloadButton.attr("href"));
 
 					Response download = Http.url(downloadButton.attr("href")).connection().cookies(getDACookie())
 							.method(Method.GET).referrer(referer).userAgent(userAgent).ignoreContentType(true)
 							.followRedirects(true).execute();
 					URL location = download.url();
 
-					System.out.println("----------------> " + url);
 					String[] filetypePart = download.header("Content-Disposition").split("\\.");
 
 					LOGGER.info("Found Image URL");
@@ -581,11 +588,13 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 				}
 
 				// No Download Button
+				LOGGER.info("No Download Button for: "+ url);
+				
 				Element div = doc.select("div.dev-view-deviation").first();
 
 				Element image = div.getElementsByTag("img").first();
 
-				String source = "";
+				String scaledImage = "";
 				if (image == null) {
 					LOGGER.error("ERROR on " + url);
 
@@ -595,39 +604,33 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 					return;
 				}
 
-				// When it is text art (e.g. story) the only image is the avator (profile
-				// picture)
+				// When it is text art (e.g. story) the only image is the profile
+				// picture
 				if (image.hasClass("avatar")) {
-					LOGGER.error("No Image found, probably text art");
-					LOGGER.error(url);
+					LOGGER.error("No Image found, probably text art: " + url);
 					return;
 				}
 
-				source = image.attr("src");
+				scaledImage = image.attr("src").split("\\?")[0];
 
-				String[] parts = source.split("/v1/");
-
-				// Image page uses scaled down version. Split at /v1/ to receive max size.
+				String[] parts = scaledImage.split("/v1/"); // Image page uses scaled down version. Split at /v1/ to receive max size.
+				
 				if (parts.length > 2) {
 					LOGGER.error("Unexpected URL Format");
 					sendUpdate(STATUS.DOWNLOAD_ERRORED, "Unexpected URL Format");
 					return;
 				}
-
-				String[] tmpParts = parts[0].split("\\.");
-
-				LOGGER.info("Found Image URL");
-				LOGGER.info(url);
-				LOGGER.info(parts[0]);
-				while (Http.url(parts[0]).connection().execute().statusCode() == 404) {
-					try {
-						LOGGER.error("404 on " + url);
-						Thread.sleep(1000);
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
+				
+				String originalImage = parts[0]; // URL to original image without scaling (works not alwys. weird 404 errors.)
+				String downloadString = originalImage; // this works always
+				try {
+					Http.url(downloadString).connection().cookies(getDACookie()).method(Method.GET).referrer(referer).userAgent(userAgent).ignoreContentType(true).followRedirects(true).execute().statusCode(); //Error on 404
+				}catch (HttpStatusException e) {
+					downloadString = scaledImage; //revert back to save url because of error
 				}
-				addURLToDownload(new URL(parts[0]), "", "", "", new HashMap<String, String>(),
+				String[] tmpParts = downloadString.split("\\."); //split to get file ending
+				
+				addURLToDownload(new URL(downloadString), "", "", "", new HashMap<String, String>(),
 						title + "." + tmpParts[tmpParts.length - 1]);
 				return;
 
