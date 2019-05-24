@@ -8,6 +8,7 @@ import java.util.regex.Pattern;
 
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
 import com.rarchives.ripme.ripper.AlbumRipper;
 import com.rarchives.ripme.ripper.DownloadThreadPool;
@@ -80,6 +81,10 @@ public class MotherlessRipper extends AlbumRipper {
             Document doc = Http.url(nextURL)
                                .referrer("http://motherless.com")
                                .get();
+            Elements errorPage = doc.select("div.error-page");
+            if (!errorPage.isEmpty()) {
+                break;
+            }
             for (Element thumb : doc.select("div.thumb a.img-container")) {
                 if (isStopped()) {
                     break;
