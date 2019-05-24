@@ -83,31 +83,32 @@ public class MotherlessRipper extends AlbumRipper {
                                .get();
             Elements errorPage = doc.select("div.error-page");
             if (!errorPage.isEmpty()) {
-                break;
+                LOGGER.warn("[!] 404 received from " + nextURL);
             }
-            for (Element thumb : doc.select("div.thumb a.img-container")) {
-                if (isStopped()) {
-                    break;
-                }
-                String thumbURL = thumb.attr("href");
-                if (thumbURL.contains("pornmd.com")) {
-                    continue;
-                }
-                URL url;
-                if (!thumbURL.startsWith("http")) {
-                    url = new URL("http://" + DOMAIN + thumbURL);
-                }
-                else {
-                    url = new URL(thumbURL);
-                }
-                index += 1;
+            else {
+                for (Element thumb : doc.select("div.thumb a.img-container")) {
+                    if (isStopped()) {
+                        break;
+                    }
+                    String thumbURL = thumb.attr("href");
+                    if (thumbURL.contains("pornmd.com")) {
+                        continue;
+                    }
+                    URL url;
+                    if (!thumbURL.startsWith("http")) {
+                        url = new URL("http://" + DOMAIN + thumbURL);
+                    } else {
+                        url = new URL(thumbURL);
+                    }
+                    index += 1;
 
-                // Create thread for finding image at "url" page
-                MotherlessImageThread mit = new MotherlessImageThread(url, index);
-                motherlessThreadPool.addThread(mit);
+                    // Create thread for finding image at "url" page
+                    MotherlessImageThread mit = new MotherlessImageThread(url, index);
+                    motherlessThreadPool.addThread(mit);
 
-                if (isThisATest()) {
-                    break;
+                    if (isThisATest()) {
+                        break;
+                    }
                 }
             }
             if (isThisATest()) {
