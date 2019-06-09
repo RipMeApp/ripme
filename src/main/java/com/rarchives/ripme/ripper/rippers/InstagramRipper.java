@@ -77,36 +77,6 @@ public class InstagramRipper extends AbstractJSONRipper {
         return true;
     }
 
-    private List<String> getPostsFromSinglePage(JSONObject json) {
-        List<String> imageURLs = new ArrayList<>();
-        JSONArray datas;
-            if (json.getJSONObject("entry_data").getJSONArray("PostPage")
-                    .getJSONObject(0).getJSONObject("graphql").getJSONObject("shortcode_media")
-                    .has("edge_sidecar_to_children")) {
-                datas = json.getJSONObject("entry_data").getJSONArray("PostPage")
-                        .getJSONObject(0).getJSONObject("graphql").getJSONObject("shortcode_media")
-                        .getJSONObject("edge_sidecar_to_children").getJSONArray("edges");
-                for (int i = 0; i < datas.length(); i++) {
-                    JSONObject data = (JSONObject) datas.get(i);
-                    data = data.getJSONObject("node");
-                    if (data.has("is_video") && data.getBoolean("is_video")) {
-                        imageURLs.add(data.getString("video_url"));
-                    } else {
-                        imageURLs.add(data.getString("display_url"));
-                    }
-                }
-            } else {
-                JSONObject data = json.getJSONObject("entry_data").getJSONArray("PostPage")
-                        .getJSONObject(0).getJSONObject("graphql").getJSONObject("shortcode_media");
-                if (data.getBoolean("is_video")) {
-                    imageURLs.add(data.getString("video_url"));
-                } else {
-                    imageURLs.add(data.getString("display_url"));
-                }
-            }
-            return imageURLs;
-    }
-
     @Override
     public String getGID(URL url) throws MalformedURLException {
         Pattern p = Pattern.compile("^https?://instagram.com/([^/]+)/?");
@@ -287,36 +257,25 @@ public class InstagramRipper extends AbstractJSONRipper {
                     if (data.getString("__typename").equals("GraphSidecar")) {
                         try {
                             Document slideShowDoc = Http.url(new URL("https://www.instagram.com/p/" + data.getString("shortcode"))).get();
-                            List<String> toAdd = getPostsFromSinglePage(getJSONFromPage(slideShowDoc));
+                            List<JSONObject> toAdd = getPostsFromSinglePage(getJSONFromPage(slideShowDoc));
                             for (int slideShowInt = 0; slideShowInt < toAdd.size(); slideShowInt++) {
-                                addURLToDownload(new URL(toAdd.get(slideShowInt)), image_date + data.getString("shortcode"));
+                                addDownloadFromData(toAdd.get(slideShowInt), image_date + data.getString("shortcode"));
                             }
-                        } catch (MalformedURLException e) {
-                            LOGGER.error("Unable to download slide show, URL was malformed");
                         } catch (IOException e) {
                             LOGGER.error("Unable to download slide show");
                         }
                     }
                 }
-                try {
-                    if (!data.getBoolean("is_video")) {
-                        if (imageURLs.isEmpty()) {
-                            // We add this one item to the array because either wise
-                            // the ripper will error out because we returned an empty array
-                            imageURLs.add(getOriginalUrl(data.getString("display_url")));
-                        }
-                        addURLToDownload(new URL(data.getString("display_url")), image_date);
-                    } else {
-                        if (!Utils.getConfigBoolean("instagram.download_images_only", false)) {
-                            addURLToDownload(new URL(getVideoFromPage(data.getString("shortcode"))), image_date);
-                        } else {
-                            sendUpdate(RipStatusMessage.STATUS.DOWNLOAD_WARN, "Skipping video " + data.getString("shortcode"));
-                        }
+
+                if (!data.getBoolean("is_video")) {
+                    if (imageURLs.isEmpty()) {
+                        // We add this one item to the array because either wise
+                        // the ripper will error out because we returned an empty array
+                        imageURLs.add(getOriginalUrl(data.getString("display_url")));
                     }
-                } catch (MalformedURLException e) {
-                    LOGGER.info("Got MalformedURLException");
-                    return imageURLs;
                 }
+                // add download from data which handles image vs video
+                addDownloadFromData(data, image_date);
 
                 if (isThisATest()) {
                     break;
@@ -325,10 +284,84 @@ public class InstagramRipper extends AbstractJSONRipper {
 
         } else { // We're ripping from a single page
             LOGGER.info("Ripping from single page");
-            imageURLs = getPostsFromSinglePage(json);
+            List<JSONObject> posts = getPostsFromSinglePage(json);
+            imageURLs = getImageURLsFromPosts(posts);
         }
 
         return imageURLs;
+    }
+
+    private List<JSONObject> getPostsFromSinglePage(JSONObject json) {
+        List<JSONObject> posts = new ArrayList<>();
+        JSONArray datas;
+            if (json.getJSONObject("entry_data").getJSONArray("PostPage")
+                    .getJSONObject(0).getJSONObject("graphql").getJSONObject("shortcode_media")
+                    .has("edge_sidecar_to_children")) {
+                datas = json.getJSONObject("entry_data").getJSONArray("PostPage")
+                        .getJSONObject(0).getJSONObject("graphql").getJSONObject("shortcode_media")
+                        .getJSONObject("edge_sidecar_to_children").getJSONArray("edges");
+                for (int i = 0; i < datas.length(); i++) {
+                    JSONObject data = (JSONObject) datas.get(i);
+                    data = data.getJSONObject("node");
+                    posts.add(data);
+                }
+            } else {
+                JSONObject data = json.getJSONObject("entry_data").getJSONArray("PostPage")
+                        .getJSONObject(0).getJSONObject("graphql").getJSONObject("shortcode_media");
+                posts.add(data);
+            }
+            return posts;
+    }
+
+    private List<String> getImageURLsFromPosts(List<JSONObject> posts) {
+        List<String> imageURLs = new ArrayList<>();
+        if (posts == null) {
+            LOGGER.error("Failed to get image urls from null posts");
+            return imageURLs;
+        } 
+
+        for (int i = 0; i < posts.size(); i++) {
+            JSONObject post = posts.get(i);
+            if (post.getBoolean("is_video")) {
+                // always check if video are being ignored
+                if (isIgnoringVideos()) {
+                    sendUpdate(RipStatusMessage.STATUS.DOWNLOAD_WARN, "Skipping video " + post.getString("shortcode"));
+                } else {
+                    imageURLs.add(post.getString("video_url"));
+                }
+            } else {
+                imageURLs.add(post.getString("display_url"));
+            }
+        }
+        return imageURLs;
+    }
+
+    // attempt to add download from data, checking for video vs images
+    private void addDownloadFromData(JSONObject data, String prefix) {
+        if (data == null) {
+            LOGGER.error("Failed to add download: null data");
+            return;
+        }
+
+        try {
+            if (data.getBoolean("is_video")) {
+                // always check if video are being ignored to honor the setting
+                if (isIgnoringVideos()) {
+                    sendUpdate(RipStatusMessage.STATUS.DOWNLOAD_WARN, "Skipping video " + data.getString("shortcode"));
+                } else {
+                    addURLToDownload(new URL(getVideoFromPage(data.getString("shortcode"))), prefix);
+                }
+            } else {
+                addURLToDownload(new URL(data.getString("display_url")), prefix);
+            }
+
+        } catch (MalformedURLException e) {
+            LOGGER.error("Malformed URL from data", e);
+        }
+    }
+
+    private boolean isIgnoringVideos() {
+        return Utils.getConfigBoolean("instagram.download_images_only", false);
     }
 
     private String getIGGis(String variables) {
