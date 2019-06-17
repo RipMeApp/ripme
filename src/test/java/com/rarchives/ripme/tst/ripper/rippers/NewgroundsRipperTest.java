@@ -7,7 +7,7 @@ import java.net.URL;
 
 public class NewgroundsRipperTest extends RippersTest {
 
-    public void testImgboxRip() throws IOException {
+    public void testNewgroundsRip() throws IOException {
         NewgroundsRipper ripper = new NewgroundsRipper(new URL("https://zone-sama.newgrounds.com/art"));
         testRipper(ripper);
     }
