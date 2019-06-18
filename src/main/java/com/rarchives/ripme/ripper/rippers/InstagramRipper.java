@@ -120,6 +120,8 @@ public class InstagramRipper extends AbstractJSONRipper {
                         return "post_" + urlMatcher.group("shortcode");
                     case USER_PROFILE:
                         return urlMatcher.group("username");
+                    default:
+                        throw new RuntimeException("Reached unreachable");
                 }
             }
         }
@@ -175,7 +177,7 @@ public class InstagramRipper extends AbstractJSONRipper {
             if ((storiesRip || pinnedReelRip) && href.contains("Consumer.js")) {
                 pattern = Pattern.compile(storiesRegex);
                 break;
-            } else if (href.contains("ProfilePageContainer") || href.contains("TagPageContainer")) {
+            } else if (href.contains("ProfilePageContainer.js") || href.contains("TagPageContainer.js")) {
                 pattern = Pattern.compile(pinnedRip ? pinnedRegex :
                         format(hashRegex, hashtagRip ? forHashtag : taggedRip ? forTagged : forUser));
                 break;
@@ -357,8 +359,9 @@ public class InstagramRipper extends AbstractJSONRipper {
                 JSONArray sideCar = getJsonArrayByPath(mediaItem, "edge_sidecar_to_children.edges");
                 return getStreamOfJsonArray(sideCar).map(object -> object.getJSONObject("node"))
                                                     .flatMap(this::parseRootForUrls);
+            default:
+                return Stream.empty();
         }
-        return Stream.empty();
     }
 
     private String getVideoUrlFromPage(String videoID) {
