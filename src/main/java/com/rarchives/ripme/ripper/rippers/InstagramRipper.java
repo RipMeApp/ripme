@@ -475,7 +475,7 @@ public class InstagramRipper extends AbstractJSONRipper {
 
     private String getQhashUrl(Document doc) {
         for(Element el : doc.select("link[rel=preload]")) {
-            if (el.attr("href").contains("ProfilePageContainer")) {
+            if (el.attr("href").contains("ProfilePageContainer") && el.attr("href").contains("js")) {
                 return el.attr("href");
             }
         }
