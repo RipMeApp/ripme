@@ -1,7 +1,7 @@
 {
-    "currentHash": "ff04585ca5a2d136174b959cf7652fd4149feceaf4071ae57f25b50d607d7370",
-    "latestVersion": "1.7.84",
+    "latestVersion": "1.7.85",
     "changeList": [
+        "1.7.85: Fixed instagram ripper; Flickr ripper now downloads largest image",
         "1.7.84: Fixed instagram ripper; xhamster ripper now accepts urls with page numbers; Fixed Deviantart Ripper",
         "1.7.83: Added a ripper for hentaifox.com; Added ripper for Erofus.com; Fixed fsktr not ripping some images; Added support for Gfycat profiles; Added opt to disable prefix for HentaifoundryRipper ",
         "1.7.82: Hentai foundry now rips oldest first by default; 8muses ripper no longer makes unneeded requests; Added support for i.thechive.com",
@@ -256,5 +256,6 @@
         "1.0.4: Fixed spaces-in-directory bug",
         "1.0.3: Added VK.com ripper",
         "1.0.1: Added auto-update functionality"
-    ]
+    ],
+    "currentHash": "874aceffdad02ab8147b588641229a9743b8e78b3681b3ff5a733cbd2faa9009"
 }
