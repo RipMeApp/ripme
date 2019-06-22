@@ -66,7 +66,7 @@ public class ImgurRipperTest extends RippersTest {
     }
 
     public void testImgurAlbumWithMoreThan100Pictures() throws IOException {
-        ImgurAlbum album = ImgurRipper.getImgurAlbum(new URL("http://imgur.com/a/zXZBU"));
+        ImgurAlbum album = ImgurRipper.getImgurAlbum(new URL("https://imgur.com/a/HX3JSrD"));
         assertTrue("Failed to find 100 files from " + album.url.toExternalForm() + ", only got " + album.images.size(), album.images.size() >= 100);
     }
 
