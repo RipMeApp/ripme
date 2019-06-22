@@ -58,7 +58,7 @@ public class ThechiveRipperTest extends RippersTest {
      */
 
     public void testIDotThechive() throws IOException {
-        ThechiveRipper ripper = new ThechiveRipper(new URL("https://i.thechive.com/HHHoney"));
+        ThechiveRipper ripper = new ThechiveRipper(new URL("https://i.thechive.com/witcheva"));
         testRipper(ripper);
     }
 
