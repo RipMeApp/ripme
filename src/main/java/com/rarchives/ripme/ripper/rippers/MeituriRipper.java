@@ -35,10 +35,11 @@ public class MeituriRipper extends AbstractHTMLRipper {
     @Override
     public String getGID(URL url) throws MalformedURLException {
         // without escape
-        // ^https?://[w.]*meituri\.com/a/([0-9]+)/$
+        // ^https?://[w.]*meituri\.com/a/([0-9]+)/([0-9\.html]+)*$
         // https://www.meituri.com/a/14449/
+        // also matches https://www.meituri.com/a/14449/3.html etc.
         // group 1 is 14449
-        Pattern p = Pattern.compile("^https?://[w.]*meituri\\.com/a/([0-9]+)/$");
+        Pattern p = Pattern.compile("^https?://[w.]*meituri\\.com/a/([0-9]+)/([0-9\\.html]+)*$");
         Matcher m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             albumID = m.group(1);
