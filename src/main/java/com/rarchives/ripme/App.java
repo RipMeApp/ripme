@@ -118,7 +118,7 @@ public class App {
         
         if (cl.hasOption('H')) {
             Utils.setConfigString("history.location", cl.getOptionValue('H'));
-            System.out.print(cl.getOptionValue('H'));
+            logger.info("Set history file to " + cl.getOptionValue('H'));
         }
 
         //Allow file overwriting
