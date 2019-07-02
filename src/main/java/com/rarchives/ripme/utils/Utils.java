@@ -272,7 +272,7 @@ public class Utils {
         if(getConfigString("history.location", "").length()==0) {
             return getConfigDir() + File.separator + "url_history.txt";
         }else{
-            return getConfigString("history.location");
+            return getConfigString("history.location", "");
         }
     }
 
