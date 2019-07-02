@@ -117,8 +117,8 @@ public class App {
         logger.info("Initialized ripme v" + UpdateUtils.getThisJarVersion());
 
         //Set history file
-        if (cl.hasOption('z')) {
-            String historyLocation = cl.getOptionValue('z');
+        if (cl.hasOption('H')) {
+            String historyLocation = cl.getOptionValue('H');
             Utils.setConfigString("history.location", historyLocation);
             logger.info("Set history file to " + historyLocation);
         }
@@ -310,7 +310,7 @@ public class App {
         opts.addOption("p", "proxy-server", true, "Use HTTP Proxy server ([user:password]@host[:port])");
         opts.addOption("j", "update", false, "Update ripme");
         opts.addOption("a","append-to-folder", true, "Append a string to the output folder name");
-        opts.addOption("z", "history", true, "Set history file location.");
+        opts.addOption("H", "history", true, "Set history file location.");
         return opts;
     }
 
