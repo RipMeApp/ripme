@@ -117,7 +117,7 @@ public class App {
         logger.info("Initialized ripme v" + UpdateUtils.getThisJarVersion());
         
         if (cl.hasOption('z')) {
-            String historyLocation = cl.getOptionValue('z');
+            String historyLocation = cl.getOption('z');
             Utils.setConfigString("history.location", historyLocation);
             logger.info("Set history file to " + historyLocation);
         }
