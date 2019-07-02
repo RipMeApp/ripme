@@ -310,7 +310,7 @@ public class App {
         opts.addOption("p", "proxy-server", true, "Use HTTP Proxy server ([user:password]@host[:port])");
         opts.addOption("j", "update", false, "Update ripme");
         opts.addOption("a","append-to-folder", true, "Append a string to the output folder name");
-        opts.addOption("z", "history", false, "Set history file location.");
+        opts.addOption("z", "history", true, "Set history file location.");
         return opts;
     }
 
