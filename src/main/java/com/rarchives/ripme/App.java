@@ -117,7 +117,7 @@ public class App {
         logger.info("Initialized ripme v" + UpdateUtils.getThisJarVersion());
         
         if (cl.hasOption('H')) {
-            Utils.setConfigString("history.location", cl.getOptionValue('H'))
+            Utils.setConfigString("history.location", cl.getOptionValue('H'));
         }
 
         //Allow file overwriting
