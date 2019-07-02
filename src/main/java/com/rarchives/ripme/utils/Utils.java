@@ -42,6 +42,7 @@ public class Utils {
     private static final String OS = System.getProperty("os.name").toLowerCase();
     private static final Logger LOGGER = Logger.getLogger(Utils.class);
     private static final int SHORTENED_PATH_LENGTH = 12;
+    private static final String HISTORY_FILE = "";
 
     private static PropertiesConfiguration config;
     private static HashMap<String, HashMap<String, String>> cookieCache;
