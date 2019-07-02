@@ -35,11 +35,11 @@ public class MeituriRipper extends AbstractHTMLRipper {
     @Override
     public String getGID(URL url) throws MalformedURLException {
         // without escape
-        // ^https?://[w.]*meituri\.com/a/([0-9]+)/([0-9\.html]+)*$
+        // ^https?://[w.]*meituri\.com/a/([0-9]+)/([0-9]+\.html)*$
         // https://www.meituri.com/a/14449/
         // also matches https://www.meituri.com/a/14449/3.html etc.
         // group 1 is 14449
-        Pattern p = Pattern.compile("^https?://[w.]*meituri\\.com/a/([0-9]+)/([0-9\\.html]+)*$");
+        Pattern p = Pattern.compile("^https?://[w.]*meituri\\.com/a/([0-9]+)/([0-9]+\\.html)*$");
         Matcher m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             albumID = m.group(1);
@@ -59,27 +59,22 @@ public class MeituriRipper extends AbstractHTMLRipper {
         List<String> imageURLs = new ArrayList<>();
         // Get number of images from the page
         // Then generate links according to that
-        String numOfImages = "";
-        // A very ugly way of getting "图片数量： 55P" from paragraphs
-        // 3rd p in div.tuji
-        int n = 0;
+        int numOfImages = 1;
+        Pattern p = Pattern.compile("^<p>图片数量： ([0-9]+)P</p>$");
         for (Element para : doc.select("div.tuji > p")) {
-            // 图片数量： 55P
-            if (n == 2) {
-                numOfImages = para.toString();
+            // <p>图片数量： 55P</p>
+            Matcher m = p.matcher(para.toString());
+            if (m.matches()) {
+                // 55
+                numOfImages = Integer.parseInt(m.group(1));
             }
-            n++;
         }
-        // ["<p>图片数量：", "55P</p>"]
-        String[] splitNumOfImages = numOfImages.split(" ");
-        // "55P</p>" -> "55" -> 55
-        int actualNumOfImages = Integer.parseInt(splitNumOfImages[1].replace("P</p>", ""));
 
         // Base URL: http://ii.hywly.com/a/1/albumid/imgnum.jpg
         String baseURL = "http://ii.hywly.com/a/1/" + albumID + "/";
 
         // Loop through and add images to the URL list
-        for (int i = 1; i <= actualNumOfImages; i++) {
+        for (int i = 1; i <= numOfImages; i++) {
             imageURLs.add(baseURL + i + ".jpg");
         }
         return imageURLs;
