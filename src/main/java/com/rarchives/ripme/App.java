@@ -69,6 +69,12 @@ public class App {
             logger.info(cl.getOptionValue("a"));
             stringToAppendToFoldername = cl.getOptionValue("a");
         }
+        
+        if (cl.hasOption('z')) {
+            String historyLocation = cl.getOptionValue('z').trim();
+            Utils.setConfigString("history.location", historyLocation);
+            logger.info("Set history file to " + historyLocation);
+        }
 
         if (GraphicsEnvironment.isHeadless() || args.length > 0) {
             handleArguments(args);
@@ -115,12 +121,6 @@ public class App {
 
         Utils.configureLogger();
         logger.info("Initialized ripme v" + UpdateUtils.getThisJarVersion());
-        
-        if (cl.hasOption('z')) {
-            String historyLocation = cl.getOptionValue('z').trim();
-            Utils.setConfigString("history.location", historyLocation);
-            logger.info("Set history file to " + historyLocation);
-        }
 
         //Allow file overwriting
         if (cl.hasOption('w')) {
