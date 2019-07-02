@@ -42,7 +42,6 @@ public class Utils {
     private static final String OS = System.getProperty("os.name").toLowerCase();
     private static final Logger LOGGER = Logger.getLogger(Utils.class);
     private static final int SHORTENED_PATH_LENGTH = 12;
-    private static final String HISTORY_FILE = "";
 
     private static PropertiesConfiguration config;
     private static HashMap<String, HashMap<String, String>> cookieCache;
@@ -270,10 +269,10 @@ public class Utils {
      * Return the path of the url history file
      */
     public static String getURLHistoryFile() {
-        if(HISTORY_FILE.length()==0) {
+        if(getConfigString("history.location", "").length()==0) {
             return getConfigDir() + File.separator + "url_history.txt";
         }else{
-            return HISTORY_FILE;
+            return getConfigString("history.location");
         }
     }
 
