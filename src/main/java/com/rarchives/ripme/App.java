@@ -115,6 +115,10 @@ public class App {
 
         Utils.configureLogger();
         logger.info("Initialized ripme v" + UpdateUtils.getThisJarVersion());
+        
+        if (cl.hasOption('H')) {
+            Utils.setConfigString("history.location", cl.getOptionValue('H'))
+        }
 
         //Allow file overwriting
         if (cl.hasOption('w')) {
@@ -240,10 +244,6 @@ public class App {
             } catch (IOException ioe) {
                 logger.error("[!] Failed reading file containing list of URLs. Cannot continue.");
             }
-        }
-        
-        if (cl.hasOption('H')) {
-            String historylocation = cl.getOptionValue('H');
         }
 
         //The URL to rip.
