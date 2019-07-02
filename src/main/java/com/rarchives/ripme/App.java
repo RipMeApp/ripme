@@ -120,7 +120,6 @@ public class App {
             String historyLocation = cl.getOptionValue('z').trim();
             Utils.setConfigString("history.location", historyLocation);
             logger.info("Set history file to " + historyLocation);
-            logger.info(args['z']);
         }
 
         //Allow file overwriting
