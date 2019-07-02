@@ -241,6 +241,10 @@ public class App {
                 logger.error("[!] Failed reading file containing list of URLs. Cannot continue.");
             }
         }
+        
+        if (cl.hasOption('H')) {
+            String historylocation = cl.getOptionValue('H');
+        }
 
         //The URL to rip.
         if (cl.hasOption('u')) {
@@ -303,6 +307,7 @@ public class App {
         opts.addOption("p", "proxy-server", true, "Use HTTP Proxy server ([user:password]@host[:port])");
         opts.addOption("j", "update", false, "Update ripme");
         opts.addOption("a","append-to-folder", true, "Append a string to the output folder name");
+        opts.addOption("H", "history", false, "Set history file location.");
         return opts;
     }
 
