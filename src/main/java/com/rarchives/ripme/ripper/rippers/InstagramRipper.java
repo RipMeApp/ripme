@@ -159,7 +159,8 @@ public class InstagramRipper extends AbstractJSONRipper {
         Document p = resp.parse();
         // Get the query hash so we can download the next page
         qHash = getQHash(p);
-        if (qHash == null) {
+        // The qHash is not needed if ripping a single post
+        if (qHash == null && !url.toExternalForm().contains("/p/")) {
             throw new IOException("Unable to extract qhash from page");
         }
         return getJSONFromPage(p);
@@ -475,7 +476,7 @@ public class InstagramRipper extends AbstractJSONRipper {
 
     private String getQhashUrl(Document doc) {
         for(Element el : doc.select("link[rel=preload]")) {
-            if (el.attr("href").contains("ProfilePageContainer")) {
+            if (el.attr("href").contains("ProfilePageContainer") && el.attr("href").contains("js")) {
                 return el.attr("href");
             }
         }
