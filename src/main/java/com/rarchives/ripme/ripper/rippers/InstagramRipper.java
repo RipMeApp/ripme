@@ -1,546 +1,436 @@
 package com.rarchives.ripme.ripper.rippers;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLConnection;
-import java.time.*;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.security.*;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import com.rarchives.ripme.ripper.AbstractJSONRipper;
 import com.rarchives.ripme.utils.Http;
-
+import com.rarchives.ripme.utils.Utils;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.jsoup.Connection;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
-import com.rarchives.ripme.ui.RipStatusMessage;
-import com.rarchives.ripme.utils.Utils;
+
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.time.Instant;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Spliterators;
+import java.util.function.BiFunction;
+import java.util.function.Consumer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
+import static java.lang.String.format;
 
+// Available configuration options:
+// instagram.download_images_only - use to skip video links
+// instagram.session_id - should be set for stories and private accounts (look for sessionid cookie)
 public class InstagramRipper extends AbstractJSONRipper {
-    String nextPageID = "";
+
     private String qHash;
-    private  boolean rippingTag = false;
-    private String tagName;
+    private Map<String, String> cookies = new HashMap<>();
+    private String idString;
+    private List<String> itemPrefixes = new ArrayList<>();
+    private List<String> failedItems = new ArrayList<>();
 
-    private String userID;
-    private String rhx_gis = null;
-    private String csrftoken;
+    private boolean hashtagRip;
+    private boolean taggedRip;
+    private boolean igtvRip;
+    private boolean postRip;
+    private boolean storiesRip;
+    private boolean pinnedRip;
+    private boolean pinnedReelRip;
 
+    private enum UrlTypePattern {
+        // e.g. https://www.instagram.com/explore/tags/rachelc00k/
+        HASHTAG("explore/tags/(?<tagname>[^?/]+)"),
 
+        // e.g. https://www.instagram.com/stories/rachelc00k/
+        STORIES("stories/(?<username>[^?/]+)"),
+
+        // e.g. https://www.instagram.com/rachelc00k/tagged/
+        USER_TAGGED("(?<username>[^?/]+)/tagged"),
+
+        // e.g. https://www.instagram.com/rachelc00k/channel/
+        IGTV("(?<username>[^?/]+)/channel"),
+
+        // e.g. https://www.instagram.com/p/Bu4CEfbhNk4/
+        SINGLE_POST("(?:p|tv)/(?<shortcode>[^?/]+)"),
+
+        // pseudo-url, e.g. https://www.instagram.com/rachelc00k/?pinned
+        PINNED("(?<username>[^?/]+)/?[?]pinned"),
+
+        // e.g. https://www.instagram.com/rachelc00k/
+        USER_PROFILE("(?<username>[^?/]+)");
+
+        private final String urlTypePattern;
+
+        UrlTypePattern(String urlTypePattern) {
+            this.urlTypePattern = urlTypePattern;
+        }
+    }
 
     public InstagramRipper(URL url) throws IOException {
         super(url);
     }
 
     @Override
-    public String getHost() {
-        return "instagram";
-    }
-    @Override
-    public String getDomain() {
+    protected String getDomain() {
         return "instagram.com";
     }
 
     @Override
-    public boolean canRip(URL url) {
-        return (url.getHost().endsWith("instagram.com"));
-    }
-
-    @Override
-    public URL sanitizeURL(URL url) throws MalformedURLException {
-       URL san_url = new URL(url.toExternalForm().replaceAll("\\?hl=\\S*", ""));
-       LOGGER.info("sanitized URL is " + san_url.toExternalForm());
-        return san_url;
-    }
-
-    @Override
-    public String normalizeUrl(String url) {
-        // Remove the date sig from the url
-        return url.replaceAll("/[A-Z0-9]{8}/", "/");
-    }
-
-    @Override public boolean hasASAPRipping() {
-        return true;
+    public String getHost() {
+        return "instagram";
     }
 
     @Override
     public String getGID(URL url) throws MalformedURLException {
-        Pattern p = Pattern.compile("^https?://instagram.com/([^/]+)/?");
-        Matcher m = p.matcher(url.toExternalForm());
-        if (m.matches()) {
-            return m.group(1);
-        }
-
-        p = Pattern.compile("^https?://www.instagram.com/([^/]+)/?(?:\\?hl=\\S*)?/?");
-        m = p.matcher(url.toExternalForm());
-        if (m.matches()) {
-            return m.group(1);
-        }
-
-        p = Pattern.compile("^https?://www.instagram.com/p/([a-zA-Z0-9_-]+)/\\?taken-by=([^/]+)/?");
-        m = p.matcher(url.toExternalForm());
-        if (m.matches()) {
-            return m.group(2) + "_" + m.group(1);
-        }
-
-        p = Pattern.compile("^https?://www.instagram.com/p/([a-zA-Z0-9_-]+)/?");
-        m = p.matcher(url.toExternalForm());
-        if (m.matches()) {
-            return m.group(1);
-        }
-
-        p = Pattern.compile("^https?://www.instagram.com/p/([a-zA-Z0-9_-]+)/?(?:\\?hl=\\S*)?/?");
-        m = p.matcher(url.toExternalForm());
-        if (m.matches()) {
-            return m.group(1);
-        }
-
-        p = Pattern.compile("^https?://www.instagram.com/explore/tags/([^/]+)/?");
-        m = p.matcher(url.toExternalForm());
-        if (m.matches()) {
-            rippingTag = true;
-            tagName = m.group(1);
-            return m.group(1);
-        }
-
-        throw new MalformedURLException("Unable to find user in " + url);
-    }
-
-    private String stripHTMLTags(String t) {
-        t = t.replaceAll("<html>\n" +
-                " <head></head>\n" +
-                " <body>", "");
-        t.replaceAll("</body>\n" +
-                "</html>", "");
-        t = t.replaceAll("\n", "");
-        t = t.replaceAll("=\"\"", "");
-        return t;
-    }
-
-
-    private JSONObject getJSONFromPage(Document firstPage) throws IOException {
-        // Check if this page is HTML + JSON or jsut json
-        if (!firstPage.html().contains("window._sharedData =")) {
-            return new JSONObject(stripHTMLTags(firstPage.html()));
-        }
-        String jsonText = "";
-        try {
-            for (Element script : firstPage.select("script[type=text/javascript]")) {
-                if (script.data().contains("window._sharedData = ")) {
-                    jsonText = script.data().replaceAll("window._sharedData = ", "");
-                    jsonText = jsonText.replaceAll("};", "}");
+        for (UrlTypePattern urlType : UrlTypePattern.values()) {
+            Matcher urlMatcher = getUrlMatcher(url, urlType);
+            if (urlMatcher.matches()) {
+                switch (urlType) {
+                    case HASHTAG:
+                        hashtagRip = true;
+                        return "tag_" + urlMatcher.group("tagname");
+                    case PINNED:
+                        pinnedRip = true;
+                        return urlMatcher.group("username") + "_pinned";
+                    case STORIES:
+                        storiesRip = true;
+                        return urlMatcher.group("username") + "_stories";
+                    case USER_TAGGED:
+                        taggedRip = true;
+                        return urlMatcher.group("username") + "_tagged";
+                    case IGTV:
+                        igtvRip = true;
+                        return urlMatcher.group("username") + "_igtv";
+                    case SINGLE_POST:
+                        postRip = true;
+                        return "post_" + urlMatcher.group("shortcode");
+                    case USER_PROFILE:
+                        return urlMatcher.group("username");
+                    default:
+                        throw new RuntimeException("Reached unreachable");
                 }
             }
-            return new JSONObject(jsonText);
-        } catch (JSONException e) {
-            throw new IOException("Could not get JSON from page");
         }
+        throw new MalformedURLException("This URL can't be ripped");
+    }
+
+    private Matcher getUrlMatcher(URL url, UrlTypePattern type) {
+        String baseRegex = "^https?://(?:www[.])?instagram[.]com/%s(?:[?/].*)?";
+        Pattern pattern = Pattern.compile(format(baseRegex, type.urlTypePattern));
+        return pattern.matcher(url.toExternalForm());
     }
 
     @Override
     public JSONObject getFirstPage() throws IOException {
-        Connection.Response resp = Http.url(url).response();
-        LOGGER.info(resp.cookies());
-        csrftoken = resp.cookie("csrftoken");
-        Document p = resp.parse();
-        // Get the query hash so we can download the next page
-        qHash = getQHash(p);
-        // The qHash is not needed if ripping a single post
-        if (qHash == null && !url.toExternalForm().contains("/p/")) {
-            throw new IOException("Unable to extract qhash from page");
-        }
-        return getJSONFromPage(p);
+        setAuthCookie();
+        Document document = Http.url(url).cookies(cookies).response().parse();
+        qHash = getQhash(document);
+        JSONObject jsonObject = getJsonObjectFromDoc(document);
+        String hashtagNamePath = "entry_data.TagPage[0].graphql.hashtag.name";
+        String singlePostIdPath = "entry_data.PostPage[0].graphql.shortcode_media.shortcode";
+        String profileIdPath = "entry_data.ProfilePage[0].graphql.user.id";
+        String storiesPath = "entry_data.StoriesPage[0].user.id";
+        String idPath = hashtagRip ? hashtagNamePath : storiesRip ? storiesPath : postRip ? singlePostIdPath : profileIdPath;
+        idString = getJsonStringByPath(jsonObject, idPath);
+        return taggedRip ? getNextPage(null) : pinnedRip ? getPinnedItems(document) : storiesRip ? getStoriesItems() : jsonObject;
     }
 
-    private String getVideoFromPage(String videoID) {
+    private void setAuthCookie() throws IOException {
+        String sessionId = Utils.getConfigString("instagram.session_id", null);
+        if ((storiesRip || pinnedRip) && sessionId == null) {
+            throw new IOException("instagram.session_id should be set up for Instagram stories");
+        }
+        if (sessionId != null) {
+            cookies.put("sessionid", sessionId);
+        }
+    }
+
+    // Query hash is used for graphql requests
+    private String getQhash(Document doc) throws IOException {
+        if (postRip) {
+            return null;
+        }
+        String pinnedRegex = "=\"(?<hash>[0-9a-f]+)\"[^;]+[.]generatePaginationActionCreators";
+        String storiesRegex = "=50,h=\"(?<hash>[0-9a-f]+)\"";
+        String hashRegex = "%s[^;]+pagination}?,queryId:\"(?<hash>[0-9a-f]+)\"";
+        String forHashtag = "tagMedia[.]byTagName";
+        String forTagged = "taggedPosts[.]byUserId";
+        String forUser = "profilePosts[.]byUserId";
+        String href = "";
+        Pattern pattern = Pattern.compile(format(hashRegex, forUser));
+        for (Element el : doc.select("link[rel=preload]")) {
+            href = el.attr("href");
+            if ((storiesRip || pinnedReelRip) && href.contains("Consumer.js")) {
+                pattern = Pattern.compile(storiesRegex);
+                break;
+            } else if (href.contains("ProfilePageContainer.js") || href.contains("TagPageContainer.js")) {
+                pattern = Pattern.compile(pinnedRip ? pinnedRegex :
+                        format(hashRegex, hashtagRip ? forHashtag : taggedRip ? forTagged : forUser));
+                break;
+            }
+        }
+        Matcher matcher = pattern.matcher(Http.url("https://www.instagram.com" + href).response().body());
+        return matcher.find() ? matcher.group("hash") : null;
+    }
+
+    private JSONObject getJsonObjectFromDoc(Document document) {
+        for (Element script : document.select("script[type=text/javascript]")) {
+            String scriptText = script.data();
+            if (scriptText.startsWith("window._sharedData")) {
+                String jsonText = scriptText.replaceAll("[^{]*([{].*})[^}]*", "$1");
+                return new JSONObject(jsonText);
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public JSONObject getNextPage(JSONObject source) throws IOException {
+        if (postRip || storiesRip || pinnedReelRip) {
+            return null;
+        }
+        JSONObject nextPageQuery = new JSONObject().put(hashtagRip ? "tag_name" : "id", idString).put("first", 12);
+        if (source == null) {
+            return graphqlRequest(nextPageQuery);
+        }
+        JSONObject pageInfo = getMediaRoot(source).getJSONObject("page_info");
+        if (pageInfo.getBoolean("has_next_page")) {
+            return graphqlRequest(nextPageQuery.put("after", pageInfo.getString("end_cursor")));
+        } else {
+            failedItems.forEach(LOGGER::error);
+            return null;
+        }
+    }
+
+    private JSONObject getStoriesItems() throws IOException {
+        return graphqlRequest(new JSONObject().append("reel_ids", idString).put("precomposed_overlay", false));
+    }
+
+    // Two requests with different query hashes required for pinned items.
+    // Query hash to be used depends on flag specified:
+    // pinnedRip flag is used initially to get list of pinned albums;
+    // pinnedReelRip flag is used next to get media urls.
+    private JSONObject getPinnedItems(Document document) throws IOException {
+        JSONObject queryForIds = new JSONObject().put("user_id", idString).put("include_highlight_reels", true);
+        JSONObject pinnedIdsJson = graphqlRequest(queryForIds);
+        JSONArray pinnedItems = getJsonArrayByPath(pinnedIdsJson, "data.user.edge_highlight_reels.edges");
+        pinnedRip = false;
+        pinnedReelRip = true;
+        qHash = getQhash(document);
+        JSONObject queryForDetails = new JSONObject();
+        getStreamOfJsonArray(pinnedItems)
+                .map(object -> getJsonStringByPath(object, "node.id"))
+                .forEach(id -> queryForDetails.append("highlight_reel_ids", id));
+        queryForDetails.put("precomposed_overlay", false);
+        return graphqlRequest(queryForDetails);
+    }
+
+    private JSONObject graphqlRequest(JSONObject vars) throws IOException {
+        // Sleep for a while to avoid a ban
+        sleep(2500);
+        String url = format("https://www.instagram.com/graphql/query/?query_hash=%s&variables=%s", qHash, vars.toString());
+        return Http.url(url).cookies(cookies).getJSON();
+    }
+
+    @Override
+    public List<String> getURLsFromJSON(JSONObject json) {
+        if (storiesRip || pinnedReelRip) {
+            JSONArray storyAlbums = getJsonArrayByPath(json, "data.reels_media");
+            return getStreamOfJsonArray(storyAlbums)
+                    .flatMap(album -> getStreamOfJsonArray(album.getJSONArray("items")))
+                    .peek(storyItem -> itemPrefixes.add(getTimestampPrefix(storyItem)))
+                    .flatMap(this::parseStoryItemForUrls)
+                    .collect(Collectors.toList());
+        }
+        if (postRip) {
+            JSONObject detailsJson = downloadItemDetailsJson(idString);
+            addPrefixInfo(detailsJson);
+            return parseItemDetailsForUrls(detailsJson).collect(Collectors.toList());
+        }
+        JSONArray edges = getMediaRoot(json).getJSONArray("edges");
+        return getStreamOfJsonArray(edges)
+                .map(edge -> getJsonStringByPath(edge, "node.shortcode"))
+                .map(this::downloadItemDetailsJson)
+                .filter(Objects::nonNull)
+                .peek(this::addPrefixInfo)
+                .flatMap(this::parseItemDetailsForUrls)
+                .collect(Collectors.toList());
+    }
+
+    private Stream<? extends String> parseStoryItemForUrls(JSONObject storyItem) {
+        if (storyItem.getBoolean("is_video")) {
+            itemPrefixes.add(getTimestampPrefix(storyItem) + "preview_");
+            int lastIndex = storyItem.getJSONArray("video_resources").length() - 1;
+            return Stream.of(
+                    getJsonStringByPath(storyItem, "video_resources[" + lastIndex + "].src"),
+                    storyItem.getString("display_url"));
+        }
+        return Stream.of(storyItem.getString("display_url"));
+    }
+
+    private JSONObject getMediaRoot(JSONObject json) {
+        String userExtra = "data.user.edge_owner_to_timeline_media";
+        String igtvExtra = "data.user.edge_felix_video_timeline";
+        String taggedExtra = "data.user.edge_user_to_photos_of_you";
+        String hashtagExtra = "data.hashtag.edge_hashtag_to_media";
+        String userHomeRoot = "entry_data.ProfilePage[0].graphql.user.edge_owner_to_timeline_media";
+        String igtvHomeRoot = "entry_data.ProfilePage[0].graphql.user.edge_felix_video_timeline";
+        String hashtagHomeRoot = "entry_data.TagPage[0].graphql.hashtag.edge_hashtag_to_media";
+        String mediaRootPath = json.optJSONObject("entry_data") != null ?
+                (hashtagRip ? hashtagHomeRoot : igtvRip ? igtvHomeRoot : userHomeRoot) : hashtagRip ?
+                hashtagExtra : igtvRip ? igtvExtra : taggedRip ? taggedExtra : userExtra;
+        return getJsonObjectByPath(json, mediaRootPath);
+    }
+
+    private JSONObject downloadItemDetailsJson(String shortcode) {
+        String url = "https://www.instagram.com/p/%s/?__a=1";
         try {
-            Document doc = Http.url("https://www.instagram.com/p/" + videoID).get();
+            Http http = Http.url(format(url, shortcode));
+            http.ignoreContentType();
+            http.connection().followRedirects(false);
+            Connection.Response response = http.cookies(cookies).response();
+            // Fix for redirection link; repeat request with the new shortcode
+            if (response.statusCode() == 302) {
+                Pattern redirectIdPattern = Pattern.compile("/p/(?<shortcode>[^?/]+)");
+                Matcher m = redirectIdPattern.matcher(response.header("location"));
+                return m.find() ? downloadItemDetailsJson(m.group("shortcode")) : null;
+            }
+            return new JSONObject(response.body());
+        } catch (Exception e) {
+            failedItems.add(shortcode);
+            LOGGER.trace(format("No item %s found", shortcode), e);
+        }
+        return null;
+    }
+
+    private void addPrefixInfo(JSONObject itemDetailsJson) {
+        JSONObject mediaItem = getJsonObjectByPath(itemDetailsJson, "graphql.shortcode_media");
+        String shortcode = mediaItem.getString("shortcode");
+        int subItemsCount = "GraphSidecar".equals(mediaItem.getString("__typename")) ?
+                getJsonArrayByPath(mediaItem, "edge_sidecar_to_children.edges").length() : 1;
+        for (int i = 0; i < subItemsCount; i++) {
+            itemPrefixes.add(getTimestampPrefix(mediaItem) + shortcode + "_");
+        }
+    }
+
+    private String getTimestampPrefix(JSONObject item) {
+        Instant instant = Instant.ofEpochSecond(item.getLong("taken_at_timestamp"));
+        return DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss_").format(ZonedDateTime.ofInstant(instant, ZoneOffset.UTC));
+    }
+
+    private Stream<? extends String> parseItemDetailsForUrls(JSONObject itemDetailsJson) {
+        JSONObject mediaItem = getJsonObjectByPath(itemDetailsJson, "graphql.shortcode_media");
+        // For some reason JSON video_url has lower quality than the HTML-tag one
+        // HTML-tag url is requested here and marked with _extra_ prefix
+        if ("GraphVideo".equals(mediaItem.getString("__typename"))) {
+            String shortcode = mediaItem.getString("shortcode");
+            String urlFromPage = getVideoUrlFromPage(shortcode);
+            if (!urlFromPage.isEmpty()) {
+                itemPrefixes.add(getTimestampPrefix(mediaItem) + shortcode + "_extra_");
+                return Stream.of(mediaItem.getString("video_url"), urlFromPage);
+            }
+        }
+        return parseRootForUrls(mediaItem);
+    }
+
+    // Uses recursion for GraphSidecar
+    private Stream<? extends String> parseRootForUrls(JSONObject mediaItem) {
+        String typeName = mediaItem.getString("__typename");
+        switch (typeName) {
+            case "GraphImage":
+                return Stream.of(mediaItem.getString("display_url"));
+            case "GraphVideo":
+                return Stream.of(mediaItem.getString("video_url"));
+            case "GraphSidecar":
+                JSONArray sideCar = getJsonArrayByPath(mediaItem, "edge_sidecar_to_children.edges");
+                return getStreamOfJsonArray(sideCar).map(object -> object.getJSONObject("node"))
+                                                    .flatMap(this::parseRootForUrls);
+            default:
+                return Stream.empty();
+        }
+    }
+
+    private String getVideoUrlFromPage(String videoID) {
+        try {
+            Document doc = Http.url("https://www.instagram.com/p/" + videoID).cookies(cookies).get();
             return doc.select("meta[property=og:video]").attr("content");
-        } catch (IOException e) {
+        } catch (Exception e) {
             LOGGER.warn("Unable to get page " + "https://www.instagram.com/p/" + videoID);
         }
         return "";
     }
 
-    private String getOriginalUrl(String imageURL) {
-        // Without this regex most images will return a 403 error
-        imageURL = imageURL.replaceAll("vp/[a-zA-Z0-9]*/", "");
-        imageURL = imageURL.replaceAll("scontent.cdninstagram.com/hphotos-", "igcdn-photos-d-a.akamaihd.net/hphotos-ak-");
-
-        // Instagram returns cropped images to unauthenticated applications to maintain legacy support. 
-        // To retrieve the uncropped image, remove this segment from the URL. 
-        // Segment format: cX.Y.W.H - eg: c0.134.1080.1080
-        imageURL = imageURL.replaceAll("/c\\d{1,4}\\.\\d{1,4}\\.\\d{1,4}\\.\\d{1,4}", "");
-        imageURL = imageURL.replaceAll("\\?ig_cache_key.+$", "");
-        return imageURL;
-    }
-
-    public String getAfter(JSONObject json) {
-        try {
-            return json.getJSONObject("entry_data").getJSONArray("ProfilePage").getJSONObject(0)
-                    .getJSONObject("graphql").getJSONObject("user")
-                    .getJSONObject("edge_owner_to_timeline_media").getJSONObject("page_info").getString("end_cursor");
-        } catch (JSONException e) {
-            // This is here so that when the user rips the last page they don't get a "end_cursor not a string" error
-            try {
-                return json.getJSONObject("data").getJSONObject("user")
-                        .getJSONObject("edge_owner_to_timeline_media").getJSONObject("page_info").getString("end_cursor");
-            } catch (JSONException t) {
-                return "";
-            }
-        }
-    }
-
     @Override
-    public List<String> getURLsFromJSON(JSONObject json) {
-        List<String> imageURLs = new ArrayList<>();
-        if (!url.toExternalForm().contains("/p/")) {
-            nextPageID = getAfter(json);
-        }
-
-        // get the rhx_gis value so we can get the next page later on
-        if (rhx_gis == null) {
-            try {
-                rhx_gis = json.getString("rhx_gis");
-            } catch (JSONException ex) {
-                // Instagram has removed this token, but ...
-                LOGGER.error("Error while getting rhx_gis: " + ex.getMessage());                
-                //... if we set it to "", the next page can still be fetched
-                rhx_gis = "";
-            }
-        }
-        if (!url.toExternalForm().contains("/p/")) {
-            JSONArray datas = new JSONArray();
-            if (!rippingTag) {
-                // This first try only works on data from the first page
-                try {
-                    JSONArray profilePage = json.getJSONObject("entry_data").getJSONArray("ProfilePage");
-                    userID = profilePage.getJSONObject(0).getString("logging_page_id").replaceAll("profilePage_", "");
-                    datas = json.getJSONObject("entry_data").getJSONArray("ProfilePage").getJSONObject(0)
-                            .getJSONObject("graphql").getJSONObject("user")
-                            .getJSONObject("edge_owner_to_timeline_media").getJSONArray("edges");
-                } catch (JSONException e) {
-                    datas = json.getJSONObject("data").getJSONObject("user")
-                            .getJSONObject("edge_owner_to_timeline_media").getJSONArray("edges");
-                }
-            } else {
-                try {
-                    JSONArray tagPage = json.getJSONObject("entry_data").getJSONArray("TagPage");
-                    datas = tagPage.getJSONObject(0).getJSONObject("graphql").getJSONObject("hashtag")
-                            .getJSONObject("edge_hashtag_to_media").getJSONArray("edges");
-                } catch (JSONException e) {
-                    datas = json.getJSONObject("data").getJSONObject("hashtag").getJSONObject("edge_hashtag_to_media")
-                            .getJSONArray("edges");
-                }
-            }
-            for (int i = 0; i < datas.length(); i++) {
-                JSONObject data = (JSONObject) datas.get(i);
-                data = data.getJSONObject("node");
-                Long epoch = data.getLong("taken_at_timestamp");
-                Instant instant = Instant.ofEpochSecond(epoch);
-                String image_date = DateTimeFormatter.ofPattern("yyyy_MM_dd_hh:mm_").format(ZonedDateTime.ofInstant(instant, ZoneOffset.UTC));
-                // It looks like tag pages don't have the __typename key
-                if (!rippingTag) {
-                    if (data.getString("__typename").equals("GraphSidecar")) {
-                        try {
-                            Document slideShowDoc = Http.url(new URL("https://www.instagram.com/p/" + data.getString("shortcode"))).get();
-                            List<JSONObject> toAdd = getPostsFromSinglePage(getJSONFromPage(slideShowDoc));
-                            for (int slideShowInt = 0; slideShowInt < toAdd.size(); slideShowInt++) {
-                                addDownloadFromData(toAdd.get(slideShowInt), image_date + data.getString("shortcode"));
-                            }
-                        } catch (IOException e) {
-                            LOGGER.error("Unable to download slide show");
-                        }
-                    }
-                }
-
-                if (!data.getBoolean("is_video")) {
-                    if (imageURLs.isEmpty()) {
-                        // We add this one item to the array because either wise
-                        // the ripper will error out because we returned an empty array
-                        imageURLs.add(getOriginalUrl(data.getString("display_url")));
-                    }
-                }
-                // add download from data which handles image vs video
-                addDownloadFromData(data, image_date);
-
-                if (isThisATest()) {
-                    break;
-                }
-            }
-
-        } else { // We're ripping from a single page
-            LOGGER.info("Ripping from single page");
-            List<JSONObject> posts = getPostsFromSinglePage(json);
-            imageURLs = getImageURLsFromPosts(posts);
-        }
-
-        return imageURLs;
-    }
-
-    private List<JSONObject> getPostsFromSinglePage(JSONObject json) {
-        List<JSONObject> posts = new ArrayList<>();
-        JSONArray datas;
-            if (json.getJSONObject("entry_data").getJSONArray("PostPage")
-                    .getJSONObject(0).getJSONObject("graphql").getJSONObject("shortcode_media")
-                    .has("edge_sidecar_to_children")) {
-                datas = json.getJSONObject("entry_data").getJSONArray("PostPage")
-                        .getJSONObject(0).getJSONObject("graphql").getJSONObject("shortcode_media")
-                        .getJSONObject("edge_sidecar_to_children").getJSONArray("edges");
-                for (int i = 0; i < datas.length(); i++) {
-                    JSONObject data = (JSONObject) datas.get(i);
-                    data = data.getJSONObject("node");
-                    posts.add(data);
-                }
-            } else {
-                JSONObject data = json.getJSONObject("entry_data").getJSONArray("PostPage")
-                        .getJSONObject(0).getJSONObject("graphql").getJSONObject("shortcode_media");
-                posts.add(data);
-            }
-            return posts;
-    }
-
-    private List<String> getImageURLsFromPosts(List<JSONObject> posts) {
-        List<String> imageURLs = new ArrayList<>();
-        if (posts == null) {
-            LOGGER.error("Failed to get image urls from null posts");
-            return imageURLs;
-        } 
-
-        for (int i = 0; i < posts.size(); i++) {
-            JSONObject post = posts.get(i);
-            if (post.getBoolean("is_video")) {
-                // always check if video are being ignored
-                if (isIgnoringVideos()) {
-                    sendUpdate(RipStatusMessage.STATUS.DOWNLOAD_WARN, "Skipping video " + post.getString("shortcode"));
-                } else {
-                    imageURLs.add(post.getString("video_url"));
-                }
-            } else {
-                imageURLs.add(post.getString("display_url"));
-            }
-        }
-        return imageURLs;
-    }
-
-    // attempt to add download from data, checking for video vs images
-    private void addDownloadFromData(JSONObject data, String prefix) {
-        if (data == null) {
-            LOGGER.error("Failed to add download: null data");
+    protected void downloadURL(URL url, int index) {
+        if (Utils.getConfigBoolean("instagram.download_images_only", false) && url.toString().contains(".mp4?")) {
+            LOGGER.info("Skipped video url: " + url);
             return;
         }
-
-        try {
-            if (data.getBoolean("is_video")) {
-                // always check if video are being ignored to honor the setting
-                if (isIgnoringVideos()) {
-                    sendUpdate(RipStatusMessage.STATUS.DOWNLOAD_WARN, "Skipping video " + data.getString("shortcode"));
-                } else {
-                    addURLToDownload(new URL(getVideoFromPage(data.getString("shortcode"))), prefix);
-                }
-            } else {
-                addURLToDownload(new URL(data.getString("display_url")), prefix);
-            }
-
-        } catch (MalformedURLException e) {
-            LOGGER.error("Malformed URL from data", e);
-        }
+        addURLToDownload(url, itemPrefixes.get(index - 1), "", null, cookies);
     }
 
-    private boolean isIgnoringVideos() {
-        return Utils.getConfigBoolean("instagram.download_images_only", false);
+    // Some JSON helper methods below
+    /* ------------------------------------------------------------------------------------------------------- */
+    private JSONObject getJsonObjectByPath(JSONObject object, String key) {
+        Pattern arrayPattern = Pattern.compile("(?<arr>.*)\\[(?<idx>\\d+)]");
+        JSONObject result = object;
+        for (String s : key.split("[.]")) {
+            Matcher m = arrayPattern.matcher(s);
+            result = m.matches() ?
+                    result.getJSONArray(m.group("arr")).getJSONObject(Integer.parseInt(m.group("idx"))) :
+                    result.getJSONObject(s);
+        }
+        return result;
     }
 
-    private String getIGGis(String variables) {
-        String stringToMD5 = rhx_gis + ":" + variables;
-        LOGGER.debug("String to md5 is \"" + stringToMD5 + "\"");
-        try {
-            byte[] bytesOfMessage = stringToMD5.getBytes("UTF-8");
-
-            MessageDigest md = MessageDigest.getInstance("MD5");
-            byte[] hash = md.digest(bytesOfMessage);
-            StringBuffer sb = new StringBuffer();
-            for (int i = 0; i < hash.length; ++i) {
-                sb.append(Integer.toHexString((hash[i] & 0xFF) | 0x100).substring(1,3));
-            }
-            return sb.toString();
-        } catch(UnsupportedEncodingException e) {
-            return null;
-        } catch(NoSuchAlgorithmException e) {
-            return null;
-        }
+    private <T> T getByPath(BiFunction<JSONObject, String, T> func, JSONObject object, String key) {
+        int namePos = key.lastIndexOf('.');
+        JSONObject parent = namePos < 0 ? object : getJsonObjectByPath(object, key.substring(0, namePos));
+        return func.apply(parent, key.substring(namePos + 1));
     }
 
-    @Override
-    public JSONObject getNextPage(JSONObject json) throws IOException {
-        JSONObject toreturn;
-        java.util.Map<String, String> cookies = new HashMap<String, String>();
-//        This shouldn't be hardcoded and will break one day
-        cookies.put("ig_pr", "1");
-        cookies.put("csrftoken", csrftoken);
-        if (!nextPageID.equals("") && !isThisATest()) {
-            if (rippingTag) {
-                try {
-                    sleep(2500);
-                    String vars = "{\"tag_name\":\"" + tagName + "\",\"first\":4,\"after\":\"" + nextPageID + "\"}";
-                    String ig_gis = getIGGis(vars);
-                     toreturn = getPage("https://www.instagram.com/graphql/query/?query_hash=" + qHash +
-                                     "&variables=" + vars, ig_gis);
-                    // Sleep for a while to avoid a ban
-                    LOGGER.info(toreturn);
-                    if (!pageHasImages(toreturn)) {
-                        throw new IOException("No more pages");
-                    }
-                    return toreturn;
-
-                } catch (IOException e) {
-                    throw new IOException("No more pages");
-                }
-
-            }
-            try {
-                // Sleep for a while to avoid a ban
-                sleep(2500);
-                String vars = "{\"id\":\"" + userID + "\",\"first\":12,\"after\":\"" + nextPageID + "\"}";
-                String ig_gis = getIGGis(vars);
-                LOGGER.info(ig_gis);
-
-                LOGGER.info("https://www.instagram.com/graphql/query/?query_hash=" + qHash + "&variables=" + vars);
-                toreturn = getPage("https://www.instagram.com/graphql/query/?query_hash=" + qHash + "&variables=" + vars, ig_gis);
-                if (!pageHasImages(toreturn)) {
-                    throw new IOException("No more pages");
-                }
-                return toreturn;
-            } catch (IOException e) {
-                return null;
-            }
-        } else {
-            throw new IOException("No more pages");
-        }
+    private JSONArray getJsonArrayByPath(JSONObject object, String key) {
+        return getByPath(JSONObject::getJSONArray, object, key);
     }
 
-    @Override
-    public void downloadURL(URL url, int index) {
-        addURLToDownload(url);
+    private String getJsonStringByPath(JSONObject object, String key) {
+        return getByPath(JSONObject::getString, object, key);
     }
 
-    private boolean pageHasImages(JSONObject json) {
-        int numberOfImages = json.getJSONObject("data").getJSONObject("user")
-                .getJSONObject("edge_owner_to_timeline_media").getJSONArray("edges").length();
-        if (numberOfImages == 0) {
-            return false;
-        }
-        return true;
+    private Stream<JSONObject> getStreamOfJsonArray(JSONArray array) {
+        return StreamSupport.stream(new JSONSpliterator(array), false);
     }
 
-    private JSONObject getPage(String url, String ig_gis) {
-        StringBuilder sb = new StringBuilder();
-        try {
-            // We can't use Jsoup here because it won't download a non-html file larger than a MB
-            // even if you set maxBodySize to 0
-            URLConnection connection = new URL(url).openConnection();
-            connection.setRequestProperty("User-Agent", USER_AGENT);
-            connection.setRequestProperty("x-instagram-gis", ig_gis);
-            BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-            String line;
-            while ((line = in.readLine()) != null) {
-                sb.append(line);
+    private class JSONSpliterator extends Spliterators.AbstractSpliterator<JSONObject> {
+        private JSONArray array;
+        private int index = 0;
 
+        JSONSpliterator(JSONArray array) {
+            super(array.length(), SIZED | ORDERED);
+            this.array = array;
+        }
+
+        @Override
+        public boolean tryAdvance(Consumer<? super JSONObject> action) {
+            if (index == array.length()) {
+                return false;
             }
-            in.close();
-            return new JSONObject(sb.toString());
-
-        } catch (MalformedURLException e) {
-            LOGGER.info("Unable to get page, " + url + " is a malformed URL");
-            return null;
-        } catch (IOException e) {
-            LOGGER.info("Unable to get page");
-            LOGGER.info(e.getMessage());
-            return null;
+            action.accept(array.getJSONObject(index++));
+            return true;
         }
     }
-
-    private String getQhashUrl(Document doc) {
-        for(Element el : doc.select("link[rel=preload]")) {
-            if (el.attr("href").contains("ProfilePageContainer") && el.attr("href").contains("js")) {
-                return el.attr("href");
-            }
-        }
-        for(Element el : doc.select("link[rel=preload]")) {
-            if (el.attr("href").contains("metro")) {
-                return el.attr("href");
-            }
-        }
-        return null;
-    }
-
-    private String getQHash(Document doc) {
-        String jsFileURL = "https://www.instagram.com" + getQhashUrl(doc);
-        StringBuilder sb = new StringBuilder();
-        LOGGER.info(jsFileURL);
-        try {
-            // We can't use Jsoup here because it won't download a non-html file larger than a MB
-            // even if you set maxBodySize to 0
-            URLConnection connection = new URL(jsFileURL).openConnection();
-            BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-            String line;
-            while ((line = in.readLine()) != null) {
-                sb.append(line);
-            }
-            in.close();
-
-        } catch (MalformedURLException e) {
-            LOGGER.info("Unable to get query_hash, " + jsFileURL + " is a malformed URL");
-            return null;
-        } catch (IOException e) {
-            LOGGER.info("Unable to get query_hash from " + jsFileURL);
-            LOGGER.info(e.getMessage());
-            return null;
-        }
-        if (!rippingTag) {
-            Pattern jsP = Pattern.compile("byUserId\\.get\\(t\\)\\)\\|\\|void 0===r\\?void 0:r\\.pagination},queryId:.([a-zA-Z0-9]+)");
-            Matcher m = jsP.matcher(sb.toString());
-            if (m.find()) {
-                return m.group(1);
-            } else {
-                jsP = Pattern.compile("0:s\\.pagination},queryId:.([a-zA-Z0-9]+)");
-                m = jsP.matcher(sb.toString());
-                if (m.find()) {
-                    return m.group(1);
-                } else {
-                    jsP = Pattern.compile(",u=.([a-zA-Z0-9]+).");
-                    m = jsP.matcher(sb.toString());
-                    if (m.find()) {
-                        return m.group(1);
-                    }
-                }
-            }
-
-        } else {
-            Pattern jsP = Pattern.compile("return e.tagMedia.byTagName.get\\(t\\).pagination},queryId:.([a-zA-Z0-9]+).");
-            Matcher m = jsP.matcher(sb.toString());
-            if (m.find()) {
-                return m.group(1);
-            }
-
-        }
-        LOGGER.error("Could not find query_hash on " + jsFileURL);
-        return null;
-
-    }
-
 }
