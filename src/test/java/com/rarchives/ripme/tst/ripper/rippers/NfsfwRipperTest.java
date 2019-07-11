@@ -5,12 +5,14 @@ import java.net.URL;
 
 import com.rarchives.ripme.ripper.rippers.NfsfwRipper;
 
+import org.junit.jupiter.api.Disabled;
+
 public class NfsfwRipperTest extends RippersTest {
-    // https://github.com/RipMeApp/ripme/issues/291 -- nfsfw "account suspended" error; disabled flaky test in CI
-    /*public void testNfsfwRip() throws IOException {
+    @Disabled("https://github.com/RipMeApp/ripme/issues/291 -- nfsfw 'account suspended' error; disabled flaky test in CI")
+    public void testNfsfwRip() throws IOException {
         NfsfwRipper ripper = new NfsfwRipper(new URL("http://nfsfw.com/gallery/v/Kitten/"));
         testRipper(ripper);
-    }*/
+    }
 
     public void testGetGID() throws IOException {
         URL url = new URL("http://nfsfw.com/gallery/v/Kitten/");
