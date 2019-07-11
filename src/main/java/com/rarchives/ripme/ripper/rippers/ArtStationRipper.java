@@ -118,7 +118,8 @@ public class ArtStationRipper extends AbstractJSONRipper {
             }
 
             Integer currentProject = ((projectPageNumber - 1) * 50) + (projectIndex + 1);
-            // JSONObject albumContent = Http.url(albumURL.getLocation() + "?page=" + projectPageNumber).getJSON();
+            // JSONObject albumContent = Http.url(albumURL.getLocation() + "?page=" +
+            // projectPageNumber).getJSON();
             JSONObject albumContent = getJson(albumURL.getLocation() + "?page=" + projectPageNumber);
 
             if (albumContent.getInt("total_count") > currentProject) {
@@ -126,7 +127,7 @@ public class ArtStationRipper extends AbstractJSONRipper {
                 JSONObject projectInfo = albumContent.getJSONArray("data").getJSONObject(projectIndex);
                 ParsedURL projectURL = parseURL(new URL(projectInfo.getString("permalink")));
                 projectIndex++;
-                 // return Http.url(projectURL.getLocation()).getJSON();
+                // return Http.url(projectURL.getLocation()).getJSON();
                 return getJson(projectURL.getLocation());
             }
 
@@ -189,12 +190,9 @@ public class ArtStationRipper extends AbstractJSONRipper {
         /**
          * Construct a new ParsedURL object.
          * 
-         * @param urlType
-         *            URL_TYPE enum containing the URL type
-         * @param jsonURL
-         *            String containing the JSON URL location
-         * @param urlID
-         *            String containing the ID of this URL
+         * @param urlType URL_TYPE enum containing the URL type
+         * @param jsonURL String containing the JSON URL location
+         * @param urlID   String containing the ID of this URL
          * 
          */
         ParsedURL(URL_TYPE urlType, String jsonURL, String urlID) {
@@ -237,8 +235,7 @@ public class ArtStationRipper extends AbstractJSONRipper {
     /**
      * Parses an ArtStation URL.
      * 
-     * @param url
-     *            URL to an ArtStation user profile
+     * @param url URL to an ArtStation user profile
      *            (https://www.artstation.com/username) or single project
      *            (https://www.artstation.com/artwork/projectid)
      * @return ParsedURL object containing URL type, JSON location and ID (stores
@@ -261,7 +258,7 @@ public class ArtStationRipper extends AbstractJSONRipper {
             con.header("Upgrade-Insecure-Requests", "1");
             Response res = con.execute();
             int status = res.statusCode();
-            
+
             if (status / 100 == 2) {
                 htmlSource = res.parse().html();
             } else if (status == 403 && url.toString().contains("artwork/")) {
@@ -301,27 +298,29 @@ public class ArtStationRipper extends AbstractJSONRipper {
         parsedURL = new ParsedURL(URL_TYPE.UNKNOWN, null, null);
         return parsedURL;
     }
-    
-    // Use this method instead of direct call to Http.url(url).getJson() to avoid cloudflare 403 page.
-    private JSONObject getJson(URL url) throws IOException {        
+
+    // Use this method instead of direct call to Http.url(url).getJson() to avoid
+    // cloudflare 403 page.
+    private JSONObject getJson(URL url) throws IOException {
         Connection con = Http.url(url).method(Method.GET).connection();
         con.ignoreHttpErrors(true);
         con.ignoreContentType(true);
-        con.userAgent("Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:67.0) Gecko/20100101 Firefox/67.0");
+        con.userAgent(
+                "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.95 Safari/537.11");
         con.header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
         con.header("Accept-Language", "en-US,en;q=0.5");
         con.header("Accept-Encoding", "gzip, deflate, br");
-        con.header("Upgrade-Insecure-Requests", "1");                
+        con.header("Upgrade-Insecure-Requests", "1");
         Response res = con.execute();
-        int status = res.statusCode();        
+        int status = res.statusCode();
         if (status / 100 == 2) {
             String jsonString = res.body();
             return new JSONObject(jsonString);
         }
         throw new IOException("Error fetching json. Status code:" + status);
     }
-    
-    private JSONObject getJson(String url) throws IOException{
+
+    private JSONObject getJson(String url) throws IOException {
         return getJson(new URL(url));
     }
 
