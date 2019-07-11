@@ -6,9 +6,11 @@ import java.net.URL;
 import com.rarchives.ripme.ripper.rippers.PhotobucketRipper;
 
 import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 public class PhotobucketRipperTest extends RippersTest {
 
+    @Test
     @Disabled("https://github.com/RipMeApp/ripme/issues/229 : Disabled test (temporary) : BasicRippersTest#testPhotobucketRip (timing out)")
     public void testPhotobucketRip() throws IOException {
         PhotobucketRipper ripper = new PhotobucketRipper(
@@ -18,6 +20,7 @@ public class PhotobucketRipperTest extends RippersTest {
         deleteDir(ripper.getWorkingDir());
     }
 
+    @Test
     @Disabled("new test, still disabled out because of the issue above, since this test also involves network IO.")
     public void testGetNextPage() throws IOException {
         // this album should have more than enough sub-albums and pages
@@ -42,6 +45,7 @@ public class PhotobucketRipperTest extends RippersTest {
         }
     }
 
+    @Test
     public void testGetGID() throws IOException {
         URL url = new URL(
                 "http://s732.photobucket.com/user/doublesix66/library/Army%20Painter%20examples?sort=3&page=1");

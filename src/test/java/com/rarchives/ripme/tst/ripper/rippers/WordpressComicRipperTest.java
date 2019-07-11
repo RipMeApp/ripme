@@ -6,6 +6,7 @@ import java.net.URL;
 import com.rarchives.ripme.ripper.rippers.WordpressComicRipper;
 
 import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 public class WordpressComicRipperTest extends RippersTest {
     // Test links (see also WordpressComicRipper.java)
@@ -20,6 +21,7 @@ public class WordpressComicRipperTest extends RippersTest {
     // http://tnbtu.com/comic/01-00/
     // http://shipinbottle.pepsaga.com/?p=281
 
+    @Test
     @Disabled("https://github.com/RipMeApp/ripme/issues/269 - Disabled test - WordpressRipperTest: various domains flaky in CI")
     public void test_totempole666() throws IOException {
         WordpressComicRipper ripper = new WordpressComicRipper(
@@ -27,12 +29,14 @@ public class WordpressComicRipperTest extends RippersTest {
         testRipper(ripper);
     }
 
+    @Test
     @Disabled("https://github.com/RipMeApp/ripme/issues/269 - Disabled test - WordpressRipperTest: various domains flaky in CI")
     public void test_buttsmithy() throws IOException {
         WordpressComicRipper ripper = new WordpressComicRipper(new URL("http://buttsmithy.com/archives/comic/p1"));
         testRipper(ripper);
     }
 
+    @Test
     @Disabled("https://github.com/RipMeApp/ripme/issues/269 - Disabled test - WordpressRipperTest: various domains flaky in CI")
     public void test_themonsterunderthebed() throws IOException {
         WordpressComicRipper ripper = new WordpressComicRipper(
@@ -66,6 +70,7 @@ public class WordpressComicRipperTest extends RippersTest {
 
     }
 
+    @Test
     @Disabled("https://github.com/RipMeApp/ripme/issues/269 - Disabled test - WordpressRipperTest: various domains flaky in CI")
     public void test_freeadultcomix() throws IOException {
         WordpressComicRipper ripper = new WordpressComicRipper(
@@ -103,6 +108,7 @@ public class WordpressComicRipperTest extends RippersTest {
         assertEquals("spyingwithlana_the-big-hookup", ripper.getAlbumTitle(url));
     }
 
+    @Test
     @Disabled("https://github.com/RipMeApp/ripme/issues/269 - Disabled test - WordpressRipperTest: various domains flaky in CI")
     public void test_pepsaga() throws IOException {
         WordpressComicRipper ripper = new WordpressComicRipper(new URL("http://shipinbottle.pepsaga.com/?p=281"));
