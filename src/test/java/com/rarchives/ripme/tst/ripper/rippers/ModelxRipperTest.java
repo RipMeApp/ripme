@@ -6,8 +6,10 @@ import java.net.URL;
 import com.rarchives.ripme.ripper.rippers.ModelxRipper;
 
 import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 public class ModelxRipperTest extends RippersTest {
+    @Test
     @Disabled("ModelxRipper domain has been changes. Commenting to avoid build failure.")
     public void testModelxAlbum() throws IOException {
         ModelxRipper ripper = new ModelxRipper(new URL(

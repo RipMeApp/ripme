@@ -70,6 +70,7 @@ public class ThechiveRipperTest extends RippersTest {
      * //If anyone figures out how to get JSOUP Elements mocked up, we can use the
      * following methods to test both jpeg + gif ripping.
      */
+    @Test
     @Disabled
     public void testGifRip1() throws IOException {
         String elementInString = "<img width=\"500\" height=\"305\" \n src=\"https://thechive.files.wordpress.com/2018/10/american_mary_crimson_quill-111.jpg?quality=85&amp;strip=info\" \n"
@@ -82,6 +83,7 @@ public class ThechiveRipperTest extends RippersTest {
         // assertTrue(URL.equals("https://thechive.files.wordpress.com/2018/10/american_mary_crimson_quill-1.gif"));
     }
 
+    @Test
     @Disabled
     public void testGifRip2() throws IOException {
         String elementInString = "<img width=\"600\" height=\"409\" src=\"https://thechive.files.wordpress.com/2018/10/the-definitive-list-of-the-hottest-horror-movie-babes-11.jpg?quality=85&amp;strip=info&amp;w=600\" \n"
