@@ -63,7 +63,7 @@ public class XhamsterRipper extends AbstractHTMLRipper {
         if (m.matches()) {
             return m.group(1);
         }
-        p = Pattern.compile("^https?://[\\w\\w.]*xhamster\\.com/users/([a-zA-Z0-9_-]+)/photos");
+        p = Pattern.compile("^https?://[\\w\\w.]*xhamster\\.com/users/([a-zA-Z0-9_-]+)/photos(/\\d+)?");
         m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             return "user_" + m.group(1);
@@ -98,7 +98,7 @@ public class XhamsterRipper extends AbstractHTMLRipper {
 
     @Override
     public boolean pageContainsAlbums(URL url) {
-        Pattern p = Pattern.compile("^https?://[\\w\\w.]*xhamster\\.com/users/([a-zA-Z0-9_-]+)/photos");
+        Pattern p = Pattern.compile("^https?://[\\w\\w.]*xhamster\\.com/users/([a-zA-Z0-9_-]+)/photos(/\\d+)?");
         Matcher m = p.matcher(url.toExternalForm());
         LOGGER.info("Checking if page has albums");
         LOGGER.info(m.matches());
@@ -119,7 +119,7 @@ public class XhamsterRipper extends AbstractHTMLRipper {
         if (m.matches()) {
             return true;
         }
-        p = Pattern.compile("^https?://[\\w\\w.]*xhamster\\.(com|one)/users/([a-zA-Z0-9_-]+)/photos");
+        p = Pattern.compile("^https?://[\\w\\w.]*xhamster\\.(com|one)/users/([a-zA-Z0-9_-]+)/photos(/\\d+)?");
         m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             return true;
