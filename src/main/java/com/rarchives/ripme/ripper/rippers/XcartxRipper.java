@@ -54,9 +54,9 @@ public class XcartxRipper extends AbstractHTMLRipper {
         List<String> imageURLs = new ArrayList<>();
         Elements imageElements = page.select("div.f-desc img");
         for (Element image : imageElements) {
-            String imageUrl = image.attr("abs:src");
+            String imageUrl = image.attr("data-src");
 
-            imageURLs.add(imageUrl);
+            imageURLs.add(getDomain() + imageUrl);
         }
         return imageURLs;
     }
