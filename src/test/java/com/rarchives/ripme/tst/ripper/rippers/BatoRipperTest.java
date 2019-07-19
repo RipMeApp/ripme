@@ -5,18 +5,24 @@ import java.net.URL;
 
 import com.rarchives.ripme.ripper.rippers.BatoRipper;
 
+import org.junit.jupiter.api.Test;
+
 public class BatoRipperTest extends RippersTest {
+
+    @Test
     public void testRip() throws IOException {
         BatoRipper ripper = new BatoRipper(new URL("https://bato.to/chapter/1207152"));
         testRipper(ripper);
     }
 
+    @Test
     public void testGetGID() throws IOException {
         URL url = new URL("https://bato.to/chapter/1207152");
         BatoRipper ripper = new BatoRipper(url);
         assertEquals("1207152", ripper.getGID(url));
     }
 
+    @Test
     public void testGetAlbumTitle() throws IOException {
         URL url = new URL("https://bato.to/chapter/1207152");
         BatoRipper ripper = new BatoRipper(url);

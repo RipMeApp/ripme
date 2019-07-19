@@ -16,5 +16,3 @@ public class FuskatorRipperTest extends RippersTest {
         testRipper(ripper);
     }
 }
-
-// Disabled because of https://github.com/RipMeApp/ripme/issues/393

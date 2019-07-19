@@ -1,7 +1,7 @@
 package com.rarchives.ripme.tst.ripper.rippers;
 
+import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -28,7 +28,7 @@ public class ChanRipperTest extends RippersTest {
     }
 
     public void testChanURLPasses() throws IOException {
-        List<URL> passURLs    = new ArrayList<>();
+        List<URL> passURLs = new ArrayList<>();
         // URLs that should work
         passURLs.add(new URL("http://desuchan.net/v/res/7034.html"));
         passURLs.add(new URL("https://boards.4chan.org/hr/thread/3015701"));
@@ -37,9 +37,8 @@ public class ChanRipperTest extends RippersTest {
         for (URL url : passURLs) {
             ChanRipper ripper = new ChanRipper(url);
             ripper.setup();
-            assert(ripper.canRip(url));
-            assertNotNull("Ripper for " + url + " did not have a valid working directory.",
-                          ripper.getWorkingDir());
+            assert (ripper.canRip(url));
+            assertNotNull("Ripper for " + url + " did not have a valid working directory.", ripper.getWorkingDir());
             deleteDir(ripper.getWorkingDir());
         }
     }
@@ -51,7 +50,8 @@ public class ChanRipperTest extends RippersTest {
         List<String> site2 = Arrays.asList("site2.co.uk");
         List<String> site2Cdns = Arrays.asList("cdn.site2.co.uk");
         ChanRipper ripper = new ChanRipper(new URL("http://desuchan.net/v/res/7034.html"));
-        List<ChanSite> chansFromConfig = ripper.getChansFromConfig("site1.com[cnd1.site1.com|cdn2.site2.biz],site2.co.uk[cdn.site2.co.uk]");
+        List<ChanSite> chansFromConfig = ripper
+                .getChansFromConfig("site1.com[cnd1.site1.com|cdn2.site2.biz],site2.co.uk[cdn.site2.co.uk]");
         assertEquals(chansFromConfig.get(0).getDomains(), site1);
         assertEquals(chansFromConfig.get(0).getCdns(), site1Cdns);
 
