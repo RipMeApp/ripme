@@ -50,8 +50,8 @@ public class FemjoyhunterRipper extends AbstractHTMLRipper {
     @Override
     public List<String> getURLsFromPage(Document doc) {
         List<String> result = new ArrayList<>();
-        for (Element el : doc.select("ul.gallery-b > li > a")) {
-            result.add(el.attr("href"));
+        for (Element el : doc.select("img")) {
+            result.add(el.attr("src"));
         }
         return result;
     }

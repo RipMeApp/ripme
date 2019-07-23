@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.net.URL;
 
 import com.rarchives.ripme.ripper.rippers.MulemaxRipper;
-import com.rarchives.ripme.utils.Utils;
 
 public class MulemaxRipperTest extends RippersTest {
     
