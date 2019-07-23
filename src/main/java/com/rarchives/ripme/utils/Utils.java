@@ -269,7 +269,11 @@ public class Utils {
      * Return the path of the url history file
      */
     public static String getURLHistoryFile() {
-        return getConfigDir() + File.separator + "url_history.txt";
+        if(getConfigString("history.location", "").length()==0) {
+            return getConfigDir() + File.separator + "url_history.txt";
+        }else{
+            return getConfigString("history.location", "");
+        }
     }
 
     /**
