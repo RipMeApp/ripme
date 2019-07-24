@@ -222,7 +222,8 @@ public class Utils {
     }
 
     private static File getJarDirectory() {
-        return new File(System.getProperty("java.class.path")).getParentFile();
+        String[] classPath = System.getProperty("java.class.path").split(";");
+        return classPath.length > 1 ? new File(System.getProperty("user.dir")) : new File(classPath[0]).getParentFile();
     }
 
     /**
