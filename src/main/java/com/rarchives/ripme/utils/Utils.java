@@ -222,8 +222,7 @@ public class Utils {
     }
 
     private static File getJarDirectory() {
-        String[] classPath = System.getProperty("java.class.path").split(";");
-        return classPath.length > 1 ? new File(System.getProperty("user.dir")) : new File(classPath[0]).getParentFile();
+        return Utils.class.getResource("/rip.properties").toString().contains("jar:") ? new File(System.getProperty("java.class.path")).getParentFile() : new File(System.getProperty("user.dir"));
     }
 
     /**
