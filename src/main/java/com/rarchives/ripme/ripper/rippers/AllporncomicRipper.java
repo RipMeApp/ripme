@@ -37,8 +37,8 @@ public class AllporncomicRipper extends AbstractHTMLRipper {
         if (m.matches()) {
             return m.group(1) + "_" + m.group(2);
         }
-        throw new MalformedURLException("Expected cfake URL format: " +
-                "cfake.com/picture/MODEL/ID - got " + url + " instead");
+        throw new MalformedURLException("Expected allporncomic URL format: " +
+                "allporncomic.com/TITLE/CHAPTER - got " + url + " instead");
     }
 
     @Override
