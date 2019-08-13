@@ -49,7 +49,7 @@ public class XhamsterRipper extends AbstractHTMLRipper {
         URLToReturn = URLToReturn.replaceAll("m.xhamster\\.(com|one|desi)", "xhamster.com");
         URLToReturn = URLToReturn.replaceAll("\\w\\w\\.xhamster\\.(com|one|desi)", "xhamster.com");
         if (!isVideoUrl(url)) {
-            URLToReturn = URLToReturn.replaceAll("xhamster.com", "m.xhamster.com");
+            URLToReturn = URLToReturn.replaceAll("xhamster2?.com", "m.xhamster.com");
         }
         URL san_url = new URL(URLToReturn);
         LOGGER.info("sanitized URL is " + san_url.toExternalForm());
@@ -58,17 +58,17 @@ public class XhamsterRipper extends AbstractHTMLRipper {
 
     @Override
     public String getGID(URL url) throws MalformedURLException {
-        Pattern p = Pattern.compile("^https?://[\\w\\w.]*xhamster\\.com/photos/gallery/.*?(\\d+)$");
+        Pattern p = Pattern.compile("^https?://[\\w\\w.]*xhamster2?\\.com/photos/gallery/.*?(\\d+)$");
         Matcher m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             return m.group(1);
         }
-        p = Pattern.compile("^https?://[\\w\\w.]*xhamster\\.com/users/([a-zA-Z0-9_-]+)/(photos|videos)(/\\d+)?");
+        p = Pattern.compile("^https?://[\\w\\w.]*xhamster2?\\.com/users/([a-zA-Z0-9_-]+)/(photos|videos)(/\\d+)?");
         m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             return "user_" + m.group(1);
         }
-        p = Pattern.compile("^https?://.*xhamster\\.com/(movies|videos)/(.*)$");
+        p = Pattern.compile("^https?://.*xhamster2?\\.com/(movies|videos)/(.*)$");
         m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             return m.group(2);
@@ -164,6 +164,7 @@ public class XhamsterRipper extends AbstractHTMLRipper {
                   // This works around some redirect fuckery xhamster likes to do where visiting m.xhamster.com sends to
                   // the page chamster.com but displays the mobile site from m.xhamster.com
                   pageWithImageUrl = pageWithImageUrl.replaceAll("://xhamster\\.", "://m.xhamster.");
+                  pageWithImageUrl = pageWithImageUrl.replaceAll("://xhamster2\\.", "://m.xhamster.");
                   String image = Http.url(new URL(pageWithImageUrl)).get().select("a > img#photoCurr").attr("src");
                   downloadFile(image);
               } catch (IOException e) {
