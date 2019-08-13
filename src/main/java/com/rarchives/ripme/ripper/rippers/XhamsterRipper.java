@@ -17,7 +17,7 @@ import com.rarchives.ripme.utils.Http;
 
 // WARNING
 // This ripper changes all requests to use the MOBILE version of the site
-// If you're chaning anything be sure to use the mobile sites html/css or you\re just wasting your time!
+// If you're changing anything be sure to use the mobile sites html/css or you're just wasting your time!
 // WARNING
 
 public class XhamsterRipper extends AbstractHTMLRipper {
@@ -45,9 +45,9 @@ public class XhamsterRipper extends AbstractHTMLRipper {
     @Override
     public URL sanitizeURL(URL url) throws MalformedURLException {
         String URLToReturn = url.toExternalForm();
-        URLToReturn = URLToReturn.replaceAll("xhamster.one", "xhamster.com");
-        URLToReturn = URLToReturn.replaceAll("m.xhamster.com", "xhamster.com");
-        URLToReturn = URLToReturn.replaceAll("\\w\\w.xhamster.com", "xhamster.com");
+        URLToReturn = URLToReturn.replaceAll("xhamster\\.(com|one|desi)", "xhamster.com");
+        URLToReturn = URLToReturn.replaceAll("m.xhamster\\.(com|one|desi)", "xhamster.com");
+        URLToReturn = URLToReturn.replaceAll("\\w\\w\\.xhamster\\.(com|one|desi)", "xhamster.com");
         if (!isVideoUrl(url)) {
             URLToReturn = URLToReturn.replaceAll("xhamster.com", "m.xhamster.com");
         }
@@ -114,17 +114,17 @@ public class XhamsterRipper extends AbstractHTMLRipper {
 
     @Override
     public boolean canRip(URL url) {
-        Pattern p = Pattern.compile("^https?://([\\w\\w]*\\.)?xhamster\\.(com|one)/photos/gallery/.*?(\\d+)$");
+        Pattern p = Pattern.compile("^https?://([\\w\\w]*\\.)?xhamster2?\\.(com|one|desi)/photos/gallery/.*?(\\d+)$");
         Matcher m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             return true;
         }
-        p = Pattern.compile("^https?://[\\w\\w.]*xhamster\\.(com|one)/users/([a-zA-Z0-9_-]+)/(photos|videos)(/\\d+)?");
+        p = Pattern.compile("^https?://[\\w\\w.]*xhamster2?\\.(com|one|desi)/users/([a-zA-Z0-9_-]+)/(photos|videos)(/\\d+)?");
         m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             return true;
         }
-        p = Pattern.compile("^https?://.*xhamster\\.(com|one)/(movies|videos)/.*$");
+        p = Pattern.compile("^https?://.*xhamster2?\\.(com|one|desi)/(movies|videos)/.*$");
         m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             return true;
@@ -133,7 +133,7 @@ public class XhamsterRipper extends AbstractHTMLRipper {
     }
 
     private boolean isVideoUrl(URL url) {
-        Pattern p = Pattern.compile("^https?://.*xhamster\\.com/(movies|videos)/.*$");
+        Pattern p = Pattern.compile("^https?://.*xhamster2?\\.(com|one|desi)/(movies|videos)/.*$");
         Matcher m = p.matcher(url.toExternalForm());
         return m.matches();
     }
@@ -155,9 +155,16 @@ public class XhamsterRipper extends AbstractHTMLRipper {
         List<String> result = new ArrayList<>();
         if (!isVideoUrl(url)) {
           for (Element page : doc.select("div.items > div.item-container > a.item")) {
+              // Make sure we don't waste time running the loop if the ripper has been stopped
+              if (isStopped()) {
+                  break;
+              }
               String pageWithImageUrl = page.attr("href");
               try {
-                  String image = Http.url(new URL(pageWithImageUrl)).get().select("div.picture_container > a > img").attr("src");
+                  // This works around some redirect fuckery xhamster likes to do where visiting m.xhamster.com sends to
+                  // the page chamster.com but displays the mobile site from m.xhamster.com
+                  pageWithImageUrl = pageWithImageUrl.replaceAll("://xhamster\\.", "://m.xhamster.");
+                  String image = Http.url(new URL(pageWithImageUrl)).get().select("a > img#photoCurr").attr("src");
                   downloadFile(image);
               } catch (IOException e) {
                   LOGGER.error("Was unable to load page " + pageWithImageUrl);
