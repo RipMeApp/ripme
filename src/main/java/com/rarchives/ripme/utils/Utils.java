@@ -50,6 +50,8 @@ public class Utils {
     private static HashMap<String, HashMap<String, String>> cookieCache;
     private static HashMap<ByteBuffer, String> magicHash = new HashMap<>();
 
+    private static ResourceBundle resourceBundle = null;
+
     static {
         cookieCache = new HashMap<>();
 
@@ -83,6 +85,8 @@ public class Utils {
         } catch (Exception e) {
             LOGGER.error("[!] Failed to load properties file from " + CONFIG_FILE, e);
         }
+
+        resourceBundle = getResourceBundle(null);
     }
 
     /**
@@ -735,6 +739,19 @@ public class Utils {
             LOGGER.info("Setting locale to root");
             return ResourceBundle.getBundle("LabelsBundle", Locale.ROOT);
         }
+    }
+
+    public static void setLanguage(String langSelect) {
+        resourceBundle = getResourceBundle(langSelect);
+    }
+
+    public static String getLanguage() {
+        return resourceBundle.getLocale().toString();
+    }
+
+    public static String getLocalizedString(String key) {
+        LOGGER.debug(String.format("Getting key %s in %s value %s",key, getLanguage(), resourceBundle.getString(key)));
+        return resourceBundle.getString(key);
     }
 
     /**
