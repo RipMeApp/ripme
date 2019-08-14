@@ -219,7 +219,7 @@ public class TwitterRipper extends AlbumRipper {
     }
 
     public String getPrefix(int index) {
-        return String.format("%03d_", index);
+        return Utils.getConfigBoolean("download.save_order", true) ? String.format("%03d_", index) : "";
     }
 
     @Override
