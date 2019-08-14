@@ -849,8 +849,8 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         // Re-rip all history
         historyButtonRerip.addActionListener(event -> {
             if (HISTORY.isEmpty()) {
-                JOptionPane.showMessageDialog(null, "There are no history entries to re-rip. Rip some albums first",
-                        "RipMe Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(null, Utils.getLocalizedString("history.load.none"), "RipMe Error",
+                        JOptionPane.ERROR_MESSAGE);
                 return;
             }
             int added = 0;
@@ -861,8 +861,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
                 }
             }
             if (added == 0) {
-                JOptionPane.showMessageDialog(null, "No history entries have been 'Checked'\n"
-                        + "Check an entry by clicking the checkbox to the right of the URL or Right-click a URL to check/uncheck all items",
+                JOptionPane.showMessageDialog(null, Utils.getLocalizedString("history.load.none.checked"),
                         "RipMe Error", JOptionPane.ERROR_MESSAGE);
             }
         });
@@ -1009,26 +1008,26 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         mainFrame.addWindowListener(new WindowAdapter() {
             @Override
             public void windowActivated(WindowEvent e) {
-                trayMenuMain.setLabel("Hide");
+                trayMenuMain.setLabel(Utils.getLocalizedString("tray.hide"));
             }
 
             @Override
             public void windowDeactivated(WindowEvent e) {
-                trayMenuMain.setLabel("Show");
+                trayMenuMain.setLabel(Utils.getLocalizedString("tray.show"));
             }
 
             @Override
             public void windowDeiconified(WindowEvent e) {
-                trayMenuMain.setLabel("Hide");
+                trayMenuMain.setLabel(Utils.getLocalizedString("tray.hide"));
             }
 
             @Override
             public void windowIconified(WindowEvent e) {
-                trayMenuMain.setLabel("Show");
+                trayMenuMain.setLabel(Utils.getLocalizedString("tray.show"));
             }
         });
         PopupMenu trayMenu = new PopupMenu();
-        trayMenuMain = new MenuItem("Hide");
+        trayMenuMain = new MenuItem(Utils.getLocalizedString("tray.hide"));
         trayMenuMain.addActionListener(arg0 -> toggleTrayClick());
         MenuItem trayMenuAbout = new MenuItem("About " + mainFrame.getTitle());
         trayMenuAbout.addActionListener(arg0 -> {
@@ -1079,9 +1078,9 @@ public final class MainWindow implements Runnable, RipStatusHandler {
                 }
             }
         });
-        MenuItem trayMenuExit = new MenuItem("Exit");
+        MenuItem trayMenuExit = new MenuItem(Utils.getLocalizedString("tray.exit"));
         trayMenuExit.addActionListener(arg0 -> System.exit(0));
-        trayMenuAutorip = new CheckboxMenuItem("Clipboard Autorip");
+        trayMenuAutorip = new CheckboxMenuItem(Utils.getLocalizedString("tray.autorip"));
         trayMenuAutorip.addItemListener(arg0 -> {
             ClipboardUtils.setClipboardAutoRip(trayMenuAutorip.getState());
             configClipboardAutorip.setSelected(trayMenuAutorip.getState());
@@ -1122,10 +1121,10 @@ public final class MainWindow implements Runnable, RipStatusHandler {
             mainFrame.setVisible(true);
             mainFrame.setAlwaysOnTop(true);
             mainFrame.setAlwaysOnTop(false);
-            trayMenuMain.setLabel("Hide");
+            trayMenuMain.setLabel(Utils.getLocalizedString("tray.hide"));
         } else {
             mainFrame.setVisible(false);
-            trayMenuMain.setLabel("Show");
+            trayMenuMain.setLabel(Utils.getLocalizedString("tray.show"));
         }
     }
 
@@ -1170,10 +1169,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
             } catch (IOException e) {
                 LOGGER.error("Failed to load history from file " + historyFile, e);
                 JOptionPane.showMessageDialog(null,
-                        "RipMe failed to load the history file at " + historyFile.getAbsolutePath() + "\n\n" + "Error: "
-                                + e.getMessage() + "\n\n"
-                                + "Closing RipMe will automatically overwrite the contents of this file,\n"
-                                + "so you may want to back the file up before closing RipMe!",
+                        String.format(Utils.getLocalizedString("history.load.failed.warning"), e.getMessage()),
                         "RipMe - history load failure", JOptionPane.ERROR_MESSAGE);
             }
         } else {
@@ -1446,7 +1442,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
             openButton.setVisible(true);
             File f = rsc.dir;
             String prettyFile = Utils.shortenPath(f);
-            openButton.setText("Open " + prettyFile);
+            openButton.setText(Utils.getLocalizedString("open") + prettyFile);
             mainFrame.setTitle("RipMe v" + UpdateUtils.getThisJarVersion());
             try {
                 Image folderIcon = ImageIO.read(getClass().getClassLoader().getResource("folder.png"));
