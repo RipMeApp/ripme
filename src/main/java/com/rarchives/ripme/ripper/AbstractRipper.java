@@ -46,7 +46,7 @@ public abstract class AbstractRipper
     public abstract String getGID(URL url) throws MalformedURLException;
     public boolean hasASAPRipping() { return false; }
     // Everytime addUrlToDownload skips a already downloaded url this increases by 1
-    public int alreadyDownloadedUrls = 0;
+    public static int alreadyDownloadedUrls = 0;
     private boolean shouldStop = false;
     private static boolean thisIsATest = false;
 

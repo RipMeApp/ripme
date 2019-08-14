@@ -97,6 +97,7 @@ public abstract class AbstractHTMLRipper extends AlbumRipper {
         }
 
         while (doc != null) {
+            LOGGER.info("AHR: alreadyDownloadedUrls = " + alreadyDownloadedUrls + " history.end_rip_after_already_seen = " + Utils.getConfigInteger("history.end_rip_after_already_seen", 1000000000));
             if (alreadyDownloadedUrls >= Utils.getConfigInteger("history.end_rip_after_already_seen", 1000000000) && !isThisATest()) {
                 sendUpdate(STATUS.DOWNLOAD_COMPLETE_HISTORY, "Already seen the last " + alreadyDownloadedUrls + " images ending rip");
                 break;
