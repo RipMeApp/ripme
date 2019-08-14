@@ -4,25 +4,33 @@ import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.Enumeration;
+import java.util.function.Consumer;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.DefaultListModel;
 import javax.swing.JList;
+import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 
 import com.rarchives.ripme.utils.Utils;
 
 class QueueMenuMouseListener extends MouseAdapter {
     private JPopupMenu popup = new JPopupMenu();
-    private JList queueList;
-    private DefaultListModel queueListModel;
+    private JList<Object> queueList;
+    private DefaultListModel<Object> queueListModel;
+    private Consumer<DefaultListModel<Object>> updateQueue;
 
-    @SuppressWarnings("serial")
-    public QueueMenuMouseListener() {
+    public QueueMenuMouseListener(Consumer<DefaultListModel<Object>> updateQueue) {
+        this.updateQueue = updateQueue;
+        updateUI();
+    }
 
-        Action removeSelected = new AbstractAction("Remove Selected") {
+	@SuppressWarnings("serial")
+    public void updateUI() {
+        popup.removeAll();
+
+        Action removeSelected = new AbstractAction(Utils.getLocalizedString("queue.remove.selected")) {
             @Override
             public void actionPerformed(ActionEvent ae) {
                 Object o = queueList.getSelectedValue();
@@ -35,27 +43,22 @@ class QueueMenuMouseListener extends MouseAdapter {
         };
         popup.add(removeSelected);
 
-        Action clearQueue = new AbstractAction("Remove All") {
+        Action clearQueue = new AbstractAction(Utils.getLocalizedString("queue.remove.all")) {
             @Override
             public void actionPerformed(ActionEvent ae) {
-                queueListModel.removeAllElements();
-                updateUI();
+                if (JOptionPane.showConfirmDialog(null, Utils.getLocalizedString("queue.validation"), "RipMe",
+                        JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+                    queueListModel.removeAllElements();
+                    updateUI();
+                }
             }
         };
         popup.add(clearQueue);
 
+        updateQueue.accept(queueListModel);
     }
 
-    private void updateUI() {
-        Utils.setConfigList("queue", (Enumeration<Object>) queueListModel.elements());
-
-        if (queueListModel.size() == 0) {
-            MainWindow.optionQueue.setText("Queue");
-        }
-        else {
-            MainWindow.optionQueue.setText("Queue (" + queueListModel.size() + ")");
-        }
-    }
+    @SuppressWarnings("unchecked")
     @Override
     public void mouseClicked(MouseEvent e) {
         if (e.getModifiers() == InputEvent.BUTTON3_MASK) {
@@ -63,8 +66,8 @@ class QueueMenuMouseListener extends MouseAdapter {
                 return;
             }
 
-            queueList = (JList) e.getSource();
-            queueListModel = (DefaultListModel) queueList.getModel();
+            queueList = (JList<Object>) e.getSource();
+            queueListModel = (DefaultListModel<Object>) queueList.getModel();
             queueList.requestFocus();
 
             int nx = e.getX();
