@@ -139,10 +139,6 @@ public final class MainWindow implements Runnable, RipStatusHandler {
 
     private static AbstractRipper ripper;
 
-    // All the langs ripme has been translated into
-    private static String[] supportedLanges = new String[] { "de_DE", "ar_AR", "en_US", "es_ES", "fi_FI", "fr_CH",
-            "in_ID", "it_IT", "kr_KR", "nl_NL", "pl_PL", "porrisavvo_FI", "pt_BR", "pt_PT", "ru_RU" };
-
     private void updateQueue(DefaultListModel<Object> model) {
         if (model == null)
             model = queueListModel;
@@ -483,7 +479,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         queueListModel = new DefaultListModel();
         JList queueList = new JList(queueListModel);
         queueList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-        queueList.addMouseListener(queueMenuMouseListener = new QueueMenuMouseListener((model) -> updateQueue(model)));
+        queueList.addMouseListener(queueMenuMouseListener = new QueueMenuMouseListener());
         JScrollPane queueListScroll = new JScrollPane(queueList, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
                 JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         for (String item : Utils.getConfigList("queue")) {
@@ -539,8 +535,8 @@ public final class MainWindow implements Runnable, RipStatusHandler {
 
         configLogLevelCombobox = new JComboBox<>(
                 new String[] { "Log level: Error", "Log level: Warn", "Log level: Info", "Log level: Debug" });
-        configSelectLangComboBox = new JComboBox<>(supportedLanges);
-        configSelectLangComboBox.setSelectedItem(Utils.getLanguage());
+        configSelectLangComboBox = new JComboBox<>(Utils.getSupportedLanguages());
+        configSelectLangComboBox.setSelectedItem(Utils.getSelectedLanguage());
         configLogLevelCombobox.setSelectedItem(Utils.getConfigString("log.level", "Log level: Debug"));
         setLogLevel(configLogLevelCombobox.getSelectedItem().toString());
         configSaveDirLabel = new JLabel();
@@ -675,8 +671,6 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         optionHistory.setText(Utils.getLocalizedString("History"));
         optionQueue.setText(Utils.getLocalizedString("queue"));
         optionConfiguration.setText(Utils.getLocalizedString("Configuration"));
-
-        queueMenuMouseListener.updateUI();
     }
 
     private void setupHandlers() {

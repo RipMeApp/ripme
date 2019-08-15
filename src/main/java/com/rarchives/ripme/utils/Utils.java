@@ -2,6 +2,7 @@ package com.rarchives.ripme.utils;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
@@ -21,6 +22,8 @@ import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
@@ -40,6 +43,7 @@ import org.apache.log4j.PropertyConfigurator;
  */
 public class Utils {
 
+    private static final Pattern pattern = Pattern.compile("LabelsBundle_(?<lang>[A-Za-z_]+).properties");
     private static final String RIP_DIRECTORY = "rips";
     private static final String CONFIG_FILE = "rip.properties";
     private static final String OS = System.getProperty("os.name").toLowerCase();
@@ -745,12 +749,38 @@ public class Utils {
         resourceBundle = getResourceBundle(langSelect);
     }
 
-    public static String getLanguage() {
+    public static String getSelectedLanguage() {
         return resourceBundle.getLocale().toString();
     }
 
+    // All the langs ripme has been translated into
+    public static String[] getSupportedLanguages() {
+        File configFile = new File(Utils.class.getResource("/rip.properties").getFile());
+        LOGGER.info("ConfigFile: " + configFile);
+        LOGGER.info("Parent: " + new File(configFile.getParent()));
+        File[] files = new File(configFile.getParent()).listFiles(new FilenameFilter() {
+
+            @Override
+            public boolean accept(File dir, String name) {
+                LOGGER.info("name: " + name);
+                return name.startsWith("LabelsBundle_");
+            }
+
+        });
+
+        String[] langs = new String[files.length];
+        for (int i = 0; i < files.length; i++) {
+            Matcher matcher = pattern.matcher(files[i].getName());
+            if (matcher.find())
+                langs[i] = matcher.group("lang");
+        }
+
+        return langs;
+    }
+
     public static String getLocalizedString(String key) {
-        LOGGER.debug(String.format("Getting key %s in %s value %s",key, getLanguage(), resourceBundle.getString(key)));
+        LOGGER.debug(String.format("Getting key %s in %s value %s", key, getSelectedLanguage(),
+                resourceBundle.getString(key)));
         return resourceBundle.getString(key);
     }
 
