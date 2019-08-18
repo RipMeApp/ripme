@@ -44,13 +44,12 @@ public class XhamsterRipper extends AbstractHTMLRipper {
 
     @Override
     public URL sanitizeURL(URL url) throws MalformedURLException {
-        String URLToReturn = url.toExternalForm();
-        URLToReturn = URLToReturn.replaceAll("xhamster\\.(com|one|desi)", "xhamster.com");
-        URLToReturn = URLToReturn.replaceAll("m.xhamster\\.(com|one|desi)", "xhamster.com");
-        URLToReturn = URLToReturn.replaceAll("\\w\\w\\.xhamster\\.(com|one|desi)", "xhamster.com");
-        if (!isVideoUrl(url)) {
-            URLToReturn = URLToReturn.replaceAll("xhamster2?.com", "m.xhamster.com");
+        if (isVideoUrl(url)) {
+            return url;
         }
+        String URLToReturn = url.toExternalForm();
+        URLToReturn = URLToReturn.replaceAll("https?://\\w?\\w?\\.?xhamster\\.", "https://m.xhamster.");
+        URLToReturn = URLToReturn.replaceAll("https?://xhamster2\\.", "https://m.xhamster2.");
         URL san_url = new URL(URLToReturn);
         LOGGER.info("sanitized URL is " + san_url.toExternalForm());
         return san_url;
