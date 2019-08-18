@@ -4,10 +4,11 @@ import java.io.IOException;
 import java.net.URL;
 
 import com.rarchives.ripme.ripper.rippers.LusciousRipper;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 public class LusciousRipperTest extends RippersTest {
-    @Test
+    @Test @Disabled("Flaky in the CI")
     public void testPahealRipper() throws IOException {
         // a photo set
         LusciousRipper ripper = new LusciousRipper(
@@ -20,7 +21,7 @@ public class LusciousRipperTest extends RippersTest {
         LusciousRipper ripper = new LusciousRipper(url);
         assertEquals("h-na-alice-wa-suki-desu-ka-do-you-like-alice-when_321609", ripper.getGID(url));
     }
-    @Test
+    @Test @Disabled("Flaky in the CI")
     public void testGetNextPage() throws IOException {
         URL multiPageAlbumUrl = new URL("https://luscious.net/albums/women-of-color_58/");
         LusciousRipper multiPageRipper = new LusciousRipper(multiPageAlbumUrl);
