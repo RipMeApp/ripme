@@ -43,26 +43,26 @@ public class WordpressComicRipperTest extends RippersTest {
                 new URL("http://themonsterunderthebed.net/?comic=test-post"));
         testRipper(ripper);
     }
-
+    @Test
     public void test_prismblush() throws IOException {
         WordpressComicRipper ripper = new WordpressComicRipper(
                 new URL("http://prismblush.com/comic/hella-trap-pg-01/"));
         testRipper(ripper);
     }
-
+    @Test
     public void test_konradokonski_1() throws IOException {
         WordpressComicRipper ripper = new WordpressComicRipper(
                 new URL("http://www.konradokonski.com/sawdust/comic/get-up/"));
         testRipper(ripper);
 
     }
-
+    @Test
     public void test_konradokonski_2() throws IOException {
         WordpressComicRipper ripper = new WordpressComicRipper(
                 new URL("http://www.konradokonski.com/wiory/comic/08182008/"));
         testRipper(ripper);
     }
-
+    @Test
     public void test_konradokonski_getAlbumTitle() throws IOException {
         URL url = new URL("http://www.konradokonski.com/sawdust/comic/get-up/");
         WordpressComicRipper ripper = new WordpressComicRipper(url);
@@ -77,31 +77,31 @@ public class WordpressComicRipperTest extends RippersTest {
                 new URL("http://freeadultcomix.com/finders-feepaid-in-full-sparrow/"));
         testRipper(ripper);
     }
-
+    @Test
     public void test_delvecomic() throws IOException {
         WordpressComicRipper ripper = new WordpressComicRipper(
                 new URL("http://thisis.delvecomic.com/NewWP/comic/in-too-deep/"));
         testRipper(ripper);
     }
-
+    @Test
     public void test_Eightmuses_download() throws IOException {
         WordpressComicRipper ripper = new WordpressComicRipper(
                 new URL("https://8muses.download/lustomic-playkittens-josh-samuel-porn-comics-8-muses/"));
         testRipper(ripper);
     }
-
+    @Test
     public void test_Eightmuses_getAlbumTitle() throws IOException {
         URL url = new URL("https://8muses.download/lustomic-playkittens-josh-samuel-porn-comics-8-muses/");
         WordpressComicRipper ripper = new WordpressComicRipper(url);
         assertEquals("8muses.download_lustomic-playkittens-josh-samuel-porn-comics-8-muses", ripper.getAlbumTitle(url));
     }
-
+    @Test
     public void test_spyingwithlana_download() throws IOException {
         WordpressComicRipper ripper = new WordpressComicRipper(
                 new URL("http://spyingwithlana.com/comic/the-big-hookup/"));
         testRipper(ripper);
     }
-
+    @Test
     public void test_spyingwithlana_getAlbumTitle() throws IOException {
         URL url = new URL("http://spyingwithlana.com/comic/the-big-hookup/");
         WordpressComicRipper ripper = new WordpressComicRipper(url);

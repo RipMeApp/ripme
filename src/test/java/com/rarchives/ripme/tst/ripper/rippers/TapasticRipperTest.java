@@ -4,8 +4,10 @@ import java.io.IOException;
 import java.net.URL;
 
 import com.rarchives.ripme.ripper.rippers.TapasticRipper;
+import org.junit.jupiter.api.Test;
 
 public class TapasticRipperTest extends RippersTest {
+    @Test
     public void testTapasticRip() throws IOException {
         TapasticRipper ripper = new TapasticRipper(new URL("https://tapas.io/series/tsiwbakd-comic"));
         testRipper(ripper);
