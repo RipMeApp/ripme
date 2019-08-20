@@ -100,7 +100,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
     // Queue
     public static JButton optionQueue;
     private static JPanel queuePanel;
-    private static DefaultListModel queueListModel;
+    public static DefaultListModel queueListModel;
 
     // Configuration
     private static JButton optionConfiguration;
