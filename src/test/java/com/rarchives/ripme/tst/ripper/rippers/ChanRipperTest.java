@@ -11,9 +11,10 @@ import com.rarchives.ripme.ripper.rippers.ChanRipper;
 import com.rarchives.ripme.ripper.rippers.ripperhelpers.ChanSite;
 import com.rarchives.ripme.utils.Http;
 import org.jsoup.nodes.Document;
+import org.junit.jupiter.api.Test;
 
 public class ChanRipperTest extends RippersTest {
-
+    @Test
     public void testChanURLFailures() throws IOException {
         List<URL> failURLs = new ArrayList<>();
         // URLs that should not work
@@ -26,7 +27,7 @@ public class ChanRipperTest extends RippersTest {
             }
         }
     }
-
+    @Test
     public void testChanURLPasses() throws IOException {
         List<URL> passURLs = new ArrayList<>();
         // URLs that should work
@@ -43,7 +44,7 @@ public class ChanRipperTest extends RippersTest {
             deleteDir(ripper.getWorkingDir());
         }
     }
-
+    @Test
     public void testChanStringParsing() throws IOException {
         List<String> site1 = Arrays.asList("site1.com");
         List<String> site1Cdns = Arrays.asList("cnd1.site1.com", "cdn2.site2.biz");
@@ -59,7 +60,7 @@ public class ChanRipperTest extends RippersTest {
         assertEquals(chansFromConfig.get(1).getDomains(), site2);
         assertEquals(chansFromConfig.get(1).getCdns(), site2Cdns);
     }
-
+    @Test
     public void testChanRipper() throws IOException {
         List<URL> contentURLs = new ArrayList<>();
         contentURLs.add(new URL(getRandomThreadDesuarchive()));

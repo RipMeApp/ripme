@@ -4,9 +4,10 @@ import java.io.IOException;
 import java.net.URL;
 
 import com.rarchives.ripme.ripper.rippers.MyhentaigalleryRipper;
+import org.junit.jupiter.api.Test;
 
 public class MyhentaigalleryRipperTest extends RippersTest {
-
+    @Test
     public void testMyhentaigalleryAlbum() throws IOException {
         MyhentaigalleryRipper ripper = new MyhentaigalleryRipper(
                 new URL("https://myhentaigallery.com/gallery/thumbnails/9201"));

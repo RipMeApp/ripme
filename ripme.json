@@ -1,7 +1,7 @@
 {
-    "latestVersion": "1.7.86",
-    "currentHash": "d78f7dfaa8ef55575a8485cdf93bbd09e3ea9a3bd224e84e970bcdd0a51d5305",
+    "currentHash": "52dfb707d6247f44949c0d97b19c7815dc848b26837b98ae561c0dea20993a12",
     "changeList": [
+        "1.7.87: Added ripper for allporncomic.com; Fixed Xhamster ripper; Added support xhamster2.com and xhamster.desi; Fixes for gfycat thumbs urls",
         "1.7.86: Added Meituri Ripper; fixed -u flag; Fixed pornhub ripper; Xhamster ripper can now queue users videos",
         "1.7.85: Fixed instagram ripper; Flickr ripper now downloads largest image",
         "1.7.84: Fixed instagram ripper; xhamster ripper now accepts urls with page numbers; Fixed Deviantart Ripper",
@@ -258,5 +258,6 @@
         "1.0.4: Fixed spaces-in-directory bug",
         "1.0.3: Added VK.com ripper",
         "1.0.1: Added auto-update functionality"
-    ]
+    ],
+    "latestVersion": "1.7.87"
 }
