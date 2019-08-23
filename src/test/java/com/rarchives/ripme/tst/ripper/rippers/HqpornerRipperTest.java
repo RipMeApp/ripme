@@ -2,6 +2,7 @@ package com.rarchives.ripme.tst.ripper.rippers;
 
 import com.rarchives.ripme.ripper.rippers.HqpornerRipper;
 import com.rarchives.ripme.utils.Utils;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.net.URL;
@@ -21,13 +22,13 @@ public class HqpornerRipperTest extends RippersTest {
         HqpornerRipper ripper = new HqpornerRipper(poolURL);
         assertEquals("84636-pool_lesson_with_a_cheating_husband", ripper.getGID(poolURL));
     }
-
+    @Test
     public void testGetURLsFromPage() throws IOException {
         URL actressUrl = new URL("https://hqporner.com/actress/kali-roses");
         HqpornerRipper ripper = new HqpornerRipper(actressUrl);
         assert (ripper.getURLsFromPage(ripper.getFirstPage()).size() >= 2);
     }
-
+    @Test
     public void testGetNextPage() throws IOException {
         URL multiPageUrl = new URL("https://hqporner.com/category/tattooed");
         HqpornerRipper multiPageRipper = new HqpornerRipper(multiPageUrl);
@@ -41,7 +42,7 @@ public class HqpornerRipperTest extends RippersTest {
             assertEquals(e.getMessage(), "No next page found.");
         }
     }
-
+    @Test
     public void testMyDaddyVideoHost() throws IOException {
         if (Utils.getConfigBoolean("test.run_flaky_tests", false)) {
             URL myDaddyUrl = new URL("https://hqporner.com/hdporn/84636-pool_lesson_with_a_cheating_husband.html");
@@ -49,7 +50,7 @@ public class HqpornerRipperTest extends RippersTest {
             testRipper(myDaddyRipper);
         }
     }
-
+    @Test
     public void testFlyFlvVideoHost() throws IOException {
         if (Utils.getConfigBoolean("test.run_flaky_tests", false)) {
             URL flyFlvUrl = new URL(
@@ -58,7 +59,7 @@ public class HqpornerRipperTest extends RippersTest {
             testRipper(flyFlvRipper);
         }
     }
-
+    @Test
     public void testUnknownVideoHost() throws IOException {
         if (Utils.getConfigBoolean("test.run_flaky_tests", false)) {
             URL unknownHostUrl = new URL("https://hqporner.com/hdporn/79528-Kayden_Kross_-_Serious_Masturbation.html"); // howq.cc
