@@ -6,14 +6,17 @@ import java.util.List;
 
 import com.rarchives.ripme.ripper.rippers.EHentaiRipper;
 import com.rarchives.ripme.utils.RipUtils;
+import org.junit.jupiter.api.Test;
 
 public class EhentaiRipperTest extends RippersTest {
+    @Test
     public void testEHentaiAlbum() throws IOException {
         EHentaiRipper ripper = new EHentaiRipper(new URL("https://e-hentai.org/g/1144492/e823bdf9a5/"));
         testRipper(ripper);
     }
 
     // Test the tag black listing
+    @Test
     public void testTagBlackList()  throws IOException {
         URL url = new URL("https://e-hentai.org/g/1228503/1a2f455f96/");
         EHentaiRipper ripper = new EHentaiRipper(url);

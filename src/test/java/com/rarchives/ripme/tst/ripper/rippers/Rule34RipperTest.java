@@ -4,8 +4,10 @@ import java.io.IOException;
 import java.net.URL;
 
 import com.rarchives.ripme.ripper.rippers.Rule34Ripper;
+import org.junit.jupiter.api.Test;
 
 public class Rule34RipperTest extends RippersTest {
+    @Test
     public void testShesFreakyRip() throws IOException {
         Rule34Ripper ripper = new Rule34Ripper(new URL("https://rule34.xxx/index.php?page=post&s=list&tags=bimbo"));
         testRipper(ripper);
