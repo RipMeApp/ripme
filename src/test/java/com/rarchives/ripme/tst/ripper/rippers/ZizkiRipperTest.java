@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.URL;
 
 import com.rarchives.ripme.ripper.rippers.ZizkiRipper;
+import org.junit.jupiter.api.Test;
 
 public class ZizkiRipperTest extends RippersTest {
     public void testRip() throws IOException {
@@ -16,7 +17,7 @@ public class ZizkiRipperTest extends RippersTest {
         ZizkiRipper ripper = new ZizkiRipper(url);
         assertEquals("dee-chorde", ripper.getGID(url));
     }
-
+    @Test
     public void testAlbumTitle() throws IOException {
         URL url = new URL("http://zizki.com/dee-chorde/we-got-spirit");
         ZizkiRipper ripper = new ZizkiRipper(url);

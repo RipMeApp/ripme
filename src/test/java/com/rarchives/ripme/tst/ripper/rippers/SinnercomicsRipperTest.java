@@ -4,8 +4,10 @@ import java.io.IOException;
 import java.net.URL;
 
 import com.rarchives.ripme.ripper.rippers.SinnercomicsRipper;
+import org.junit.jupiter.api.Test;
 
 public class SinnercomicsRipperTest extends RippersTest {
+    @Test
     public void testSinnercomicsAlbum() throws IOException {
         SinnercomicsRipper ripper;
 
