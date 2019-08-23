@@ -7,14 +7,22 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Constructor;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.ByteBuffer;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -24,6 +32,7 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
@@ -44,6 +53,7 @@ import org.apache.log4j.PropertyConfigurator;
 public class Utils {
 
     private static final Pattern pattern = Pattern.compile("LabelsBundle_(?<lang>[A-Za-z_]+).properties");
+    private static final String DEFAULT_LANG = "en_US";
     private static final String RIP_DIRECTORY = "rips";
     private static final String CONFIG_FILE = "rip.properties";
     private static final String OS = System.getProperty("os.name").toLowerCase();
@@ -755,27 +765,34 @@ public class Utils {
 
     // All the langs ripme has been translated into
     public static String[] getSupportedLanguages() {
-        File configFile = new File(Utils.class.getResource("/rip.properties").getFile());
-        LOGGER.info("ConfigFile: " + configFile);
-        LOGGER.info("Parent: " + new File(configFile.getParent()));
-        File[] files = new File(configFile.getParent()).listFiles(new FilenameFilter() {
+        ArrayList<Path> filesList = new ArrayList<>();
+        try {
+            URI uri = Utils.class.getResource("/rip.properties").toURI();
 
-            @Override
-            public boolean accept(File dir, String name) {
-                LOGGER.info("name: " + name);
-                return name.startsWith("LabelsBundle_");
+            Path myPath;
+            if (uri.getScheme().equals("jar")) {
+                FileSystem fileSystem = FileSystems.newFileSystem(uri, Collections.<String, Object>emptyMap());
+                myPath = fileSystem.getPath("/");
+            } else {
+                myPath = Paths.get(uri).getParent();
             }
 
-        });
+            Files.walk(myPath, 1).filter(p -> p.toString().contains("LabelsBundle_")).distinct()
+                    .forEach(filesList::add);
 
-        String[] langs = new String[files.length];
-        for (int i = 0; i < files.length; i++) {
-            Matcher matcher = pattern.matcher(files[i].getName());
-            if (matcher.find())
-                langs[i] = matcher.group("lang");
+            String[] langs = new String[filesList.size()];
+            for (int i = 0; i < filesList.size(); i++) {
+                Matcher matcher = pattern.matcher(filesList.get(i).toString());
+                if (matcher.find())
+                    langs[i] = matcher.group("lang");
+            }
+
+            return langs;
+        } catch (Exception e) {
+            e.printStackTrace();
+            // On error return default language
+            return new String[] { DEFAULT_LANG };
         }
-
-        return langs;
     }
 
     public static String getLocalizedString(String key) {
