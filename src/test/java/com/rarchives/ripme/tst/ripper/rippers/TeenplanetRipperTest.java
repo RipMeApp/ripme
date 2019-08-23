@@ -4,8 +4,10 @@ import java.io.IOException;
 import java.net.URL;
 
 import com.rarchives.ripme.ripper.rippers.TeenplanetRipper;
+import org.junit.jupiter.api.Test;
 
 public class TeenplanetRipperTest extends RippersTest {
+    @Test
     public void testTeenplanetRip() throws IOException {
         TeenplanetRipper ripper = new TeenplanetRipper(new URL("http://teenplanet.org/galleries/the-perfect-side-of-me-6588.html"));
         testRipper(ripper);
