@@ -264,12 +264,14 @@ public class UpdateUtils {
             // Windows
             final String batchFile = "update_ripme.bat";
             final String batchPath = new File(batchFile).getAbsolutePath();
-            String script = "@echo off\r\n" + "timeout 1\r\n" + "copy " + updateFileName + " " + mainFileName + "\r\n"
-                    + "del " + updateFileName + "\r\n";
-            if (shouldLaunch) {
-                script += mainFileName + "\r\n";
-            }
-            script += "del " + batchPath + "\r\n";
+            String script = "@echo off\r\n" + "timeout 1\r\n" 
+                    + "copy \"" + updateFileName + "\" \"" + mainFileName + "\"\r\n"
+                    + "del \"" + updateFileName + "\"\r\n";
+            
+            if (shouldLaunch) 
+                script += "\"" + mainFileName + "\"\r\n";
+            script += "del \"" + batchPath + "\"\r\n";
+            
             final String[] batchExec = new String[] { batchPath };
             // Create updater script
             try (BufferedWriter bw = new BufferedWriter(new FileWriter(batchFile))) {
