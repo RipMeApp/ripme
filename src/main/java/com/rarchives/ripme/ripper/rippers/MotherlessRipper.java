@@ -8,6 +8,7 @@ import java.util.regex.Pattern;
 
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
 import com.rarchives.ripme.ripper.AlbumRipper;
 import com.rarchives.ripme.ripper.DownloadThreadPool;
@@ -80,29 +81,34 @@ public class MotherlessRipper extends AlbumRipper {
             Document doc = Http.url(nextURL)
                                .referrer("http://motherless.com")
                                .get();
-            for (Element thumb : doc.select("div.thumb a.img-container")) {
-                if (isStopped()) {
-                    break;
-                }
-                String thumbURL = thumb.attr("href");
-                if (thumbURL.contains("pornmd.com")) {
-                    continue;
-                }
-                URL url;
-                if (!thumbURL.startsWith("http")) {
-                    url = new URL("http://" + DOMAIN + thumbURL);
-                }
-                else {
-                    url = new URL(thumbURL);
-                }
-                index += 1;
+            Elements errorPage = doc.select("div.error-page");
+            if (!errorPage.isEmpty()) {
+                LOGGER.warn("[!] 404 received from " + nextURL);
+            }
+            else {
+                for (Element thumb : doc.select("div.thumb a.img-container")) {
+                    if (isStopped()) {
+                        break;
+                    }
+                    String thumbURL = thumb.attr("href");
+                    if (thumbURL.contains("pornmd.com")) {
+                        continue;
+                    }
+                    URL url;
+                    if (!thumbURL.startsWith("http")) {
+                        url = new URL("http://" + DOMAIN + thumbURL);
+                    } else {
+                        url = new URL(thumbURL);
+                    }
+                    index += 1;
 
-                // Create thread for finding image at "url" page
-                MotherlessImageThread mit = new MotherlessImageThread(url, index);
-                motherlessThreadPool.addThread(mit);
+                    // Create thread for finding image at "url" page
+                    MotherlessImageThread mit = new MotherlessImageThread(url, index);
+                    motherlessThreadPool.addThread(mit);
 
-                if (isThisATest()) {
-                    break;
+                    if (isThisATest()) {
+                        break;
+                    }
                 }
             }
             if (isThisATest()) {

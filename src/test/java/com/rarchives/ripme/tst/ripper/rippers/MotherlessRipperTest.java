@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test;
 public class MotherlessRipperTest extends RippersTest {
     @Test
     public void testMotherlessAlbumRip() throws IOException {
-        MotherlessRipper ripper = new MotherlessRipper(new URL("https://motherless.com/G1168D90"));
+        MotherlessRipper ripper = new MotherlessRipper(new URL("https://motherless.com/GIAB5CB01"));
         testRipper(ripper);
     }
 }
