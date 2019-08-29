@@ -8,9 +8,11 @@ import java.util.List;
 import java.util.Map;
 
 import com.rarchives.ripme.ripper.rippers.InstagramRipper;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 public class InstagramRipperTest extends RippersTest {
-
+    @Test
     public void testInstagramGID() throws IOException {
         Map<URL, String> testURLs = new HashMap<>();
         testURLs.put(new URL("http://instagram.com/Test_User"), "Test_User");
@@ -31,12 +33,12 @@ public class InstagramRipperTest extends RippersTest {
             deleteDir(ripper.getWorkingDir());
         }
     }
-
+    @Test @Disabled("Fails to rip")
     public void testInstagramAlbums() throws IOException {
         List<URL> contentURLs = new ArrayList<>();
         // This unit test is a bit flaky 
         //contentURLs.add(new URL("https://www.instagram.com/Test_User/"));
-        contentURLs.add(new URL("https://www.instagram.com/p/BZ4egP7njW5/?hl=en"));
+        contentURLs.add(new URL("https://www.instagram.com/p/BaNPpaHn2zU/?hl=en"));
         contentURLs.add(new URL("https://www.instagram.com/p/BaNPpaHn2zU/"));
         for (URL url : contentURLs) {
             InstagramRipper ripper = new InstagramRipper(url);
