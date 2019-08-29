@@ -7,8 +7,10 @@ import com.rarchives.ripme.ripper.rippers.PornhubRipper;
 import com.rarchives.ripme.utils.Http;
 import com.rarchives.ripme.utils.Utils;
 import org.jsoup.nodes.Document;
+import org.junit.jupiter.api.Test;
 
 public class PornhubRipperTest extends RippersTest {
+    @Test
     public void testPornhubRip() throws IOException {
         if (Utils.getConfigBoolean("test.run_flaky_tests", false)) {
             PornhubRipper ripper = new PornhubRipper(new URL("https://www.pornhub.com/album/15680522"));
@@ -25,6 +27,7 @@ public class PornhubRipperTest extends RippersTest {
     }
 
     // alternate album, with only 2 pages: https://www.pornhub.com/album/4771891
+    @Test
     public void testGetNextPage() throws IOException {
         String baseURL = "https://www.pornhub.com/album/15680522";
         PornhubRipper ripper = new PornhubRipper(new URL(baseURL));
