@@ -1,0 +1,16 @@
+{
+	"folders": [
+		{
+			"path": "E:\\Downloads\\_Isaaku\\dev"
+		}
+	],
+	"settings": {
+		"files.exclude": {
+			"**/.classpath": false,
+			"**/.project": true,
+			"**/.settings": true,
+			"**/.factorypath": true
+		},
+		"java.configuration.updateBuildConfiguration": "automatic"
+	}
+}
