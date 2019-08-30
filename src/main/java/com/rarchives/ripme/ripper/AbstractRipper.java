@@ -1,7 +1,11 @@
 package com.rarchives.ripme.ripper;
 
 import java.awt.Desktop;
-import java.io.*;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -9,20 +13,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Observable;
-
-import com.rarchives.ripme.App;
+import java.util.Scanner;
 import org.apache.log4j.FileAppender;
 import org.apache.log4j.Logger;
 import org.jsoup.HttpStatusException;
-
+import com.rarchives.ripme.App;
 import com.rarchives.ripme.ui.RipStatusComplete;
 import com.rarchives.ripme.ui.RipStatusHandler;
 import com.rarchives.ripme.ui.RipStatusMessage;
 import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
 import com.rarchives.ripme.utils.Utils;
-
-import java.io.File;
-import java.util.Scanner;
 
 public abstract class AbstractRipper
                 extends Observable
@@ -548,7 +548,7 @@ public abstract class AbstractRipper
     public static AbstractRipper getRipper(URL url) throws Exception {
         for (Constructor<?> constructor : getRipperConstructors("com.rarchives.ripme.ripper.rippers")) {
             try {
-                AlbumRipper ripper = (AlbumRipper) constructor.newInstance(url); // by design: can throw ClassCastException
+                AbstractRipper ripper = (AbstractRipper) constructor.newInstance(url); // by design: can throw ClassCastException
                 LOGGER.debug("Found album ripper: " + ripper.getClass().getName());
                 return ripper;
             } catch (Exception e) {
