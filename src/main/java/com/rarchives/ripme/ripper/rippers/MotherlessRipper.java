@@ -3,19 +3,21 @@ package com.rarchives.ripme.ripper.rippers;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
-import com.rarchives.ripme.ripper.AlbumRipper;
+import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 import com.rarchives.ripme.ripper.DownloadThreadPool;
 import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
 import com.rarchives.ripme.utils.Http;
 import com.rarchives.ripme.utils.Utils;
 
-public class MotherlessRipper extends AlbumRipper {
+public class MotherlessRipper extends AbstractHTMLRipper {
 
     private static final String DOMAIN = "motherless.com",
                                 HOST   = "motherless";
@@ -35,6 +37,52 @@ public class MotherlessRipper extends AlbumRipper {
             return false;
         }
         return url.getHost().endsWith(DOMAIN);
+    }
+
+    @Override
+    protected String getDomain() {
+        return DOMAIN;
+    }
+
+    @Override
+    protected Document getFirstPage() throws IOException {
+        return Http.url(url).referrer("http://motherless.com").get();
+    }
+
+    @Override
+    protected List<String> getURLsFromPage(Document page) {
+        List<String> pageURLs = new ArrayList<>();
+
+        for (Element thumb : page.select("div.thumb a.img-container")) {
+            if (isStopped()) {
+                break;
+            }
+            String thumbURL = thumb.attr("href");
+            if (thumbURL.contains("pornmd.com")) {
+                continue;
+            }
+
+            String url;
+            if (!thumbURL.startsWith("http")) {
+                url = "http://" + DOMAIN + thumbURL;
+            } else {
+                url = thumbURL;
+            }
+            pageURLs.add(url);
+
+            if (isThisATest()) {
+                break;
+            }
+        }
+
+        return pageURLs;
+    }
+
+    @Override
+    protected void downloadURL(URL url, int index) {
+        // Create thread for finding image at "url" page
+        MotherlessImageThread mit = new MotherlessImageThread(url, index);
+        motherlessThreadPool.addThread(mit);
     }
 
     @Override
@@ -77,34 +125,14 @@ public class MotherlessRipper extends AlbumRipper {
             }
             LOGGER.info("Retrieving " + nextURL);
             sendUpdate(STATUS.LOADING_RESOURCE, nextURL);
-            Document doc = Http.url(nextURL)
-                               .referrer("http://motherless.com")
-                               .get();
-            for (Element thumb : doc.select("div.thumb a.img-container")) {
-                if (isStopped()) {
-                    break;
-                }
-                String thumbURL = thumb.attr("href");
-                if (thumbURL.contains("pornmd.com")) {
-                    continue;
-                }
-                URL url;
-                if (!thumbURL.startsWith("http")) {
-                    url = new URL("http://" + DOMAIN + thumbURL);
-                }
-                else {
-                    url = new URL(thumbURL);
-                }
-                index += 1;
+            Document doc = getFirstPage();
+            List<String> URLs = getURLsFromPage(doc);
 
-                // Create thread for finding image at "url" page
-                MotherlessImageThread mit = new MotherlessImageThread(url, index);
-                motherlessThreadPool.addThread(mit);
-
-                if (isThisATest()) {
-                    break;
-                }
+            for (String url: URLs) {
+                downloadURL(new URL(url), index);
+                index ++;
             }
+
             if (isThisATest()) {
                 break;
             }

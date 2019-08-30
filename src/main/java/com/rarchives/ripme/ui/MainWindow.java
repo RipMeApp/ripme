@@ -72,7 +72,6 @@ public final class MainWindow implements Runnable, RipStatusHandler {
     private static JFrame mainFrame;
     private static JTextField ripTextfield;
     private static JButton ripButton, stopButton;
-									  
 
     private static JLabel statusLabel;
     private static JButton openButton;
@@ -94,8 +93,6 @@ public final class MainWindow implements Runnable, RipStatusHandler {
     private static JTable historyTable;
     private static AbstractTableModel historyTableModel;
     private static JButton historyButtonRemove, historyButtonClear, historyButtonRerip;
-											  
-											  
 
     // Queue
     public static JButton optionQueue;
@@ -142,35 +139,17 @@ public final class MainWindow implements Runnable, RipStatusHandler {
 
     private static AbstractRipper ripper;
 
-																	
-
     private void updateQueue(DefaultListModel<Object> model) {
         if (model == null)
             model = queueListModel;
-					
-					
-					
-					
-					
-					
-					
-					
-					
-					
-							
-					
-					
-					 
 
-									 
-        if (model.size() > 0){
+        if (model.size() > 0) {
             Utils.setConfigList("queue", (Enumeration<Object>) model.elements());
             Utils.saveConfig();
-													   
-        }
 
-        MainWindow.optionQueue.setText(String.format("%s%s", Utils.getLocalizedString("queue"),
-                model.size() == 0 ? "" : "(" + model.size() + ")"));
+            MainWindow.optionQueue.setText(String.format("%s%s", Utils.getLocalizedString("queue"),
+                    model.size() == 0 ? "" : "(" + model.size() + ")"));
+        }
     }
 
     private void updateQueue() {
@@ -191,7 +170,6 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         checkbox.setHorizontalTextPosition(JCheckBox.LEFT);
         return checkbox;
     }
-
 
     public static void addUrlToQueue(String url) {
         queueListModel.addElement(url);
@@ -284,10 +262,8 @@ public final class MainWindow implements Runnable, RipStatusHandler {
 
     private boolean isCollapsed() {
         return (!logPanel.isVisible() && !historyPanel.isVisible() && !queuePanel.isVisible()
-											
-										  
+
                 && !configurationPanel.isVisible());
-		  
     }
 
     private void createUI(Container pane) {
@@ -510,7 +486,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         queueList.addMouseListener(
                 queueMenuMouseListener = new QueueMenuMouseListener(d -> updateQueue(queueListModel)));
         JScrollPane queueListScroll = new JScrollPane(queueList, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
-														 
+
                 JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         for (String item : Utils.getConfigList("queue")) {
             queueListModel.addElement(item);
@@ -594,9 +570,6 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         addItemToConfigGridBagConstraints(gbc, 10, configWindowPosition, configURLHistoryCheckbox);
         addItemToConfigGridBagConstraints(gbc, 11, configSelectLangComboBox, configUrlFileChooserButton);
         addItemToConfigGridBagConstraints(gbc, 12, configSaveDirLabel, configSaveDirButton);
-
-
-
 
         emptyPanel = new JPanel();
         emptyPanel.setPreferredSize(new Dimension(0, 0));
@@ -863,7 +836,6 @@ public final class MainWindow implements Runnable, RipStatusHandler {
                     saveHistory();
                 });
             } else {
-				  
                 Utils.clearURLHistory();
                 HISTORY.clear();
                 try {
@@ -878,8 +850,6 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         historyButtonRerip.addActionListener(event -> {
             if (HISTORY.isEmpty()) {
                 JOptionPane.showMessageDialog(null, Utils.getLocalizedString("history.load.none"), "RipMe Error",
-																						
-									  
                         JOptionPane.ERROR_MESSAGE);
                 return;
             }
@@ -892,9 +862,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
             }
             if (added == 0) {
                 JOptionPane.showMessageDialog(null, Utils.getLocalizedString("history.load.none.checked"),
-																	
-																																				  
-									  
+
                         "RipMe Error", JOptionPane.ERROR_MESSAGE);
             }
         });
@@ -966,7 +934,6 @@ public final class MainWindow implements Runnable, RipStatusHandler {
                         LOGGER.error("Skipping url " + line + " because it looks malformed (doesn't start with http)");
                     }
                 }
-
 
             } catch (IOException e) {
                 LOGGER.error("Error reading file " + e.getMessage());
@@ -1066,9 +1033,8 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         MenuItem trayMenuAbout = new MenuItem("About " + mainFrame.getTitle());
         trayMenuAbout.addActionListener(arg0 -> {
             StringBuilder about = new StringBuilder();
-									  
+
             about.append("<html><h1>").append(mainFrame.getTitle()).append("</h1>");
-								  
             about.append("Download albums from various websites:");
             try {
                 List<String> rippers = Utils.getListOfAlbumRippers();
@@ -1106,10 +1072,6 @@ public final class MainWindow implements Runnable, RipStatusHandler {
             about.append("</html>");
             int response = JOptionPane.showConfirmDialog(null, about.toString(), mainFrame.getTitle(),
                     JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE, new ImageIcon(mainIcon));
-										 
-											  
-											  
-											 
             if (response == JOptionPane.YES_OPTION) {
                 try {
                     Desktop.getDesktop().browse(URI.create("http://github.com/ripmeapp/ripme"));
@@ -1158,8 +1120,6 @@ public final class MainWindow implements Runnable, RipStatusHandler {
 
     private void toggleTrayClick() {
         if (mainFrame.getExtendedState() == JFrame.ICONIFIED || !mainFrame.isActive() || !mainFrame.isVisible()) {
-										
-											
             mainFrame.setVisible(true);
             mainFrame.setAlwaysOnTop(true);
             mainFrame.setAlwaysOnTop(false);
@@ -1212,10 +1172,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
                 LOGGER.error("Failed to load history from file " + historyFile, e);
                 JOptionPane.showMessageDialog(null,
                         String.format(Utils.getLocalizedString("history.load.failed.warning"), e.getMessage()),
-															 
-																								   
-																					
-													   
+
                         "RipMe - history load failure", JOptionPane.ERROR_MESSAGE);
             }
         } else {
@@ -1254,7 +1211,6 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         }
     }
 
-								  
     private void ripNextAlbum() {
         isRipping = true;
         // Save current state of queue to configuration.
@@ -1323,7 +1279,6 @@ public final class MainWindow implements Runnable, RipStatusHandler {
                 ripper.setObserver(this);
                 Thread t = new Thread(ripper);
                 if (configShowPopup.isSelected() && (!mainFrame.isVisible() || !mainFrame.isActive())) {
-																			
                     mainFrame.toFront();
                     mainFrame.setAlwaysOnTop(true);
                     trayIcon.displayMessage(mainFrame.getTitle(), "Started ripping " + ripper.getURL().toExternalForm(),
@@ -1498,8 +1453,8 @@ public final class MainWindow implements Runnable, RipStatusHandler {
             }
             /*
              * content key %path% the path to the album folder %url% is the album url
-												 
-									
+             * 
+             * 
              */
             if (Utils.getConfigBoolean("enable.finish.command", false)) {
                 try {
@@ -1511,10 +1466,8 @@ public final class MainWindow implements Runnable, RipStatusHandler {
                     // https://stackoverflow.com/questions/5711084/java-runtime-getruntime-getting-output-from-executing-a-command-line-program
                     Process proc = Runtime.getRuntime().exec(commandToRun);
                     BufferedReader stdInput = new BufferedReader(new InputStreamReader(proc.getInputStream()));
-																	  
 
                     BufferedReader stdError = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
-																	  
 
                     // read the output from the command
                     LOGGER.info("Command output:\n");
