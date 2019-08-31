@@ -138,13 +138,27 @@ public class ListalRipper extends AbstractHTMLRipper {
 
                 String imageUrl = doc.getElementsByClass("pure-img").attr("src");
                 if (imageUrl != "") {
-                    addURLToDownload(new URL(imageUrl), getPrefix(index));
+                    addURLToDownload(new URL(imageUrl), getPrefix(index), "", null, null,
+                            getImageName());
                 } else {
                     LOGGER.error("Couldnt find image from url: " + url);
                 }
             } catch (IOException e) {
                 LOGGER.error("[!] Exception while downloading image: " + url, e);
             }
+        }
+
+        public String getImageName() {
+            // Returns the image number of the link if possible.
+            String name = this.url.toExternalForm();
+            try {
+                name = name.substring(name.lastIndexOf("/") + 1);
+            } catch (Exception e) {
+                LOGGER.info("Failed to get name for the image.");
+                name = null;
+            }
+            // Listal stores images as .jpg
+            return name + ".jpg";
         }
     }
 }
