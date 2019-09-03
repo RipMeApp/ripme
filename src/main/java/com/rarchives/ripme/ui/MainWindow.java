@@ -143,10 +143,13 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         if (model == null)
             model = queueListModel;
 
-        Utils.setConfigList("Queue", (Enumeration<Object>) model.elements());
+        if (model.size() > 0) {
+            Utils.setConfigList("queue", (Enumeration<Object>) model.elements());
+            Utils.saveConfig();
 
-        MainWindow.optionQueue.setText(String.format("%s%s", Utils.getLocalizedString("queue"),
-                model.size() == 0 ? "" : "(" + model.size() + ")"));
+            MainWindow.optionQueue.setText(String.format("%s%s", Utils.getLocalizedString("queue"),
+                    model.size() == 0 ? "" : "(" + model.size() + ")"));
+        }
     }
 
     private void updateQueue() {
@@ -259,6 +262,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
 
     private boolean isCollapsed() {
         return (!logPanel.isVisible() && !historyPanel.isVisible() && !queuePanel.isVisible()
+
                 && !configurationPanel.isVisible());
     }
 
@@ -479,8 +483,10 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         queueListModel = new DefaultListModel();
         JList queueList = new JList(queueListModel);
         queueList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-        queueList.addMouseListener(queueMenuMouseListener = new QueueMenuMouseListener());
+        queueList.addMouseListener(
+                queueMenuMouseListener = new QueueMenuMouseListener(d -> updateQueue(queueListModel)));
         JScrollPane queueListScroll = new JScrollPane(queueList, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+
                 JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         for (String item : Utils.getConfigList("queue")) {
             queueListModel.addElement(item);
@@ -856,6 +862,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
             }
             if (added == 0) {
                 JOptionPane.showMessageDialog(null, Utils.getLocalizedString("history.load.none.checked"),
+
                         "RipMe Error", JOptionPane.ERROR_MESSAGE);
             }
         });
@@ -1026,6 +1033,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         MenuItem trayMenuAbout = new MenuItem("About " + mainFrame.getTitle());
         trayMenuAbout.addActionListener(arg0 -> {
             StringBuilder about = new StringBuilder();
+
             about.append("<html><h1>").append(mainFrame.getTitle()).append("</h1>");
             about.append("Download albums from various websites:");
             try {
@@ -1164,6 +1172,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
                 LOGGER.error("Failed to load history from file " + historyFile, e);
                 JOptionPane.showMessageDialog(null,
                         String.format(Utils.getLocalizedString("history.load.failed.warning"), e.getMessage()),
+
                         "RipMe - history load failure", JOptionPane.ERROR_MESSAGE);
             }
         } else {
@@ -1202,7 +1211,6 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         }
     }
 
-    @SuppressWarnings("unchecked")
     private void ripNextAlbum() {
         isRipping = true;
         // Save current state of queue to configuration.
@@ -1445,6 +1453,8 @@ public final class MainWindow implements Runnable, RipStatusHandler {
             }
             /*
              * content key %path% the path to the album folder %url% is the album url
+             * 
+             * 
              */
             if (Utils.getConfigBoolean("enable.finish.command", false)) {
                 try {
