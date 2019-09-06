@@ -27,8 +27,21 @@ public class GfycatRipperTest extends RippersTest {
         testRipper(ripper);
     }
 
+    /**
+     * Rips a Gfycat profile
+     * @throws IOException 
+     */
     public void testGfycatProfile() throws IOException {
         GfycatRipper ripper  = new GfycatRipper(new URL("https://gfycat.com/@golbanstorage"));
+        testRipper(ripper);
+    }
+    
+    /**
+     * Rips a Gfycat amp link 
+     * @throws IOException 
+     */
+    public void testGfycatAmp() throws IOException {
+        GfycatRipper ripper = new GfycatRipper(new URL("https://gfycat.com/amp/TemptingExcellentIchthyosaurs"));
         testRipper(ripper);
     }
 }
