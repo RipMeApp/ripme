@@ -146,10 +146,10 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         if (model.size() > 0) {
             Utils.setConfigList("queue", (Enumeration<Object>) model.elements());
             Utils.saveConfig();
-
-            MainWindow.optionQueue.setText(String.format("%s%s", Utils.getLocalizedString("queue"),
-                    model.size() == 0 ? "" : "(" + model.size() + ")"));
         }
+
+        MainWindow.optionQueue.setText(String.format("%s%s", Utils.getLocalizedString("queue"),
+                model.size() == 0 ? "" : "(" + model.size() + ")"));
     }
 
     private void updateQueue() {
