@@ -49,10 +49,12 @@ public class GfycatRipper extends AbstractHTMLRipper {
 
     @Override
     public URL sanitizeURL(URL url) throws MalformedURLException {
-        url = new URL(url.toExternalForm().replace("/gifs/detail", ""));
-        
-        return url;
+        String sUrl = url.toExternalForm();
+        sUrl = sUrl.replace("/gifs/detail", "");
+        sUrl = sUrl.replace("/amp", "");
+        return new URL(sUrl);
     }
+
     public boolean isProfile() {
         Pattern p = Pattern.compile("^https?://[wm.]*gfycat\\.com/@([a-zA-Z0-9]+).*$");
         Matcher m = p.matcher(url.toExternalForm());
