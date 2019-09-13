@@ -207,10 +207,10 @@ public class FlickrRipper extends AbstractHTMLRipper {
     @Override
     public List<String> getURLsFromPage(Document doc) {
         List<String> imageURLs = new ArrayList<>();
-
+        String apiKey = getAPIKey(doc);
         int x = 1;
         while (true) {
-            JSONObject jsonData = getJSON(String.valueOf(x), getAPIKey(doc));
+            JSONObject jsonData = getJSON(String.valueOf(x), apiKey);
             if (jsonData.has("stat") && jsonData.getString("stat").equals("fail")) {
                 break;
             } else {
@@ -220,18 +220,12 @@ public class FlickrRipper extends AbstractHTMLRipper {
                 for (int i = 0; i < pictures.length(); i++) {
                     LOGGER.info(i);
                     JSONObject data = (JSONObject) pictures.get(i);
-                    // TODO this is a total hack, we should loop over all image sizes and pick the biggest one and not
-                    // just assume
-                    List<String> imageSizes = Arrays.asList("k", "h", "l", "n", "c", "z", "t");
-                    for ( String imageSize : imageSizes) {
-                        try {
-                            addURLToDownload(new URL(data.getString("url_" + imageSize)));
-                            LOGGER.info("Adding picture " + data.getString("url_" + imageSize));
-                            break;
-                        } catch (org.json.JSONException ignore) {
-                        // TODO warn the user when we hit a Malformed url
-                        } catch (MalformedURLException e) {}
+                    try {
+                        addURLToDownload(getLargestImageURL(data.getString("id"), apiKey));
+                    } catch (MalformedURLException e) {
+                        LOGGER.error("Flickr MalformedURLException: " + e.getMessage());
                     }
+
                 }
                 if (x >= totalPages) {
                     // The rips done
@@ -249,5 +243,27 @@ public class FlickrRipper extends AbstractHTMLRipper {
     @Override
     public void downloadURL(URL url, int index) {
         addURLToDownload(url, getPrefix(index));
+    }
+
+    private URL getLargestImageURL(String imageID, String apiKey) throws MalformedURLException {
+        TreeMap<Integer, String> imageURLMap = new TreeMap<>();
+
+        try {
+            URL imageAPIURL = new URL("https://www.flickr.com/services/rest/?method=flickr.photos.getSizes&api_key=" + apiKey + "&photo_id=" + imageID + "&format=json&nojsoncallback=1");
+            JSONArray imageSizes = new JSONObject(Http.url(imageAPIURL).ignoreContentType().get().text()).getJSONObject("sizes").getJSONArray("size");
+            for (int i = 0; i < imageSizes.length(); i++) {
+                JSONObject imageInfo = imageSizes.getJSONObject(i);
+                imageURLMap.put(imageInfo.getInt("width") * imageInfo.getInt("height"), imageInfo.getString("source"));
+            }
+
+        } catch (org.json.JSONException e) {
+            LOGGER.error("Error in  parsing of Flickr API: " + e.getMessage());
+        } catch (MalformedURLException e) {
+            LOGGER.error("Malformed URL returned by API");
+        } catch (IOException e) {
+            LOGGER.error("IOException while looking at image sizes: " + e.getMessage());
+        }
+
+        return new URL(imageURLMap.lastEntry().getValue());
     }
 }

@@ -5,11 +5,11 @@ import java.io.IOException;
 import java.util.List;
 
 import com.rarchives.ripme.ripper.rippers.ChanRipper;
-import junit.framework.TestCase;
 
 import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.junit.jupiter.api.Assertions;
 
 import com.rarchives.ripme.ripper.AbstractRipper;
 import com.rarchives.ripme.utils.Utils;
@@ -17,7 +17,7 @@ import com.rarchives.ripme.utils.Utils;
 /**
  * Contains helper methods for testing rippers.
  */
-public class RippersTest extends TestCase {
+public class RippersTest {
 
     private final Logger logger = Logger.getLogger(RippersTest.class);
 
@@ -28,7 +28,7 @@ public class RippersTest extends TestCase {
     void testRipper(AbstractRipper ripper) {
         try {
             // Turn on Debug logging
-            ((ConsoleAppender)Logger.getRootLogger().getAppender("stdout")).setThreshold(Level.DEBUG);
+            ((ConsoleAppender) Logger.getRootLogger().getAppender("stdout")).setThreshold(Level.DEBUG);
 
             // Decrease timeout
             Utils.setConfigInteger("page.timeout", 20 * 1000);
@@ -36,31 +36,32 @@ public class RippersTest extends TestCase {
             ripper.setup();
             ripper.markAsTest();
             ripper.rip();
-            assertTrue("Failed to download a single file from " + ripper.getURL(), ripper.getWorkingDir().listFiles().length >= 1);
+            assertTrue("Failed to download a single file from " + ripper.getURL(),
+                    ripper.getWorkingDir().listFiles().length >= 1);
         } catch (IOException e) {
             if (e.getMessage().contains("Ripping interrupted")) {
                 // We expect some rips to get interrupted
-            }
-            else {
+            } else {
                 e.printStackTrace();
                 fail("Failed to rip " + ripper.getURL() + " : " + e.getMessage());
             }
         } catch (Exception e) {
             e.printStackTrace();
             fail("Failed to rip " + ripper.getURL() + " : " + e.getMessage());
-        }
-        finally {
+        } finally {
             deleteDir(ripper.getWorkingDir());
         }
     }
 
-    // We have a special test for chan rippers because we can't assume that content will be downloadable, as content
-    // is often removed within mere hours of it being posted. So instead of trying to download any content we just check
+    // We have a special test for chan rippers because we can't assume that content
+    // will be downloadable, as content
+    // is often removed within mere hours of it being posted. So instead of trying
+    // to download any content we just check
     // that we found links to it
     void testChanRipper(ChanRipper ripper) {
         try {
             // Turn on Debug logging
-            ((ConsoleAppender)Logger.getRootLogger().getAppender("stdout")).setThreshold(Level.DEBUG);
+            ((ConsoleAppender) Logger.getRootLogger().getAppender("stdout")).setThreshold(Level.DEBUG);
 
             // Decrease timeout
             Utils.setConfigInteger("page.timeout", 20 * 1000);
@@ -72,25 +73,21 @@ public class RippersTest extends TestCase {
         } catch (IOException e) {
             if (e.getMessage().contains("Ripping interrupted")) {
                 // We expect some rips to get interrupted
-            }
-            else {
+            } else {
                 e.printStackTrace();
                 fail("Failed to rip " + ripper.getURL() + " : " + e.getMessage());
             }
         } catch (Exception e) {
             e.printStackTrace();
             fail("Failed to rip " + ripper.getURL() + " : " + e.getMessage());
-        }
-        finally {
+        } finally {
             deleteDir(ripper.getWorkingDir());
         }
     }
 
     /** File extensions that are safe to delete. */
-    private static final String[] SAFE_EXTENSIONS =
-        {"png", "jpg",  "jpeg", "gif",
-         "mp4", "webm", "mov",  "mpg", "mpeg",
-         "txt", "log", "php"};
+    private static final String[] SAFE_EXTENSIONS = { "png", "jpg", "jpeg", "gif", "mp4", "webm", "mov", "mpg", "mpeg",
+            "txt", "log", "php" };
 
     /** Recursively deletes a directory */
     void deleteDir(File dir) {
@@ -115,6 +112,7 @@ public class RippersTest extends TestCase {
         }
         dir.delete();
     }
+
     void deleteSubdirs(File workingDir) {
         for (File f : workingDir.listFiles()) {
             if (f.isDirectory()) {
@@ -126,6 +124,51 @@ public class RippersTest extends TestCase {
                 f.delete();
             }
         }
+    }
+
+    @Deprecated
+    void assertEquals(String expected, String actual) {
+        Assertions.assertEquals(expected, actual);
+    }
+
+    @Deprecated
+    void assertEquals(String message, String expected, String actual) {
+        Assertions.assertEquals(expected, actual, message);
+    }
+
+    @Deprecated
+    void assertEquals(Object expected, Object actual) {
+        Assertions.assertEquals(expected, actual);
+    }
+
+    @Deprecated
+    void fail(String message) {
+        Assertions.fail(message);
+    }
+
+    @Deprecated
+    void assertTrue(boolean condition) {
+        Assertions.assertTrue(condition);
+    }
+
+    @Deprecated
+    void assertTrue(String failMessage, boolean condition) {
+        Assertions.assertTrue(condition, failMessage);
+    }
+
+    @Deprecated
+    void assertFalse(String message, boolean condition) {
+        Assertions.assertFalse(condition, message);
+    }
+
+    @Deprecated
+    void assertNull(Object actual) {
+        Assertions.assertNull(actual);
+    }
+
+    @Deprecated
+    void assertNotNull(String message, Object actual) {
+        Assertions.assertNotNull(actual, message);
     }
 
 }

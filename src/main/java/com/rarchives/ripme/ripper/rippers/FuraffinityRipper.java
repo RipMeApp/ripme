@@ -219,16 +219,21 @@ public class FuraffinityRipper extends AbstractHTMLRipper {
 
     @Override
     public String getGID(URL url) throws MalformedURLException {
-        Pattern p = Pattern
-                .compile("^https?://www\\.furaffinity\\.net/gallery/([-_.0-9a-zA-Z]+).*$");
+        // Gallery
+        Pattern p = Pattern.compile("^https?://www\\.furaffinity\\.net/gallery/([-_.0-9a-zA-Z]+).*$");
         Matcher m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             return m.group(1);
         }
 
-        throw new MalformedURLException("Expected furaffinity.net URL format: "
-                + "www.furaffinity.net/gallery/username  - got " + url
-                + " instead");
+        //Scraps
+        p = Pattern.compile("^https?://www\\.furaffinity\\.net/scraps/([-_.0-9a-zA-Z]+).*$");
+        m = p.matcher(url.toExternalForm());
+        if (m.matches()) {
+            return m.group(1);
+        }
+
+        throw new MalformedURLException("Unable to find images in" + url);
     }
 
 

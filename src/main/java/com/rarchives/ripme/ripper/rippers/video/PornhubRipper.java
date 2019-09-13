@@ -69,10 +69,12 @@ public class PornhubRipper extends VideoRipper {
                 int bestQual = 0;
                 for (int i = 0; i < mediaDef.length(); i++) {
                     JSONObject e = (JSONObject) mediaDef.get(i);
-                    int quality = Integer.parseInt((String)e.get("quality"));
-                    if (quality > bestQual) {
-                        bestQual = quality;
-                        vidUrl = (String)e.get("videoUrl");
+                    if (!"upsell".equals(e.getString("format"))) {
+                        int quality = Integer.parseInt((String)e.get("quality"));
+                        if (quality > bestQual) {
+                            bestQual = quality;
+                            vidUrl = (String)e.get("videoUrl");
+                        }
                     }
                 }
                 if (vidUrl == null) {

@@ -10,13 +10,15 @@ import javax.swing.Action;
 import javax.swing.JPopupMenu;
 import javax.swing.JTable;
 
+import com.rarchives.ripme.utils.Utils;
+
 class HistoryMenuMouseListener extends MouseAdapter {
     private JPopupMenu popup = new JPopupMenu();
     private JTable tableComponent;
 
     @SuppressWarnings("serial")
     public HistoryMenuMouseListener() {
-        Action checkAllAction = new AbstractAction("Check All") {
+        Action checkAllAction = new AbstractAction(Utils.getLocalizedString("history.check.all")) {
             @Override
             public void actionPerformed(ActionEvent ae) {
                 for (int row = 0; row < tableComponent.getRowCount(); row++) {
@@ -26,7 +28,7 @@ class HistoryMenuMouseListener extends MouseAdapter {
         };
         popup.add(checkAllAction);
 
-        Action uncheckAllAction = new AbstractAction("Check None") {
+        Action uncheckAllAction = new AbstractAction(Utils.getLocalizedString("history.check.none")) {
             @Override
             public void actionPerformed(ActionEvent ae) {
                 for (int row = 0; row < tableComponent.getRowCount(); row++) {
@@ -38,7 +40,7 @@ class HistoryMenuMouseListener extends MouseAdapter {
 
         popup.addSeparator();
 
-        Action checkSelected = new AbstractAction("Check Selected") {
+        Action checkSelected = new AbstractAction(Utils.getLocalizedString("history.check.selected")) {
             @Override
             public void actionPerformed(ActionEvent ae) {
                 for (int row : tableComponent.getSelectedRows()) {
@@ -48,7 +50,7 @@ class HistoryMenuMouseListener extends MouseAdapter {
         };
         popup.add(checkSelected);
 
-        Action uncheckSelected = new AbstractAction("Uncheck Selected") {
+        Action uncheckSelected = new AbstractAction(Utils.getLocalizedString("history.uncheck.selected")) {
             @Override
             public void actionPerformed(ActionEvent ae) {
                 for (int row : tableComponent.getSelectedRows()) {

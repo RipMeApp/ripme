@@ -24,11 +24,12 @@
 package com.rarchives.ripme.tst.ripper.rippers;
 
 import com.rarchives.ripme.ripper.rippers.ThechiveRipper;
+
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+
 import java.io.IOException;
 import java.net.URL;
-import org.jsoup.nodes.Attributes;
-import org.jsoup.nodes.Element;
-import org.jsoup.parser.Tag;
 
 /**
  *
@@ -41,40 +42,57 @@ public class ThechiveRipperTest extends RippersTest {
      *
      * @throws IOException
      */
-    public void theChiveRip() throws IOException {
-        ThechiveRipper ripper = new ThechiveRipper(new URL("https://thechive.com/2018/10/03/the-definitive-list-of-the-hottest-horror-movie-babes/"));
+    @Test
+    public void testTheChiveRip() throws IOException {
+        ThechiveRipper ripper = new ThechiveRipper(new URL(
+                "https://thechive.com/2019/03/16/beautiful-badasses-lookin-good-in-and-out-of-uniform-35-photos/"));
+        testRipper(ripper);
+    }
+
+    @Test
+    public void testTheChiveGif() throws IOException {
+        ThechiveRipper ripper = new ThechiveRipper(
+                new URL("https://thechive.com/2019/03/14/dont-tease-me-just-squeeze-me-20-gifs/"));
         testRipper(ripper);
     }
 
     /*
-    
-    //If anyone figures out how to get JSOUP Elements mocked up, we can use the following methods to test both jpeg + gif ripping.
-    
-    public void testGifRip() throws IOException {
-        String elementInString = "<img width=\"500\" height=\"305\" \n"
-                + "src=\"https://thechive.files.wordpress.com/2018/10/american_mary_crimson_quill-111.jpg?quality=85&amp;strip=info\" \n"
-                + "class=\"attachment-gallery-item-full size-gallery-item-full gif-animate\" \n"
-                + "alt=\"american mary crimson quill 111 The hottest horror movie villains ever according to science (18 Photos)\" \n"
-                + "title=\"\" data-gifsrc=\"https://thechive.files.wordpress.com/2018/10/american_mary_crimson_quill-1.gif?w=500\">"
-        
-        Element el = new Element(
-                new Tag("img"),
-                "",//URI
-                new Attributes());
-        String URL = ThechiveRipper.getImageSource(el);
-        assertTrue(URL.equals("https://thechive.files.wordpress.com/2018/10/american_mary_crimson_quill-1.gif"));
+     * "i.thechive.com" test.
+     */
+    @Test
+    public void testIDotThechive() throws IOException {
+        ThechiveRipper ripper = new ThechiveRipper(new URL("https://i.thechive.com/witcheva"));
+        testRipper(ripper);
     }
 
-    public void testGifRip() throws IOException {
+    /*
+     * 
+     * //If anyone figures out how to get JSOUP Elements mocked up, we can use the
+     * following methods to test both jpeg + gif ripping.
+     */
+    @Test
+    @Disabled
+    public void testGifRip1() throws IOException {
+        String elementInString = "<img width=\"500\" height=\"305\" \n src=\"https://thechive.files.wordpress.com/2018/10/american_mary_crimson_quill-111.jpg?quality=85&amp;strip=info\" \n"
+                + "class=\"attachment-gallery-item-full size-gallery-item-full gif-animate\" \n"
+                + "alt=\"american mary crimson quill 111 The hottest horror movie villains ever according to science (18 Photos)\" \n"
+                + "title=\"\" data-gifsrc=\"https://thechive.files.wordpress.com/2018/10/american_mary_crimson_quill-1.gif?w=500\">";
+
+        // Element el = new Element(new Tag("img"), "", new Attributes());
+        // String URL = ThechiveRipper.getImageSource(el);
+        // assertTrue(URL.equals("https://thechive.files.wordpress.com/2018/10/american_mary_crimson_quill-1.gif"));
+    }
+
+    @Test
+    @Disabled
+    public void testGifRip2() throws IOException {
         String elementInString = "<img width=\"600\" height=\"409\" src=\"https://thechive.files.wordpress.com/2018/10/the-definitive-list-of-the-hottest-horror-movie-babes-11.jpg?quality=85&amp;strip=info&amp;w=600\" \n"
                 + "class=\"attachment-gallery-item-full size-gallery-item-full\" \n"
                 + "alt=\"the definitive list of the hottest horror movie babes 11 The hottest horror movie villains ever according to science (18 Photos)\" title=\"\">";
-        Element el = new Element(
-                new Tag("img"),
-                "",//URI
-                new Attributes());
-        String URL = ThechiveRipper.getImageSource(el);
-        assertTrue(URL.equals("https://thechive.files.wordpress.com/2018/10/the-definitive-list-of-the-hottest-horror-movie-babes-11.jpg"));
+
+        // Element el = new Element( new Tag("img"), "", new Attributes());
+        // String URL = ThechiveRipper.getImageSource(el);
+        // assertTrue(URL.equals("https://thechive.files.wordpress.com/2018/10/the-definitive-list-of-the-hottest-horror-movie-babes-11.jpg"));
     }
-     */
+
 }
