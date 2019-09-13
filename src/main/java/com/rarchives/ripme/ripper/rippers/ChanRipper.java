@@ -29,7 +29,11 @@ public class ChanRipper extends AbstractHTMLRipper {
             new ChanSite("boards.420chan.org"),
             new ChanSite("7chan.org"),
             new ChanSite("desuarchive.org", "desu-usergeneratedcontent.xyz"),
-            new ChanSite("8ch.net", "media.8ch.net")
+            new ChanSite("8ch.net", "media.8ch.net"),
+            new ChanSite("thebarchive.com"),
+            new ChanSite("archiveofsins.com"),
+            new ChanSite("archive.nyafuu.org"),
+            new ChanSite("rbt.asia")
         );
     private static List<ChanSite> user_give_explicit_domains = getChansFromConfig(Utils.getConfigString("chans.chan_sites", null));
     private static List<ChanSite> explicit_domains = new ArrayList<>();
@@ -146,7 +150,7 @@ public class ChanRipper extends AbstractHTMLRipper {
 
         String u = url.toExternalForm();
         if (u.contains("/thread/") || u.contains("/res/") || u.contains("yuki.la") || u.contains("55chan.org")) {
-            p = Pattern.compile("^.*\\.[a-z]{1,3}/[a-zA-Z0-9]+/(thread|res)/([0-9]+)(\\.html|\\.php)?.*$");
+            p = Pattern.compile("^.*\\.[a-z]{1,4}/[a-zA-Z0-9]+/(thread|res)/([0-9]+)(\\.html|\\.php)?.*$");
             m = p.matcher(u);
             if (m.matches()) {
                 return m.group(2);

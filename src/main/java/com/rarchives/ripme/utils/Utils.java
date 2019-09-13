@@ -1,27 +1,28 @@
 package com.rarchives.ripme.utils;
 
-import com.rarchives.ripme.ripper.AbstractRipper;
-import org.apache.commons.configuration.ConfigurationException;
-import org.apache.commons.configuration.PropertiesConfiguration;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
-import org.apache.log4j.PropertyConfigurator;
-
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.Clip;
-import javax.sound.sampled.Line;
-import javax.sound.sampled.LineEvent;
-import java.io.*;
-import java.lang.reflect.Array;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FilenameFilter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Constructor;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.ByteBuffer;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -29,14 +30,30 @@ import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
-import static java.lang.Math.toIntExact;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
+import javax.sound.sampled.Line;
+import javax.sound.sampled.LineEvent;
+
+import com.rarchives.ripme.ripper.AbstractRipper;
+
+import org.apache.commons.configuration.ConfigurationException;
+import org.apache.commons.configuration.PropertiesConfiguration;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
+import org.apache.log4j.PropertyConfigurator;
 
 /**
  * Common utility functions used in various places throughout the project.
  */
 public class Utils {
 
+    private static final Pattern pattern = Pattern.compile("LabelsBundle_(?<lang>[A-Za-z_]+).properties");
+    private static final String DEFAULT_LANG = "en_US";
     private static final String RIP_DIRECTORY = "rips";
     private static final String CONFIG_FILE = "rip.properties";
     private static final String OS = System.getProperty("os.name").toLowerCase();
@@ -46,6 +63,8 @@ public class Utils {
     private static PropertiesConfiguration config;
     private static HashMap<String, HashMap<String, String>> cookieCache;
     private static HashMap<ByteBuffer, String> magicHash = new HashMap<>();
+
+    private static ResourceBundle resourceBundle = null;
 
     static {
         cookieCache = new HashMap<>();
@@ -80,6 +99,8 @@ public class Utils {
         } catch (Exception e) {
             LOGGER.error("[!] Failed to load properties file from " + CONFIG_FILE, e);
         }
+
+        resourceBundle = getResourceBundle(null);
     }
 
     /**
@@ -88,9 +109,9 @@ public class Utils {
      * @return Root directory to save rips to.
      */
     public static File getWorkingDirectory() {
-        String currentDir = ".";
+        String currentDir = "";
         try {
-            currentDir = new File(".").getCanonicalPath() + File.separator + RIP_DIRECTORY + File.separator;
+            currentDir = getJarDirectory().getCanonicalPath() + File.separator + RIP_DIRECTORY + File.separator;
         } catch (IOException e) {
             LOGGER.error("Error while finding working dir: ", e);
         }
@@ -214,8 +235,19 @@ public class Utils {
      * Gets the directory of where the config file is stored on a Mac machine.
      */
     private static String getMacOSConfigDir() {
-        return System.getProperty("user.home")
-                + File.separator + "Library" + File.separator + "Application Support" + File.separator + "ripme";
+        return System.getProperty("user.home") + File.separator + "Library" + File.separator + "Application Support"
+                + File.separator + "ripme";
+    }
+
+    private static File getJarDirectory() {
+        File jarDirectory = Utils.class.getResource("/rip.properties").toString().contains("jar:")
+                ? new File(System.getProperty("java.class.path")).getParentFile()
+                : new File(System.getProperty("user.dir"));
+
+        if (jarDirectory == null)
+            jarDirectory = new File(".");
+
+        return jarDirectory;
     }
 
     /**
@@ -223,7 +255,7 @@ public class Utils {
      */
     private static boolean portableMode() {
         try {
-            File file = new File(new File(".").getCanonicalPath() + File.separator + CONFIG_FILE);
+            File file = new File(getJarDirectory().getCanonicalPath() + File.separator + CONFIG_FILE);
             if (file.exists() && !file.isDirectory()) {
                 return true;
             }
@@ -240,18 +272,21 @@ public class Utils {
     public static String getConfigDir() {
         if (portableMode()) {
             try {
-                return new File(".").getCanonicalPath();
+                return getJarDirectory().getCanonicalPath();
             } catch (Exception e) {
                 return ".";
             }
         }
 
-        if (isWindows()) return getWindowsConfigDir();
-        if (isMacOS()) return getMacOSConfigDir();
-        if (isUnix()) return getUnixConfigDir();
+        if (isWindows())
+            return getWindowsConfigDir();
+        if (isMacOS())
+            return getMacOSConfigDir();
+        if (isUnix())
+            return getUnixConfigDir();
 
         try {
-            return new File(".").getCanonicalPath();
+            return getJarDirectory().getCanonicalPath();
         } catch (Exception e) {
             return ".";
         }
@@ -269,7 +304,11 @@ public class Utils {
      * Return the path of the url history file
      */
     public static String getURLHistoryFile() {
-        return getConfigDir() + File.separator + "url_history.txt";
+        if (getConfigString("history.location", "").length() == 0) {
+            return getConfigDir() + File.separator + "url_history.txt";
+        } else {
+            return getConfigString("history.location", "");
+        }
     }
 
     /**
@@ -298,8 +337,8 @@ public class Utils {
     }
 
     /**
-     * Strips away URL parameters, which usually appear at the end of URLs.
-     * E.g. the ?query on PHP
+     * Strips away URL parameters, which usually appear at the end of URLs. E.g. the
+     * ?query on PHP
      *
      * @param url       The URL to filter/strip
      * @param parameter The parameter to strip
@@ -340,9 +379,8 @@ public class Utils {
     }
 
     /**
-     * Get a list of all Classes within a package.
-     * Works with file system projects and jar files!
-     * Borrowed from StackOverflow, but I don't have a link :[
+     * Get a list of all Classes within a package. Works with file system projects
+     * and jar files! Borrowed from StackOverflow, but I don't have a link :[
      *
      * @param pkgname The name of the package
      * @return List of classes within the package
@@ -361,7 +399,10 @@ public class Utils {
         try {
             directory = new File(resource.toURI());
         } catch (URISyntaxException e) {
-            throw new RuntimeException(pkgname + " (" + resource + ") does not appear to be a valid URL / URI.  Strange, since we got it from the system...", e);
+            throw new RuntimeException(
+                    pkgname + " (" + resource
+                            + ") does not appear to be a valid URL / URI.  Strange, since we got it from the system...",
+                    e);
         } catch (IllegalArgumentException e) {
             directory = null;
         }
@@ -382,17 +423,14 @@ public class Utils {
         } else {
             // Load from JAR
             try {
-                String jarPath = fullPath
-                        .replaceFirst("[.]jar[!].*", ".jar")
-                        .replaceFirst("file:", "");
+                String jarPath = fullPath.replaceFirst("[.]jar[!].*", ".jar").replaceFirst("file:", "");
                 jarPath = URLDecoder.decode(jarPath, "UTF-8");
                 JarFile jarFile = new JarFile(jarPath);
                 Enumeration<JarEntry> entries = jarFile.entries();
                 while (entries.hasMoreElements()) {
                     JarEntry nextElement = entries.nextElement();
                     String entryName = nextElement.getName();
-                    if (entryName.startsWith(relPath)
-                            && entryName.length() > (relPath.length() + "/".length())
+                    if (entryName.startsWith(relPath) && entryName.length() > (relPath.length() + "/".length())
                             && !nextElement.isDirectory()) {
                         String className = entryName.replace('/', '.').replace('\\', '.').replace(".class", "");
                         try {
@@ -434,9 +472,7 @@ public class Utils {
         if (path.length() < SHORTENED_PATH_LENGTH * 2) {
             return path;
         }
-        return path.substring(0, SHORTENED_PATH_LENGTH)
-                + "..."
-                + path.substring(path.length() - SHORTENED_PATH_LENGTH);
+        return path.substring(0, SHORTENED_PATH_LENGTH) + "..." + path.substring(path.length() - SHORTENED_PATH_LENGTH);
     }
 
     /**
@@ -451,9 +487,7 @@ public class Utils {
     }
 
     public static String filesystemSafe(String text) {
-        text = text.replaceAll("[^a-zA-Z0-9.-]", "_")
-                .replaceAll("__", "_")
-                .replaceAll("_+$", "");
+        text = text.replaceAll("[^a-zA-Z0-9.-]", "_").replaceAll("__", "_").replaceAll("_+$", "");
         if (text.length() > 100) {
             text = text.substring(0, 99);
         }
@@ -476,8 +510,8 @@ public class Utils {
             return path;
         }
 
-        String original = path;                                         // needs to be checked if lowercase exists
-        String lastPart = original.substring(index + 1).toLowerCase();    // setting lowercase to check if it exists
+        String original = path; // needs to be checked if lowercase exists
+        String lastPart = original.substring(index + 1).toLowerCase(); // setting lowercase to check if it exists
 
         // Get a List of all Directories and check its lowercase
         // if file exists return it
@@ -502,7 +536,7 @@ public class Utils {
      */
     public static String bytesToHumanReadable(int bytes) {
         float fbytes = (float) bytes;
-        String[] mags = new String[]{"", "K", "M", "G", "T"};
+        String[] mags = new String[] { "", "K", "M", "G", "T" };
         int magIndex = 0;
         while (fbytes >= 1024) {
             fbytes /= 1024;
@@ -512,7 +546,8 @@ public class Utils {
     }
 
     /**
-     * Gets and returns a list of all the album rippers present in the "com.rarchives.ripme.ripper.rippers" package.
+     * Gets and returns a list of all the album rippers present in the
+     * "com.rarchives.ripme.ripper.rippers" package.
      *
      * @return List<String> of all album rippers present.
      */
@@ -525,7 +560,8 @@ public class Utils {
     }
 
     /**
-     * Gets and returns a list of all video rippers present in the "com.rarchives.rime.rippers.video" package
+     * Gets and returns a list of all video rippers present in the
+     * "com.rarchives.rime.rippers.video" package
      *
      * @return List<String> of all the video rippers.
      */
@@ -564,7 +600,6 @@ public class Utils {
     public static void configureLogger() {
         LogManager.shutdown();
         String logFile = getConfigBoolean("log.save", false) ? "log4j.file.properties" : "log4j.properties";
-
         try (InputStream stream = Utils.class.getClassLoader().getResourceAsStream(logFile)) {
             if (stream == null) {
                 PropertyConfigurator.configure("src/main/resources/" + logFile);
@@ -623,7 +658,8 @@ public class Utils {
         try {
             for (String part : parts) {
                 if ((pos = part.indexOf('=')) >= 0) {
-                    res.put(URLDecoder.decode(part.substring(0, pos), "UTF-8"), URLDecoder.decode(part.substring(pos + 1), "UTF-8"));
+                    res.put(URLDecoder.decode(part.substring(0, pos), "UTF-8"),
+                            URLDecoder.decode(part.substring(pos + 1), "UTF-8"));
                 } else {
                     res.put(URLDecoder.decode(part, "UTF-8"), "");
                 }
@@ -691,17 +727,19 @@ public class Utils {
     }
 
     /**
-     * Gets the ResourceBundle AKA language package.
-     * Used for choosing the language of the UI.
+     * Gets the ResourceBundle AKA language package. Used for choosing the language
+     * of the UI.
      *
-     * @return Returns the default resource bundle using the language specified in the config file.
+     * @return Returns the default resource bundle using the language specified in
+     *         the config file.
      */
     public static ResourceBundle getResourceBundle(String langSelect) {
         if (langSelect == null) {
             if (!getConfigString("lang", "").equals("")) {
                 String[] langCode = getConfigString("lang", "").split("_");
                 LOGGER.info("Setting locale to " + getConfigString("lang", ""));
-                return ResourceBundle.getBundle("LabelsBundle", new Locale(langCode[0], langCode[1]), new UTF8Control());
+                return ResourceBundle.getBundle("LabelsBundle", new Locale(langCode[0], langCode[1]),
+                        new UTF8Control());
             }
         } else {
             String[] langCode = langSelect.split("_");
@@ -717,20 +755,66 @@ public class Utils {
         }
     }
 
+    public static void setLanguage(String langSelect) {
+        resourceBundle = getResourceBundle(langSelect);
+    }
+
+    public static String getSelectedLanguage() {
+        return resourceBundle.getLocale().toString();
+    }
+
+    // All the langs ripme has been translated into
+    public static String[] getSupportedLanguages() {
+        ArrayList<Path> filesList = new ArrayList<>();
+        try {
+            URI uri = Utils.class.getResource("/rip.properties").toURI();
+
+            Path myPath;
+            if (uri.getScheme().equals("jar")) {
+                FileSystem fileSystem = FileSystems.newFileSystem(uri, Collections.<String, Object>emptyMap());
+                myPath = fileSystem.getPath("/");
+            } else {
+                myPath = Paths.get(uri).getParent();
+            }
+
+            Files.walk(myPath, 1).filter(p -> p.toString().contains("LabelsBundle_")).distinct()
+                    .forEach(filesList::add);
+
+            String[] langs = new String[filesList.size()];
+            for (int i = 0; i < filesList.size(); i++) {
+                Matcher matcher = pattern.matcher(filesList.get(i).toString());
+                if (matcher.find())
+                    langs[i] = matcher.group("lang");
+            }
+
+            return langs;
+        } catch (Exception e) {
+            e.printStackTrace();
+            // On error return default language
+            return new String[] { DEFAULT_LANG };
+        }
+    }
+
+    public static String getLocalizedString(String key) {
+        LOGGER.debug(String.format("Getting key %s in %s value %s", key, getSelectedLanguage(),
+                resourceBundle.getString(key)));
+        return resourceBundle.getString(key);
+    }
+
     /**
      * Formats and reuturns the status text for rippers using the byte progress bar
      *
-     * @param completionPercentage An int between 0 and 100 which repersents how close the download is to complete
-     * @param bytesCompleted How many bytes have been downloaded
-     * @param bytesTotal The total size of the file that is being downloaded
-     * @return Returns the formatted status text for rippers using the byte progress bar
+     * @param completionPercentage An int between 0 and 100 which repersents how
+     *                             close the download is to complete
+     * @param bytesCompleted       How many bytes have been downloaded
+     * @param bytesTotal           The total size of the file that is being
+     *                             downloaded
+     * @return Returns the formatted status text for rippers using the byte progress
+     *         bar
      */
     public static String getByteStatusText(int completionPercentage, int bytesCompleted, int bytesTotal) {
-        return String.valueOf(completionPercentage) +
-                "%  - " +
-                Utils.bytesToHumanReadable(bytesCompleted) +
-                " / " +
-                Utils.bytesToHumanReadable(bytesTotal);
+        return String.valueOf(completionPercentage) + "%  - " + Utils.bytesToHumanReadable(bytesCompleted) + " / "
+                + Utils.bytesToHumanReadable(bytesTotal);
     }
 
     public static String getEXTFromMagic(ByteBuffer magic) {
@@ -746,8 +830,8 @@ public class Utils {
     }
 
     private static void initialiseMagicHashMap() {
-        magicHash.put(ByteBuffer.wrap(new byte[]{-1, -40, -1, -37, 0, 0, 0, 0}), "jpeg");
-        magicHash.put(ByteBuffer.wrap(new byte[]{-119, 80, 78, 71, 13, 0, 0, 0}), "png");
+        magicHash.put(ByteBuffer.wrap(new byte[] { -1, -40, -1, -37, 0, 0, 0, 0 }), "jpeg");
+        magicHash.put(ByteBuffer.wrap(new byte[] { -119, 80, 78, 71, 13, 0, 0, 0 }), "png");
     }
 
     // Checks if a file exists ignoring it's extension.
@@ -763,8 +847,8 @@ public class Utils {
 
         for (File file : listOfFiles) {
             if (file.isFile()) {
-                String[] filename = file.getName().split("\\.(?=[^\\.]+$)"); //split filename from it's extension
-                if(filename[0].equalsIgnoreCase(fileName)) {
+                String[] filename = file.getName().split("\\.(?=[^\\.]+$)"); // split filename from it's extension
+                if (filename[0].equalsIgnoreCase(fileName)) {
                     return true;
                 }
             }
@@ -777,9 +861,9 @@ public class Utils {
     }
 
     public static File shortenSaveAsWindows(String ripsDirPath, String fileName) throws FileNotFoundException {
-//        int ripDirLength = ripsDirPath.length();
-//        int maxFileNameLength = 260 - ripDirLength;
-//        LOGGER.info(maxFileNameLength);
+        // int ripDirLength = ripsDirPath.length();
+        // int maxFileNameLength = 260 - ripDirLength;
+        // LOGGER.info(maxFileNameLength);
         LOGGER.error("The filename " + fileName + " is to long to be saved on this file system.");
         LOGGER.info("Shortening filename");
         String fullPath = ripsDirPath + File.separator + fileName;
@@ -793,7 +877,8 @@ public class Utils {
             throw new FileNotFoundException("File path is too long for this OS");
         }
         String[] saveAsSplit = fileName.split("\\.");
-        // Get the file extension so when we shorten the file name we don't cut off the file extension
+        // Get the file extension so when we shorten the file name we don't cut off the
+        // file extension
         String fileExt = saveAsSplit[saveAsSplit.length - 1];
         // The max limit for paths on Windows is 260 chars
         LOGGER.info(fullPath.substring(0, 260 - pathLength - fileExt.length() + 1) + "." + fileExt);

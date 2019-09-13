@@ -1,6 +1,8 @@
 {
-    "latestVersion": "1.7.85",
+    "currentHash": "52dfb707d6247f44949c0d97b19c7815dc848b26837b98ae561c0dea20993a12",
     "changeList": [
+        "1.7.87: Added ripper for allporncomic.com; Fixed Xhamster ripper; Added support xhamster2.com and xhamster.desi; Fixes for gfycat thumbs urls",
+        "1.7.86: Added Meituri Ripper; fixed -u flag; Fixed pornhub ripper; Xhamster ripper can now queue users videos",
         "1.7.85: Fixed instagram ripper; Flickr ripper now downloads largest image",
         "1.7.84: Fixed instagram ripper; xhamster ripper now accepts urls with page numbers; Fixed Deviantart Ripper",
         "1.7.83: Added a ripper for hentaifox.com; Added ripper for Erofus.com; Fixed fsktr not ripping some images; Added support for Gfycat profiles; Added opt to disable prefix for HentaifoundryRipper ",
@@ -257,5 +259,5 @@
         "1.0.3: Added VK.com ripper",
         "1.0.1: Added auto-update functionality"
     ],
-    "currentHash": "874aceffdad02ab8147b588641229a9743b8e78b3681b3ff5a733cbd2faa9009"
+    "latestVersion": "1.7.87"
 }
