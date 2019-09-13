@@ -10,13 +10,9 @@ import java.util.regex.Pattern;
 
 import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 import com.rarchives.ripme.utils.Http;
-import org.jsoup.Connection;
-import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-
-import com.rarchives.ripme.ripper.AlbumRipper;
 
 public class NewsfilterRipper extends AbstractHTMLRipper {
 

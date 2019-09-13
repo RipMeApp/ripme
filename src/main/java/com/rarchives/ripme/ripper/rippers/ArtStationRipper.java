@@ -7,11 +7,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
+import org.json.JSONObject;
+import org.jsoup.Connection;
+import org.jsoup.Connection.Method;
+import org.jsoup.Connection.Response;
 import com.rarchives.ripme.ripper.AbstractJSONRipper;
 import com.rarchives.ripme.utils.Http;
-
-import org.json.JSONObject;
 
 public class ArtStationRipper extends AbstractJSONRipper {
     enum URL_TYPE {
@@ -47,7 +48,8 @@ public class ArtStationRipper extends AbstractJSONRipper {
         if (albumURL.getType() == URL_TYPE.SINGLE_PROJECT) {
             // URL points to single project, use project title as GID
             try {
-                groupData = Http.url(albumURL.getLocation()).getJSON();
+                // groupData = Http.url(albumURL.getLocation()).getJSON();
+                groupData = getJson(albumURL.getLocation());
             } catch (IOException e) {
                 throw new MalformedURLException("Couldn't load JSON from " + albumURL.getLocation());
             }
@@ -58,7 +60,8 @@ public class ArtStationRipper extends AbstractJSONRipper {
             // URL points to user portfolio, use user's full name as GID
             String userInfoURL = "https://www.artstation.com/users/" + albumURL.getID() + "/quick.json";
             try {
-                groupData = Http.url(userInfoURL).getJSON();
+                // groupData = Http.url(userInfoURL).getJSON();
+                groupData = getJson(userInfoURL);
             } catch (IOException e) {
                 throw new MalformedURLException("Couldn't load JSON from " + userInfoURL);
             }
@@ -67,26 +70,29 @@ public class ArtStationRipper extends AbstractJSONRipper {
 
         // No JSON found in the URL entered, can't rip
         throw new MalformedURLException(
-                "Expected URL to an ArtStation project or user profile - got " + url + " instead");
+                "Expected URL to an ArtStation 'project url' or 'user profile url' - got " + url + " instead");
     }
 
     @Override
     protected JSONObject getFirstPage() throws IOException {
         if (albumURL.getType() == URL_TYPE.SINGLE_PROJECT) {
             // URL points to JSON of a single project, just return it
-            return Http.url(albumURL.getLocation()).getJSON();
+            // return Http.url(albumURL.getLocation()).getJSON();
+            return getJson(albumURL.getLocation());
         }
 
         if (albumURL.getType() == URL_TYPE.USER_PORTFOLIO) {
             // URL points to JSON of a list of projects, load it to parse individual
             // projects
-            JSONObject albumContent = Http.url(albumURL.getLocation()).getJSON();
+            // JSONObject albumContent = Http.url(albumURL.getLocation()).getJSON();
+            JSONObject albumContent = getJson(albumURL.getLocation());
 
             if (albumContent.getInt("total_count") > 0) {
                 // Get JSON of the first project and return it
                 JSONObject projectInfo = albumContent.getJSONArray("data").getJSONObject(0);
                 ParsedURL projectURL = parseURL(new URL(projectInfo.getString("permalink")));
-                return Http.url(projectURL.getLocation()).getJSON();
+                // return Http.url(projectURL.getLocation()).getJSON();
+                return getJson(projectURL.getLocation());
             }
         }
 
@@ -112,14 +118,17 @@ public class ArtStationRipper extends AbstractJSONRipper {
             }
 
             Integer currentProject = ((projectPageNumber - 1) * 50) + (projectIndex + 1);
-            JSONObject albumContent = Http.url(albumURL.getLocation() + "?page=" + projectPageNumber).getJSON();
+            // JSONObject albumContent = Http.url(albumURL.getLocation() + "?page=" +
+            // projectPageNumber).getJSON();
+            JSONObject albumContent = getJson(albumURL.getLocation() + "?page=" + projectPageNumber);
 
             if (albumContent.getInt("total_count") > currentProject) {
                 // Get JSON of the next project and return it
                 JSONObject projectInfo = albumContent.getJSONArray("data").getJSONObject(projectIndex);
                 ParsedURL projectURL = parseURL(new URL(projectInfo.getString("permalink")));
                 projectIndex++;
-                return Http.url(projectURL.getLocation()).getJSON();
+                // return Http.url(projectURL.getLocation()).getJSON();
+                return getJson(projectURL.getLocation());
             }
 
             throw new IOException("No more projects");
@@ -239,7 +248,30 @@ public class ArtStationRipper extends AbstractJSONRipper {
 
         // Load HTML Source of the specified URL
         try {
-            htmlSource = Http.url(url).get().html();
+            // htmlSource = Http.url(url).get().html();
+            Connection con = Http.url(url).method(Method.GET).connection();
+            con.ignoreHttpErrors(true);
+            con.userAgent("Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:67.0) Gecko/20100101 Firefox/67.0");
+            con.header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
+            con.header("Accept-Language", "en-US,en;q=0.5");
+            con.header("Accept-Encoding", "gzip, deflate, br");
+            con.header("Upgrade-Insecure-Requests", "1");
+            Response res = con.execute();
+            int status = res.statusCode();
+
+            if (status / 100 == 2) {
+                htmlSource = res.parse().html();
+            } else if (status == 403 && url.toString().contains("artwork/")) {
+                // Catches cloudflare page. Error 403.
+                // Usually caused by artwork URLs( arstation.com/artwork/someProjectId)
+                String urlId = url.toString().substring(url.toString().lastIndexOf("/") + 1);
+                String jsonURL = "https://www.artstation.com/projects/" + urlId + ".json";
+                parsedURL = new ParsedURL(URL_TYPE.SINGLE_PROJECT, jsonURL, urlId);
+                return parsedURL;
+            } else {
+                LOGGER.error("Couldnt fetch URL: " + url);
+                throw new IOException("Error fetching URL: " + url + " Status Code: " + status);
+            }
         } catch (IOException e) {
             htmlSource = "";
         }
@@ -265,6 +297,31 @@ public class ArtStationRipper extends AbstractJSONRipper {
         // HTML Source of the specified URL doesn't reference a user profile or project
         parsedURL = new ParsedURL(URL_TYPE.UNKNOWN, null, null);
         return parsedURL;
+    }
+
+    // Use this method instead of direct call to Http.url(url).getJson() to avoid
+    // cloudflare 403 page.
+    private JSONObject getJson(URL url) throws IOException {
+        Connection con = Http.url(url).method(Method.GET).connection();
+        con.ignoreHttpErrors(true);
+        con.ignoreContentType(true);
+        con.userAgent(
+                "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.95 Safari/537.11");
+        con.header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
+        con.header("Accept-Language", "en-US,en;q=0.5");
+        con.header("Accept-Encoding", "gzip, deflate, br");
+        con.header("Upgrade-Insecure-Requests", "1");
+        Response res = con.execute();
+        int status = res.statusCode();
+        if (status / 100 == 2) {
+            String jsonString = res.body();
+            return new JSONObject(jsonString);
+        }
+        throw new IOException("Error fetching json. Status code:" + status);
+    }
+
+    private JSONObject getJson(String url) throws IOException {
+        return getJson(new URL(url));
     }
 
 }

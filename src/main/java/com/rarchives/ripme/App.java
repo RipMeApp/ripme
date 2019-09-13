@@ -9,8 +9,12 @@ import java.io.FileNotFoundException;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
-import java.util.List;
+import java.util.Collections;
+import java.util.Date;
 
 import javax.swing.SwingUtilities;
 
@@ -97,6 +101,21 @@ public class App {
         AbstractRipper ripper = AbstractRipper.getRipper(url);
         ripper.setup();
         ripper.rip();
+
+        String u = ripper.getURL().toExternalForm();
+        Date date = new Date();
+        if (HISTORY.containsURL(u)) {
+            HistoryEntry entry = HISTORY.getEntryByURL(u);
+            entry.modifiedDate = date;
+        } else {
+            HistoryEntry entry = new HistoryEntry();
+            entry.url = u;
+            entry.dir = ripper.getWorkingDir().getAbsolutePath();
+            try {
+                entry.title = ripper.getAlbumTitle(ripper.getURL());
+            } catch (MalformedURLException e) { }
+            HISTORY.add(entry);
+        }
     }
 
     /**
@@ -116,6 +135,13 @@ public class App {
         Utils.configureLogger();
         logger.info("Initialized ripme v" + UpdateUtils.getThisJarVersion());
 
+        //Set history file
+        if (cl.hasOption('H')) {
+            String historyLocation = cl.getOptionValue('H');
+            Utils.setConfigString("history.location", historyLocation);
+            logger.info("Set history file to " + historyLocation);
+        }
+        
         //Allow file overwriting
         if (cl.hasOption('w')) {
             Utils.setConfigBoolean("file.overwrite", true);
@@ -146,13 +172,17 @@ public class App {
         //Re-rip <i>all</i> previous albums
         if (cl.hasOption('r')) {
             // Re-rip all via command-line
-            List<String> history = Utils.getConfigList("download.history");
-            for (String urlString : history) {
+            loadHistory();
+            if (HISTORY.toList().isEmpty()) {
+                logger.error("There are no history entries to re-rip. Rip some albums first");
+                System.exit(-1);
+            }
+            for (HistoryEntry entry : HISTORY.toList()) {
                 try {
-                    URL url = new URL(urlString.trim());
-                    rip(url);
+                    URL url = new URL(entry.url);
+                     rip(url);
                 } catch (Exception e) {
-                    logger.error("[!] Failed to rip URL " + urlString, e);
+                    logger.error("[!] Failed to rip URL " + entry.url, e);
                     continue;
                 }
                 try {
@@ -244,6 +274,7 @@ public class App {
 
         //The URL to rip.
         if (cl.hasOption('u')) {
+            loadHistory();
             String url = cl.getOptionValue('u').trim();
             ripURL(url, !cl.hasOption("n"));
         }
@@ -263,14 +294,7 @@ public class App {
         try {
             URL url = new URL(targetURL);
             rip(url);
-            List<String> history = Utils.getConfigList("download.history");
-            if (!history.contains(url.toExternalForm())) {//if you haven't already downloaded the file before
-                history.add(url.toExternalForm());//add it to history so you won't have to redownload
-                Utils.setConfigList("download.history", Arrays.asList(history.toArray()));
-                if (saveConfig) {
-                    Utils.saveConfig();
-                }
-            }
+            saveHistory();
         } catch (MalformedURLException e) {
             logger.error("[!] Given URL is not valid. Expected URL format is http://domain.com/...");
             // System.exit(-1);
@@ -303,6 +327,7 @@ public class App {
         opts.addOption("p", "proxy-server", true, "Use HTTP Proxy server ([user:password]@host[:port])");
         opts.addOption("j", "update", false, "Update ripme");
         opts.addOption("a","append-to-folder", true, "Append a string to the output folder name");
+        opts.addOption("H", "history", true, "Set history file location.");
         return opts;
     }
 
@@ -324,6 +349,7 @@ public class App {
 
     /**
      * Loads history from history file into memory.
+     * @see MainWindow.loadHistory
      */
     private static void loadHistory() {
         File historyFile = new File(Utils.getConfigDir() + File.separator + "history.json");
@@ -357,6 +383,24 @@ public class App {
                     }
                 }
             }
+        }
+    }
+
+    /* 
+    * @see MainWindow.saveHistory
+    */
+    private static void saveHistory() {
+        Path historyFile = Paths.get(Utils.getConfigDir() + File.separator + "history.json");
+        try {
+            if (!Files.exists(historyFile)) {
+                Files.createDirectories(historyFile.getParent());
+                Files.createFile(historyFile);
+            }
+
+            HISTORY.toFile(historyFile.toString());
+            Utils.setConfigList("download.history", Collections.emptyList());
+        } catch (IOException e) {
+            logger.error("Failed to save history to file " + historyFile, e);
         }
     }
 }

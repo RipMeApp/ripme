@@ -118,6 +118,12 @@ public class RedditRipper extends AlbumRipper {
         return nextURL;
     }
 
+    /**
+     * Gets a representation of the specified reddit page as a JSONArray using the reddit API
+     * @param url The url of the desired page
+     * @return A JSONArray object representation of the desired page
+     * @throws IOException If no response is received from the url
+     */
     private JSONArray getJsonArrayFromURL(URL url) throws IOException {
         // Wait 2 seconds before the next request
         long timeDiff = System.currentTimeMillis() - lastRequestTime;
@@ -149,9 +155,30 @@ public class RedditRipper extends AlbumRipper {
         return jsonArray;
     }
 
+    /**
+     * Turns child JSONObject's into usable URLs and hands them off for further processing
+     * Performs filtering checks based on the reddit.
+     * Only called from getAndParseAndReturnNext() while parsing the JSONArray returned from reddit's API
+     * @param child The child to process
+     */
     private void parseJsonChild(JSONObject child) {
         String kind = child.getString("kind");
         JSONObject data = child.getJSONObject("data");
+
+        //Upvote filtering
+        if (Utils.getConfigBoolean("reddit.rip_by_upvote", false)){
+            int score = data.getInt("score");
+            int maxScore = Utils.getConfigInteger("reddit.max_upvotes", Integer.MAX_VALUE);
+            int minScore = Utils.getConfigInteger("reddit.min_upvotes", Integer.MIN_VALUE);
+
+            if (score > maxScore || score < minScore) {
+
+                String message = "Skipping post with score outside specified range of " + minScore + " to " + maxScore;
+                sendUpdate(RipStatusMessage.STATUS.DOWNLOAD_WARN, message);
+                return; //Outside specified range, do not download
+            }
+        }
+
         if (kind.equals("t1")) {
             // Comment
             handleBody(data.getString("body"), data.getString("id"), "");

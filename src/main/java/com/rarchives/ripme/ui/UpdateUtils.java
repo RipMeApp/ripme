@@ -2,6 +2,7 @@ package com.rarchives.ripme.ui;
 
 import java.awt.Dimension;
 import java.io.*;
+import java.net.URISyntaxException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
@@ -22,10 +23,21 @@ import com.rarchives.ripme.utils.Utils;
 public class UpdateUtils {
 
     private static final Logger logger = Logger.getLogger(UpdateUtils.class);
-    private static final String DEFAULT_VERSION = "1.7.77";
+    private static final String DEFAULT_VERSION = "1.7.87";
     private static final String REPO_NAME = "ripmeapp/ripme";
     private static final String updateJsonURL = "https://raw.githubusercontent.com/" + REPO_NAME + "/master/ripme.json";
-    private static final String mainFileName = "ripme.jar";
+    private static String mainFileName;
+
+    static {
+        try {
+            mainFileName = new File(UpdateUtils.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getAbsolutePath();
+        } catch (URISyntaxException | IllegalArgumentException e) {
+            mainFileName = "ripme.jar";
+            logger.error("Unable to get path of jar");
+            e.printStackTrace();
+        }
+    }
+
     private static final String updateFileName = "ripme.jar.update";
     private static JSONObject ripmeJson;
 
@@ -61,16 +73,12 @@ public class UpdateUtils {
         Document doc = null;
         try {
             logger.debug("Retrieving " + UpdateUtils.updateJsonURL);
-            doc = Jsoup.connect(UpdateUtils.updateJsonURL)
-                    .timeout(10 * 1000)
-                    .ignoreContentType(true)
-                    .get();
+            doc = Jsoup.connect(UpdateUtils.updateJsonURL).timeout(10 * 1000).ignoreContentType(true).get();
         } catch (IOException e) {
             logger.error("Error while fetching update: ", e);
             JOptionPane.showMessageDialog(null,
                     "<html><font color=\"red\">Error while fetching update: " + e.getMessage() + "</font></html>",
-                    "RipMe Updater",
-                    JOptionPane.ERROR_MESSAGE);
+                    "RipMe Updater", JOptionPane.ERROR_MESSAGE);
             return;
         } finally {
             logger.info("Current version: " + getThisJarVersion());
@@ -93,8 +101,8 @@ public class UpdateUtils {
                 logger.error("Error while updating: ", e);
             }
         } else {
-            logger.debug("This version (" + UpdateUtils.getThisJarVersion() +
-                    ") is the same or newer than the website's version (" + latestVersion + ")");
+            logger.debug("This version (" + UpdateUtils.getThisJarVersion()
+                    + ") is the same or newer than the website's version (" + latestVersion + ")");
             logger.info("v" + UpdateUtils.getThisJarVersion() + " is the latest version");
             logger.debug("Running latest version: " + UpdateUtils.getThisJarVersion());
         }
@@ -106,16 +114,12 @@ public class UpdateUtils {
         Document doc = null;
         try {
             logger.debug("Retrieving " + UpdateUtils.updateJsonURL);
-            doc = Jsoup.connect(UpdateUtils.updateJsonURL)
-                       .timeout(10 * 1000)
-                       .ignoreContentType(true)
-                       .get();
+            doc = Jsoup.connect(UpdateUtils.updateJsonURL).timeout(10 * 1000).ignoreContentType(true).get();
         } catch (IOException e) {
             logger.error("Error while fetching update: ", e);
             JOptionPane.showMessageDialog(null,
                     "<html><font color=\"red\">Error while fetching update: " + e.getMessage() + "</font></html>",
-                    "RipMe Updater",
-                    JOptionPane.ERROR_MESSAGE);
+                    "RipMe Updater", JOptionPane.ERROR_MESSAGE);
             return;
         } finally {
             configUpdateLabel.setText("Current version: " + getThisJarVersion());
@@ -129,14 +133,14 @@ public class UpdateUtils {
         if (UpdateUtils.isNewerVersion(latestVersion)) {
             logger.info("Found newer version: " + latestVersion);
             JEditorPane changeListPane = new JEditorPane("text/html", String.format(
-					"<html><font color=\"green\">New version (%s) is available!</font>" + "<br><br>Recent changes: %s"
-							+ "<br><br>Do you want to download and run the newest version?</html>",
-					latestVersion, changeList.replaceAll("\\n", "<br><br>")));
-			changeListPane.setEditable(false);
-			JScrollPane changeListScrollPane = new JScrollPane(changeListPane);
-			changeListScrollPane.setPreferredSize(new Dimension(300, 300));
-			int result = JOptionPane.showConfirmDialog(null, changeListScrollPane, "RipMe Updater",
-					JOptionPane.YES_NO_OPTION);
+                    "<html><font color=\"green\">New version (%s) is available!</font>" + "<br><br>Recent changes: %s"
+                            + "<br><br>Do you want to download and run the newest version?</html>",
+                    latestVersion, changeList.replaceAll("\\n", "<br><br>")));
+            changeListPane.setEditable(false);
+            JScrollPane changeListScrollPane = new JScrollPane(changeListPane);
+            changeListScrollPane.setPreferredSize(new Dimension(300, 300));
+            int result = JOptionPane.showConfirmDialog(null, changeListScrollPane, "RipMe Updater",
+                    JOptionPane.YES_NO_OPTION);
             if (result != JOptionPane.YES_OPTION) {
                 configUpdateLabel.setText("<html>Current Version: " + getThisJarVersion()
                         + "<br><font color=\"green\">Latest version: " + latestVersion + "</font></html>");
@@ -147,17 +151,16 @@ public class UpdateUtils {
             try {
                 UpdateUtils.downloadJarAndLaunch(getUpdateJarURL(latestVersion), true);
             } catch (IOException e) {
-            JOptionPane.showMessageDialog(null,
-                    "Error while updating: " + e.getMessage(),
-                    "RipMe Updater",
-                    JOptionPane.ERROR_MESSAGE);
-            configUpdateLabel.setText("");
+                JOptionPane.showMessageDialog(null, "Error while updating: " + e.getMessage(), "RipMe Updater",
+                        JOptionPane.ERROR_MESSAGE);
+                configUpdateLabel.setText("");
                 logger.error("Error while updating: ", e);
             }
         } else {
-            logger.debug("This version (" + UpdateUtils.getThisJarVersion() +
-                        ") is the same or newer than the website's version (" + latestVersion + ")");
-            configUpdateLabel.setText("<html><font color=\"green\">v" + UpdateUtils.getThisJarVersion() + " is the latest version</font></html>");
+            logger.debug("This version (" + UpdateUtils.getThisJarVersion()
+                    + ") is the same or newer than the website's version (" + latestVersion + ")");
+            configUpdateLabel.setText("<html><font color=\"green\">v" + UpdateUtils.getThisJarVersion()
+                    + " is the latest version</font></html>");
             logger.debug("Running latest version: " + UpdateUtils.getThisJarVersion());
         }
     }
@@ -179,8 +182,7 @@ public class UpdateUtils {
             if (newVersions[i] > oldVersions[i]) {
                 logger.debug("oldVersion " + getThisJarVersion() + " < latestVersion" + latestVersion);
                 return true;
-            }
-            else if (newVersions[i] < oldVersions[i]) {
+            } else if (newVersions[i] < oldVersions[i]) {
                 logger.debug("oldVersion " + getThisJarVersion() + " > latestVersion " + latestVersion);
                 return false;
             }
@@ -202,7 +204,7 @@ public class UpdateUtils {
     }
 
     // Code take from https://stackoverflow.com/a/30925550
-    public static String createSha256(File file)  {
+    public static String createSha256(File file) {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
             InputStream fis = new FileInputStream(file);
@@ -220,7 +222,8 @@ public class UpdateUtils {
                 sb.append("0123456789ABCDEF".charAt((b & 0xF0) >> 4));
                 sb.append("0123456789ABCDEF".charAt((b & 0x0F)));
             }
-            // As patch.py writes the hash in lowercase this must return the has in lowercase
+            // As patch.py writes the hash in lowercase this must return the has in
+            // lowercase
             return sb.toString().toLowerCase();
         } catch (NoSuchAlgorithmException e) {
             logger.error("Got error getting file hash " + e.getMessage());
@@ -232,13 +235,10 @@ public class UpdateUtils {
         return null;
     }
 
-    private static void downloadJarAndLaunch(String updateJarURL, Boolean shouldLaunch)
-            throws IOException {
+    private static void downloadJarAndLaunch(String updateJarURL, Boolean shouldLaunch) throws IOException {
         Response response;
-        response = Jsoup.connect(updateJarURL)
-                .ignoreContentType(true)
-                .timeout(Utils.getConfigInteger("download.timeout", 60 * 1000))
-                .maxBodySize(1024 * 1024 * 100)
+        response = Jsoup.connect(updateJarURL).ignoreContentType(true)
+                .timeout(Utils.getConfigInteger("download.timeout", 60 * 1000)).maxBodySize(1024 * 1024 * 100)
                 .execute();
 
         try (FileOutputStream out = new FileOutputStream(updateFileName)) {
@@ -259,38 +259,20 @@ public class UpdateUtils {
                 logger.info("Hash is good");
             }
         }
-        if (shouldLaunch) {
-            // Setup updater script
-            final String batchFile, script;
-            final String[] batchExec;
-            String os = System.getProperty("os.name").toLowerCase();
-            if (os.contains("win")) {
-                // Windows
-                batchFile = "update_ripme.bat";
-                String batchPath = new File(batchFile).getAbsolutePath();
-                script = "@echo off\r\n"
-                        + "timeout 1" + "\r\n"
-                        + "copy " + updateFileName + " " + mainFileName + "\r\n"
-                        + "del " + updateFileName + "\r\n"
-                        + "ripme.jar" + "\r\n"
-                        + "del " + batchPath + "\r\n";
-                batchExec = new String[]{batchPath};
 
-            } else {
-                // Mac / Linux
-                batchFile = "update_ripme.sh";
-                String batchPath = new File(batchFile).getAbsolutePath();
-                script = "#!/bin/sh\n"
-                        + "sleep 1" + "\n"
-                        + "cd " + new File(mainFileName).getAbsoluteFile().getParent() + "\n"
-                        + "cp -f " + updateFileName + " " + mainFileName + "\n"
-                        + "rm -f " + updateFileName + "\n"
-                        + "java -jar \"" + new File(mainFileName).getAbsolutePath() + "\" &\n"
-                        + "sleep 1" + "\n"
-                        + "rm -f " + batchPath + "\n";
-                batchExec = new String[]{"sh", batchPath};
-            }
-
+        if (System.getProperty("os.name").toLowerCase().contains("win")) {
+            // Windows
+            final String batchFile = "update_ripme.bat";
+            final String batchPath = new File(batchFile).getAbsolutePath();
+            String script = "@echo off\r\n" + "timeout 1\r\n" 
+                    + "copy \"" + updateFileName + "\" \"" + mainFileName + "\"\r\n"
+                    + "del \"" + updateFileName + "\"\r\n";
+            
+            if (shouldLaunch) 
+                script += "\"" + mainFileName + "\"\r\n";
+            script += "del \"" + batchPath + "\"\r\n";
+            
+            final String[] batchExec = new String[] { batchPath };
             // Create updater script
             try (BufferedWriter bw = new BufferedWriter(new FileWriter(batchFile))) {
                 bw.write(script);
@@ -304,16 +286,28 @@ public class UpdateUtils {
                     logger.info("Executing: " + batchFile);
                     Runtime.getRuntime().exec(batchExec);
                 } catch (IOException e) {
-                    //TODO implement proper stack trace handling this is really just intented as a placeholder until you implement proper error handling
+                    // TODO implement proper stack trace handling this is really just intented as a
+                    // placeholder until you implement proper error handling
                     e.printStackTrace();
                 }
             }));
             logger.info("Exiting older version, should execute update script (" + batchFile + ") during exit");
             System.exit(0);
         } else {
-            new File(mainFileName).delete();
-            new File(updateFileName).renameTo(new File(mainFileName));
+            // Mac / Linux
+            // Modifying file and launching it: *nix distributions don't have any issues
+            // with modifying/deleting files
+            // while they are being run
+            File mainFile = new File(mainFileName);
+            String mainFilePath = mainFile.getAbsolutePath();
+            mainFile.delete();
+            new File(updateFileName).renameTo(new File(mainFilePath));
+            if (shouldLaunch) {
+                // No need to do it during shutdown: the file used will indeed be the new one
+                Runtime.getRuntime().exec("java -jar " + mainFileName);
+            }
+            logger.info("Update installed, newer version should be executed upon relaunch");
+            System.exit(0);
         }
     }
-
 }

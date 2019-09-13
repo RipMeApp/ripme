@@ -1,6 +1,16 @@
 {
-    "currentHash": "34f326ec23f3c1ce8df1147c1d9660a1dd7b85074e79351c9295bd74ac8f127a",
+    "currentHash": "52dfb707d6247f44949c0d97b19c7815dc848b26837b98ae561c0dea20993a12",
     "changeList": [
+        "1.7.87: Added ripper for allporncomic.com; Fixed Xhamster ripper; Added support xhamster2.com and xhamster.desi; Fixes for gfycat thumbs urls",
+        "1.7.86: Added Meituri Ripper; fixed -u flag; Fixed pornhub ripper; Xhamster ripper can now queue users videos",
+        "1.7.85: Fixed instagram ripper; Flickr ripper now downloads largest image",
+        "1.7.84: Fixed instagram ripper; xhamster ripper now accepts urls with page numbers; Fixed Deviantart Ripper",
+        "1.7.83: Added a ripper for hentaifox.com; Added ripper for Erofus.com; Fixed fsktr not ripping some images; Added support for Gfycat profiles; Added opt to disable prefix for HentaifoundryRipper ",
+        "1.7.82: Hentai foundry now rips oldest first by default; 8muses ripper no longer makes unneeded requests; Added support for i.thechive.com",
+        "1.7.81: Added support for artstn.co; Added new boolean config twitter.rip_retweet; Fixed MulemaxRipper; Fix minor bug that could cause a freeze at pending 1",
+        "1.7.80: Fixed porncomix.one ripper; Fixed instagram ripper; Fixed Fuskator ripper; Fixed handling of urls with spaces in them",
+        "1.7.79: Fixed artstation ripper; Fixed imagefap ripper folder naming; Can now filter reddit posts by votes; Added Ripper for Xlecx; Linux/Mac updater is now pure java",
+        "1.7.78: Fixed gfycat ripper; Fixed E621 ripper; Added support for new xhamster url format; Now supports furaffinty scraps",
         "1.7.77: Reduced log spam; HQporner now supports actress/category/studio/top links; Improved luscious ripper; Fixed Pornhub video ripper; Tumblr ripper now always downloads highest quality available",
         "1.7.76: Fixed remember url history",
         "1.7.75: Fix e-hentai ripper; added comixfap ripper; fixed writting urls to files on windows; Fixed update screen issues; Added support for hentaidude; Fixed erome ripper",
@@ -249,5 +259,5 @@
         "1.0.3: Added VK.com ripper",
         "1.0.1: Added auto-update functionality"
     ],
-    "latestVersion": "1.7.77"
+    "latestVersion": "1.7.87"
 }
