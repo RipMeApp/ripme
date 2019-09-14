@@ -24,7 +24,6 @@ public class ErotivRipper extends AbstractHTMLRipper {
 
     boolean rippingProfile;
 
-
     public ErotivRipper (URL url) throws IOException {
         super(url);
     }
@@ -41,7 +40,7 @@ public class ErotivRipper extends AbstractHTMLRipper {
 
     @Override
     public String getGID(URL url) throws MalformedURLException {
-        Pattern p = Pattern.compile("^https?://erotiv.io/e/([0-9]*)/?$");
+        Pattern p = Pattern.compile("^https?://(?:www.)?erotiv.io/e/([0-9]*)/?$");
         Matcher m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             return m.group(1);
@@ -72,7 +71,7 @@ public class ErotivRipper extends AbstractHTMLRipper {
                 Pattern p = Pattern.compile("/uploads/[0-9]*\\.mp4");
                 Matcher m = p.matcher(el.attr("src"));
                 if (m.matches()) {
-                    results.add("https://www.erotiv.io" + el.attr("src"));
+                    results.add("https://erotiv.io" + el.attr("src"));
                 }
 			} 
 
