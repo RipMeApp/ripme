@@ -24,18 +24,18 @@ public class ErotivRipper extends AbstractHTMLRipper {
 
     boolean rippingProfile;
 
-    public ErotivRipper (URL url) throws IOException {
+    public ErotivRipper(URL url) throws IOException {
         super(url);
     }
 
     @Override
     public String getDomain() {
-            return "erotiv.io";
+        return "erotiv.io";
     }
 
     @Override
     public String getHost() {
-            return "erotiv";
+        return "erotiv";
     }
 
     @Override
@@ -51,9 +51,7 @@ public class ErotivRipper extends AbstractHTMLRipper {
 
     @Override
     public Document getFirstPage() throws IOException {
-        Response resp = Http.url(this.url)
-                            .ignoreContentType()
-                            .response();
+        Response resp = Http.url(this.url).ignoreContentType().response();
 
         return resp.parse();
     }
@@ -67,15 +65,15 @@ public class ErotivRipper extends AbstractHTMLRipper {
     public List<String> getURLsFromPage(Document doc) {
         List<String> results = new ArrayList<>();
         for (Element el : doc.select("video[id=\"video-id\"] > source")) {
-			if (el.hasAttr("src")) {
+            if (el.hasAttr("src")) {
                 Pattern p = Pattern.compile("/uploads/[0-9]*\\.mp4");
                 Matcher m = p.matcher(el.attr("src"));
                 if (m.matches()) {
                     results.add("https://erotiv.io" + el.attr("src"));
                 }
-			} 
+            }
 
-		}
+        }
         return results;
 
     }
