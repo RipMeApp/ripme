@@ -14,18 +14,17 @@ import org.json.JSONObject;
 import org.json.JSONTokener;
 import org.jsoup.nodes.Document;
 
-import com.rarchives.ripme.ripper.AlbumRipper;
+import com.rarchives.ripme.ripper.AbstractJSONRipper;
 import com.rarchives.ripme.utils.Http;
 import com.rarchives.ripme.utils.Utils;
 
-public class TwitterRipper extends AlbumRipper {
-
-    int downloadUrls = 1;
+public class TwitterRipper extends AbstractJSONRipper {
 
     private static final String DOMAIN = "twitter.com", HOST = "twitter";
 
     private static final int MAX_REQUESTS = Utils.getConfigInteger("twitter.max_requests", 10);
     private static final boolean RIP_RETWEETS = Utils.getConfigBoolean("twitter.rip_retweets", true);
+    private static final int MAX_ITEMS_REQUEST = Utils.getConfigInteger("twitter.max_items_request", 200);
     private static final int WAIT_TIME = 2000;
 
     // Base 64 of consumer key : consumer secret
@@ -38,6 +37,10 @@ public class TwitterRipper extends AlbumRipper {
 
     private ALBUM_TYPE albumType;
     private String searchText, accountName;
+    private Long lastMaxID = 0L;
+    private int currentRequest = 0;
+
+    private boolean hasTweets = true;
 
     public TwitterRipper(URL url) throws IOException {
         super(url);
@@ -48,18 +51,22 @@ public class TwitterRipper extends AlbumRipper {
     }
 
     @Override
-    public boolean canRip(URL url) {
-        return url.getHost().endsWith(DOMAIN);
-    }
-
-    @Override
     public URL sanitizeURL(URL url) throws MalformedURLException {
         // https://twitter.com/search?q=from%3Apurrbunny%20filter%3Aimages&src=typd
-        Pattern p = Pattern.compile("^https?://(m\\.)?twitter\\.com/search\\?q=([a-zA-Z0-9%\\-_]+).*$");
+        Pattern p = Pattern.compile("^https?://(m\\.)?twitter\\.com/search\\?(.*)q=(?<search>[a-zA-Z0-9%\\-_]+).*$");
         Matcher m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             albumType = ALBUM_TYPE.SEARCH;
-            searchText = m.group(2);
+            searchText = m.group("search");
+
+            if (searchText.startsWith("from%3A")) {
+                // from filter not supported
+                searchText = searchText.substring(7);
+            }
+            if (searchText.contains("x")) {
+                // x character not supported
+                searchText = searchText.replace("x", "");
+            }
             return url;
         }
         p = Pattern.compile("^https?://(m\\.)?twitter\\.com/([a-zA-Z0-9\\-_]+).*$");
@@ -114,10 +121,10 @@ public class TwitterRipper extends AlbumRipper {
         case ACCOUNT:
             req.append("https://api.twitter.com/1.1/statuses/user_timeline.json")
                     .append("?screen_name=" + this.accountName).append("&include_entities=true")
-                    .append("&exclude_replies=true").append("&trim_user=true").append("&count=" + 200)
+                    .append("&exclude_replies=true").append("&trim_user=true").append("&count=" + MAX_ITEMS_REQUEST)
                     .append("&tweet_mode=extended");
             break;
-        case SEARCH:
+        case SEARCH:// Only get tweets from last week
             req.append("https://api.twitter.com/1.1/search/tweets.json").append("?q=" + this.searchText)
                     .append("&include_entities=true").append("&result_type=recent").append("&count=100")
                     .append("&tweet_mode=extended");
@@ -129,8 +136,9 @@ public class TwitterRipper extends AlbumRipper {
         return req.toString();
     }
 
-    private List<JSONObject> getTweets(String url) throws IOException {
-        List<JSONObject> tweets = new ArrayList<>();
+    private JSONObject getTweets() throws IOException {
+        currentRequest++;
+        String url = getApiURL(lastMaxID - 1);
         LOGGER.info("    Retrieving " + url);
         Document doc = Http.url(url).ignoreContentType().header("Authorization", "Bearer " + accessToken)
                 .header("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8")
@@ -148,74 +156,10 @@ public class TwitterRipper extends AlbumRipper {
         } else {
             statuses = (JSONArray) jsonObj;
         }
-        for (int i = 0; i < statuses.length(); i++) {
-            tweets.add((JSONObject) statuses.get(i));
-        }
-        return tweets;
-    }
 
-    private int parseTweet(JSONObject tweet) throws MalformedURLException {
-        int parsedCount = 0;
-        if (!tweet.has("extended_entities")) {
-            LOGGER.error("XXX Tweet doesn't have entitites");
-            return 0;
-        }
-
-        if (!RIP_RETWEETS && tweet.has("retweeted_status")) {
-            LOGGER.info("Skipping a retweet as twitter.rip_retweet is set to false.");
-            return 0;
-        }
-
-        JSONObject entities = tweet.getJSONObject("extended_entities");
-
-        if (entities.has("media")) {
-            JSONArray medias = entities.getJSONArray("media");
-            String url;
-            JSONObject media;
-
-            for (int i = 0; i < medias.length(); i++) {
-                media = (JSONObject) medias.get(i);
-                url = media.getString("media_url");
-                if (media.getString("type").equals("video") || media.getString("type").equals("animated_gif")) {
-                    JSONArray variants = media.getJSONObject("video_info").getJSONArray("variants");
-                    int largestBitrate = 0;
-                    String urlToDownload = null;
-                    // Loop over all the video options and find the biggest video
-                    for (int j = 0; j < variants.length(); j++) {
-                        JSONObject variant = (JSONObject) variants.get(j);
-                        LOGGER.info(variant);
-                        // If the video doesn't have a bitrate it's a m3u8 file we can't download
-                        if (variant.has("bitrate")) {
-                            if (variant.getInt("bitrate") > largestBitrate) {
-                                largestBitrate = variant.getInt("bitrate");
-                                urlToDownload = variant.getString("url");
-                            } else if (media.getString("type").equals("animated_gif")) {
-                                // If the type if animated_gif the bitrate doesn't matter
-                                urlToDownload = variant.getString("url");
-                            }
-                        }
-                    }
-                    if (urlToDownload != null) {
-                        addURLToDownload(new URL(urlToDownload), getPrefix(downloadUrls));
-                        downloadUrls++;
-                    } else {
-                        LOGGER.error("URLToDownload was null");
-                    }
-                    parsedCount++;
-                } else if (media.getString("type").equals("photo")) {
-                    if (url.contains(".twimg.com/")) {
-                        url += ":orig";
-                        addURLToDownload(new URL(url), getPrefix(downloadUrls));
-                        downloadUrls++;
-                        parsedCount++;
-                    } else {
-                        LOGGER.debug("Unexpected media_url: " + url);
-                    }
-                }
-            }
-        }
-
-        return parsedCount;
+        JSONObject r = new JSONObject();
+        r.put("tweets", statuses);
+        return r;
     }
 
     public String getPrefix(int index) {
@@ -223,7 +167,7 @@ public class TwitterRipper extends AlbumRipper {
     }
 
     @Override
-    public void rip() throws IOException {
+    protected JSONObject getFirstPage() throws IOException {
         getAccessToken();
 
         switch (albumType) {
@@ -235,47 +179,27 @@ public class TwitterRipper extends AlbumRipper {
             break;
         }
 
-        Long lastMaxID = 0L;
-        int parsedCount = 0;
-        for (int i = 0; i < MAX_REQUESTS; i++) {
-            List<JSONObject> tweets = getTweets(getApiURL(lastMaxID - 1));
-            if (tweets.isEmpty()) {
-                LOGGER.info("   No more tweets found.");
-                break;
-            }
-            LOGGER.debug("Twitter response #" + (i + 1) + " Tweets:\n" + tweets);
-            if (tweets.size() == 1 && lastMaxID.equals(tweets.get(0).getString("id_str"))) {
-                LOGGER.info("   No more tweet found.");
-                break;
-            }
+        return getTweets();
+    }
 
-            for (JSONObject tweet : tweets) {
-                lastMaxID = tweet.getLong("id");
-                parsedCount += parseTweet(tweet);
-
-                if (isStopped() || (isThisATest() && parsedCount > 0)) {
-                    break;
-                }
-            }
-
-            if (isStopped() || (isThisATest() && parsedCount > 0)) {
-                break;
-            }
-
-            try {
-                Thread.sleep(WAIT_TIME);
-            } catch (InterruptedException e) {
-                LOGGER.error("[!] Interrupted while waiting to load more results", e);
-                break;
-            }
+    @Override
+    protected JSONObject getNextPage(JSONObject doc) throws IOException {
+        try {
+            Thread.sleep(WAIT_TIME);
+        } catch (InterruptedException e) {
+            LOGGER.error("[!] Interrupted while waiting to load more results", e);
         }
-
-        waitForThreads();
+        return currentRequest <= MAX_REQUESTS ? getTweets() : null;
     }
 
     @Override
     public String getHost() {
         return HOST;
+    }
+
+    @Override
+    protected String getDomain() {
+        return DOMAIN;
     }
 
     @Override
@@ -299,6 +223,99 @@ public class TwitterRipper extends AlbumRipper {
             return "search_" + gid.toString();
         }
         throw new MalformedURLException("Could not decide type of URL (search/account): " + url);
+    }
+
+    @Override
+    public boolean hasASAPRipping() {
+        return hasTweets;
+    }
+
+    @Override
+    protected List<String> getURLsFromJSON(JSONObject json) {
+        List<String> urls = new ArrayList<>();
+        List<JSONObject> tweets = new ArrayList<>();
+        JSONArray statuses = json.getJSONArray("tweets");
+
+        for (int i = 0; i < statuses.length(); i++) {
+            tweets.add((JSONObject) statuses.get(i));
+        }
+
+        if (tweets.isEmpty()) {
+            LOGGER.info("   No more tweets found.");
+            return urls;
+        }
+
+        LOGGER.debug("Twitter response #" + (currentRequest) + " Tweets:\n" + tweets);
+        if (tweets.size() == 1 && lastMaxID.equals(tweets.get(0).getString("id_str"))) {
+            LOGGER.info("   No more tweet found.");
+            return urls;
+        }
+
+        for (JSONObject tweet : tweets) {
+            lastMaxID = tweet.getLong("id");
+
+            if (!tweet.has("extended_entities")) {
+                LOGGER.error("XXX Tweet doesn't have entities");
+                continue;
+            }
+
+            if (!RIP_RETWEETS && tweet.has("retweeted_status")) {
+                LOGGER.info("Skipping a retweet as twitter.rip_retweet is set to false.");
+                continue;
+            }
+
+            JSONObject entities = tweet.getJSONObject("extended_entities");
+
+            if (entities.has("media")) {
+                JSONArray medias = entities.getJSONArray("media");
+                String url;
+                JSONObject media;
+
+                for (int i = 0; i < medias.length(); i++) {
+                    media = (JSONObject) medias.get(i);
+                    url = media.getString("media_url");
+                    if (media.getString("type").equals("video") || media.getString("type").equals("animated_gif")) {
+                        JSONArray variants = media.getJSONObject("video_info").getJSONArray("variants");
+                        int largestBitrate = 0;
+                        String urlToDownload = null;
+                        // Loop over all the video options and find the biggest video
+                        for (int j = 0; j < variants.length(); j++) {
+                            JSONObject variant = (JSONObject) variants.get(j);
+                            LOGGER.info(variant);
+                            // If the video doesn't have a bitrate it's a m3u8 file we can't download
+                            if (variant.has("bitrate")) {
+                                if (variant.getInt("bitrate") > largestBitrate) {
+                                    largestBitrate = variant.getInt("bitrate");
+                                    urlToDownload = variant.getString("url");
+                                } else if (media.getString("type").equals("animated_gif")) {
+                                    // If the type if animated_gif the bitrate doesn't matter
+                                    urlToDownload = variant.getString("url");
+                                }
+                            }
+                        }
+                        if (urlToDownload != null) {
+                            urls.add(urlToDownload);
+                        } else {
+                            LOGGER.error("URLToDownload was null");
+                        }
+                    } else if (media.getString("type").equals("photo")) {
+                        if (url.contains(".twimg.com/")) {
+                            url += ":orig";
+                            urls.add(url);
+                        } else {
+                            LOGGER.debug("Unexpected media_url: " + url);
+                        }
+                    }
+                }
+            }
+        }
+
+        return urls;
+    }
+
+    @Override
+    protected void downloadURL(URL url, int index) {
+        addURLToDownload(url, getPrefix(index));
     }
 
 }
