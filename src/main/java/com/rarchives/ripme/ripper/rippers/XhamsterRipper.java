@@ -140,8 +140,11 @@ public class XhamsterRipper extends AbstractHTMLRipper {
     @Override
     public Document getNextPage(Document doc) throws IOException {
         if (doc.select("a[data-page=next]").first() != null) {
-            if (doc.select("a[data-page=next]").first().attr("href").startsWith("http")) {
-                return Http.url(doc.select("a[data-page=next]").first().attr("href")).get();
+            String nextPageUrl = doc.select("a[data-page=next]").first().attr("href");
+            if (nextPageUrl.startsWith("http")) {
+                nextPageUrl = nextPageUrl.replaceAll("https?://\\w?\\w?\\.?xhamster\\.", "https://m.xhamster.");
+                nextPageUrl = nextPageUrl.replaceAll("https?://xhamster2\\.", "https://m.xhamster2.");
+                return Http.url(nextPageUrl).get();
             }
         }
         throw new IOException("No more pages");
@@ -153,7 +156,7 @@ public class XhamsterRipper extends AbstractHTMLRipper {
         LOGGER.debug("Checking for urls");
         List<String> result = new ArrayList<>();
         if (!isVideoUrl(url)) {
-          for (Element page : doc.select("div.items > div.item-container > a.item")) {
+          for (Element page : doc.select("div.picture_view > div.pictures_block > div.items > div.item-container > a.item")) {
               // Make sure we don't waste time running the loop if the ripper has been stopped
               if (isStopped()) {
                   break;
