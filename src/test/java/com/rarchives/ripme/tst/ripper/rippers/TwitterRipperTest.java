@@ -5,7 +5,6 @@ import java.net.URL;
 
 import com.rarchives.ripme.ripper.rippers.TwitterRipper;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 public class TwitterRipperTest extends RippersTest {
@@ -16,7 +15,6 @@ public class TwitterRipperTest extends RippersTest {
     }
 
     @Test
-    @Disabled("https://github.com/RipMeApp/ripme/issues/251")
     public void testTwitterSearchRip() throws IOException {
         TwitterRipper ripper = new TwitterRipper(
                 new URL("https://twitter.com/search?f=tweets&q=from%3Aalinalixxx%20filter%3Aimages&src=typd"));
