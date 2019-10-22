@@ -364,7 +364,7 @@ public class ImgurRipper extends AlbumRipper {
                 .userAgent(USER_AGENT)
                 .timeout(10 * 1000)
                 .maxBodySize(0)
-                .header("Authorization", "Client-ID 546c25a59c58ad7")
+                .header("Authorization", "Client-ID " + Utils.getConfigString("imgur.client_id", "546c25a59c58ad7"))
                 .ignoreContentType(true)
                 .get();
     }
