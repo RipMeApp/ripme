@@ -32,10 +32,15 @@ public class AllporncomicRipper extends AbstractHTMLRipper {
 
     @Override
     public String getGID(URL url) throws MalformedURLException {
-        Pattern p = Pattern.compile("https?://allporncomic.com/porncomic/([a-zA-Z0-9_-]+)/([a-zA-Z0-9_-]+)");
+        Pattern p = Pattern.compile("https?://allporncomic.com/porncomic/([a-zA-Z0-9_\\-]+)/([a-zA-Z0-9_\\-]+)/?$");
         Matcher m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             return m.group(1) + "_" + m.group(2);
+        }
+        p = Pattern.compile("^https?://allporncomic.com/porncomic/([a-zA-Z0-9_\\-]+)/?$");
+        m = p.matcher(url.toExternalForm());
+        if (m.matches()) {
+            return m.group(1);
         }
         throw new MalformedURLException("Expected allporncomic URL format: " +
                 "allporncomic.com/TITLE/CHAPTER - got " + url + " instead");
@@ -54,6 +59,27 @@ public class AllporncomicRipper extends AbstractHTMLRipper {
             result.add(el.attr("src"));
         }
         return result;
+    }
+
+    @Override
+    public boolean hasQueueSupport() {
+        return true;
+    }
+
+    @Override
+    public boolean pageContainsAlbums(URL url) {
+        Pattern pa = Pattern.compile("^https?://allporncomic.com/porncomic/([a-zA-Z0-9_\\-]+)/?$");
+        Matcher ma = pa.matcher(url.toExternalForm());
+        return ma.matches();
+    }
+
+    @Override
+    public List<String> getAlbumsToQueue(Document doc) {
+        List<String> urlsToAddToQueue = new ArrayList<>();
+        for (Element elem : doc.select(".wp-manga-chapter > a")) {
+            urlsToAddToQueue.add(elem.attr("href"));
+        }
+        return urlsToAddToQueue;
     }
 
     @Override
