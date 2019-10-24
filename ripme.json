@@ -1,6 +1,7 @@
 {
-    "currentHash": "3c32b3b41b60fccbfa3427889dda583964332d44ebd7478755d02257e294454d",
+    "currentHash": "fec08f0f81185611469861df0d8112c883d70cd49927ac2cb287fdd20dd71f5d",
     "changeList": [
+        "1.7.89:  Improved twitter ripper; Fixed xhamster image ripper; Fixed allporncomic ripper; Added Ripper for folio.ink",
         "1.7.88:  Added ripper for Myreadingmanga.info; Added Mastodon rippers; Fix queue count update when queue is 0; Added ripper for listal; Now downloads best video when ripping twitter",
         "1.7.87: Added ripper for allporncomic.com; Fixed Xhamster ripper; Added support xhamster2.com and xhamster.desi; Fixes for gfycat thumbs urls",
         "1.7.86: Added Meituri Ripper; fixed -u flag; Fixed pornhub ripper; Xhamster ripper can now queue users videos",
@@ -260,5 +261,5 @@
         "1.0.3: Added VK.com ripper",
         "1.0.1: Added auto-update functionality"
     ],
-    "latestVersion": "1.7.88"
+    "latestVersion": "1.7.89"
 }
