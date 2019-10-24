@@ -1,6 +1,23 @@
 package com.rarchives.ripme.ui;
 
-import java.awt.*;
+import java.awt.AWTException;
+import java.awt.CheckboxMenuItem;
+import java.awt.Color;
+import java.awt.Container;
+import java.awt.Cursor;
+import java.awt.Desktop;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.Frame;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Image;
+import java.awt.MenuItem;
+import java.awt.Point;
+import java.awt.PopupMenu;
+import java.awt.SystemTray;
+import java.awt.TrayIcon;
 import java.awt.TrayIcon.MessageType;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -8,14 +25,20 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.Collections;
+import java.util.Date;
+import java.util.Enumeration;
 import java.util.List;
 
 import javax.imageio.ImageIO;
@@ -38,6 +61,7 @@ import javax.swing.JTextPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -49,16 +73,14 @@ import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 
-import org.apache.log4j.ConsoleAppender;
-import org.apache.log4j.FileAppender;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-
 import com.rarchives.ripme.ripper.AbstractRipper;
 import com.rarchives.ripme.utils.RipUtils;
 import com.rarchives.ripme.utils.Utils;
 
-import javax.swing.UnsupportedLookAndFeelException;
+import org.apache.log4j.ConsoleAppender;
+import org.apache.log4j.FileAppender;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 
 /**
  * Everything UI-related starts and ends here.
@@ -430,7 +452,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
             }
         };
         historyTable = new JTable(historyTableModel);
-        historyTable.addMouseListener(new HistoryMenuMouseListener());
+        historyTable.addMouseListener(new HistoryMenuMouseListener(HISTORY));
         historyTable.setAutoCreateRowSorter(true);
         for (int i = 0; i < historyTable.getColumnModel().getColumnCount(); i++) {
             int width = 130; // Default
@@ -1418,10 +1440,10 @@ public final class MainWindow implements Runnable, RipStatusHandler {
             RipStatusComplete rsc = (RipStatusComplete) msg.getObject();
             String url = ripper.getURL().toExternalForm();
             if (HISTORY.containsURL(url)) {
-                // TODO update "modifiedDate" of entry in HISTORY
                 HistoryEntry entry = HISTORY.getEntryByURL(url);
                 entry.count = rsc.count;
                 entry.modifiedDate = new Date();
+                entry.dir = rsc.getDir();
             } else {
                 HistoryEntry entry = new HistoryEntry();
                 entry.url = url;
