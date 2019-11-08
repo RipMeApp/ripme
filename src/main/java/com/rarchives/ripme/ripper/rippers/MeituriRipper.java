@@ -71,7 +71,7 @@ public class MeituriRipper extends AbstractHTMLRipper {
         }
 
         // Base URL: http://ii.hywly.com/a/1/albumid/imgnum.jpg
-        String baseURL = "http://ii.hywly.com/a/1/" + albumID + "/";
+        String baseURL = "https://ii.hywly.com/a/1/" + albumID + "/";
 
         // Loop through and add images to the URL list
         for (int i = 1; i <= numOfImages; i++) {
