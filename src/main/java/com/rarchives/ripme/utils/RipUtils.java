@@ -301,7 +301,7 @@ public class RipUtils {
         Map<String,String> cookies = new HashMap<>();
         for (String pair : line.split(";")) {
             String[] kv = pair.split("=");
-            cookies.put(kv[0], kv[1]);
+            cookies.put(kv[0].trim(), kv[1]);
         }
         return cookies;
     }
