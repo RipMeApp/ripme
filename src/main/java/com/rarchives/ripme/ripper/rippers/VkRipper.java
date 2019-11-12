@@ -8,7 +8,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.rarchives.ripme.ripper.AbstractJSONRipper;
-import org.apache.commons.lang.StringEscapeUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.jsoup.Jsoup;
@@ -63,6 +62,7 @@ public class VkRipper extends AbstractJSONRipper {
             Map<String,String> photoIDsToURLs = new HashMap<>();
             int offset = 0;
             while (true) {
+                LOGGER.info("    Retrieving " + this.url);
                 Map<String,String> postData = new HashMap<>();
                 postData.put("al", "1");
                 postData.put("offset", Integer.toString(offset));
@@ -78,7 +78,6 @@ public class VkRipper extends AbstractJSONRipper {
                     break;
                 }
                 body = body.substring(body.indexOf("<div"));
-                body = StringEscapeUtils.unescapeJavaScript(body);
                 doc = Jsoup.parseBodyFragment(body);
                 List<Element> elements = doc.select("a");
                 Set<String> photoIDsToGet = new HashSet<>();
@@ -198,7 +197,6 @@ public class VkRipper extends AbstractJSONRipper {
         else {
             RIP_TYPE = RipType.IMAGE;
         }
-        super.rip();
     }
 
     private Map<String,String> getPhotoIDsToURLs(String photoID) throws IOException {
@@ -219,20 +217,19 @@ public class VkRipper extends AbstractJSONRipper {
                 .data(postData)
                 .post();
         String jsonString = doc.toString();
-        jsonString = StringEscapeUtils.unescapeJavaScript(jsonString);
-        jsonString = jsonString.substring(jsonString.indexOf("\"pe_type\""));
-        jsonString = jsonString.substring(0, jsonString.indexOf("<div"));
-        jsonString = "{" + jsonString + "}";
-        JSONObject json = new JSONObject(jsonString);
-
-        for (String key : new String[] {"z_src", "y_src", "x_src"}) {
-            if (!json.has(key)) {
-                continue;
+        jsonString = jsonString.substring(jsonString.indexOf("<!json>") + "<!json>".length());
+        jsonString = jsonString.substring(0, jsonString.indexOf("<!>"));
+        JSONArray json = new JSONArray(jsonString);
+        for (int i = 0; i < json.length(); i++) {
+            JSONObject jsonImage = json.getJSONObject(i);
+            for (String key : new String[] {"z_src", "y_src", "x_src"}) {
+                if (!jsonImage.has(key)) {
+                    continue;
+                }
+                photoIDsToURLs.put(jsonImage.getString("id"), jsonImage.getString(key));
+                break;
             }
-            photoIDsToURLs.put(photoID, json.getString(key));
-            break;
         }
-
         return photoIDsToURLs;
     }
 
