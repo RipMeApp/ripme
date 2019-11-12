@@ -7,10 +7,12 @@ import java.util.Arrays;
 import com.rarchives.ripme.utils.Utils;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class UtilsTest {
 
-    public void testGetEXTFromMagic() {
+    public void testGetEXTFromMagic()
+    {
         Assertions.assertEquals("jpeg", Utils.getEXTFromMagic(new byte[] { -1, -40, -1, -37, 0, 0, 0, 0 }));
         Assertions.assertEquals("png", Utils.getEXTFromMagic(new byte[] { -119, 80, 78, 71, 13, 0, 0, 0 }));
     }
@@ -44,13 +46,13 @@ public class UtilsTest {
     public void testBetween() {
         Assertions.assertEquals(Arrays.asList(" is a "), Utils.between("This is a test", "This", "test"));
     }
-
+    @Test
     public void testShortenFileNameWindows() throws FileNotFoundException {
         String filename = "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff.png";
         // Test filename shortening for windows
         File f = Utils.shortenSaveAsWindows("D:/rips/test/reddit/deep", filename);
         Assertions.assertEquals(new File(
-                "D:/rips/test/reddit/deep/fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff.png"),
+                "D:/rips/test/reddit/deep/ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff.png"),
                 f);
     }
 
