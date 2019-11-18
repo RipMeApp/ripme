@@ -68,7 +68,7 @@ public class Http {
         Map<String, String> cookiesParsed = new HashMap<>();
 
         try {
-            URL parsed = new URL(this.url);
+            URL parsed = new URL(u);
             String cookieStr = "";
 
             String[] parts = parsed.getHost().split("\\.");
