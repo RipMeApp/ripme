@@ -15,6 +15,7 @@ import org.jsoup.Connection.Method;
 import org.jsoup.Connection.Response;
 import org.jsoup.helper.StringUtil;
 import org.jsoup.Jsoup;
+import org.jsoup.HttpStatusException;
 import org.jsoup.nodes.Document;
 
 import com.rarchives.ripme.ripper.AbstractRipper;
@@ -90,7 +91,7 @@ public class Http {
                 cookiesParsed = RipUtils.getCookiesFromString(cookieStr.trim());
             }
         } catch (MalformedURLException e) {
-            logger.warn("Parsing url while getting cookies" + url, e);
+            logger.warn("Parsing url " + u + " while getting cookies", e);
         }
 
         return cookiesParsed;
@@ -171,6 +172,20 @@ public class Http {
                 response = connection.execute();
                 return response;
             } catch (IOException e) {
+                // Warn users about possibly fixable permission error
+                if (e instanceof org.jsoup.HttpStatusException) {
+                    HttpStatusException ex = (HttpStatusException)e;
+                    
+                    // These status codes might indicate missing cookies
+                    //     401 Unauthorized
+                    //     403 Forbidden
+
+                    int status =  ex.getStatusCode();
+                    if (status == 401 || status == 403) {
+                        throw new IOException("Failed to load " + url + ": Status Code " +  Integer.toString(status) + ". You might be able to circumvent this error by setting cookies for this domain" , e);
+                    }
+                }
+
                 logger.warn("Error while loading " + url, e);
                 lastException = e;
             }
