@@ -165,7 +165,7 @@ public class InstagramRipper extends AbstractJSONRipper {
             return null;
         }
         String pinnedRegex = "=\"(?<hash>[0-9a-f]+)\"[^;]+[.]generatePaginationActionCreators";
-        String storiesRegex = "=50,h=\"(?<hash>[0-9a-f]+)\"";
+        String storiesRegex = "=50,L=\"(?<hash>[0-9a-f]+)\"";
         String hashRegex = "%s[^;]+pagination}?,queryId:\"(?<hash>[0-9a-f]+)\"";
         String forHashtag = "tagMedia[.]byTagName";
         String forTagged = "taggedPosts[.]byUserId";
@@ -183,7 +183,8 @@ public class InstagramRipper extends AbstractJSONRipper {
                 break;
             }
         }
-        Matcher matcher = pattern.matcher(Http.url("https://www.instagram.com" + href).response().body());
+        String responseBody = Http.url("https://www.instagram.com" + href).response().body();
+        Matcher matcher = pattern.matcher(responseBody);
         return matcher.find() ? matcher.group("hash") : null;
     }
 
