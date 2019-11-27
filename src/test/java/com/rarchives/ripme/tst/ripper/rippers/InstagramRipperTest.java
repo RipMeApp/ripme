@@ -1,15 +1,14 @@
 package com.rarchives.ripme.tst.ripper.rippers;
 
+import com.rarchives.ripme.ripper.rippers.InstagramRipper;
+import org.junit.jupiter.api.Test;
+
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import com.rarchives.ripme.ripper.rippers.InstagramRipper;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
 
 public class InstagramRipperTest extends RippersTest {
     @Test
@@ -33,7 +32,8 @@ public class InstagramRipperTest extends RippersTest {
             deleteDir(ripper.getWorkingDir());
         }
     }
-    @Test @Disabled("Fails to rip")
+
+    @Test
     public void testInstagramAlbums() throws IOException {
         List<URL> contentURLs = new ArrayList<>();
         // This unit test is a bit flaky 
