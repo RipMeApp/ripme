@@ -50,7 +50,7 @@ public class MyreadingmangaRipper extends AbstractHTMLRipper {
     @Override
     public List<String> getURLsFromPage(Document doc) {
         List<String> result = new ArrayList<>();
-        for (Element el : doc.select("div.separator > img")) {
+        for (Element el : doc.select("div * img[data-lazy-src]")) {
             String imageSource = el.attr("data-lazy-src");
             result.add(imageSource);
         }
