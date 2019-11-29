@@ -3,6 +3,16 @@ package com.rarchives.ripme.ripper.rippers;
 import com.rarchives.ripme.ripper.AbstractJSONRipper;
 import com.rarchives.ripme.utils.Http;
 import com.rarchives.ripme.utils.Utils;
+import jdk.nashorn.internal.ir.Block;
+import jdk.nashorn.internal.ir.CallNode;
+import jdk.nashorn.internal.ir.ExpressionStatement;
+import jdk.nashorn.internal.ir.FunctionNode;
+import jdk.nashorn.internal.ir.Statement;
+import jdk.nashorn.internal.parser.Parser;
+import jdk.nashorn.internal.runtime.Context;
+import jdk.nashorn.internal.runtime.ErrorManager;
+import jdk.nashorn.internal.runtime.Source;
+import jdk.nashorn.internal.runtime.options.Options;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.jsoup.Connection;
@@ -24,6 +34,8 @@ import java.util.Objects;
 import java.util.Spliterators;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -141,7 +153,7 @@ public class InstagramRipper extends AbstractJSONRipper {
         qHash = getQhash(document);
         JSONObject jsonObject = getJsonObjectFromDoc(document);
         String hashtagNamePath = "entry_data.TagPage[0].graphql.hashtag.name";
-        String singlePostIdPath = "entry_data.PostPage[0].graphql.shortcode_media.shortcode";
+        String singlePostIdPath = "graphql.shortcode_media.shortcode";
         String profileIdPath = "entry_data.ProfilePage[0].graphql.user.id";
         String storiesPath = "entry_data.StoriesPage[0].user.id";
         String idPath = hashtagRip ? hashtagNamePath : storiesRip ? storiesPath : postRip ? singlePostIdPath : profileIdPath;
@@ -164,35 +176,51 @@ public class InstagramRipper extends AbstractJSONRipper {
         if (postRip) {
             return null;
         }
-        String pinnedRegex = "=\"(?<hash>[0-9a-f]+)\"[^;]+[.]generatePaginationActionCreators";
-        String storiesRegex = "=50,h=\"(?<hash>[0-9a-f]+)\"";
-        String hashRegex = "%s[^;]+pagination}?,queryId:\"(?<hash>[0-9a-f]+)\"";
-        String forHashtag = "tagMedia[.]byTagName";
-        String forTagged = "taggedPosts[.]byUserId";
-        String forUser = "profilePosts[.]byUserId";
-        String href = "";
-        Pattern pattern = Pattern.compile(format(hashRegex, forUser));
-        for (Element el : doc.select("link[rel=preload]")) {
-            href = el.attr("href");
-            if ((storiesRip || pinnedReelRip) && href.contains("Consumer.js")) {
-                pattern = Pattern.compile(storiesRegex);
-                break;
-            } else if (href.contains("ProfilePageContainer.js") || href.contains("TagPageContainer.js")) {
-                pattern = Pattern.compile(pinnedRip ? pinnedRegex :
-                        format(hashRegex, hashtagRip ? forHashtag : taggedRip ? forTagged : forUser));
-                break;
-            }
-        }
-        Matcher matcher = pattern.matcher(Http.url("https://www.instagram.com" + href).response().body());
-        return matcher.find() ? matcher.group("hash") : null;
+        Predicate<String> hrefFilter = (storiesRip || pinnedReelRip) ? href -> href.contains("Consumer.js") :
+                href -> href.contains("ProfilePageContainer.js") || href.contains("TagPageContainer.js");
+
+        String href = doc.select("link[rel=preload]").stream()
+                         .map(link -> link.attr("href"))
+                         .filter(hrefFilter)
+                         .findFirst().orElse("");
+        String body = Http.url("https://www.instagram.com" + href).cookies(cookies).response().body();
+
+        Function<String, String> hashExtractor =
+                storiesRip || pinnedReelRip ? this::getStoriesHash :
+                        pinnedRip ? this::getPinnedHash : hashtagRip ? this::getTagHash :
+                                taggedRip ? this::getUserTagHash : this::getProfileHash;
+
+        return hashExtractor.apply(body);
+    }
+
+    private String getStoriesHash(String jsData) {
+        return getHashValue(jsData, "loadStoryViewers", -5);
+    }
+
+    private String getProfileHash(String jsData) {
+        return getHashValue(jsData, "loadProfilePageExtras", -1);
+    }
+
+    private String getPinnedHash(String jsData) {
+        return getHashValue(jsData, "loadProfilePageExtras", -2);
+    }
+
+    private String getTagHash(String jsData) {
+        return getHashValue(jsData, "requestNextTagMedia", -1);
+    }
+
+    private String getUserTagHash(String jsData) {
+        return getHashValue(jsData, "requestNextTaggedPosts", -1);
     }
 
     private JSONObject getJsonObjectFromDoc(Document document) {
         for (Element script : document.select("script[type=text/javascript]")) {
             String scriptText = script.data();
-            if (scriptText.startsWith("window._sharedData")) {
+            if (scriptText.startsWith("window._sharedData") || scriptText.startsWith("window.__additionalDataLoaded")) {
                 String jsonText = scriptText.replaceAll("[^{]*([{].*})[^}]*", "$1");
-                return new JSONObject(jsonText);
+                if (jsonText.contains("graphql") || jsonText.contains("StoriesPage")) {
+                    return new JSONObject(jsonText);
+                }
             }
         }
         return null;
@@ -381,6 +409,44 @@ public class InstagramRipper extends AbstractJSONRipper {
             return;
         }
         addURLToDownload(url, itemPrefixes.get(index - 1), "", null, cookies);
+    }
+
+    // Javascript parsing
+    /* ------------------------------------------------------------------------------------------------------- */
+    private String getHashValue(String javaScriptData, String keyword, int offset) {
+        List<Statement> statements = getJsBodyBlock(javaScriptData).getStatements();
+        return statements.stream()
+                         .flatMap(statement -> filterItems(statement, ExpressionStatement.class))
+                         .map(ExpressionStatement::getExpression)
+                         .flatMap(expression -> filterItems(expression, CallNode.class))
+                         .map(CallNode::getArgs)
+                         .map(expressions -> expressions.get(0))
+                         .flatMap(expression -> filterItems(expression, FunctionNode.class))
+                         .map(FunctionNode::getBody)
+                         .map(Block::getStatements)
+                         .map(statementList -> lookForHash(statementList, keyword, offset))
+                         .filter(Objects::nonNull)
+                         .findFirst().orElse(null);
+    }
+
+    private String lookForHash(List<Statement> list, String keyword, int offset) {
+        for (int i = 0; i < list.size(); i++) {
+            Statement st = list.get(i);
+            if (st.toString().contains(keyword)) {
+                return list.get(i + offset).toString().replaceAll(".*\"([0-9a-f]*)\".*", "$1");
+            }
+        }
+        return null;
+    }
+
+    private <T> Stream<T> filterItems(Object obj, Class<T> aClass) {
+        return Stream.of(obj).filter(aClass::isInstance).map(aClass::cast);
+    }
+
+    private Block getJsBodyBlock(String javaScriptData) {
+        ErrorManager errors = new ErrorManager();
+        Context context = new Context(new Options("nashorn"), errors, Thread.currentThread().getContextClassLoader());
+        return new Parser(context.getEnv(), Source.sourceFor("name", javaScriptData), errors).parse().getBody();
     }
 
     // Some JSON helper methods below
