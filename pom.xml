@@ -3,7 +3,7 @@
   <groupId>com.rarchives.ripme</groupId>
   <artifactId>ripme</artifactId>
   <packaging>jar</packaging>
-  <version>1.7.89</version>
+  <version>1.7.90</version>
   <name>ripme</name>
   <url>http://rip.rarchives.com</url>
   <properties>
