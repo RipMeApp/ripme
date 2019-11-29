@@ -870,8 +870,6 @@ public class Utils {
         // How long the path without the file name is
         int pathLength = ripsDirPath.length();
         int fileNameLength = fileName.length();
-        LOGGER.info(pathLength);
-        LOGGER.info(fileNameLength);
         if (pathLength == 260) {
             // We've reached the max length, there's nothing more we can do
             throw new FileNotFoundException("File path is too long for this OS");
@@ -881,8 +879,8 @@ public class Utils {
         // file extension
         String fileExt = saveAsSplit[saveAsSplit.length - 1];
         // The max limit for paths on Windows is 260 chars
-        LOGGER.info(fullPath.substring(0, 260 - pathLength - fileExt.length() + 1) + "." + fileExt);
-        fullPath = fullPath.substring(0, 260 - pathLength - fileExt.length() + 1) + "." + fileExt;
+        LOGGER.info(fullPath.substring(0, 259 - pathLength - fileExt.length() + 1) + "." + fileExt);
+        fullPath = fullPath.substring(0, 259 - pathLength - fileExt.length() + 1) + "." + fileExt;
         LOGGER.info(fullPath);
         LOGGER.info(fullPath.length());
         return new File(fullPath);
