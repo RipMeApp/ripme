@@ -32,7 +32,7 @@ public class CfakeRipper extends AbstractHTMLRipper {
 
         @Override
         public String getGID(URL url) throws MalformedURLException {
-            Pattern p = Pattern.compile("https?://cfake\\.com/picture/([a-zA-Z1-9_-]*)/\\d+/?$");
+            Pattern p = Pattern.compile("https?://cfake\\.com/picture/([a-zA-Z1-9_-]*)/\\d+/4/?$");
             Matcher m = p.matcher(url.toExternalForm());
             if (m.matches()) {
                 return m.group(1);
