@@ -19,11 +19,20 @@ import com.rarchives.ripme.utils.Http;
 public class LusciousRipper extends AbstractHTMLRipper {
     private static final int RETRY_COUNT = 5; // Keeping it high for read timeout exception.
 
-    private Pattern p = Pattern.compile("^https?://(?:members.)?luscious\\.net/albums/([-_.0-9a-zA-Z]+).*$");
+    private Pattern p = Pattern.compile("^https?://(?:www\\.)?(?:members\\.||legacy\\.||old\\.)?luscious\\.net/albums/([-_.0-9a-zA-Z]+).*$");
     private DownloadThreadPool lusciousThreadPool = new DownloadThreadPool("lusciousThreadPool");
 
     public LusciousRipper(URL url) throws IOException {
         super(url);
+    }
+
+    @Override
+    public URL sanitizeURL(URL url) throws MalformedURLException {
+        String URLToReturn = url.toExternalForm();
+        URLToReturn = URLToReturn.replaceAll("https?://(?:www\\.)?luscious\\.", "https://old.luscious.");
+        URL san_url = new URL(URLToReturn);
+        LOGGER.info("sanitized URL is " + san_url.toExternalForm());
+        return san_url;
     }
 
     @Override
