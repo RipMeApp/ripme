@@ -68,6 +68,7 @@ public class Http {
     private Map<String, String> cookiesForURL(String u) {
         Map<String, String> cookiesParsed = new HashMap<>();
 
+        String cookieDomain = ""; 
         try {
             URL parsed = new URL(u);
             String cookieStr = "";
@@ -78,9 +79,11 @@ public class Http {
             // this rule is applied for all subdomains (for all rippers); e.g. also
             // old.reddit.com, new.reddit.com
             while (parts.length > 1) {
+                String domain = String.join(".", parts);
                 // Try to get cookies for this host from config
-                cookieStr = Utils.getConfigString("cookies." + String.join(".", parts), "");
+                cookieStr = Utils.getConfigString("cookies." + domain, "");
                 if (cookieStr != "") {
+                    cookieDomain = domain; 
                     // we found something, start parsing
                     break;
                 }
@@ -92,6 +95,10 @@ public class Http {
             }
         } catch (MalformedURLException e) {
             logger.warn("Parsing url " + u + " while getting cookies", e);
+        }
+
+        if (cookiesParsed.size() > 0) {
+            logger.info("Cookies for " + cookieDomain + " have been added to this request");
         }
 
         return cookiesParsed;
