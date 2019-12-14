@@ -46,7 +46,7 @@
     <dependency>
       <groupId>org.json</groupId>
       <artifactId>json</artifactId>
-      <version>20140107</version>
+      <version>20190722</version>
     </dependency>
     <dependency>
       <groupId>commons-configuration</groupId>
