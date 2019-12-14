@@ -16,7 +16,7 @@ RipMe is maintained with ♥️ and in our limited free time by **[@MetaPrime](h
 
 # About
 
-RipMe is an album ripper for various websites. Runs on your computer. Requires Java 8.
+RipMe is an album ripper for various websites.It runs on your computer. Requires Java 8.
 RipMe is a cross-platform tool. It has been tested and confirmed working on Windows, Linux and MacOS. 
 
 ![Screenshot](https://i.imgur.com/UCQNjeg.png)
