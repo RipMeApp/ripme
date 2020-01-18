@@ -15,6 +15,7 @@ import org.json.JSONObject;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.safety.Whitelist;
 import org.jsoup.select.Elements;
 
 import com.rarchives.ripme.ripper.AlbumRipper;
@@ -272,20 +273,17 @@ public class ImgurRipper extends AlbumRipper {
             strUrl += "/all";
         }
         LOGGER.info("    Retrieving " + strUrl);
-        Document doc = getDocument(strUrl);
+        Document doc = getAlbumData("https://api.imgur.com/3/album/" + strUrl.split("/a/")[1]);
         // Try to use embedded JSON to retrieve images
-        Matcher m = getEmbeddedJsonMatcher(doc);
-        if (m.matches()) {
+        LOGGER.info(Jsoup.clean(doc.body().toString(), Whitelist.none()));
+
             try {
-                JSONObject json = new JSONObject(m.group(1));
-                JSONArray jsonImages = json.getJSONObject("image")
-                                       .getJSONObject("album_images")
-                                       .getJSONArray("images");
+                JSONObject json = new JSONObject(Jsoup.clean(doc.body().toString(), Whitelist.none()));
+                JSONArray jsonImages = json.getJSONObject("data").getJSONArray("images");
                 return createImgurAlbumFromJsonArray(url, jsonImages);
             } catch (JSONException e) {
                 LOGGER.debug("Error while parsing JSON at " + url + ", continuing", e);
             }
-        }
 
         // TODO If album is empty, use this to check for cached images:
         // http://i.rarchives.com/search.cgi?cache=http://imgur.com/a/albumID
@@ -332,8 +330,8 @@ public class ImgurRipper extends AlbumRipper {
         ImgurAlbum imgurAlbum = new ImgurAlbum(url);
         int imagesLength = jsonImages.length();
         for (int i = 0; i < imagesLength; i++) {
-            JSONObject jsonImage = jsonImages.getJSONObject(i);
-            imgurAlbum.addImage(createImgurImageFromJson(jsonImage));
+            JSONObject ob = jsonImages.getJSONObject(i);
+            imgurAlbum.addImage(new ImgurImage( new URL(ob.getString("link"))));
         }
         return imgurAlbum;
     }
@@ -360,6 +358,17 @@ public class ImgurRipper extends AlbumRipper {
                                 .maxBodySize(0)
                                 .get();
     }
+
+    private static Document getAlbumData(String strUrl) throws IOException {
+        return Jsoup.connect(strUrl)
+                .userAgent(USER_AGENT)
+                .timeout(10 * 1000)
+                .maxBodySize(0)
+                .header("Authorization", "Client-ID " + Utils.getConfigString("imgur.client_id", "546c25a59c58ad7"))
+                .ignoreContentType(true)
+                .get();
+    }
+
 
     /**
      * Rips all albums in an imgur user's account.
