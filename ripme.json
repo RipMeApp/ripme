@@ -1,6 +1,7 @@
 {
-    "currentHash": "a2fdb180da195c617cff933fc400d16010d049580188a8eae7eb89e11bd0d4ef",
+    "currentHash": "fb1e97064f255315da31b794897a9aacf2f958aad89202677deb6cdcf565ec77",
     "changeList": [
+        "1.7.91: Fixed luscious ripper. Fixed VK ripper; Added Kingcomix ripper",
         "1.7.90: Added FitnakedgirlsRipper; Fixed VK Album Ripper; Fixed Myreadingmanga Ripper; Fixed windows max file name; Fixed Pornhub Video Ripper; Fixed Motherless Ripper; Fixed Instagram Ripper",
         "1.7.89:  Improved twitter ripper; Fixed xhamster image ripper; Fixed allporncomic ripper; Added Ripper for folio.ink",
         "1.7.88:  Added ripper for Myreadingmanga.info; Added Mastodon rippers; Fix queue count update when queue is 0; Added ripper for listal; Now downloads best video when ripping twitter",
@@ -262,5 +263,5 @@
         "1.0.3: Added VK.com ripper",
         "1.0.1: Added auto-update functionality"
     ],
-    "latestVersion": "1.7.90"
+    "latestVersion": "1.7.91"
 }
