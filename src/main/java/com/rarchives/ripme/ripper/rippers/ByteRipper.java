@@ -77,6 +77,10 @@ public class ByteRipper extends AbstractJSONRipper {
         }
         sleep(1500);
 
+        if (!prevPage.getJSONObject("data").has("cursor")) {
+            return null;
+        }
+
         cursor = prevPage.getJSONObject("data").getString("cursor");
 
         JSONObject json = new Http(BASE_URL + "account/id/" + userId + "/posts?cursor=" + cursor)
