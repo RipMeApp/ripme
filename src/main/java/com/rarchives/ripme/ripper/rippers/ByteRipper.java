@@ -60,7 +60,7 @@ public class ByteRipper extends AbstractJSONRipper {
 
     @Override
     public JSONObject getFirstPage() throws IOException {
-        getUserId("aurahack");
+        getUserId(getGID(url));
 
         LOGGER.debug(BASE_URL + "account/id/" + userId + "/posts");
         JSONObject json = new Http(BASE_URL + "account/id/" + userId + "/posts")
