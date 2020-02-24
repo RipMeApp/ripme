@@ -13,12 +13,16 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -26,30 +30,27 @@ public class PixivRipper extends AbstractJSONRipper {
     public static final String PIXIV_USERNAME = Utils.getConfigString("pixiv.username", null);
     public static final String PIXIV_PASSWORD = Utils.getConfigString("pixiv.password", null);
 
+    private static final String[] urlsRegex = {
+            "^https?://www.pixiv.net(?:/en)?/artworks/.*$",
+            "^https?://www.pixiv.net/member_illust.php\\?(?:mode=(?:small|medium|large)&)?illust_id=.*$",
+            "^https?://www.pixiv.net/member.php\\?id=.*$",
+            "^https?://www.pixiv.net(?:/en)?/users/.*$",
+    };
+    private static String auth_time = Utils.getConfigString("pixiv.auth_time", Long.toString(3601L));
+    private static String access_token = Utils.getConfigString("pixiv.access_token", null);
+    private static String user_id = Utils.getConfigString("pixiv.user_id", null);
+
     // From https://github.com/upbit/pixivpy/blob/master/pixivpy3/api.py
     private static final String CLIENT_ID = "MOBrBDS8blbauoSck0ZfDbtuzpyT";
     private static final String CLIENT_SECRET = "lsACyCD94FhDUtGTXi3QzcFE2uU1hqtDaKeqrdwj";
     private static final String HASH_SECRET = "28c1fdd170a5204386cb1313c7077b34f83e4aaf4aa829ce78c231e05b0bae2c";
-
-    private static String auth_time = Utils.getConfigString("pixiv.auth_time", Long.toString(3601L));
-    private static String access_token = Utils.getConfigString("pixiv.access_token", null);
-    private static String user_id = Utils.getConfigString("pixiv.user_id", null);
     private static String refresh_token = Utils.getConfigString("pixiv.refresh_token", null);
 
     private static String api_endpoint = "https://app-api.pixiv.net/v1/";
-    private static boolean ISUSER = false;
-
-    private static String current_id;
-    private static int current_offset = 0;
-
-    private static String[] urlsRegex = {
-            "^https?://www.pixiv.net(?:/en)?/artworks/.*$",
-            "^https?://www.pixiv.net/member_illust.php\\?mode=medium&illust_id=.*$",
-            "^https?://www.pixiv.net/member.php\\?id=.*$",
-            "^https?://www.pixiv.net(?:/en)?/users/.*$",
-    };
-    
-    private Map<String, String> options = new HashMap<String, String>();
+    private RIP_TYPE ripType;
+    private String current_id;
+    private int current_offset;
+    private Map<String, String> options = new HashMap<>();
 
     public PixivRipper(URL url) throws IOException {
         super(url);
@@ -58,6 +59,22 @@ public class PixivRipper extends AbstractJSONRipper {
         } catch (Exception e) {
             throw new IOException(e.getMessage());
         }
+
+    }
+
+    @Override
+    public boolean canRip(URL url) {
+        for (String s : urlsRegex) {
+            if (url.toExternalForm().matches(s)) {
+                if (url.toExternalForm().matches(urlsRegex[0] + "|" + urlsRegex[1])) {
+                    ripType = RIP_TYPE.IMAGE;
+                } else if (url.toExternalForm().matches(urlsRegex[3] + "|" + urlsRegex[2])) {
+                    ripType = RIP_TYPE.USER;
+                }
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
@@ -76,60 +93,58 @@ public class PixivRipper extends AbstractJSONRipper {
     }
 
     @Override
-    public boolean canRip(URL url) {
-        for (String s: urlsRegex) {
-            if (url.toExternalForm().matches(s)) {
-                getRipType(url);
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private void getRipType(URL _url) {
-        if (_url.toExternalForm().matches(urlsRegex[0] + "|" + urlsRegex[1])) {
-            ISUSER = false;
-        } else if (_url.toExternalForm().matches(urlsRegex[3] + "|" + urlsRegex[2])) {
-            ISUSER = true;
-        }
-    }
-
-    @Override
     public String getGID(URL url) throws MalformedURLException {
         final List<Pattern> url_patterns = new ArrayList<>();
-        url_patterns.add(Pattern.compile("^https?://www.pixiv.net/en/artworks/([0-9]+).*$"));
-        url_patterns.add(Pattern.compile("^https?://www.pixiv.net/member_illust.php\\?mode=medium&illust_id=([0-9]+).*$"));
+        url_patterns.add(Pattern.compile("^https?://www.pixiv.net(?:/en)?/artworks/([0-9]+).*$"));
+        url_patterns.add(Pattern.compile("^https?://www.pixiv.net/member_illust.php\\?(?:mode=(?:small|medium|large)&)?illust_id=([0-9]+).*$"));
         url_patterns.add(Pattern.compile("^https?://www.pixiv.net/member.php\\?id=([0-9]+).*$"));
-        url_patterns.add(Pattern.compile("^https?://www.pixiv.net/en/users/([0-9]+).*$"));
+        url_patterns.add(Pattern.compile("^https?://www.pixiv.net(?:/en)?/users/([0-9]+).*$"));
 
-        for (Pattern url_pattern: url_patterns) {
+        for (Pattern url_pattern : url_patterns) {
             Matcher m = url_pattern.matcher(url.toExternalForm());
             if (m.matches()) {
                 current_id = m.group(1);
                 return current_id;
             }
         }
-        throw new MalformedURLException("Expected pixiv.net/en/artworks/123456 URL format");
+        throw new MalformedURLException("Invalid pixiv.net URL format.");
+    }
+
+    @Override
+    public URL sanitizeURL(URL url) throws MalformedURLException {
+        if (url.toExternalForm().matches(urlsRegex[1])) {
+            Pattern p = Pattern.compile("^https?://www.pixiv.net/member_illust.php\\?(?:mode=(?:small|medium|large)&)?illust_id=([0-9]+).*$");
+            Matcher m = p.matcher(url.toExternalForm());
+            if (m.matches()) {
+                return new URL("https://www.pixiv.net/en/artworks/" + m.group(1));
+            }
+        }
+        if (url.toExternalForm().matches(urlsRegex[2])) {
+            Pattern p = Pattern.compile("^https?://www.pixiv.net/member.php\\?id=([0-9]+).*$");
+            Matcher m = p.matcher(url.toExternalForm());
+            if (m.matches()) {
+                return new URL("https://www.pixiv.net/en/users/" + m.group(1));
+            }
+        }
+        return url;
     }
 
     @Override
     protected JSONObject getFirstPage() throws IOException {
-        JSONObject jsonObj = null;
+        JSONObject jsonObj;
         Http httpClient;
-
-        if (!ISUSER) {
-            if (url.toExternalForm().matches(urlsRegex[1])) {
-                url = new URL("https://www.pixiv.net/en/artworks/" + current_id);
-            }
-            httpClient = new Http(api_endpoint + "illust/detail");
-            httpClient.data("illust_id", getGID(new URL(url.toExternalForm())));
-        } else {
-            if (url.toExternalForm().matches(urlsRegex[2])) {
-                url = new URL("https://www.pixiv.net/en/users/" + current_id);
-            }
-            httpClient = new Http(api_endpoint + "user/illusts");
-            httpClient.data("user_id", getGID(new URL(url.toExternalForm())));
-            httpClient.data("type", "illust");
+        switch (ripType) {
+            case IMAGE:
+                httpClient = new Http(api_endpoint + "illust/detail");
+                httpClient.data("illust_id", getGID(new URL(url.toExternalForm())));
+                break;
+            case USER:
+                httpClient = new Http(api_endpoint + "user/illusts");
+                httpClient.data("user_id", getGID(new URL(url.toExternalForm())));
+                httpClient.data("type", "illust");
+                break;
+            default:
+                throw new MalformedURLException("URL is not valid.");
         }
 
         httpClient.header("Authorization", "Bearer " + access_token);
@@ -140,16 +155,14 @@ public class PixivRipper extends AbstractJSONRipper {
 
     @Override
     protected JSONObject getNextPage(JSONObject doc) throws IOException {
-        if (!ISUSER) {
-            throw new IOException("No more images");
-        } else {
+        if (ripType == RIP_TYPE.USER) {
             if (doc.isNull("next_url")) {
                 throw new IOException("No more images");
             } else {
                 Pattern p = Pattern.compile("offset=([0-9]+).*$");
                 Matcher m = p.matcher(doc.getString("next_url"));
                 if (m.find()) {
-                    current_offset =  Integer.parseInt(m.group(1));
+                    current_offset = Integer.parseInt(m.group(1));
                 }
             }
             Http httpClient = new Http(api_endpoint + "user/illusts");
@@ -158,74 +171,71 @@ public class PixivRipper extends AbstractJSONRipper {
             httpClient.data("type", "illust");
             httpClient.data("offset", Integer.toString(current_offset));
             return httpClient.getJSON();
-        } 
+        }
+        throw new IOException("No more images");
     }
 
     @Override
     protected List<String> getURLsFromJSON(JSONObject json) {
-        List<String> urls = new ArrayList<String>();
         options.put("referrer", url.toExternalForm());
-        if (!ISUSER) {
-            JSONArray meta_pages = json.getJSONObject("illust").getJSONArray("meta_pages");
-            if (meta_pages.length() != 0) {
-                for (int i = 0; i < meta_pages.length(); i++) {
-                    String illust_urls = meta_pages.getJSONObject(i).getJSONObject("image_urls").getString("original");
-                    urls.add(illust_urls);
-                    try {
-                        addURLToDownload(new URL(illust_urls), options);
-                    } catch (MalformedURLException e) {
-                        LOGGER.info("Invalid url.");
-                    }
-                }
-            } else {
-                String illust_urls = json.getJSONObject("illust").getJSONObject("meta_single_page").getString("original_image_url");
-                urls.add(illust_urls);
-                try {
-                    addURLToDownload(new URL(illust_urls), options);
-                } catch (MalformedURLException e) {
-                    LOGGER.info("Invalid url.");
-                }
-            }
-        } else {
-            JSONArray illusts = json.getJSONArray("illusts");
-            for (int i = 0; i < illusts.length(); i++) {
-                JSONObject illust = illusts.getJSONObject(i);
-                JSONArray meta_pages = illust.getJSONArray("meta_pages");
+        String illust_url;
+        JSONArray meta_pages;
+        JSONObject illust;
+        switch (ripType) {
+            case IMAGE:
+                illust = json.getJSONObject("illust");
+                meta_pages = illust.getJSONArray("meta_pages");
                 if (meta_pages.length() != 0) {
-                    for (int x = 0; x < meta_pages.length(); x++) {
-                        String illust_url = meta_pages.getJSONObject(x).getJSONObject("image_urls").getString("original");
-                        urls.add(illust_url);
-                        options.put("subdirectory", "illust_" + illust.getInt("id"));
+                    for (int i = 0; i < meta_pages.length(); i++) {
+                        illust_url = meta_pages.getJSONObject(i).getJSONObject("image_urls").getString("original");
                         try {
                             addURLToDownload(new URL(illust_url), options);
                         } catch (MalformedURLException e) {
-                            LOGGER.info("Invalid url.");
+                            LOGGER.error("Invalid url.");
                         }
-
                     }
                 } else {
-                    options.remove("subdirectory");
-                    String illust_url = illust.getJSONObject("meta_single_page").getString("original_image_url");
-                    urls.add(illust_url);
+                    illust_url = json.getJSONObject("illust").getJSONObject("meta_single_page").getString("original_image_url");
                     try {
                         addURLToDownload(new URL(illust_url), options);
                     } catch (MalformedURLException e) {
-                        LOGGER.info("Invalid url.");
+                        LOGGER.error("Invalid url.");
                     }
-
                 }
-            }
+                break;
+            case USER:
+                JSONArray illusts = json.getJSONArray("illusts");
+                for (int i = 0; i < illusts.length(); i++) {
+                    illust = illusts.getJSONObject(i);
+                    meta_pages = illust.getJSONArray("meta_pages");
+                    if (meta_pages.length() != 0) {
+                        for (int x = 0; x < meta_pages.length(); x++) {
+                            illust_url = meta_pages.getJSONObject(x).getJSONObject("image_urls").getString("original");
+                            options.put("subdirectory", "illust_" + illust.getInt("id"));
+                            try {
+                                addURLToDownload(new URL(illust_url), options);
+                            } catch (MalformedURLException e) {
+                                LOGGER.error("Invalid url.");
+                            }
+                        }
+                    } else {
+                        options.remove("subdirectory");
+                        illust_url = illust.getJSONObject("meta_single_page").getString("original_image_url");
+                        try {
+                            addURLToDownload(new URL(illust_url), options);
+                        } catch (MalformedURLException e) {
+                            LOGGER.error("Invalid url.");
+                        }
+                    }
+                }
+                break;
         }
-        return urls;
+        return new ArrayList<>();
     }
-
-    @Override
-    protected void downloadURL(URL url, int index) { }
-
 
     private void auth() throws Exception {
         long session_time = Instant.now().getEpochSecond() - Long.parseLong(auth_time, 10);
-        if ((access_token == null) || (user_id == null) || (refresh_token == null) || (refresh_token == null) || session_time >= 3600L) {
+        if ((access_token == null) || (user_id == null) || (refresh_token == null) || session_time >= 3600L) {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("u-MM-d'T'kk':'mm':'ss'+00:00'");
             ZonedDateTime currentTime = ZonedDateTime.now(ZoneOffset.UTC);
             String localtime = currentTime.format(formatter);
@@ -235,9 +245,9 @@ public class PixivRipper extends AbstractJSONRipper {
             httpClient.setRequestMethod("POST");
             httpClient.setRequestProperty("User-Agent", "PixivAndroidApp/5.0.64 (Android 6.0)");
             httpClient.setRequestProperty("X-Client-Time", localtime);
-            httpClient.setRequestProperty("X-Client-Hash", hexdigest(new String((localtime + HASH_SECRET).getBytes(), "UTF-8")));
+            httpClient.setRequestProperty("X-Client-Hash", hexdigest(new String((localtime + HASH_SECRET).getBytes(), StandardCharsets.UTF_8)));
 
-            List<BasicNameValuePair> httpData = new ArrayList<BasicNameValuePair>();
+            List<BasicNameValuePair> httpData = new ArrayList<>();
             httpData.add(new BasicNameValuePair("get_secure_url", Integer.toString(1)));
             httpData.add(new BasicNameValuePair("client_id", CLIENT_ID));
             httpData.add(new BasicNameValuePair("client_secret", CLIENT_SECRET));
@@ -252,7 +262,7 @@ public class PixivRipper extends AbstractJSONRipper {
 
             httpClient.setDoOutput(true);
             OutputStream os = httpClient.getOutputStream();
-            BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os, "UTF-8"));
+            BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os, StandardCharsets.UTF_8));
 
             writer.write(getQuery(httpData));
             writer.flush();
@@ -289,18 +299,17 @@ public class PixivRipper extends AbstractJSONRipper {
             Utils.saveConfig();
 
         }
-        return;
-
-
     }
 
-    private String getQuery(List<BasicNameValuePair> params) throws UnsupportedEncodingException
-    {
+    @Override
+    protected void downloadURL(URL url, int index) {
+    }
+
+    private String getQuery(List<BasicNameValuePair> params) throws UnsupportedEncodingException {
         StringBuilder result = new StringBuilder();
         boolean first = true;
 
-        for (BasicNameValuePair pair : params)
-        {
+        for (BasicNameValuePair pair : params) {
             if (first)
                 first = false;
             else
@@ -314,13 +323,20 @@ public class PixivRipper extends AbstractJSONRipper {
         return result.toString();
     }
 
-    public String hexdigest(String message) throws Exception{
-        String hd;
-        MessageDigest md5 = MessageDigest.getInstance( "MD5" );
-        md5.update( message.getBytes() );
-        BigInteger hash = new BigInteger( 1, md5.digest() );
-        hd = hash.toString(16); // BigInteger strips leading 0's
-        while ( hd.length() < 32 ) { hd = "0" + hd; } // pad with leading 0's
-        return hd;
+    public String hexdigest(String message) throws Exception {
+        StringBuilder hd;
+        MessageDigest md5 = MessageDigest.getInstance("MD5");
+        md5.update(message.getBytes());
+        BigInteger hash = new BigInteger(1, md5.digest());
+        hd = new StringBuilder(hash.toString(16)); // BigInteger strips leading 0's
+        while (hd.length() < 32) {
+            hd.insert(0, "0");
+        } // pad with leading 0's
+        return hd.toString();
+    }
+
+    private enum RIP_TYPE {
+        USER,
+        IMAGE
     }
 }
