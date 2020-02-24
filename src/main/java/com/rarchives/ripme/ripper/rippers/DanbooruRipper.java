@@ -3,6 +3,7 @@ package com.rarchives.ripme.ripper.rippers;
 import com.rarchives.ripme.ripper.AbstractJSONRipper;
 import com.rarchives.ripme.utils.Http;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
@@ -119,12 +120,19 @@ public class DanbooruRipper extends AbstractJSONRipper {
             JSONArray jsonArray = json.getJSONArray("posts");
             for (int i = 0; i < jsonArray.length(); i++) {
                 if (!jsonArray.getJSONObject(i).getBoolean("is_banned")) {
-                    urls.add(jsonArray.getJSONObject(i).getString("file_url"));
+                    try{
+                        urls.add(jsonArray.getJSONObject(i).getString("file_url"));
+                    } catch (JSONException ignored) {
+                    }
+
                 }
             }
             return urls;
         } else {
-            urls.add(json.getString("file_url"));
+            if (!json.getBoolean("is_banned")) {
+                urls.add(json.getString("file_url"));
+            }
+
             return urls;
         }
 
