@@ -73,19 +73,15 @@ public class PixivRipper extends AbstractJSONRipper {
 
     @Override
     public boolean canRip(URL url) {
-        String[] urls = {
-                "https://www.pixiv.net/en/artworks/",
-                "http://www.pixiv.net/en/artworks/",
-                "https://www.pixiv.net/member_illust.php?mode=medium&illust_id=",
-                "http://www.pixiv.net/member_illust.php?mode=medium&illust_id=",
-                "https://www.pixiv.net/member.php?id=",
-                "http://www.pixiv.net/member.php?id=",
-                "https://www.pixiv.net/en/users/",
-                "http://www.pixiv.net/en/users/"
+        String[] urls_regex = {
+                "^https?://www.pixiv.net/en/artworks/.*$",
+                "^https?://www.pixiv.net/member_illust.php\\?mode=medium&illust_id=.*$",
+                "^https?://www.pixiv.net/member.php\\?id=.*$",
+                "^https?://www.pixiv.net/en/users/.*$",
         };
 
-        for (String s : urls) {
-            if (url.toExternalForm().startsWith(s)) {
+        for (String s : urls_regex) {
+            if (url.toExternalForm().matches(s)) {
                 return true;
             }
         }

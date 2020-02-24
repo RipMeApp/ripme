@@ -1,8 +1,9 @@
 package com.rarchives.ripme.ripper.rippers;
 
 import com.rarchives.ripme.ripper.AbstractJSONRipper;
+import com.rarchives.ripme.utils.Http;
+import org.json.JSONArray;
 import org.json.JSONObject;
-import org.jsoup.Jsoup;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -15,8 +16,9 @@ import java.util.regex.Pattern;
 
 public class DanbooruRipper extends AbstractJSONRipper {
 
-    private JSONObject image_details;
-    private String currentgid;
+    private String current_id;
+    private String current_tag;
+    private int page_num = 2;
 
     public DanbooruRipper(URL url) throws IOException {
         super(url);
@@ -29,8 +31,16 @@ public class DanbooruRipper extends AbstractJSONRipper {
 
     @Override
     public boolean canRip(URL url) {
-        if (url.toExternalForm().startsWith("https://danbooru.donmai.us/posts/") || url.toExternalForm().startsWith("https://danbooru.donmai.us/post/show/")) {
-            return true;
+        String[] urls_regex = {
+                "^https?://danbooru.donmai.us/posts/.*$",
+                "^https?://danbooru.donmai.us/post/show/.*$",
+                "^https?://danbooru.donmai.us/posts\\?tags=.*$"
+        };
+
+        for (String s : urls_regex) {
+            if (url.toExternalForm().matches(s)) {
+                return true;
+            }
         }
         return false;
 
@@ -43,18 +53,24 @@ public class DanbooruRipper extends AbstractJSONRipper {
 
     @Override
     public String getGID(URL url) throws MalformedURLException {
-        Pattern p = Pattern.compile("^https?:\\/\\/danbooru.donmai.us\\/posts/([0-9]+).*$");
-        Matcher m = p.matcher(url.toExternalForm());
-        if (m.matches()) {
-            currentgid = m.group(1);
-            return currentgid;
-        }
-
-        p = Pattern.compile("^https?:\\/\\/danbooru.donmai.us\\/post/show/([0-9]+).*$");
-        m = p.matcher(url.toExternalForm());
-        if (m.matches()) {
-            currentgid = m.group(1);
-            return currentgid;
+        if (url.toExternalForm().matches("^https?://danbooru.donmai.us/posts\\?tags=.*$")) {
+            Pattern p = Pattern.compile("^https?://danbooru.donmai.us/posts\\?tags=(.*)");
+            Matcher m = p.matcher(url.toExternalForm());
+            if (m.matches()) {
+                current_tag = m.group(1);
+                return current_tag;
+            }
+        } else {
+            final List<Pattern> url_patterns = new ArrayList<>();
+            url_patterns.add(Pattern.compile("^https?://danbooru.donmai.us/posts/([0-9]+).*$"));
+            url_patterns.add(Pattern.compile("^https?://danbooru.donmai.us/post/show/([0-9]+).*$"));
+            for (Pattern url_pattern: url_patterns) {
+                Matcher m = url_pattern.matcher(url.toExternalForm());
+                if (m.matches()) {
+                    current_id = m.group(1);
+                    return current_id;
+                }
+            }
         }
 
         throw new MalformedURLException("Expected danbooru.donmai.us/posts/123456 URL format.");
@@ -62,20 +78,57 @@ public class DanbooruRipper extends AbstractJSONRipper {
 
     @Override
     protected JSONObject getFirstPage() throws IOException {
-        if (url.toExternalForm().startsWith("https://danbooru.donmai.us/post/show/")) {
-            url = new URL("https://danbooru.donmai.us/posts/" + currentgid);
+        if (url.toExternalForm().matches("^https?://danbooru.donmai.us/posts\\?tags=.*$")) {
+            Http httpClient = new Http("https://danbooru.donmai.us/posts.json?tags=" + current_tag);
+            httpClient.ignoreContentType();
+            String r_body = httpClient.get().body().text();
+            String json_new = "{ posts:" + r_body + "}";
+            ;
+            return new JSONObject(json_new);
+        } else {
+            if (url.toExternalForm().matches("^https?://danbooru.donmai.us/post/show/([0-9]+).*$")) {
+                url = new URL("https://danbooru.donmai.us/posts/" + current_id);
+            }
+            Http httpClient = new Http(url.toExternalForm() + ".json");
+            return httpClient.getJSON();
         }
-        String plainJsonResponse = Jsoup.connect(url.toExternalForm() + ".json").ignoreContentType(true).execute().body();
-        image_details = new JSONObject(plainJsonResponse);
-        return image_details;
+    }
+
+    @Override
+    protected JSONObject getNextPage(JSONObject doc) throws IOException {
+        if (url.toExternalForm().matches("^https?://danbooru.donmai.us/posts\\?tags=.*$")) {
+            JSONArray jsonArray = doc.getJSONArray("posts");
+            Http httpClient = new Http("https://danbooru.donmai.us/posts.json?page=" + Integer.toString(page_num) + "&tags=" + current_tag);
+            httpClient.ignoreContentType();
+            String r_body = httpClient.get().body().text();
+            String json_new = "{ posts:" + r_body + "}";
+            JSONObject json_new_obj = new JSONObject(json_new);
+            if (json_new_obj.getJSONArray("posts").length() == 0) {
+                throw new IOException("No more images");
+            }
+            page_num++;
+            return json_new_obj;
+        } else {
+            throw new IOException("No more images.");
+        }
     }
 
     @Override
     protected List<String> getURLsFromJSON(JSONObject json) {
         List<String> urls = new ArrayList<>();
-        urls.add(image_details.getString("file_url"));
+        if (url.toExternalForm().matches("^https?://danbooru.donmai.us/posts\\?tags=.*$")) {
+            JSONArray jsonArray = json.getJSONArray("posts");
+            for (int i = 0; i < jsonArray.length(); i++) {
+                if (!jsonArray.getJSONObject(i).getBoolean("is_banned")) {
+                    urls.add(jsonArray.getJSONObject(i).getString("file_url"));
+                }
+            }
+            return urls;
+        } else {
+            urls.add(json.getString("file_url"));
+            return urls;
+        }
 
-        return urls;
     }
 
     @Override
