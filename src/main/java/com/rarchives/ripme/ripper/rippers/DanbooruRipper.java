@@ -83,7 +83,6 @@ public class DanbooruRipper extends AbstractJSONRipper {
             httpClient.ignoreContentType();
             String r_body = httpClient.get().body().text();
             String json_new = "{ posts:" + r_body + "}";
-            ;
             return new JSONObject(json_new);
         } else {
             if (url.toExternalForm().matches("^https?://danbooru.donmai.us/post/show/([0-9]+).*$")) {
