@@ -85,6 +85,22 @@ public class RipUtils {
                 logger.warn("Exception while retrieving vidble page:", e);
             }
             return result;
+        }else if (url.toExternalForm().contains("vidble.com/watch?v=")) {
+                try {
+                	logger.debug("Getting vidble video " + url);
+                    Pattern p = Pattern.compile("^.*vidble.com/watch\\?v=(\\w*)(\\W.*)?");
+                    Matcher m = p.matcher(url.toExternalForm());
+                    if (m.matches()) {
+                    	String videoURL = "https://vidble.com/" + m.group(1)+ ".mp4";
+                    	logger.debug("Got video " + videoURL);
+                    	result.add(new URL(videoURL));
+                    	return result;
+                    }
+                    throw new IOException("id could not be extracted");
+                } catch (IOException e) {
+                    // Do nothing
+                    logger.warn("Exception while retrieving vidble video:", e);
+                }
         }
         else if (url.toExternalForm().contains("eroshare.com")) {
             try {
