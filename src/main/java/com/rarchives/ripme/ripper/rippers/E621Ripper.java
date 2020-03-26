@@ -16,12 +16,20 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+// updated by BlackBirdd (https://github.com/blackbirddx) after e621 update in March 2020
+// old url style => new url style:
+// /post/index/1/<tags> => /posts?tags=<tags>
+// /pool/show/<id> => /pools/id
+
 public class E621Ripper extends AbstractHTMLRipper {
     private static final Logger logger = Logger.getLogger(E621Ripper.class);
 
     private static Pattern gidPattern = null;
     private static Pattern gidPattern2 = null;
     private static Pattern gidPatternPool = null;
+
+    private static Pattern gidPatternNew = null;
+    private static Pattern gidPatternPoolNew = null;
 
     private DownloadThreadPool e621ThreadPool = new DownloadThreadPool("e621");
 
@@ -46,15 +54,15 @@ public class E621Ripper extends AbstractHTMLRipper {
 
     @Override
     public Document getFirstPage() throws IOException {
-        if (url.getPath().startsWith("/pool/show/"))
-            return Http.url("https://e621.net/pool/show/" + getTerm(url)).get();
+        if (url.getPath().startsWith("/pool"))
+            return Http.url("https://e621.net/pools/" + getTerm(url)).get();
         else
-            return Http.url("https://e621.net/post/index/1/" + getTerm(url)).get();
+            return Http.url("https://e621.net/posts?tags=" + getTerm(url)).get();
     }
 
     @Override
     public List<String> getURLsFromPage(Document page) {
-        Elements elements = page.select("div > span.thumb > a");
+        Elements elements = page.select("article > a");
         List<String> res = new ArrayList<>();
 
         for (Element e : elements) {
@@ -68,8 +76,8 @@ public class E621Ripper extends AbstractHTMLRipper {
 
     @Override
     public Document getNextPage(Document page) throws IOException {
-        if (!page.select("a.next_page").isEmpty()) {
-            return Http.url(page.select("a.next_page").attr("abs:href")).get();
+        if (!page.select("a#paginator-next").isEmpty()) {
+            return Http.url(page.select("a#paginator-next").attr("abs:href")).get();
         } else {
             throw new IOException("No more pages.");
         }
@@ -88,6 +96,10 @@ public class E621Ripper extends AbstractHTMLRipper {
         if (gidPatternPool == null)
             gidPatternPool = Pattern.compile(
                     "^https?://(www\\.)?e621\\.net/pool/show/([a-zA-Z0-9$_.+!*'(),%:\\-]+)(\\?.*)?(/.*)?(#.*)?$");
+        if (gidPatternNew == null)
+            gidPatternNew = Pattern.compile("^https?://(www\\.)?e621\\.net/posts\\?tags=([\\S]+)");
+        if (gidPatternPoolNew == null)
+            gidPatternPoolNew = Pattern.compile("^https?://(www\\.)?e621\\.net/pools/([\\d]+)");
 
         Matcher m = gidPattern.matcher(url.toExternalForm());
         if (m.matches()) {
@@ -100,14 +112,26 @@ public class E621Ripper extends AbstractHTMLRipper {
             return m.group(2);
         }
 
+        m = gidPatternNew.matcher(url.toExternalForm());
+        if (m.matches()) {
+            LOGGER.info(m.group(2));
+            return m.group(2);
+        }
+
+        m = gidPatternPoolNew.matcher(url.toExternalForm());
+        if (m.matches()) {
+            LOGGER.info(m.group(2));
+            return m.group(2);
+        }
+
         throw new MalformedURLException(
-                "Expected e621.net URL format: e621.net/post/index/1/searchterm - got " + url + " instead");
+                "Expected e621.net URL format: e621.net/posts?tags=searchterm - got " + url + " instead");
     }
 
     @Override
     public String getGID(URL url) throws MalformedURLException {
         String prefix = "";
-        if (url.getPath().startsWith("/pool/show/")) {
+        if (url.getPath().startsWith("/pool")) {
             prefix = "pool_";
         }
         return Utils.filesystemSafe(prefix + getTerm(url));
@@ -150,7 +174,7 @@ public class E621Ripper extends AbstractHTMLRipper {
 
         private String getFullSizedImage(URL imageURL) throws IOException {
             Document page = Http.url(imageURL).retries(3).get();
-            Elements video = page.select("video > source");
+            /*Elements video = page.select("video > source");
             Elements flash = page.select("embed");
             Elements image = page.select("a#highres");
             if (video.size() > 0) {
@@ -161,8 +185,13 @@ public class E621Ripper extends AbstractHTMLRipper {
                 return image.attr("href");
             } else {
                 throw new IOException();
-            }
+            }*/
 
+            if (!page.select("div#image-download-link > a").isEmpty()) {
+                return page.select("div#image-download-link > a").attr("abs:href");
+            } else {
+                throw new IOException();
+            }
         }
 
     }
