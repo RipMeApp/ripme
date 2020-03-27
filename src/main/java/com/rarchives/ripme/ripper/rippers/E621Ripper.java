@@ -97,9 +97,9 @@ public class E621Ripper extends AbstractHTMLRipper {
             gidPatternPool = Pattern.compile(
                     "^https?://(www\\.)?e621\\.net/pool/show/([a-zA-Z0-9$_.+!*'(),%:\\-]+)(\\?.*)?(/.*)?(#.*)?$");
         if (gidPatternNew == null)
-            gidPatternNew = Pattern.compile("^https?://(www\\.)?e621\\.net/posts\\?tags=([\\S]+)");
+            gidPatternNew = Pattern.compile("^https?://(www\\.)?e621\\.net/posts\\?tags=([a-zA-Z0-9$_.+!*'(),%:\\-]+)(\\&[\\S]+)?");
         if (gidPatternPoolNew == null)
-            gidPatternPoolNew = Pattern.compile("^https?://(www\\.)?e621\\.net/pools/([\\d]+)");
+            gidPatternPoolNew = Pattern.compile("^https?://(www\\.)?e621\\.net/pools/([\\d]+)(\\?[\\S]*)?");
 
         Matcher m = gidPattern.matcher(url.toExternalForm());
         if (m.matches()) {
