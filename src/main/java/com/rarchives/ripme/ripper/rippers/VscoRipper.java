@@ -200,7 +200,7 @@ public class VscoRipper extends AbstractHTMLRipper {
         }
         
         //Member profile (Usernames should all be different, so this should work.
-        p = Pattern.compile("^https?://vsco.co/([a-zA-Z0-9-]+)/images/[0-9]+");
+        p = Pattern.compile("^https?://vsco.co/([a-zA-Z0-9-]+)/gallery");
         m = p.matcher(url.toExternalForm());
         
         if (m.matches()){
