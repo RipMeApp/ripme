@@ -225,6 +225,8 @@ public class PixivRipper extends AbstractJSONRipper {
                     }
                 }
                 break;
+            default:
+                break;
         }
         return new ArrayList<>();
     }
