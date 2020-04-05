@@ -19,10 +19,7 @@ import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -36,6 +33,12 @@ public class PixivRipper extends AbstractJSONRipper {
             "^https?://www.pixiv.net/member.php\\?id=.*$",
             "^https?://www.pixiv.net(?:/en)?/users/.*$",
     };
+
+    private static final List<Pattern> url_patterns = Arrays.asList(
+            Pattern.compile("^https?://www.pixiv.net(?:/en)?/artworks/([0-9]+).*$"),
+            Pattern.compile("^https?://www.pixiv.net/member_illust.php\\?(?:mode=(?:small|medium|large)&)?illust_id=([0-9]+).*$"),
+            Pattern.compile("^https?://www.pixiv.net/member.php\\?id=([0-9]+).*$"),
+            Pattern.compile("^https?://www.pixiv.net(?:/en)?/users/([0-9]+).*$"));
     private static String auth_time = Utils.getConfigString("pixiv.auth_time", Long.toString(3601L));
     private static String access_token = Utils.getConfigString("pixiv.access_token", null);
     private static String user_id = Utils.getConfigString("pixiv.user_id", null);
@@ -52,14 +55,8 @@ public class PixivRipper extends AbstractJSONRipper {
     private int current_offset;
     private Map<String, String> options = new HashMap<>();
 
-    public PixivRipper(URL url) throws IOException {
+    public PixivRipper(URL url) throws Exception {
         super(url);
-        try {
-            auth();
-        } catch (Exception e) {
-            throw new IOException(e.getMessage());
-        }
-
     }
 
     @Override
@@ -94,12 +91,11 @@ public class PixivRipper extends AbstractJSONRipper {
 
     @Override
     public String getGID(URL url) throws MalformedURLException {
-        final List<Pattern> url_patterns = new ArrayList<>();
-        url_patterns.add(Pattern.compile("^https?://www.pixiv.net(?:/en)?/artworks/([0-9]+).*$"));
-        url_patterns.add(Pattern.compile("^https?://www.pixiv.net/member_illust.php\\?(?:mode=(?:small|medium|large)&)?illust_id=([0-9]+).*$"));
-        url_patterns.add(Pattern.compile("^https?://www.pixiv.net/member.php\\?id=([0-9]+).*$"));
-        url_patterns.add(Pattern.compile("^https?://www.pixiv.net(?:/en)?/users/([0-9]+).*$"));
-
+        try {
+            auth();
+        } catch (Exception e) {
+            throw new MalformedURLException(e.getMessage());
+        }
         for (Pattern url_pattern : url_patterns) {
             Matcher m = url_pattern.matcher(url.toExternalForm());
             if (m.matches()) {
