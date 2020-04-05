@@ -81,7 +81,7 @@ public class MotherlessRipper extends AbstractHTMLRipper {
     protected List<String> getURLsFromPage(Document page) {
         List<String> pageURLs = new ArrayList<>();
 
-        for (Element thumb : page.select("div.thumb a.img-container")) {
+        for (Element thumb : page.select("div.thumb-container a.img-container")) {
             if (isStopped()) {
                 break;
             }
