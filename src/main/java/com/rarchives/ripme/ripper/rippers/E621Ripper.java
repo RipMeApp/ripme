@@ -35,20 +35,23 @@ public class E621Ripper extends AbstractHTMLRipper {
     private DownloadThreadPool e621ThreadPool = new DownloadThreadPool("e621");
 
     private Map<String, String> cookies = new HashMap<String, String>();
-    private boolean useAPIRipper = false;
 
     public E621Ripper(URL url) throws IOException {
         super(url);
-        loadConfig();
     }
 
-    private void loadConfig() {
-        String cookiesString = Utils.getConfigString("e621.captcha_cookies", "");
-        if(!cookiesString.equals(" ")) {
+    private void loadCookies() {
+        String cookiesString = Utils.getConfigString("e621.cookies", "");
+        if(!cookiesString.equals("")) {
             cookies = RipUtils.getCookiesFromString(cookiesString);
-            sendUpdate(RipStatusMessage.STATUS.RIP_ERRORED, "Using CloudFlare captcha cookies, make sure to update them!");
+            if(cookies.containsKey("cf_clearance"))
+                sendUpdate(RipStatusMessage.STATUS.RIP_ERRORED, "Using CloudFlare captcha cookies, make sure to update them in config!");
         }
-        useAPIRipper = Utils.getConfigBoolean("e621.use_API_ripper", false);
+    }
+
+    private void warnAboutBlacklist(Document page) {
+        if(!page.select("div.hidden-posts-notice").isEmpty()) 
+            sendUpdate(RipStatusMessage.STATUS.DOWNLOAD_WARN, "Some posts are blacklisted. Consider logging in. Search for \"e621\" in this wiki page: https://github.com/RipMeApp/ripme/wiki/Config-options");
     }
 
     @Override
@@ -68,10 +71,15 @@ public class E621Ripper extends AbstractHTMLRipper {
 
     @Override
     public Document getFirstPage() throws IOException {
+        loadCookies();
+        Document page;
         if (url.getPath().startsWith("/pool"))
-            return Http.url("https://e621.net/pools/" + getTerm(url)).cookies(cookies).get();
+            page = Http.url("https://e621.net/pools/" + getTerm(url)).cookies(cookies).get();
         else
-            return Http.url("https://e621.net/posts?tags=" + getTerm(url)).cookies(cookies).get();
+            page = Http.url("https://e621.net/posts?tags=" + getTerm(url)).cookies(cookies).get();
+        
+        warnAboutBlacklist(page);
+        return page;
     }
 
     @Override
@@ -90,6 +98,7 @@ public class E621Ripper extends AbstractHTMLRipper {
 
     @Override
     public Document getNextPage(Document page) throws IOException {
+        warnAboutBlacklist(page);
         if (!page.select("a#paginator-next").isEmpty()) {
             return Http.url(page.select("a#paginator-next").attr("abs:href")).cookies(cookies).get();
         } else {
@@ -207,6 +216,8 @@ public class E621Ripper extends AbstractHTMLRipper {
             if (!page.select("div#image-download-link > a").isEmpty()) {
                 return page.select("div#image-download-link > a").attr("abs:href");
             } else {
+                if(!page.select("#blacklist-box").isEmpty())
+                    sendUpdate(RipStatusMessage.STATUS.RIP_ERRORED, "Cannot download image - blocked by blacklist. Consider logging in. Search for \"e621\" in this wiki page: https://github.com/RipMeApp/ripme/wiki/Config-options");
                 throw new IOException();
             }
         }
