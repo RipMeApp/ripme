@@ -3,12 +3,16 @@ package com.rarchives.ripme.ripper.rippers;
 import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 import com.rarchives.ripme.ripper.DownloadThreadPool;
 import com.rarchives.ripme.utils.Http;
+import com.rarchives.ripme.utils.RipUtils;
 import com.rarchives.ripme.utils.Utils;
+import com.rarchives.ripme.ui.RipStatusMessage;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.log4j.Logger;
@@ -16,10 +20,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-// updated by BlackBirdd (https://github.com/blackbirddx) after e621 update in March 2020
-// old url style => new url style:
-// /post/index/1/<tags> => /posts?tags=<tags>
-// /pool/show/<id> => /pools/id
+
 
 public class E621Ripper extends AbstractHTMLRipper {
     private static final Logger logger = Logger.getLogger(E621Ripper.class);
@@ -33,8 +34,21 @@ public class E621Ripper extends AbstractHTMLRipper {
 
     private DownloadThreadPool e621ThreadPool = new DownloadThreadPool("e621");
 
+    private Map<String, String> cookies = new HashMap<String, String>();
+    private boolean useAPIRipper = false;
+
     public E621Ripper(URL url) throws IOException {
         super(url);
+        loadConfig();
+    }
+
+    private void loadConfig() {
+        String cookiesString = Utils.getConfigString("e621.captcha_cookies", "");
+        if(!cookiesString.equals(" ")) {
+            cookies = RipUtils.getCookiesFromString(cookiesString);
+            sendUpdate(RipStatusMessage.STATUS.RIP_ERRORED, "Using CloudFlare captcha cookies, make sure to update them!");
+        }
+        useAPIRipper = Utils.getConfigBoolean("e621.use_API_ripper", false);
     }
 
     @Override
@@ -55,9 +69,9 @@ public class E621Ripper extends AbstractHTMLRipper {
     @Override
     public Document getFirstPage() throws IOException {
         if (url.getPath().startsWith("/pool"))
-            return Http.url("https://e621.net/pools/" + getTerm(url)).get();
+            return Http.url("https://e621.net/pools/" + getTerm(url)).cookies(cookies).get();
         else
-            return Http.url("https://e621.net/posts?tags=" + getTerm(url)).get();
+            return Http.url("https://e621.net/posts?tags=" + getTerm(url)).cookies(cookies).get();
     }
 
     @Override
@@ -77,7 +91,7 @@ public class E621Ripper extends AbstractHTMLRipper {
     @Override
     public Document getNextPage(Document page) throws IOException {
         if (!page.select("a#paginator-next").isEmpty()) {
-            return Http.url(page.select("a#paginator-next").attr("abs:href")).get();
+            return Http.url(page.select("a#paginator-next").attr("abs:href")).cookies(cookies).get();
         } else {
             throw new IOException("No more pages.");
         }
@@ -90,6 +104,9 @@ public class E621Ripper extends AbstractHTMLRipper {
     }
 
     private String getTerm(URL url) throws MalformedURLException {
+        // old url style => new url style:
+        // /post/index/1/<tags> => /posts?tags=<tags>
+        // /pool/show/<id> => /pools/id
         if (gidPattern == null)
             gidPattern = Pattern.compile(
                     "^https?://(www\\.)?e621\\.net/post/index/[^/]+/([a-zA-Z0-9$_.+!*'():,%\\-]+)(/.*)?(#.*)?$");
@@ -173,7 +190,7 @@ public class E621Ripper extends AbstractHTMLRipper {
         }
 
         private String getFullSizedImage(URL imageURL) throws IOException {
-            Document page = Http.url(imageURL).retries(3).get();
+            Document page = Http.url(imageURL).cookies(cookies).retries(3).get();
             /*Elements video = page.select("video > source");
             Elements flash = page.select("embed");
             Elements image = page.select("a#highres");
