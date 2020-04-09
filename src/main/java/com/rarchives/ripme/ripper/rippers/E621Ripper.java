@@ -6,6 +6,8 @@ import com.rarchives.ripme.utils.Http;
 import com.rarchives.ripme.utils.RipUtils;
 import com.rarchives.ripme.utils.Utils;
 import com.rarchives.ripme.ui.RipStatusMessage;
+import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
+
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -35,23 +37,36 @@ public class E621Ripper extends AbstractHTMLRipper {
     private DownloadThreadPool e621ThreadPool = new DownloadThreadPool("e621");
 
     private Map<String, String> cookies = new HashMap<String, String>();
+    private String userAgent = USER_AGENT;
 
     public E621Ripper(URL url) throws IOException {
         super(url);
     }
 
-    private void loadCookies() {
+    private void loadConfig() {
         String cookiesString = Utils.getConfigString("e621.cookies", "");
         if(!cookiesString.equals("")) {
             cookies = RipUtils.getCookiesFromString(cookiesString);
             if(cookies.containsKey("cf_clearance"))
-                sendUpdate(RipStatusMessage.STATUS.RIP_ERRORED, "Using CloudFlare captcha cookies, make sure to update them in config!");
+                sendUpdate(STATUS.DOWNLOAD_WARN, "Using CloudFlare captcha cookies, make sure to update them and set your browser's useragent in config!");
+            if(cookies.containsKey("remember"))
+                sendUpdate(STATUS.DOWNLOAD_WARN, "Logging in using auth cookie.");
         }
+        userAgent = Utils.getConfigString("e621.useragent", USER_AGENT);
+        
     }
 
     private void warnAboutBlacklist(Document page) {
         if(!page.select("div.hidden-posts-notice").isEmpty()) 
-            sendUpdate(RipStatusMessage.STATUS.DOWNLOAD_WARN, "Some posts are blacklisted. Consider logging in. Search for \"e621\" in this wiki page: https://github.com/RipMeApp/ripme/wiki/Config-options");
+            sendUpdate(STATUS.DOWNLOAD_WARN, "Some posts are blacklisted. Consider logging in. Search for \"e621\" in this wiki page: https://github.com/RipMeApp/ripme/wiki/Config-options");
+    }
+
+    private Document getDocument(String url, int retries) throws IOException {
+        return Http.url(url).userAgent(userAgent).retries(retries).cookies(cookies).get();
+    }
+
+    private Document getDocument(String url) throws IOException {
+        return getDocument(url, 1);
     }
 
     @Override
@@ -71,12 +86,12 @@ public class E621Ripper extends AbstractHTMLRipper {
 
     @Override
     public Document getFirstPage() throws IOException {
-        loadCookies();
+        loadConfig();
         Document page;
         if (url.getPath().startsWith("/pool"))
-            page = Http.url("https://e621.net/pools/" + getTerm(url)).cookies(cookies).get();
+            page = getDocument("https://e621.net/pools/" + getTerm(url));
         else
-            page = Http.url("https://e621.net/posts?tags=" + getTerm(url)).cookies(cookies).get();
+            page = getDocument("https://e621.net/posts?tags=" + getTerm(url));
         
         warnAboutBlacklist(page);
         return page;
@@ -100,7 +115,7 @@ public class E621Ripper extends AbstractHTMLRipper {
     public Document getNextPage(Document page) throws IOException {
         warnAboutBlacklist(page);
         if (!page.select("a#paginator-next").isEmpty()) {
-            return Http.url(page.select("a#paginator-next").attr("abs:href")).cookies(cookies).get();
+            return getDocument(page.select("a#paginator-next").attr("abs:href"));
         } else {
             throw new IOException("No more pages.");
         }
@@ -123,7 +138,7 @@ public class E621Ripper extends AbstractHTMLRipper {
             gidPatternPool = Pattern.compile(
                     "^https?://(www\\.)?e621\\.net/pool/show/([a-zA-Z0-9$_.+!*'(),%:\\-]+)(\\?.*)?(/.*)?(#.*)?$");
         if (gidPatternNew == null)
-            gidPatternNew = Pattern.compile("^https?://(www\\.)?e621\\.net/posts\\?tags=([a-zA-Z0-9$_.+!*'(),%:\\-]+)(\\&[\\S]+)?");
+            gidPatternNew = Pattern.compile("^https?://(www\\.)?e621\\.net/posts\\?([\\S]*?)tags=([a-zA-Z0-9$_.+!*'(),%:\\-]+)(\\&[\\S]+)?");
         if (gidPatternPoolNew == null)
             gidPatternPoolNew = Pattern.compile("^https?://(www\\.)?e621\\.net/pools/([\\d]+)(\\?[\\S]*)?");
 
@@ -140,8 +155,8 @@ public class E621Ripper extends AbstractHTMLRipper {
 
         m = gidPatternNew.matcher(url.toExternalForm());
         if (m.matches()) {
-            LOGGER.info(m.group(2));
-            return m.group(2);
+            LOGGER.info(m.group(3));
+            return m.group(3);
         }
 
         m = gidPatternPoolNew.matcher(url.toExternalForm());
@@ -199,7 +214,7 @@ public class E621Ripper extends AbstractHTMLRipper {
         }
 
         private String getFullSizedImage(URL imageURL) throws IOException {
-            Document page = Http.url(imageURL).cookies(cookies).retries(3).get();
+            Document page = getDocument(imageURL.toExternalForm(), 3);
             /*Elements video = page.select("video > source");
             Elements flash = page.select("embed");
             Elements image = page.select("a#highres");
