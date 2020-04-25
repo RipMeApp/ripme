@@ -2,11 +2,8 @@ package com.rarchives.ripme.ripper.rippers;
 
 import com.rarchives.ripme.ripper.AbstractJSONRipper;
 import com.rarchives.ripme.utils.Http;
-import com.rarchives.ripme.utils.Utils;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.jsoup.Connection;
-import org.jsoup.nodes.Document;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -51,10 +48,10 @@ public class MangadexRipper extends AbstractJSONRipper {
     }
 
     private String getChapterID(String url) {
-        Pattern p = Pattern.compile("https://mangadex.org/chapter/([\\d]+)/?");
+        Pattern p = Pattern.compile("https://(www\\.)?mangadex\\.org/chapter/([\\d]+)/?[\\d]*");
         Matcher m = p.matcher(url);
         if (m.matches()) {
-            return m.group(1);
+            return m.group(2);
         }
         return null;
     }
