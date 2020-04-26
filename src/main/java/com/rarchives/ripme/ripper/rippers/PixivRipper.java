@@ -232,6 +232,7 @@ public class PixivRipper extends AbstractJSONRipper {
     }
 
     private void auth() throws Exception {
+        auth_time = Utils.getConfigString("pixiv.auth_time", Long.toString(3601L));
         long session_time = Instant.now().getEpochSecond() - Long.parseLong(auth_time, 10);
         if ((access_token == null) || (user_id == null) || (refresh_token == null) || session_time >= 3600L) {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("u-MM-d'T'kk':'mm':'ss'+00:00'");
