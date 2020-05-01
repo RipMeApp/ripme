@@ -57,7 +57,7 @@ public class FreeComicOnlineRipper extends AbstractHTMLRipper {
 	Pattern p = Pattern.compile("https://freecomiconline.me/comic/([a-zA-Z0-9_\\-]+)/([a-zA-Z0-9_\\-]+)/?$");
         Matcher m = p.matcher(nextPage);
 	if(m.matches()){ 
-		nextUrl = m.group(0);
+	    nextUrl = m.group(0);
 	}
 	if(nextUrl.equals("")) throw new IOException("No more pages");
 	sleep(500);
