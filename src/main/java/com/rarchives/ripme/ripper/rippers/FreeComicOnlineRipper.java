@@ -7,10 +7,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
-
 import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 import com.rarchives.ripme.utils.Http;
 
@@ -56,19 +54,12 @@ public class FreeComicOnlineRipper extends AbstractHTMLRipper {
     public Document getNextPage(Document doc) throws IOException {
         String nextPage = doc.select("div.select-pagination a").get(1).attr("href");
 	String nextUrl = "";
-	// "https://freecomiconline.me/comic/([a-zA-Z0-9_\\-]+)/([a-zA-Z0-9_\\-]+)/?$"
-        System.out.println("\n\nPagination.(0).href: "+ nextPage); 
-
 	Pattern p = Pattern.compile("https://freecomiconline.me/comic/([a-zA-Z0-9_\\-]+)/([a-zA-Z0-9_\\-]+)/?$");
         Matcher m = p.matcher(nextPage);
-        
 	if(m.matches()){ 
 		nextUrl = m.group(0);
-		//System.out.println("\n\nMatched and recreatedUrl: "+ nextUrl+"\n\n");
-	
 	}
 	if(nextUrl.equals("")) throw new IOException("No more pages");
-
 	sleep(500);
         return Http.url(nextUrl).get();
     }
