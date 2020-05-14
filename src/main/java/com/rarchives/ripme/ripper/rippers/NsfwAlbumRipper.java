@@ -61,6 +61,7 @@ public class NsfwAlbumRipper extends AbstractHTMLRipper
         return Http.url(url).get();
     }
 
+    //TODO most likely broken.
     @Override
     public String normalizeUrl(String url)
     {
@@ -71,8 +72,6 @@ public class NsfwAlbumRipper extends AbstractHTMLRipper
             return m.group(1).replaceAll("\\", "/").trim();
         else
             return url;
-
-        //throw new MalformedURLException("Expected nsfwalbum.com URL format nsfwalbum.com/album/albumid - got " + url + "instead.");
     }
 
     @Override
@@ -82,12 +81,33 @@ public class NsfwAlbumRipper extends AbstractHTMLRipper
 
         Elements imgs = doc.select(".album img");
 
-        System.out.println(imgs.size() + " elements (images) found.");
+        System.out.println(imgs.size() + " elements (thumbnails) found.");
 
         for (Element img : imgs)
         {
-            //TODO: Account for other hosting platforms. See C:\Users\Joel Goransson\Documents\python\nsfwalbum.py
-            results.add(img.attr("data-src").replace("/th/", "/i/"));
+            String thumbURL = img.attr("data-src");
+            String fullResURL = null;
+
+            if (thumbURL.contains("imgspice.com"))
+            {
+                fullResURL = thumbURL.replace("_t.jpg", ".jpg");
+            }
+            else if (thumbURL.contains("imagetwist.com"))
+            {
+                fullResURL = thumbURL.replace("/th/", "/i/");
+            }
+            else if (thumbURL.contains("pixhost.com"))
+            {
+                fullResURL = thumbURL.replace("https://t", "https://img");
+                fullResURL = fullResURL.replace("/thumbs/", "/images/");
+            }
+            else if (thumbURL.contains("imx.to"))
+            {
+                fullResURL = thumbURL.replace("/t/", "/i/");
+            }
+
+            if (fullResURL != null)
+                results.add(fullResURL);
         }
 
         return results;
