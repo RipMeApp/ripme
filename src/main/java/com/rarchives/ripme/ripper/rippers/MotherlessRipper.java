@@ -55,6 +55,8 @@ public class MotherlessRipper extends AbstractHTMLRipper {
         Pattern p = Pattern.compile("[MIV]");
         Matcher m = p.matcher(String.valueOf(path.charAt(2)));
         boolean notHome = m.matches();
+        // Check if it's a search term
+        boolean term = path.contains("term");
         // If it's the homepage go to the "All Uploads" gallery (/Gxxxxx -> /GMxxxxx)
         if (!notHome) {
             StringBuilder newPath = new StringBuilder(path);
