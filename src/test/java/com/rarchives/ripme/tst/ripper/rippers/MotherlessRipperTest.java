@@ -13,4 +13,8 @@ public class MotherlessRipperTest extends RippersTest {
         MotherlessRipper ripper = new MotherlessRipper(new URL("https://motherless.com/G1168D90"));
         testRipper(ripper);
     }
+    public void testMotherlessTagSearch() throws IOException {
+        MotherlessRipper ripper = new MotherlessRipper(new URL("https://motherless.com/term/images/cherubesque"));
+        testRipper(ripper);
+    }
 }
