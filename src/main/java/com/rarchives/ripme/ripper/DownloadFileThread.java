@@ -84,7 +84,7 @@ class DownloadFileThread extends Thread {
                 logger.info("[!] " + Utils.getLocalizedString("deleting.existing.file") + prettySaveAs);
                 saveAs.delete();
             } else {
-                logger.info("[!] " + Utils.getLocalizedString("skipping") + url + " -- "
+                logger.info("[!] " + Utils.getLocalizedString("skipping") + " " + url + " -- "
                         + Utils.getLocalizedString("file.already.exists") + ": " + prettySaveAs);
                 observer.downloadExists(url, saveAs);
                 return;
