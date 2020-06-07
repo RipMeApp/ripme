@@ -1,6 +1,5 @@
 package com.rarchives.ripme.tst.ripper.rippers;
 
-import com.rarchives.ripme.ripper.rippers.GfycatRipper;
 import com.rarchives.ripme.ripper.rippers.RedgifsRipper;
 import org.jsoup.nodes.Document;
 import org.junit.jupiter.api.*;
@@ -16,10 +15,19 @@ public class RedgifsRipperTest extends RippersTest {
      */
     @Test
     public void testRedgifsGoodURL() throws IOException{
-        RedgifsRipper ripper = new RedgifsRipper(new URL("https://redgifs.com/watch/blaringbonyfulmar-panty-peel"));
+        RedgifsRipper ripper = new RedgifsRipper(new URL("https://www.redgifs.com/watch/talkativewarpeddragon-petite"));
         testRipper(ripper);
     }
 
+    /**
+     * Rips gifdeliverynetwork URL's by redirecting them to proper redgifs url
+     * @throws IOException
+     */
+    @Test
+    public void testRedgifsBadRL() throws IOException{
+        RedgifsRipper ripper = new RedgifsRipper(new URL("https://www.gifdeliverynetwork.com/foolishelasticchimpanzee"));
+        testRipper(ripper);
+    }
 
     /**
      * Rips a Redifs profile
@@ -41,8 +49,8 @@ public class RedgifsRipperTest extends RippersTest {
         Document doc = ripper.getFirstPage();
 
         doc = ripper.getNextPage(doc);
-        assertTrue("https://api.redgifs.com/v1/gfycats/search?search_text=little%20caprice&count=150&start=150".equalsIgnoreCase(doc.location()));
+        assertTrue("https://napi.redgifs.com/v1/gfycats/search?search_text=little%20caprice&count=150&start=150".equalsIgnoreCase(doc.location()));
         doc = ripper.getNextPage(doc);
-        assertTrue("https://api.redgifs.com/v1/gfycats/search?search_text=little%20caprice&count=150&start=300".equalsIgnoreCase(doc.location()));
+        assertTrue("https://napi.redgifs.com/v1/gfycats/search?search_text=little%20caprice&count=150&start=300".equalsIgnoreCase(doc.location()));
     }
 }

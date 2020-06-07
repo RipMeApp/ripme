@@ -19,6 +19,7 @@ import java.util.regex.Pattern;
 public class RedgifsRipper extends AbstractHTMLRipper {
 
     private static final String HOST = "redgifs.com";
+    private static final String HOST_2 = "gifdeliverynetwork.com";
     String username = "";
     String cursor = "";
     String count = "100";
@@ -41,7 +42,7 @@ public class RedgifsRipper extends AbstractHTMLRipper {
 
     @Override
     public boolean canRip(URL url) {
-        return url.getHost().endsWith(HOST);
+        return url.getHost().endsWith(HOST) || url.getHost().endsWith(HOST_2);
     }
 
     @Override
@@ -49,6 +50,7 @@ public class RedgifsRipper extends AbstractHTMLRipper {
         String sUrl = url.toExternalForm();
         sUrl = sUrl.replace("/gifs/detail", "");
         sUrl = sUrl.replace("/amp", "");
+        sUrl = sUrl.replace("gifdeliverynetwork.com", "redgifs.com/watch");
         return new URL(sUrl);
     }
 
@@ -74,10 +76,10 @@ public class RedgifsRipper extends AbstractHTMLRipper {
         } else if (isSearch().matches()) {
             searchText = getGID(url).replace("-", " ");
             return Http.url(
-                    new URL("https://api.redgifs.com/v1/gfycats/search?search_text=" + searchText + "&count=" + searchCount + "&start=" + searchStart*searchCount)).ignoreContentType().get();
+                    new URL("https://napi.redgifs.com/v1/gfycats/search?search_text=" + searchText + "&count=" + searchCount + "&start=" + searchStart*searchCount)).ignoreContentType().get();
         } else {
             username = getGID(url);
-            return Http.url(new URL("https://api.redgifs.com/v1/users/" +  username + "/gfycats?count=" + count))
+            return Http.url(new URL("https://napi.redgifs.com/v1/users/" +  username + "/gfycats?count=" + count))
                        .ignoreContentType().get();
         }
     }
@@ -122,16 +124,18 @@ public class RedgifsRipper extends AbstractHTMLRipper {
 
     @Override
     public Document getNextPage(Document doc) throws IOException {
-        if (!isProfile().matches()) {
-            return Http.url(
-                    new URL("https://api.redgifs.com/v1/gfycats/search?search_text=" + searchText
+        if (isSearch().matches()) {
+            Document d = Http.url(
+                    new URL("https://napi.redgifs.com/v1/gfycats/search?search_text=" + searchText
                                     + "&count=" + searchCount + "&start=" + searchCount*++searchStart))
                        .ignoreContentType().get();
+            return (hasURLs(d).isEmpty()) ? null : d;
         } else {
             if (cursor.equals("")) {
-                throw new IOException("No more pages");
+                return null;
             } else {
-                return Http.url(new URL("https://api.redgifs.com/v1/users/" +  username + "/gfycats?count=" + count + "&cursor=" + cursor)).ignoreContentType().get();
+                Document d =  Http.url(new URL("https://napi.redgifs.com/v1/users/" +  username + "/gfycats?count=" + count + "&cursor=" + cursor)).ignoreContentType().get();
+                return (hasURLs(d).isEmpty()) ? null : d;
             }
         }
     }
@@ -140,12 +144,7 @@ public class RedgifsRipper extends AbstractHTMLRipper {
     public List<String> getURLsFromPage(Document doc) {
         List<String> result = new ArrayList<>();
         if (isProfile().matches() || isSearch().matches()) {
-            JSONObject page = new JSONObject(stripHTMLTags(doc.html()));
-            JSONArray content = page.getJSONArray("gfycats");
-            for (int i = 0; i < content.length(); i++) {
-                result.add(content.getJSONObject(i).getString("mp4Url"));
-            }
-            cursor = page.getString("cursor");
+            result = hasURLs(doc);
         } else {
             Elements videos = doc.select("script");
             for (Element el : videos) {
@@ -156,6 +155,22 @@ public class RedgifsRipper extends AbstractHTMLRipper {
                 }
             }
         }
+        return result;
+    }
+
+    /**
+     * Helper method for retrieving URLs.
+     * @param doc Document of the URL page to look through
+     * @return List of URLs to download
+     */
+    public List<String> hasURLs(Document doc) {
+        List<String> result = new ArrayList<>();
+        JSONObject page = new JSONObject(stripHTMLTags(doc.html()));
+        JSONArray content = page.getJSONArray("gfycats");
+        for (int i = 0; i < content.length(); i++) {
+            result.add(content.getJSONObject(i).getString("mp4Url"));
+        }
+        cursor = page.getString("cursor");
         return result;
     }
 
