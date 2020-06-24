@@ -61,19 +61,6 @@ public class NsfwAlbumRipper extends AbstractHTMLRipper
         return Http.url(url).get();
     }
 
-    //TODO most likely broken.
-    @Override
-    public String normalizeUrl(String url)
-    {
-        Pattern p = Pattern.compile("https:[\\/]{2,}nsfwalbum.com[\\/]{1,}album[\\/]{1,}\\d+");
-        Matcher m = p.matcher(url);
-
-        if (m.matches())
-            return m.group(1).replaceAll("\\", "/").trim();
-        else
-            return url;
-    }
-
     @Override
     public List<String> getURLsFromPage(Document doc) 
     {
