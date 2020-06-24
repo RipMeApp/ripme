@@ -82,7 +82,7 @@ public class Http {
                 String domain = String.join(".", parts);
                 // Try to get cookies for this host from config
                 cookieStr = Utils.getConfigString("cookies." + domain, "");
-                if (cookieStr.equals("")) {
+                if (!cookieStr.equals("")) {
                     cookieDomain = domain; 
                     // we found something, start parsing
                     break;
