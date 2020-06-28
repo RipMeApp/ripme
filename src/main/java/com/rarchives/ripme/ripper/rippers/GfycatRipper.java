@@ -81,10 +81,10 @@ public class GfycatRipper extends AbstractHTMLRipper {
     public String getGID(URL url) throws MalformedURLException {
         Pattern p = Pattern.compile("^https?://(thumbs\\.|[wm\\.]*)gfycat\\.com/@?([a-zA-Z0-9]+).*$");
         Matcher m = p.matcher(url.toExternalForm());
-        
+
         if (m.matches())
             return m.group(2);
-        
+
         throw new MalformedURLException(
                 "Expected gfycat.com format: "
                         + "gfycat.com/id or "
@@ -155,6 +155,12 @@ public class GfycatRipper extends AbstractHTMLRipper {
                 return page.getJSONObject("video").getString("contentUrl");
             }
         }
-        throw new IOException();
+        // Check for gifdeliverynetwork/redgifs videos
+        videos = doc.select("source#mp4Source");
+        String vidUrl = videos.first().attr("src");
+        if (vidUrl.startsWith("//")) {
+            vidUrl = "https:" + vidUrl;
+        }
+        return vidUrl;
     }
 }

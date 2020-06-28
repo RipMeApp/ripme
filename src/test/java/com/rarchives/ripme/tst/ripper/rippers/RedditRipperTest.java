@@ -35,7 +35,7 @@ public class RedditRipperTest extends RippersTest {
 
     /**
      * GFYCAT TEST Tests a good GfycatURL (no "/gifs/detail")
-     * 
+     *
      * @throws IOException
      */
     @Test
@@ -47,13 +47,25 @@ public class RedditRipperTest extends RippersTest {
 
     /**
      * GFYCAT TEST Tests a Bad URL with the "/gifs/detail" inside.
-     * 
+     *
      * @throws IOException
      */
     @Test
     public void testRedditGfyBadURL() throws IOException {
         RedditRipper ripper = new RedditRipper(
                 new URL("https://www.reddit.com/r/bottesting/comments/7msmhi/bad_link/"));
+        testRipper(ripper);
+    }
+
+    /**
+     * GFYCAT TEST Tests a gfycat URL with the gifdeliverynetwork/redgifs hosted video
+     *
+     * @throws IOException
+     */
+    @Test
+    public void testRedditGfycatRedirectURL() throws IOException {
+        RedditRipper ripper = new RedditRipper(
+                new URL("https://www.reddit.com/r/NSFW_GIF/comments/ennwsa/gorgeous_tits/"));
         testRipper(ripper);
     }
 }
