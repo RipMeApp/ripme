@@ -60,7 +60,7 @@ public class ArtStationRipper extends AbstractJSONRipper {
             // URL points to user portfolio, use user's full name as GID
             String userInfoURL = "https://www.artstation.com/users/" + albumURL.getID() + "/quick.json";
             try {
-                // groupData = Http.url(userInfoURL).getJSON();
+//                 groupData = Http.url(userInfoURL).getJSON();
                 groupData = getJson(userInfoURL);
             } catch (IOException e) {
                 throw new MalformedURLException("Couldn't load JSON from " + userInfoURL);
@@ -254,7 +254,7 @@ public class ArtStationRipper extends AbstractJSONRipper {
             con.userAgent("Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:67.0) Gecko/20100101 Firefox/67.0");
             con.header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
             con.header("Accept-Language", "en-US,en;q=0.5");
-            con.header("Accept-Encoding", "gzip, deflate, br");
+//            con.header("Accept-Encoding", "gzip, deflate, br");
             con.header("Upgrade-Insecure-Requests", "1");
             Response res = con.execute();
             int status = res.statusCode();
@@ -309,7 +309,7 @@ public class ArtStationRipper extends AbstractJSONRipper {
                 "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.95 Safari/537.11");
         con.header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
         con.header("Accept-Language", "en-US,en;q=0.5");
-        con.header("Accept-Encoding", "gzip, deflate, br");
+//        con.header("Accept-Encoding", "gzip, deflate, br");
         con.header("Upgrade-Insecure-Requests", "1");
         Response res = con.execute();
         int status = res.statusCode();

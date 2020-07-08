@@ -38,7 +38,7 @@ public class ImagefapRipper extends AbstractHTMLRipper {
     @Override
     public URL sanitizeURL(URL url) throws MalformedURLException {
         String gid = getGID(url);
-        String newURL = "http://www.imagefap.com/gallery.php?";
+        String newURL = "https://www.imagefap.com/gallery.php?";
         if (isNewAlbumType) {
             newURL += "p";
         }
@@ -107,7 +107,7 @@ public class ImagefapRipper extends AbstractHTMLRipper {
         String nextURL = null;
         for (Element a : doc.select("a.link3")) {
             if (a.text().contains("next")) {
-                nextURL = "http://imagefap.com/gallery.php" + a.attr("href");
+                nextURL = "https://imagefap.com/gallery.php" + a.attr("href");
                 break;
             }
         }
