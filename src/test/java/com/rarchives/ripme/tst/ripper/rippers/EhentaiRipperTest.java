@@ -22,9 +22,9 @@ public class EhentaiRipperTest extends RippersTest {
         EHentaiRipper ripper = new EHentaiRipper(url);
         List<String> tagsOnPage = ripper.getTags(ripper.getFirstPage());
         // Test multiple blacklisted tags
-        String[] tags = {"test", "one", "yuri"};
+        String[] tags = {"test", "one", "yuri | lesbians"};
         String blacklistedTag = RipUtils.checkTags(tags, tagsOnPage);
-        assertEquals("yuri", blacklistedTag);
+        assertEquals("yuri | lesbians", blacklistedTag);
 
         // test tags with spaces in them
         String[] tags2 = {"test", "one", "midnight on mars"};

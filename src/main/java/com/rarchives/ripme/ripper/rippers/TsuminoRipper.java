@@ -15,9 +15,7 @@ import com.rarchives.ripme.ui.RipStatusMessage;
 import com.rarchives.ripme.utils.RipUtils;
 import com.rarchives.ripme.utils.Utils;
 import org.json.JSONArray;
-import org.json.JSONObject;
 import org.jsoup.Connection;
-import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
 
@@ -42,22 +40,27 @@ public class TsuminoRipper extends AbstractHTMLRipper {
         return tags;
     }
 
-    private JSONArray getPageUrls() {
-        String postURL = "http://www.tsumino.com/Read/Load";
+    private ArrayList<String> getPageUrls(int numPages) {
+        // Get the api access token from the index page
+        ArrayList<String> urlsToReturn = new ArrayList<String>();
+
         try {
-            // This sessionId will expire and need to be replaced
+            LOGGER.debug("Getting index");
             cookies.put("ASP.NET_SessionId","c4rbzccf0dvy3e0cloolmlkq");
-            Document doc = Jsoup.connect(postURL).data("q", getAlbumID()).userAgent(USER_AGENT).cookies(cookies).referrer("http://www.tsumino.com/Read/View/" + getAlbumID()).get();
-            String jsonInfo = doc.html().replaceAll("<html>","").replaceAll("<head></head>", "").replaceAll("<body>", "").replaceAll("</body>", "")
-                    .replaceAll("</html>", "").replaceAll("\n", "");
-            JSONObject json = new JSONObject(jsonInfo);
-            return json.getJSONArray("reader_page_urls");
+//   IMPORTANT NOTE: If you request "https://www.tsumino.com/Read/Index/" + getAlbumID() the server was temp ban you! Always request /Read/Index/ID?page=1 like the web ui does
+            Document page = Http.url(new URL("https://www.tsumino.com/Read/Index/" + getAlbumID() + "?page=1")).referrer("https://www.tsumino.com/Read/Index/" + getAlbumID()).cookies(cookies).get();
+            LOGGER.info(page);
+            String endPoint = page.select("div#image-container").attr("data-cdn");
+            for (int i = 1; i <= numPages; i++) {
+                urlsToReturn.add(endPoint.replaceAll("\\[PAGE\\]", String.valueOf(i)));
+            }
         } catch (IOException e) {
             LOGGER.info(e);
             sendUpdate(RipStatusMessage.STATUS.DOWNLOAD_ERRORED, "Unable to download album, please compete the captcha at http://www.tsumino.com/Read/Auth/"
                     + getAlbumID() + " and try again");
             return null;
         }
+        return urlsToReturn;
     }
 
     @Override
@@ -82,13 +85,23 @@ public class TsuminoRipper extends AbstractHTMLRipper {
         if (m.matches()) {
             return m.group(1);
         }
+        p = Pattern.compile("https?://www.tsumino.com/entry/([0-9]+)/?");
+        m = p.matcher(url.toExternalForm());
+        if (m.matches()) {
+            return m.group(1);
+        }
         throw new MalformedURLException("Expected tsumino URL format: " +
-                "tsumino.com/Book/Info/ID/TITLE - got " + url + " instead");
+                "tsumino.com/entry/ID - got " + url + " instead");
     }
 
     private String getAlbumID() {
         Pattern p = Pattern.compile("https?://www.tsumino.com/Book/Info/([0-9]+)/\\S*");
         Matcher m = p.matcher(url.toExternalForm());
+        if (m.matches()) {
+            return m.group(1);
+        }
+        p = Pattern.compile("https?://www.tsumino.com/entry/([0-9]+)/?");
+        m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             return m.group(1);
         }
@@ -111,13 +124,8 @@ public class TsuminoRipper extends AbstractHTMLRipper {
 
     @Override
     public List<String> getURLsFromPage(Document doc) {
-        JSONArray imageIds = getPageUrls();
-        List<String> result = new ArrayList<>();
-        for (int i = 0; i < imageIds.length(); i++) {
-            result.add("http://www.tsumino.com/Image/Object?name=" + URLEncoder.encode(imageIds.getString(i)));
-        }
 
-        return result;
+        return getPageUrls(Integer.parseInt(doc.select("div#Pages").text()));
     }
 
     @Override
