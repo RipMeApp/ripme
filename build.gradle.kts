@@ -65,3 +65,10 @@ tasks.test {
     includeEngines("junit-vintage")
   }
 }
+
+// make all archive tasks in the build reproducible
+tasks.withType<AbstractArchiveTask>().configureEach {
+  isPreserveFileTimestamps = false
+  isReproducibleFileOrder = true
+}
+
