@@ -1,4 +1,5 @@
 plugins {
+  id("jacoco")
   id("java")
   id("maven-publish")
 }
@@ -64,11 +65,21 @@ tasks.test {
     includeEngines("junit-jupiter")
     includeEngines("junit-vintage")
   }
+  finalizedBy(tasks.jacocoTestReport) // report is always generated after tests run
 }
 
 // make all archive tasks in the build reproducible
 tasks.withType<AbstractArchiveTask>().configureEach {
   isPreserveFileTimestamps = false
   isReproducibleFileOrder = true
+}
+
+tasks.jacocoTestReport {
+  dependsOn(tasks.test) // tests are required to run before generating the report
+  reports {
+    xml.isEnabled = false
+    csv.isEnabled = false
+    html.destination = file("${buildDir}/jacocoHtml")
+  }
 }
 
