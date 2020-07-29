@@ -127,11 +127,6 @@ public class RippersTest {
     }
 
     @Deprecated
-    void assertEquals(String expected, String actual) {
-        Assertions.assertEquals(expected, actual);
-    }
-
-    @Deprecated
     void fail(String message) {
         Assertions.fail(message);
     }
