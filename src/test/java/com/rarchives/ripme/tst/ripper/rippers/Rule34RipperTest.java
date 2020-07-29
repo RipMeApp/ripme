@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.URL;
 
 import com.rarchives.ripme.ripper.rippers.Rule34Ripper;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 public class Rule34RipperTest extends RippersTest {
@@ -13,10 +14,11 @@ public class Rule34RipperTest extends RippersTest {
         testRipper(ripper);
     }
 
+    @Test
     public void testGetGID() throws IOException {
         URL url = new URL("https://rule34.xxx/index.php?page=post&s=list&tags=bimbo");
         Rule34Ripper ripper = new Rule34Ripper(url);
-        assertEquals("bimbo", ripper.getGID(url));
+        Assertions.assertEquals("bimbo", ripper.getGID(url));
     }
 
 }

@@ -8,6 +8,7 @@ import java.util.List;
 import com.rarchives.ripme.ripper.rippers.DeviantartRipper;
 import com.rarchives.ripme.utils.Http;
 import org.jsoup.nodes.Document;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -32,7 +33,7 @@ public class DeviantartRipperTest extends RippersTest {
     public void testGetGID() throws IOException {
         URL url = new URL("https://www.deviantart.com/airgee/gallery/");
         DeviantartRipper ripper = new DeviantartRipper(url);
-        assertEquals("airgee", ripper.getGID(url));
+        Assertions.assertEquals("airgee", ripper.getGID(url));
     }
 
     @Test
@@ -55,7 +56,7 @@ public class DeviantartRipperTest extends RippersTest {
 
         for (URL url : urls) {
             DeviantartRipper ripper = new DeviantartRipper(url);
-            assertEquals("https://www.deviantart.com/airgee/gallery/", ripper.sanitizeURL(url).toExternalForm());
+            Assertions.assertEquals("https://www.deviantart.com/airgee/gallery/", ripper.sanitizeURL(url).toExternalForm());
         }
     }
 }
