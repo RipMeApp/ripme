@@ -15,19 +15,6 @@ import org.junit.jupiter.api.Test;
 
 public class ChanRipperTest extends RippersTest {
     @Test
-    public void testChanURLFailures() throws IOException {
-        List<URL> failURLs = new ArrayList<>();
-        // URLs that should not work
-        for (URL url : failURLs) {
-            try {
-                new ChanRipper(url);
-                Assertions.fail("Instantiated ripper for URL that should not work: " + url);
-            } catch (Exception e) {
-                // Expected
-            }
-        }
-    }
-    @Test
     public void testChanURLPasses() throws IOException {
         List<URL> passURLs = new ArrayList<>();
         // URLs that should work
