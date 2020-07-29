@@ -5,6 +5,7 @@ import java.net.URL;
 
 import com.rarchives.ripme.ripper.rippers.ShesFreakyRipper;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -21,6 +22,6 @@ public class ShesFreakyRipperTest extends RippersTest {
     public void testGetGID() throws IOException {
         URL url = new URL("http://www.shesfreaky.com/gallery/nicee-snow-bunny-579NbPjUcYa.html");
         ShesFreakyRipper ripper = new ShesFreakyRipper(url);
-        assertEquals("nicee-snow-bunny-579NbPjUcYa", ripper.getGID(url));
+        Assertions.assertEquals("nicee-snow-bunny-579NbPjUcYa", ripper.getGID(url));
     }
 }

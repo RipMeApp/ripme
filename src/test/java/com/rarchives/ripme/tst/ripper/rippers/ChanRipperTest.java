@@ -1,6 +1,5 @@
 package com.rarchives.ripme.tst.ripper.rippers;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -11,6 +10,7 @@ import com.rarchives.ripme.ripper.rippers.ChanRipper;
 import com.rarchives.ripme.ripper.rippers.ripperhelpers.ChanSite;
 import com.rarchives.ripme.utils.Http;
 import org.jsoup.nodes.Document;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 public class ChanRipperTest extends RippersTest {
@@ -21,7 +21,7 @@ public class ChanRipperTest extends RippersTest {
         for (URL url : failURLs) {
             try {
                 new ChanRipper(url);
-                fail("Instantiated ripper for URL that should not work: " + url);
+                Assertions.fail("Instantiated ripper for URL that should not work: " + url);
             } catch (Exception e) {
                 // Expected
             }
@@ -40,7 +40,7 @@ public class ChanRipperTest extends RippersTest {
             ChanRipper ripper = new ChanRipper(url);
             ripper.setup();
             assert (ripper.canRip(url));
-            assertNotNull("Ripper for " + url + " did not have a valid working directory.", ripper.getWorkingDir());
+            Assertions.assertNotNull(ripper.getWorkingDir(), "Ripper for " + url + " did not have a valid working directory.");
             deleteDir(ripper.getWorkingDir());
         }
     }
@@ -54,11 +54,11 @@ public class ChanRipperTest extends RippersTest {
         ChanRipper ripper = new ChanRipper(new URL("http://desuchan.net/v/res/7034.html"));
         List<ChanSite> chansFromConfig = ripper
                 .getChansFromConfig("site1.com[cnd1.site1.com|cdn2.site2.biz],site2.co.uk[cdn.site2.co.uk]");
-        assertEquals(chansFromConfig.get(0).getDomains(), site1);
-        assertEquals(chansFromConfig.get(0).getCdns(), site1Cdns);
+        Assertions.assertEquals(chansFromConfig.get(0).getDomains(), site1);
+        Assertions.assertEquals(chansFromConfig.get(0).getCdns(), site1Cdns);
 
-        assertEquals(chansFromConfig.get(1).getDomains(), site2);
-        assertEquals(chansFromConfig.get(1).getCdns(), site2Cdns);
+        Assertions.assertEquals(chansFromConfig.get(1).getDomains(), site2);
+        Assertions.assertEquals(chansFromConfig.get(1).getCdns(), site2Cdns);
     }
     @Test
     public void testChanRipper() throws IOException {

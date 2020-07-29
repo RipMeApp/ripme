@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.URL;
 
 import com.rarchives.ripme.ripper.rippers.YuvutuRipper;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 public class YuvutuRipperTest extends RippersTest {
@@ -21,6 +22,6 @@ public class YuvutuRipperTest extends RippersTest {
     public void testGetGID() throws IOException {
         URL url = new URL("http://www.yuvutu.com/modules.php?name=YuGallery&action=view&set_id=420333");
         YuvutuRipper ripper = new YuvutuRipper(url);
-        assertEquals("420333", ripper.getGID(url));
+        Assertions.assertEquals("420333", ripper.getGID(url));
     }
 }

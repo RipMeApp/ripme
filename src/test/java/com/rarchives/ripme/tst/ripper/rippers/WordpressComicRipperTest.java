@@ -5,6 +5,7 @@ import java.net.URL;
 
 import com.rarchives.ripme.ripper.rippers.WordpressComicRipper;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -66,7 +67,7 @@ public class WordpressComicRipperTest extends RippersTest {
     public void test_konradokonski_getAlbumTitle() throws IOException {
         URL url = new URL("http://www.konradokonski.com/sawdust/comic/get-up/");
         WordpressComicRipper ripper = new WordpressComicRipper(url);
-        assertEquals("konradokonski.com_sawdust", ripper.getAlbumTitle(url));
+        Assertions.assertEquals("konradokonski.com_sawdust", ripper.getAlbumTitle(url));
 
     }
 
@@ -93,7 +94,7 @@ public class WordpressComicRipperTest extends RippersTest {
     public void test_Eightmuses_getAlbumTitle() throws IOException {
         URL url = new URL("https://8muses.download/lustomic-playkittens-josh-samuel-porn-comics-8-muses/");
         WordpressComicRipper ripper = new WordpressComicRipper(url);
-        assertEquals("8muses.download_lustomic-playkittens-josh-samuel-porn-comics-8-muses", ripper.getAlbumTitle(url));
+        Assertions.assertEquals("8muses.download_lustomic-playkittens-josh-samuel-porn-comics-8-muses", ripper.getAlbumTitle(url));
     }
     @Test
     public void test_spyingwithlana_download() throws IOException {
@@ -105,7 +106,7 @@ public class WordpressComicRipperTest extends RippersTest {
     public void test_spyingwithlana_getAlbumTitle() throws IOException {
         URL url = new URL("http://spyingwithlana.com/comic/the-big-hookup/");
         WordpressComicRipper ripper = new WordpressComicRipper(url);
-        assertEquals("spyingwithlana_the-big-hookup", ripper.getAlbumTitle(url));
+        Assertions.assertEquals("spyingwithlana_the-big-hookup", ripper.getAlbumTitle(url));
     }
 
     @Test

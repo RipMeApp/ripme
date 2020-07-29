@@ -5,6 +5,7 @@ import java.net.URL;
 
 import com.rarchives.ripme.ripper.rippers.XhamsterRipper;
 import org.jsoup.nodes.Document;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 
@@ -48,7 +49,7 @@ public class XhamsterRipperTest extends RippersTest {
     public void testGetGID() throws IOException {
         URL url = new URL("https://xhamster.com/photos/gallery/japanese-dolls-4-asahi-mizuno-7254664");
         XhamsterRipper ripper = new XhamsterRipper(url);
-        assertEquals("7254664", ripper.getGID(url));
+        Assertions.assertEquals("7254664", ripper.getGID(url));
     }
     @Test
     public void testGetNextPage() throws IOException {

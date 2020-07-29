@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.URL;
 
 import com.rarchives.ripme.ripper.rippers.VidbleRipper;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 public class VidbleRipperTest extends RippersTest {
@@ -13,10 +14,11 @@ public class VidbleRipperTest extends RippersTest {
         testRipper(ripper);
     }
 
+    @Test
     public void testGetGID() throws IOException {
         URL url = new URL("http://www.vidble.com/album/y1oyh3zd");
         VidbleRipper ripper = new VidbleRipper(url);
-        assertEquals("y1oyh3zd", ripper.getGID(url));
+        Assertions.assertEquals("y1oyh3zd", ripper.getGID(url));
     }
 }
 
