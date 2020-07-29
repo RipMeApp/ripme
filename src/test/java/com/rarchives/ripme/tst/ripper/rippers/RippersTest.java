@@ -22,7 +22,7 @@ public class RippersTest {
     private final Logger logger = Logger.getLogger(RippersTest.class);
 
     public void testStub() {
-        assertTrue("RippersTest must contain at lease one test.", true);
+        Assertions.assertTrue(true, "RippersTest must contain at lease one test.");
     }
 
     void testRipper(AbstractRipper ripper) {
@@ -36,18 +36,18 @@ public class RippersTest {
             ripper.setup();
             ripper.markAsTest();
             ripper.rip();
-            assertTrue("Failed to download a single file from " + ripper.getURL(),
-                    ripper.getWorkingDir().listFiles().length >= 1);
+            Assertions.assertTrue(ripper.getWorkingDir().listFiles().length >= 1,
+                    "Failed to download a single file from " + ripper.getURL());
         } catch (IOException e) {
             if (e.getMessage().contains("Ripping interrupted")) {
                 // We expect some rips to get interrupted
             } else {
                 e.printStackTrace();
-                fail("Failed to rip " + ripper.getURL() + " : " + e.getMessage());
+                Assertions.fail("Failed to rip " + ripper.getURL() + " : " + e.getMessage());
             }
         } catch (Exception e) {
             e.printStackTrace();
-            fail("Failed to rip " + ripper.getURL() + " : " + e.getMessage());
+            Assertions.fail("Failed to rip " + ripper.getURL() + " : " + e.getMessage());
         } finally {
             deleteDir(ripper.getWorkingDir());
         }
@@ -69,17 +69,17 @@ public class RippersTest {
             ripper.setup();
             ripper.markAsTest();
             List<String> foundUrls = ripper.getURLsFromPage(ripper.getFirstPage());
-            assertTrue("Failed to find single url on page " + ripper.getURL(), foundUrls.size() >= 1);
+            Assertions.assertTrue(foundUrls.size() >= 1, "Failed to find single url on page " + ripper.getURL());
         } catch (IOException e) {
             if (e.getMessage().contains("Ripping interrupted")) {
                 // We expect some rips to get interrupted
             } else {
                 e.printStackTrace();
-                fail("Failed to rip " + ripper.getURL() + " : " + e.getMessage());
+                Assertions.fail("Failed to rip " + ripper.getURL() + " : " + e.getMessage());
             }
         } catch (Exception e) {
             e.printStackTrace();
-            fail("Failed to rip " + ripper.getURL() + " : " + e.getMessage());
+            Assertions.fail("Failed to rip " + ripper.getURL() + " : " + e.getMessage());
         } finally {
             deleteDir(ripper.getWorkingDir());
         }
@@ -124,21 +124,6 @@ public class RippersTest {
                 f.delete();
             }
         }
-    }
-
-    @Deprecated
-    void fail(String message) {
-        Assertions.fail(message);
-    }
-
-    @Deprecated
-    void assertTrue(boolean condition) {
-        Assertions.assertTrue(condition);
-    }
-
-    @Deprecated
-    void assertTrue(String failMessage, boolean condition) {
-        Assertions.assertTrue(condition, failMessage);
     }
 
     @Deprecated

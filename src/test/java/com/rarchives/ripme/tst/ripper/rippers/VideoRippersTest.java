@@ -9,6 +9,7 @@ import com.rarchives.ripme.ripper.VideoRipper;
 import com.rarchives.ripme.ripper.rippers.video.PornhubRipper;
 import com.rarchives.ripme.ripper.rippers.video.YuvutuRipper;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -28,9 +29,9 @@ public class VideoRippersTest extends RippersTest {
             // Video ripper testing is... weird.
             // If the ripper finds the URL to download the video, and it's a test,
             // then the ripper sets the download URL as the ripper's URL.
-            assertFalse("Failed to find download url for " + oldURL, oldURL.equals(ripper.getURL()));
+            Assertions.assertFalse(oldURL.equals(ripper.getURL()), "Failed to find download url for " + oldURL);
         } catch (Exception e) {
-            fail("Error while ripping " + ripper.getURL() + " : " + e);
+            Assertions.fail("Error while ripping " + ripper.getURL() + " : " + e);
             e.printStackTrace();
         } finally {
             deleteDir(ripper.getWorkingDir());
