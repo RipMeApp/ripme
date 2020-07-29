@@ -126,19 +126,4 @@ public class RippersTest {
         }
     }
 
-    @Deprecated
-    void assertFalse(String message, boolean condition) {
-        Assertions.assertFalse(condition, message);
-    }
-
-    @Deprecated
-    void assertNull(Object actual) {
-        Assertions.assertNull(actual);
-    }
-
-    @Deprecated
-    void assertNotNull(String message, Object actual) {
-        Assertions.assertNotNull(actual, message);
-    }
-
 }
