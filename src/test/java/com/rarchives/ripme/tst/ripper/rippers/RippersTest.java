@@ -21,10 +21,6 @@ public class RippersTest {
 
     private final Logger logger = Logger.getLogger(RippersTest.class);
 
-    public void testStub() {
-        Assertions.assertTrue(true, "RippersTest must contain at lease one test.");
-    }
-
     void testRipper(AbstractRipper ripper) {
         try {
             // Turn on Debug logging
