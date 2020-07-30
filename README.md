@@ -88,10 +88,13 @@ This will include all dependencies in the JAR.
 
 # Running Tests
 
-After building you can run tests by running the following:
+Tests can be marked as beeing slow or not. Default is to run all tests. Slow tests can be excluded to run, and slow
+tests can be run on its own. After building you can run tests, quoting might be necessary depending on your shell:
 
 ```bash
 mvn test
+mvn test -Dgroups=slow
+mvn test '-Dgroups=!slow'
 ```
 
 Please note that some tests may fail as sites change and our rippers become out of date.
