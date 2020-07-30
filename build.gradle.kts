@@ -62,10 +62,18 @@ tasks.withType<JavaCompile> {
 
 tasks.test {
   useJUnitPlatform {
+    // gradle-6.5.1 not yet allows passing this as parameter, so exclude it
+    excludeTags("slow")
     includeEngines("junit-jupiter")
     includeEngines("junit-vintage")
   }
   finalizedBy(tasks.jacocoTestReport) // report is always generated after tests run
+}
+
+tasks.register<Test>("slowTests") {
+  useJUnitPlatform {
+    includeTags("slow")
+  }
 }
 
 // make all archive tasks in the build reproducible
