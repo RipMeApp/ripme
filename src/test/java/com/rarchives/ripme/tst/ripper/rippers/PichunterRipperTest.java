@@ -18,6 +18,7 @@ public class PichunterRipperTest extends RippersTest {
     }
 
     @Test
+    @Disabled("This test was commented out at 6/08/2018 because it was randomly failing due to issues with the site see https://github.com/RipMeApp/ripme/issues/867")
     public void testPichunterGalleryRip() throws IOException {
         // a photo set
         PichunterRipper ripper = new PichunterRipper(
