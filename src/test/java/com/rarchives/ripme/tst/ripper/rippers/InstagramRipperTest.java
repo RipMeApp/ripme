@@ -36,7 +36,6 @@ public class InstagramRipperTest extends RippersTest {
     }
 
     @Test
-    @Disabled("Ripper broken for single items")
     public void testInstagramAlbums() throws IOException {
         List<URL> contentURLs = new ArrayList<>();
         // This unit test is a bit flaky 

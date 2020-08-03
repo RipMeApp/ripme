@@ -153,7 +153,7 @@ public class InstagramRipper extends AbstractJSONRipper {
         qHash = getQhash(document);
         JSONObject jsonObject = getJsonObjectFromDoc(document);
         String hashtagNamePath = "entry_data.TagPage[0].graphql.hashtag.name";
-        String singlePostIdPath = "graphql.shortcode_media.shortcode";
+        String singlePostIdPath = "entry_data.PostPage[0].graphql.shortcode_media.shortcode";
         String profileIdPath = "entry_data.ProfilePage[0].graphql.user.id";
         String storiesPath = "entry_data.StoriesPage[0].user.id";
         String idPath = hashtagRip ? hashtagNamePath : storiesRip ? storiesPath : postRip ? singlePostIdPath : profileIdPath;
