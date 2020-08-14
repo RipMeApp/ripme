@@ -196,7 +196,7 @@ public class RedditRipper extends AlbumRipper {
             if (data.getBoolean("is_self")) {
                 // TODO Parse self text
                 handleBody(data.getString("selftext"), data.getString("id"), data.getString("title"));
-            } else if (data.has("is_gallery") && data.getBoolean("is_gallery")) {
+            } else if (!data.isNull("gallery_data") && !data.isNull("media_metadata")) {
                 handleGallery(data.getJSONObject("gallery_data").getJSONArray("items"), data.getJSONObject("media_metadata"), data.getString("id"), data.getString("title"));
             } else {
                 // Get link
