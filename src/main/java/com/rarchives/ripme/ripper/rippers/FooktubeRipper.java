@@ -16,11 +16,11 @@ import org.jsoup.select.Elements;
 import com.rarchives.ripme.ripper.VideoRipper;
 import com.rarchives.ripme.utils.Http;
 
-public class MulemaxRipper extends AbstractSingleFileRipper {
+public class FooktubeRipper extends AbstractSingleFileRipper {
 
     private static final String HOST = "mulemax";
 
-    public MulemaxRipper(URL url) throws IOException {
+    public FooktubeRipper(URL url) throws IOException {
         super(url);
     }
 
@@ -41,7 +41,7 @@ public class MulemaxRipper extends AbstractSingleFileRipper {
 
     @Override
     public boolean canRip(URL url) {
-        Pattern p = Pattern.compile("^https?://.*mulemax\\.com/video/(.*)/.*$");
+        Pattern p = Pattern.compile("^https?://.*fooktube\\.com/video/(.*)/.*$");
         Matcher m = p.matcher(url.toExternalForm());
         return m.matches();
     }
@@ -53,15 +53,15 @@ public class MulemaxRipper extends AbstractSingleFileRipper {
 
     @Override
     public String getGID(URL url) throws MalformedURLException {
-        Pattern p = Pattern.compile("^https?://.*mulemax\\.com/video/(.*)/(.*)$");
+        Pattern p = Pattern.compile("^https?://.*fooktube\\.com/video/(.*)/(.*)$");
         Matcher m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             return m.group(2);
         }
 
         throw new MalformedURLException(
-                "Expected mulemax format:"
-                        + "mulemax.com/video/####"
+                "Expected fooktube format:"
+                        + "fooktube.com/video/####"
                         + " Got: " + url);
     }
 

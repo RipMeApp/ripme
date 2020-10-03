@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.URL;
 
 import com.rarchives.ripme.ripper.rippers.HentaifoundryRipper;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 public class HentaifoundryRipperTest extends RippersTest {
@@ -16,7 +17,7 @@ public class HentaifoundryRipperTest extends RippersTest {
     public void testHentaifoundryGetGID() throws IOException {
         HentaifoundryRipper ripper = new HentaifoundryRipper(new URL("https://www.hentai-foundry.com/stories/user/Rakked"));
         testRipper(ripper);
-        assertEquals("Rakked", ripper.getGID(new URL("https://www.hentai-foundry.com/stories/user/Rakked")));
+        Assertions.assertEquals("Rakked", ripper.getGID(new URL("https://www.hentai-foundry.com/stories/user/Rakked")));
     }
     @Test
     public void testHentaifoundryPdfRip() throws IOException {

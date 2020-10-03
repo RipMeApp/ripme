@@ -1,6 +1,7 @@
 {
-    "currentHash": "e0d946933c0a89da03e9a5a00420a87dd8c2fc23eae01e1a2fb8390eceb9b868",
+    "currentHash": "357639535c112ca857117151321141cb08ad313021079d522c2c5d15ee799998",
     "changeList": [
+        "1.7.93: Fixed Motherless ripper; Fixed e621 ripper; Updated pt_PT translation; Implemented redgifs Ripper; added missing translation to Korean/KR; Fixed elecx ripper; Added ripper for HentaiNexus",
         "1.7.92: Added read-comic.com ripper; Fix Pawoo ripper; Add ChineseSimplified language file; Fixed artstation ripper",
         "1.7.91: Fixed luscious ripper. Fixed VK ripper; Added Kingcomix ripper",
         "1.7.90: Added FitnakedgirlsRipper; Fixed VK Album Ripper; Fixed Myreadingmanga Ripper; Fixed windows max file name; Fixed Pornhub Video Ripper; Fixed Motherless Ripper; Fixed Instagram Ripper",
@@ -264,5 +265,5 @@
         "1.0.3: Added VK.com ripper",
         "1.0.1: Added auto-update functionality"
     ],
-    "latestVersion": "1.7.92"
+    "latestVersion": "1.7.93"
 }
