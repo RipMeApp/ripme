@@ -318,12 +318,22 @@ public abstract class AbstractRipper
             if (App.stringToAppendToFoldername != null) {
                 topFolderName = topFolderName + App.stringToAppendToFoldername;
             }
-            saveFileAs = new File(
-                    topFolderName
-                    + subdirectory
-                    + File.separator
-                    + prefix
-                    + saveAs);
+            saveFileAs = null;
+
+            if (Utils.getConfigBoolean("save_in_one_directory", false)) {
+                saveFileAs = new File(
+                        topFolderName
+                                + prefix
+                                + saveAs);
+            } else {
+                saveFileAs = new File(
+                        topFolderName
+                                + subdirectory
+                                + File.separator
+                                + prefix
+                                + saveAs);
+            }
+
         } catch (IOException e) {
             LOGGER.error("[!] Error creating save file path for URL '" + url + "':", e);
             return false;
