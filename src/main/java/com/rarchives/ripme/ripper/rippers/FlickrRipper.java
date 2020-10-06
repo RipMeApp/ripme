@@ -21,6 +21,25 @@ public class FlickrRipper extends AbstractHTMLRipper {
 
     private Document albumDoc = null;
     private final DownloadThreadPool flickrThreadPool;
+
+    // Map from image URL to photo metadata
+    private Map<String, JSONObject> downloadedPhotoMetadata = new HashMap<String, JSONObject>();
+
+    private enum UrlType {
+        USER,
+        PHOTOSET
+    }
+
+    private class Album {
+        final UrlType type;
+        final String id;
+
+        Album(UrlType type, String id) {
+            this.type = type;
+            this.id = id;
+        }
+    }
+
     @Override
     public DownloadThreadPool getThreadPool() {
         return flickrThreadPool;
@@ -28,6 +47,11 @@ public class FlickrRipper extends AbstractHTMLRipper {
 
     @Override
     public boolean hasASAPRipping() {
+        return true;
+    }
+
+    @Override
+    protected boolean hasDescriptionSupport() {
         return true;
     }
 
@@ -81,41 +105,40 @@ public class FlickrRipper extends AbstractHTMLRipper {
     }
 
     // The flickr api is a monster of weird settings so we just request everything that the webview does
-    private String apiURLBuilder(String photoset, String pageNumber, String apiKey) {
+    private String apiURLBuilder(String photoset, int pageNumber, String apiKey) {
         LOGGER.info("https://api.flickr.com/services/rest?extras=can_addmeta," +
                 "can_comment,can_download,can_share,contact,count_comments,count_faves,count_views,date_taken," +
-                "date_upload,icon_urls_deep,isfavorite,ispro,license,media,needs_interstitial,owner_name," +
+                "date_upload,description,icon_urls_deep,isfavorite,ispro,license,media,needs_interstitial,owner_name," +
                 "owner_datecreate,path_alias,realname,rotation,safety_level,secret_k,secret_h,url_c,url_f,url_h,url_k," +
                 "url_l,url_m,url_n,url_o,url_q,url_s,url_sq,url_t,url_z,visibility,visibility_source,o_dims," +
-                "is_marketplace_printable,is_marketplace_licensable,publiceditability&per_page=100&page="+ pageNumber + "&" +
+                "is_marketplace_printable,is_marketplace_licensable,publiceditability&per_page=100&page="+ String.valueOf(pageNumber) + "&" +
                 "get_user_info=1&primary_photo_extras=url_c,%20url_h,%20url_k,%20url_l,%20url_m,%20url_n,%20url_o" +
                 ",%20url_q,%20url_s,%20url_sq,%20url_t,%20url_z,%20needs_interstitial,%20can_share&jump_to=&" +
                 "photoset_id=" + photoset + "&viewerNSID=&method=flickr.photosets.getPhotos&csrf=&" +
                 "api_key=" + apiKey + "&format=json&hermes=1&hermesClient=1&reqId=358ed6a0&nojsoncallback=1");
         return "https://api.flickr.com/services/rest?extras=can_addmeta," +
                 "can_comment,can_download,can_share,contact,count_comments,count_faves,count_views,date_taken," +
-                "date_upload,icon_urls_deep,isfavorite,ispro,license,media,needs_interstitial,owner_name," +
+                "date_upload,description,icon_urls_deep,isfavorite,ispro,license,media,needs_interstitial,owner_name," +
                 "owner_datecreate,path_alias,realname,rotation,safety_level,secret_k,secret_h,url_c,url_f,url_h,url_k," +
                 "url_l,url_m,url_n,url_o,url_q,url_s,url_sq,url_t,url_z,visibility,visibility_source,o_dims," +
-                "is_marketplace_printable,is_marketplace_licensable,publiceditability&per_page=100&page="+ pageNumber + "&" +
+                "is_marketplace_printable,is_marketplace_licensable,publiceditability&per_page=100&page="+ String.valueOf(pageNumber) + "&" +
                 "get_user_info=1&primary_photo_extras=url_c,%20url_h,%20url_k,%20url_l,%20url_m,%20url_n,%20url_o" +
                 ",%20url_q,%20url_s,%20url_sq,%20url_t,%20url_z,%20needs_interstitial,%20can_share&jump_to=&" +
                 "photoset_id=" + photoset + "&viewerNSID=&method=flickr.photosets.getPhotos&csrf=&" +
                 "api_key=" + apiKey + "&format=json&hermes=1&hermesClient=1&reqId=358ed6a0&nojsoncallback=1";
     }
 
-    private JSONObject getJSON(String page, String apiKey) {
+    private JSONObject getJSON(int pageNumber, String apiKey) {
         URL pageURL = null;
         String apiURL = null;
         try {
-            apiURL = apiURLBuilder(getPhotosetID(url.toExternalForm()), page, apiKey);
+            apiURL = apiURLBuilder(getPhotosetID(url.toExternalForm()), pageNumber, apiKey);
             pageURL = new URL(apiURL);
         }  catch (MalformedURLException e) {
             LOGGER.error("Unable to get api link " + apiURL + " is malformed");
         }
         try {
-            LOGGER.info(Http.url(pageURL).ignoreContentType().get().text());
-            return new JSONObject(Http.url(pageURL).ignoreContentType().get().text());
+            return Http.url(pageURL).getJSON();
         } catch (IOException e) {
             LOGGER.error("Unable to get api link " + apiURL + " is malformed");
             return null;
@@ -209,8 +232,9 @@ public class FlickrRipper extends AbstractHTMLRipper {
         List<String> imageURLs = new ArrayList<>();
         String apiKey = getAPIKey(doc);
         int x = 1;
+        int photoIndex = 0;
         while (true) {
-            JSONObject jsonData = getJSON(String.valueOf(x), apiKey);
+            JSONObject jsonData = getJSON(x, apiKey);
             if (jsonData.has("stat") && jsonData.getString("stat").equals("fail")) {
                 break;
             } else {
@@ -221,11 +245,15 @@ public class FlickrRipper extends AbstractHTMLRipper {
                     LOGGER.info(i);
                     JSONObject data = (JSONObject) pictures.get(i);
                     try {
-                        addURLToDownload(getLargestImageURL(data.getString("id"), apiKey));
+                        URL imageUrl = getLargestImageURL(data.getString("id"), apiKey);
+                        addURLToDownload(imageUrl, getPrefix(photoIndex));
+
+                        downloadedPhotoMetadata.put(imageUrl.toExternalForm(), data);
+
+                        photoIndex++;
                     } catch (MalformedURLException e) {
                         LOGGER.error("Flickr MalformedURLException: " + e.getMessage());
                     }
-
                 }
                 if (x >= totalPages) {
                     // The rips done
@@ -241,6 +269,24 @@ public class FlickrRipper extends AbstractHTMLRipper {
     }
 
     @Override
+    protected List<String> getDescriptionsFromPage(Document doc) {
+        return new ArrayList<String>(downloadedPhotoMetadata.keySet());
+    }
+
+    @Override
+    protected String[] getDescription(String url, Document page) {
+        JSONObject photoMetadata = downloadedPhotoMetadata.get(url);
+
+        if (photoMetadata == null) {
+            return null;
+        }
+
+        String description = photoMetadata.getString("title") + "\n" + photoMetadata.getJSONObject("description").getString("_content");
+
+        return new String[] { description };
+    }
+
+    @Override
     public void downloadURL(URL url, int index) {
         addURLToDownload(url, getPrefix(index));
     }
@@ -250,20 +296,25 @@ public class FlickrRipper extends AbstractHTMLRipper {
 
         try {
             URL imageAPIURL = new URL("https://www.flickr.com/services/rest/?method=flickr.photos.getSizes&api_key=" + apiKey + "&photo_id=" + imageID + "&format=json&nojsoncallback=1");
-            JSONArray imageSizes = new JSONObject(Http.url(imageAPIURL).ignoreContentType().get().text()).getJSONObject("sizes").getJSONArray("size");
+            JSONArray imageSizes = Http.url(imageAPIURL).getJSON().getJSONObject("sizes").getJSONArray("size");
             for (int i = 0; i < imageSizes.length(); i++) {
                 JSONObject imageInfo = imageSizes.getJSONObject(i);
                 imageURLMap.put(imageInfo.getInt("width") * imageInfo.getInt("height"), imageInfo.getString("source"));
             }
-
         } catch (org.json.JSONException e) {
-            LOGGER.error("Error in  parsing of Flickr API: " + e.getMessage());
+            LOGGER.error("Error in parsing of Flickr API: " + e.getMessage());
         } catch (MalformedURLException e) {
             LOGGER.error("Malformed URL returned by API");
         } catch (IOException e) {
             LOGGER.error("IOException while looking at image sizes: " + e.getMessage());
         }
 
-        return new URL(imageURLMap.lastEntry().getValue());
+        Map.Entry<Integer, String> entry = imageURLMap.lastEntry();
+
+        if (entry == null) {
+            return null;
+        }
+
+        return new URL(entry.getValue());
     }
 }
