@@ -1,10 +1,5 @@
 package com.rarchives.ripme.ripper.rippers;
 
-import com.oracle.js.parser.ErrorManager;
-import com.oracle.js.parser.Parser;
-import com.oracle.js.parser.ScriptEnvironment;
-import com.oracle.js.parser.Source;
-import com.oracle.js.parser.ir.*;
 import com.rarchives.ripme.ripper.AbstractJSONRipper;
 import com.rarchives.ripme.utils.Http;
 import com.rarchives.ripme.utils.Utils;
@@ -24,8 +19,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -61,10 +54,10 @@ public class InstagramRipper extends AbstractJSONRipper {
         STORIES("stories/(?<username>[^?/]+)"),
 
         // e.g. https://www.instagram.com/rachelc00k/tagged/
-        USER_TAGGED("(?<username>[^?/]+)/tagged"),
+        USER_TAGGED("(?<username>[^?/]+)/tagged/"),
 
         // e.g. https://www.instagram.com/rachelc00k/channel/
-        IGTV("(?<username>[^?/]+)/channel"),
+        IGTV("(?<username>[^?/]+)/channel/"),
 
         // e.g. https://www.instagram.com/p/Bu4CEfbhNk4/
         SINGLE_POST("(?:p|tv)/(?<shortcode>[^?/]+)"),
@@ -139,8 +132,17 @@ public class InstagramRipper extends AbstractJSONRipper {
     @Override
     public JSONObject getFirstPage() throws IOException {
         setAuthCookie();
-        Document document = Http.url(url).cookies(cookies).response().parse();
-        qHash = getQhash(document);
+        Connection.Response res = Http.url(url)
+                .connection()
+                .followRedirects(false)
+                .cookies(cookies)
+                .execute();
+
+        Document document = res.parse();
+
+        if (qHash == null) {
+            qHash = getQhash();
+        }
         JSONObject jsonObject = getJsonObjectFromDoc(document);
         String hashtagNamePath = "entry_data.TagPage[0].graphql.hashtag.name";
         String singlePostIdPath = "graphql.shortcode_media.shortcode";
@@ -162,49 +164,41 @@ public class InstagramRipper extends AbstractJSONRipper {
     }
 
     // Query hash is used for graphql requests
-    private String getQhash(Document doc) throws IOException {
+    private String getQhash() {
         if (postRip) {
             return null;
         }
 
-        Predicate<String> hrefFilter = href -> href.contains("Consumer.js");
-        if (taggedRip) {
-            hrefFilter = href -> href.contains("ProfilePageContainer.js") || href.contains("TagPageContainer.js");
+        if (storiesRip || pinnedReelRip) {
+            return getStoriesHash();
+        } else if(pinnedRip) {
+            return getPinnedHash();
+        } else if (hashtagRip) {
+            return getTagHash();
+        } else if (taggedRip) {
+            return getUserTagHash();
         }
-
-        String href = doc.select("link[rel=preload]").stream()
-                .map(link -> link.attr("href"))
-                .filter(hrefFilter)
-                .findFirst().orElse("");
-
-        String body = Http.url("https://www.instagram.com" + href).cookies(cookies).response().body();
-
-        Function<String, String> hashExtractor =
-                storiesRip || pinnedReelRip ? this::getStoriesHash :
-                        pinnedRip ? this::getPinnedHash : hashtagRip ? this::getTagHash :
-                                taggedRip ? this::getUserTagHash : this::getProfileHash;
-
-        return hashExtractor.apply(body);
+        return getProfileHash();
     }
 
-    private String getStoriesHash(String jsData) {
-        return getHashValue(jsData, "loadStoryViewers", -5);
+    private String getStoriesHash() {
+        return "";
     }
 
-    private String getProfileHash(String jsData) {
-        return getHashValue(jsData, "loadProfilePageExtras", -1);
+    private String getProfileHash() {
+        return "";
     }
 
-    private String getPinnedHash(String jsData) {
-        return getHashValue(jsData, "loadProfilePageExtras", -2);
+    private String getPinnedHash()  {
+        return "";
     }
 
-    private String getTagHash(String jsData) {
-        return getHashValue(jsData, "requestNextTagMedia", -1);
+    private String getTagHash() {
+        return "";
     }
 
-    private String getUserTagHash(String jsData) {
-        return getHashValue(jsData, "requestNextTaggedPosts", -1);
+    private String getUserTagHash() {
+        return ":wq";
     }
 
     private JSONObject getJsonObjectFromDoc(Document document) {
@@ -252,7 +246,7 @@ public class InstagramRipper extends AbstractJSONRipper {
         JSONArray pinnedItems = getJsonArrayByPath(pinnedIdsJson, "data.user.edge_highlight_reels.edges");
         pinnedRip = false;
         pinnedReelRip = true;
-        qHash = getQhash(document);
+        qHash = getQhash();
         JSONObject queryForDetails = new JSONObject();
         getStreamOfJsonArray(pinnedItems)
                 .map(object -> getJsonStringByPath(object, "node.id"))
@@ -403,46 +397,6 @@ public class InstagramRipper extends AbstractJSONRipper {
             return;
         }
         addURLToDownload(url, itemPrefixes.get(index - 1), "", null, cookies);
-    }
-
-    // Javascript parsing
-    /* ------------------------------------------------------------------------------------------------------- */
-    private String getHashValue(String javaScriptData, String keyword, int offset) {
-        List<Statement> statements = getJsBodyBlock(javaScriptData).getStatements();
-
-        return statements.stream()
-                .flatMap(statement -> filterItems(statement, ExpressionStatement.class))
-                .map(ExpressionStatement::getExpression)
-                .flatMap(expression -> filterItems(expression, CallNode.class))
-                .map(CallNode::getArgs)
-                .map(expressions -> expressions.get(0))
-                .flatMap(expression -> filterItems(expression, FunctionNode.class))
-                .map(FunctionNode::getBody)
-                .map(Block::getStatements)
-                .map(statementList -> lookForHash(statementList, keyword, offset))
-                .filter(Objects::nonNull)
-                .findFirst().orElse(null);
-    }
-
-    private String lookForHash(List<Statement> list, String keyword, int offset) {
-        for (int i = 0; i < list.size(); i++) {
-            Statement st = list.get(i);
-            if (st.toString().contains(keyword)) {
-                return list.get(i + offset).toString().replaceAll(".*\"([0-9a-f]*)\".*", "$1");
-            }
-        }
-        return null;
-    }
-
-    private <T> Stream<T> filterItems(Object obj, Class<T> aClass) {
-        return Stream.of(obj).filter(aClass::isInstance).map(aClass::cast);
-    }
-
-    private Block getJsBodyBlock(String javaScriptData) {
-        ScriptEnvironment env = ScriptEnvironment.builder().ecmaScriptVersion(10).constAsVar(true).build();
-        ErrorManager errorManager = new ErrorManager.ThrowErrorManager();
-        Source src = Source.sourceFor("name", javaScriptData);
-        return new Parser(env, src, errorManager).parse().getBody();
     }
 
     // Some JSON helper methods below
