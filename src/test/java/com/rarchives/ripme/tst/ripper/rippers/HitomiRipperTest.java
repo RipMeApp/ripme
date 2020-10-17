@@ -5,6 +5,10 @@ import java.net.URL;
 
 import com.rarchives.ripme.ripper.rippers.HitomiRipper;
 
+<<<<<<< HEAD
+=======
+import org.junit.jupiter.api.Assertions;
+>>>>>>> upstream/master
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -14,6 +18,10 @@ public class HitomiRipperTest extends RippersTest {
     public void testRip() throws IOException {
         HitomiRipper ripper = new HitomiRipper(new URL("https://hitomi.la/galleries/975973.html"));
         testRipper(ripper);
+<<<<<<< HEAD
         assertTrue(ripper.getGID(new URL("https://hitomi.la/galleries/975973.html")).equals("975973"));
+=======
+        Assertions.assertTrue(ripper.getGID(new URL("https://hitomi.la/galleries/975973.html")).equals("975973"));
+>>>>>>> upstream/master
     }
 }

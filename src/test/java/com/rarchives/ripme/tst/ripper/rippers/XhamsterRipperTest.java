@@ -5,6 +5,11 @@ import java.net.URL;
 
 import com.rarchives.ripme.ripper.rippers.XhamsterRipper;
 import org.jsoup.nodes.Document;
+<<<<<<< HEAD
+=======
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
+>>>>>>> upstream/master
 import org.junit.jupiter.api.Test;
 
 
@@ -35,6 +40,10 @@ public class XhamsterRipperTest extends RippersTest {
         testRipper(ripper);
     }
     @Test
+<<<<<<< HEAD
+=======
+    @Disabled("ripper broken?")
+>>>>>>> upstream/master
     public void testXhamsterVideo() throws IOException {
         XhamsterRipper ripper = new XhamsterRipper(new URL("https://xhamster.com/videos/brazzers-busty-big-booty-milf-lisa-ann-fucks-her-masseur-1492828"));
         testRipper(ripper);
@@ -48,7 +57,11 @@ public class XhamsterRipperTest extends RippersTest {
     public void testGetGID() throws IOException {
         URL url = new URL("https://xhamster.com/photos/gallery/japanese-dolls-4-asahi-mizuno-7254664");
         XhamsterRipper ripper = new XhamsterRipper(url);
+<<<<<<< HEAD
         assertEquals("7254664", ripper.getGID(url));
+=======
+        Assertions.assertEquals("7254664", ripper.getGID(url));
+>>>>>>> upstream/master
     }
     @Test
     public void testGetNextPage() throws IOException {

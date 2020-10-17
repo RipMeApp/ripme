@@ -56,7 +56,11 @@ public class XcartxRipper extends AbstractHTMLRipper {
         for (Element image : imageElements) {
             String imageUrl = image.attr("data-src");
 
+<<<<<<< HEAD
             imageURLs.add(getDomain() + imageUrl);
+=======
+            imageURLs.add("https://" + getDomain() + imageUrl);
+>>>>>>> upstream/master
         }
         return imageURLs;
     }

@@ -7,6 +7,10 @@ import com.rarchives.ripme.ripper.rippers.PornhubRipper;
 import com.rarchives.ripme.utils.Http;
 import com.rarchives.ripme.utils.Utils;
 import org.jsoup.nodes.Document;
+<<<<<<< HEAD
+=======
+import org.junit.jupiter.api.Assertions;
+>>>>>>> upstream/master
 import org.junit.jupiter.api.Test;
 
 public class PornhubRipperTest extends RippersTest {
@@ -21,6 +25,7 @@ public class PornhubRipperTest extends RippersTest {
     public void testGetGID() throws IOException {
         URL url = new URL("https://www.pornhub.com/album/15680522?page=2");
         PornhubRipper ripper = new PornhubRipper(url);
+<<<<<<< HEAD
         assertEquals("15680522", ripper.getGID(url));
         url = new URL("https://www.pornhub.com/album/15680522");
         assertEquals("15680522", ripper.getGID(url));
@@ -42,6 +47,28 @@ public class PornhubRipperTest extends RippersTest {
             fail("Get next page did not throw an exception on the last page");
         } catch(IOException e){
             assertEquals(e.getMessage(), "No more pages");
+=======
+        Assertions.assertEquals("15680522", ripper.getGID(url));
+        url = new URL("https://www.pornhub.com/album/15680522");
+        Assertions.assertEquals("15680522", ripper.getGID(url));
+    }
+
+    @Test
+    public void testGetNextPage() throws IOException {
+        String baseURL = "https://www.pornhub.com/album/43902391";
+        PornhubRipper ripper = new PornhubRipper(new URL(baseURL));
+        Document page = Http.url(baseURL).get();
+        int numPagesRemaining = 1;
+        for (int idx = 0; idx < numPagesRemaining; idx++){
+            page = ripper.getNextPage(page);
+            Assertions.assertEquals(baseURL + "?page=" + (idx + 2), page.location());
+        }
+        try {
+            page = ripper.getNextPage(page);
+            Assertions.fail("Get next page did not throw an exception on the last page");
+        } catch(IOException e){
+            Assertions.assertEquals(e.getMessage(), "No more pages");
+>>>>>>> upstream/master
         }
     }
 }

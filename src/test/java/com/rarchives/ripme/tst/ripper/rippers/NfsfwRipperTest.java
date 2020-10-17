@@ -5,6 +5,10 @@ import java.net.URL;
 
 import com.rarchives.ripme.ripper.rippers.NfsfwRipper;
 
+<<<<<<< HEAD
+=======
+import org.junit.jupiter.api.Assertions;
+>>>>>>> upstream/master
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -21,6 +25,7 @@ public class NfsfwRipperTest extends RippersTest {
     public void testGetGID() throws IOException {
         URL url = new URL("http://nfsfw.com/gallery/v/Kitten/");
         NfsfwRipper ripper = new NfsfwRipper(url);
+<<<<<<< HEAD
         assertEquals("Kitten", ripper.getGID(url));
         url = new URL("http://nfsfw.com/gallery/v/Kitten");
         assertEquals("Kitten", ripper.getGID(url));
@@ -28,5 +33,14 @@ public class NfsfwRipperTest extends RippersTest {
         assertEquals("Kitten__gif_001", ripper.getGID(url));
         url = new URL("http://nfsfw.com/gallery/v/Kitten/gif_001/");
         assertEquals("Kitten__gif_001", ripper.getGID(url));
+=======
+        Assertions.assertEquals("Kitten", ripper.getGID(url));
+        url = new URL("http://nfsfw.com/gallery/v/Kitten");
+        Assertions.assertEquals("Kitten", ripper.getGID(url));
+        url = new URL("http://nfsfw.com/gallery/v/Kitten/gif_001/");
+        Assertions.assertEquals("Kitten__gif_001", ripper.getGID(url));
+        url = new URL("http://nfsfw.com/gallery/v/Kitten/gif_001/");
+        Assertions.assertEquals("Kitten__gif_001", ripper.getGID(url));
+>>>>>>> upstream/master
     }
 }

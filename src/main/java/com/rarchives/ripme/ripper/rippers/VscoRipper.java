@@ -24,7 +24,11 @@ public class VscoRipper extends AbstractHTMLRipper {
 
 
     private static final String DOMAIN = "vsco.co",
+<<<<<<< HEAD
                         HOST   = "vsco";
+=======
+                                HOST   = "vsco";
+>>>>>>> upstream/master
     
     public VscoRipper(URL url) throws IOException{
         super(url);
@@ -101,7 +105,11 @@ public class VscoRipper extends AbstractHTMLRipper {
 
     private String getUserTkn(String username) {
         String userinfoPage = "https://vsco.co/content/Static/userinfo";
+<<<<<<< HEAD
         String referer = "https://vsco.co/" + username + "/images/1";
+=======
+        String referer = "https://vsco.co/" + username + "/gallery";
+>>>>>>> upstream/master
         Map<String,String> cookies = new HashMap<>();
         cookies.put("vs_anonymous_id", UUID.randomUUID().toString());
         try {
@@ -116,7 +124,11 @@ public class VscoRipper extends AbstractHTMLRipper {
     }
 
     private String getUserName() {
+<<<<<<< HEAD
         Pattern p = Pattern.compile("^https?://vsco.co/([a-zA-Z0-9-]+)/images/[0-9]+");
+=======
+        Pattern p = Pattern.compile("^https?://vsco.co/([a-zA-Z0-9-]+)(/gallery)?(/)?");
+>>>>>>> upstream/master
         Matcher m = p.matcher(url.toExternalForm());
 
         if (m.matches()) {
@@ -200,7 +212,11 @@ public class VscoRipper extends AbstractHTMLRipper {
         }
         
         //Member profile (Usernames should all be different, so this should work.
+<<<<<<< HEAD
         p = Pattern.compile("^https?://vsco.co/([a-zA-Z0-9-]+)/images/[0-9]+");
+=======
+        p = Pattern.compile("^https?://vsco.co/([a-zA-Z0-9-]+)(/gallery)?(/)?");
+>>>>>>> upstream/master
         m = p.matcher(url.toExternalForm());
         
         if (m.matches()){

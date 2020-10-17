@@ -5,6 +5,10 @@ import java.net.URL;
 
 import com.rarchives.ripme.ripper.rippers.PhotobucketRipper;
 
+<<<<<<< HEAD
+=======
+import org.junit.jupiter.api.Assertions;
+>>>>>>> upstream/master
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -39,9 +43,15 @@ public class PhotobucketRipperTest extends RippersTest {
         }
         try {
             page = ripper.getNextPage(page);
+<<<<<<< HEAD
             fail("Get next page did not throw an exception on the last page");
         } catch (IOException e) {
             assertEquals(e.getMessage(), "No more pages");
+=======
+            Assertions.fail("Get next page did not throw an exception on the last page");
+        } catch (IOException e) {
+            Assertions.assertEquals(e.getMessage(), "No more pages");
+>>>>>>> upstream/master
         }
     }
 
@@ -50,6 +60,7 @@ public class PhotobucketRipperTest extends RippersTest {
         URL url = new URL(
                 "http://s732.photobucket.com/user/doublesix66/library/Army%20Painter%20examples?sort=3&page=1");
         PhotobucketRipper ripper = new PhotobucketRipper(url);
+<<<<<<< HEAD
         assertEquals("doublesix66", ripper.getGID(url));
         url = new URL(
                 "http://s732.photobucket.com/user/doublesix66/library/Army%20Painter%20examples/Painting%20examples?page=1&sort=3");
@@ -58,5 +69,15 @@ public class PhotobucketRipperTest extends RippersTest {
         assertEquals("SpazzySpizzy", ripper.getGID(url));
         url = new URL("http://s844.photobucket.com/user/SpazzySpizzy/library");
         assertEquals("SpazzySpizzy", ripper.getGID(url));
+=======
+        Assertions.assertEquals("doublesix66", ripper.getGID(url));
+        url = new URL(
+                "http://s732.photobucket.com/user/doublesix66/library/Army%20Painter%20examples/Painting%20examples?page=1&sort=3");
+        Assertions.assertEquals("doublesix66", ripper.getGID(url));
+        url = new URL("http://s844.photobucket.com/user/SpazzySpizzy/library/Album%20Covers");
+        Assertions.assertEquals("SpazzySpizzy", ripper.getGID(url));
+        url = new URL("http://s844.photobucket.com/user/SpazzySpizzy/library");
+        Assertions.assertEquals("SpazzySpizzy", ripper.getGID(url));
+>>>>>>> upstream/master
     }
 }
