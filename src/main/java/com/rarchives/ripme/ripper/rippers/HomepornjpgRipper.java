@@ -39,7 +39,11 @@ public class HomepornjpgRipper extends AbstractHTMLRipper {
 		Matcher m = p.matcher(url.toExternalForm());
 		if (m.matches()) {
             // Return the text contained between () in the regex
-            return m.group(1);
+			String urlInString = url.toExternalForm()
+					.replace("http://www.homepornjpg.com/", "")
+					.replace("https://www.homepornjpg.com/", "")
+					.replace(".shtml", "");
+            return urlInString;
         }
         throw new MalformedURLException("Expected homepornjpg.com URL format: " +
                         "www.homepornjpg.com - got " + url + " instead");
