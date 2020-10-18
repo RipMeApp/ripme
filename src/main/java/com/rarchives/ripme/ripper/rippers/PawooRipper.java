@@ -3,14 +3,11 @@ package com.rarchives.ripme.ripper.rippers;
 import java.io.IOException;
 import java.net.URL;
 
-<<<<<<< HEAD
-=======
 import com.rarchives.ripme.utils.Http;
 
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
 
->>>>>>> upstream/master
 public class PawooRipper extends MastodonRipper {
     public PawooRipper(URL url) throws IOException {
         super(url);
@@ -25,8 +22,6 @@ public class PawooRipper extends MastodonRipper {
     public String getDomain() {
         return "pawoo.net";
     }
-<<<<<<< HEAD
-=======
 
 
     @Override
@@ -40,5 +35,4 @@ public class PawooRipper extends MastodonRipper {
         sleep(500);
         return Http.url(nextUrl).get();
     }
->>>>>>> upstream/master
 }

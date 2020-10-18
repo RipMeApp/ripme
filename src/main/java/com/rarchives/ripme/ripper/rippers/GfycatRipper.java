@@ -25,10 +25,7 @@ public class GfycatRipper extends AbstractHTMLRipper {
     String username = "";
     String cursor = "";
     String count = "30";
-<<<<<<< HEAD
-=======
     String REFERRER = "www.reddit.com";
->>>>>>> upstream/master
 
 
 
@@ -68,17 +65,10 @@ public class GfycatRipper extends AbstractHTMLRipper {
     @Override
     public Document getFirstPage() throws IOException {
         if (!isProfile()) {
-<<<<<<< HEAD
-            return Http.url(url).get();
-        } else {
-            username = getGID(url);
-            return Http.url(new URL("https://api.gfycat.com/v1/users/" +  username + "/gfycats")).ignoreContentType().get();
-=======
             return Http.url(url).referrer(REFERRER).get();
         } else {
             username = getGID(url);
             return Http.url(new URL("https://api.gfycat.com/v1/users/" +  username + "/gfycats")).referrer((REFERRER)).ignoreContentType().get();
->>>>>>> upstream/master
         }
     }
 

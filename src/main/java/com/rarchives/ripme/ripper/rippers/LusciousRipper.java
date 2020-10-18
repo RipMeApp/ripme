@@ -19,7 +19,7 @@ import com.rarchives.ripme.utils.Http;
 public class LusciousRipper extends AbstractHTMLRipper {
     private static final int RETRY_COUNT = 5; // Keeping it high for read timeout exception.
 
-    private Pattern p = Pattern.compile("^https?://(?:members.)?luscious\\.net/albums/([-_.0-9a-zA-Z]+).*$");
+    private static final Pattern P = Pattern.compile("^https?:\\/\\/(?:members\\.|old\\.|www\\.)?luscious.net\\/albums\\/([-_.0-9a-zA-Z]+)\\/?");
     private DownloadThreadPool lusciousThreadPool = new DownloadThreadPool("lusciousThreadPool");
 
     public LusciousRipper(URL url) throws IOException {
@@ -69,7 +69,7 @@ public class LusciousRipper extends AbstractHTMLRipper {
 
     @Override
     public String getGID(URL url) throws MalformedURLException {
-        Matcher m = p.matcher(url.toExternalForm());
+        Matcher m = P.matcher(url.toExternalForm());
         if (m.matches()) {
             return m.group(1);
         }
@@ -85,6 +85,40 @@ public class LusciousRipper extends AbstractHTMLRipper {
     @Override
     public DownloadThreadPool getThreadPool() {
         return lusciousThreadPool;
+    }
+
+    @Override
+    public URL sanitizeURL(URL url) throws MalformedURLException {
+        // Sanitizes the url removing GET parameters and convert to old api url.
+        // "https://old.luscious.net/albums/albumname"
+        try {
+            Matcher m = P.matcher(url.toString());
+            if (m.matches()) {
+                String sanitizedUrl = m.group();
+                sanitizedUrl = sanitizedUrl.replaceFirst(
+                        "^https?:\\/\\/(?:members\\.|old\\.|www\\.)?luscious.net",
+                        "https://old.luscious.net");
+                return new URL(sanitizedUrl);
+            }
+
+            throw new Exception("ERROR: Unable to sanitize url.");
+        } catch (Exception e) {
+            LOGGER.info("Error sanitizing the url.");
+            LOGGER.error(e);
+            return super.sanitizeURL(url);
+        }
+    }
+
+    @Override
+    public String normalizeUrl(String url) {
+        try {
+            return url.toString().replaceFirst(
+                    "^https?:\\/\\/(?:members\\.|old\\.)?luscious.net", "https://www.luscious.net");
+        } catch (Exception e) {
+            LOGGER.info("Error normalizing the url.");
+            LOGGER.error(e);
+            return super.normalizeUrl(url);
+        }
     }
 
     public class LusciousDownloadThread extends Thread {
