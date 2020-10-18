@@ -16,12 +16,11 @@ RipMe is maintained with ♥️ and in our limited free time by **[@MetaPrime](h
 
 # About
 
-RipMe is an album ripper for various websites. Runs on your computer. Requires Java 8.
-RipMe is a cross-platform tool. It has been tested and confirmed working on Windows, Linux and MacOS. 
+RipMe is an album ripper for various websites. It is a cross-platform tool that runs on your computer, and requires Java 8. RipMe has been tested and confirmed working on Windows, Linux and MacOS. 
 
 ![Screenshot](https://i.imgur.com/UCQNjeg.png)
 
-## [Downloads](https://github.com/ripmeapp/ripme/releases)
+## Downloads
 
 Download `ripme.jar` from the [latest release](https://github.com/ripmeapp/ripme/releases).
 
@@ -29,18 +28,20 @@ Download `ripme.jar` from the [latest release](https://github.com/ripmeapp/ripme
 
 For information about running the `.jar` file, see [the How To Run wiki](https://github.com/ripmeapp/ripme/wiki/How-To-Run-RipMe).
 
-## [Changelog](https://github.com/ripmeapp/ripme/blob/master/ripme.json) (ripme.json)
+## Changelog
+
+[Changelog](https://github.com/ripmeapp/ripme/blob/master/ripme.json) **(ripme.json)**
 
 # Features
 
-* Quickly downloads all images in an online album (see supported sites below)
+* Quickly downloads all images in an online album. [See supported sites](https://github.com/ripmeapp/ripme/wiki/Supported-Sites)
 * Easily re-rip albums to fetch new content
 * Built in updater
 * Skips already downloaded images by default
-* Can auto skip e-hentai and nhentai albums containing certain tags [See here for how to enable](https://github.com/RipMeApp/ripme/wiki/Config-options#nhentaiblacklisttags)
-* Download a range of urls [See here for how](https://github.com/RipMeApp/ripme/wiki/How-To-Run-RipMe#downloading-a-url-range)
+* Can auto skip e-hentai and nhentai albums containing certain tags. [See here for how to enable](https://github.com/RipMeApp/ripme/wiki/Config-options#nhentaiblacklisttags)
+* Download a range of urls. [See here for how](https://github.com/RipMeApp/ripme/wiki/How-To-Run-RipMe#downloading-a-url-range)
 
-## [List of Supported Sites](https://github.com/ripmeapp/ripme/wiki/Supported-Sites)
+## List of Supported Sites
 
 * imgur
 * twitter
@@ -58,13 +59,13 @@ For information about running the `.jar` file, see [the How To Run wiki](https:/
 * 8muses
 * deviantart
 * xhamster
-* (more)
+* [(more)](https://github.com/ripmeapp/ripme/wiki/Supported-Sites)
 
 ## Not Supported?
 
 Request support for more sites by adding a comment to [this Github issue](https://github.com/RipMeApp/ripme/issues/38).
 
-If you're a developer, you can add your own Ripper by following the wiki guide
+If you're a developer, you can add your own Ripper by following the wiki guide:
 [How To Create A Ripper for HTML Websites](https://github.com/ripmeapp/ripme/wiki/How-To-Create-A-Ripper-for-HTML-websites).
 
 # Compiling & Building

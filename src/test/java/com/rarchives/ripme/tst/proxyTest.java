@@ -4,16 +4,6 @@ import java.io.IOException;
 import java.net.URL;
 import com.rarchives.ripme.utils.Proxy;
 import com.rarchives.ripme.utils.Utils;
-<<<<<<< HEAD
-import junit.framework.TestCase;
-import com.rarchives.ripme.utils.Http;
-
-
-public class proxyTest  extends TestCase {
-
-
-    // This test will only run on machines where the user has added a entry for proxy.socks
-=======
 import com.rarchives.ripme.utils.Http;
 import org.junit.jupiter.api.Test;
 
@@ -24,7 +14,6 @@ public class proxyTest  {
 
     // This test will only run on machines where the user has added a entry for proxy.socks
     @Test
->>>>>>> upstream/master
     public void testSocksProxy() throws IOException {
         // Unset proxy before testing
         System.setProperty("http.proxyHost", "");
@@ -44,10 +33,7 @@ public class proxyTest  {
     }
 
     // This test will only run on machines where the user has added a entry for proxy.http
-<<<<<<< HEAD
-=======
     @Test
->>>>>>> upstream/master
     public void testHTTPProxy() throws IOException {
         // Unset proxy before testing
         System.setProperty("http.proxyHost", "");

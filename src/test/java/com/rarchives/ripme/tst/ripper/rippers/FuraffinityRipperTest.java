@@ -4,10 +4,7 @@ import java.io.IOException;
 import java.net.URL;
 
 import com.rarchives.ripme.ripper.rippers.FuraffinityRipper;
-<<<<<<< HEAD
-=======
 import org.junit.jupiter.api.Assertions;
->>>>>>> upstream/master
 import org.junit.jupiter.api.Test;
 
 public class FuraffinityRipperTest extends RippersTest {
@@ -22,29 +19,18 @@ public class FuraffinityRipperTest extends RippersTest {
         testRipper(ripper);
     }
 
-<<<<<<< HEAD
-    public void testGetGID() throws IOException {
-        URL url = new URL("https://www.furaffinity.net/gallery/mustardgas/");
-        FuraffinityRipper ripper = new FuraffinityRipper(url);
-        assertEquals("mustardgas", ripper.getGID(url));
-=======
     @Test
     public void testGetGID() throws IOException {
         URL url = new URL("https://www.furaffinity.net/gallery/mustardgas/");
         FuraffinityRipper ripper = new FuraffinityRipper(url);
         Assertions.assertEquals("mustardgas", ripper.getGID(url));
->>>>>>> upstream/master
     }
     @Test
     public void testLogin() throws IOException {
         URL url = new URL("https://www.furaffinity.net/gallery/mustardgas/");
         FuraffinityRipper ripper = new FuraffinityRipper(url);
         // Check if the first page contain the username of ripmes shared account
-<<<<<<< HEAD
-        Boolean containsUsername = ripper.getFirstPage().html().contains("ripmethrowaway");
-=======
         boolean containsUsername = ripper.getFirstPage().html().contains("ripmethrowaway");
->>>>>>> upstream/master
         assert containsUsername;
     }
 }

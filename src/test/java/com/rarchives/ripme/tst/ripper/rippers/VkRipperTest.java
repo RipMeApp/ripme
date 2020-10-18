@@ -4,11 +4,8 @@ import java.io.IOException;
 import java.net.URL;
 
 import com.rarchives.ripme.ripper.rippers.VkRipper;
-<<<<<<< HEAD
-=======
 import org.json.JSONObject;
 import org.junit.jupiter.api.Assertions;
->>>>>>> upstream/master
 import org.junit.jupiter.api.Test;
 
 public class VkRipperTest extends RippersTest {
@@ -22,14 +19,6 @@ public class VkRipperTest extends RippersTest {
     // EXAMPLE: https://vk.com/album45506334_101886701 (a single album - custom)
     @Test
     public void testVkAlbumHttpRip() throws IOException {
-<<<<<<< HEAD
-        VkRipper ripper = new VkRipper(new URL("http://vk.com/album45506334_0"));
-        testRipper(ripper);
-    }
-    @Test
-    public void testVkAlbumHttpsRip() throws IOException {
-=======
->>>>>>> upstream/master
         VkRipper ripper = new VkRipper(new URL("https://vk.com/album45506334_0"));
         testRipper(ripper);
     }
@@ -38,8 +27,6 @@ public class VkRipperTest extends RippersTest {
         VkRipper ripper = new VkRipper(new URL("https://vk.com/photos45506334"));
         testRipper(ripper);
     }
-<<<<<<< HEAD
-=======
     
     @Test
     public void testFindJSONObjectContainingPhotoID() throws IOException {
@@ -62,5 +49,4 @@ public class VkRipperTest extends RippersTest {
         Assertions.assertEquals("https://sun9-41.userapi.com/c857520/v857520962/10e24a/EsDDQA36qKI.jpg",
                 ripper.getBestSourceUrl(new JSONObject(json)));
     }
->>>>>>> upstream/master
 }

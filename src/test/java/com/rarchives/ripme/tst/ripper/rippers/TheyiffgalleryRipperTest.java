@@ -4,10 +4,7 @@ import java.io.IOException;
 import java.net.URL;
 
 import com.rarchives.ripme.ripper.rippers.TheyiffgalleryRipper;
-<<<<<<< HEAD
-=======
 import org.junit.jupiter.api.Assertions;
->>>>>>> upstream/master
 import org.junit.jupiter.api.Test;
 
 public class TheyiffgalleryRipperTest extends RippersTest {
@@ -17,17 +14,10 @@ public class TheyiffgalleryRipperTest extends RippersTest {
         testRipper(ripper);
     }
 
-<<<<<<< HEAD
-    public void testGetGID() throws IOException {
-        URL url = new URL("https://theyiffgallery.com/index?/category/4303");
-        TheyiffgalleryRipper ripper = new TheyiffgalleryRipper(url);
-        assertEquals("4303", ripper.getGID(url));
-=======
     @Test
     public void testGetGID() throws IOException {
         URL url = new URL("https://theyiffgallery.com/index?/category/4303");
         TheyiffgalleryRipper ripper = new TheyiffgalleryRipper(url);
         Assertions.assertEquals("4303", ripper.getGID(url));
->>>>>>> upstream/master
     }
 }

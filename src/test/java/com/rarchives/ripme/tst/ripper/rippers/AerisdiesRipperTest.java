@@ -5,10 +5,7 @@ import java.net.URL;
 
 import com.rarchives.ripme.ripper.rippers.AerisdiesRipper;
 
-<<<<<<< HEAD
-=======
 import org.junit.jupiter.api.Assertions;
->>>>>>> upstream/master
 import org.junit.jupiter.api.Test;
 
 public class AerisdiesRipperTest extends RippersTest {
@@ -34,11 +31,7 @@ public class AerisdiesRipperTest extends RippersTest {
     public void testGetGID() throws IOException {
         URL url = new URL("http://www.aerisdies.com/html/lb/douj_5230_1.html");
         AerisdiesRipper ripper = new AerisdiesRipper(url);
-<<<<<<< HEAD
-        assertEquals("5230", ripper.getGID(url));
-=======
         Assertions.assertEquals("5230", ripper.getGID(url));
->>>>>>> upstream/master
     }
 
     // TODO: Add a test for an album with a title.

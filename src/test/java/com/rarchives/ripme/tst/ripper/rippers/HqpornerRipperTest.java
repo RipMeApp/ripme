@@ -2,10 +2,7 @@ package com.rarchives.ripme.tst.ripper.rippers;
 
 import com.rarchives.ripme.ripper.rippers.HqpornerRipper;
 import com.rarchives.ripme.utils.Utils;
-<<<<<<< HEAD
-=======
 import org.junit.jupiter.api.Assertions;
->>>>>>> upstream/master
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -24,11 +21,7 @@ public class HqpornerRipperTest extends RippersTest {
     public void testGetGID() throws IOException {
         URL poolURL = new URL("https://hqporner.com/hdporn/84636-pool_lesson_with_a_cheating_husband.html");
         HqpornerRipper ripper = new HqpornerRipper(poolURL);
-<<<<<<< HEAD
-        assertEquals("84636-pool_lesson_with_a_cheating_husband", ripper.getGID(poolURL));
-=======
         Assertions.assertEquals("84636-pool_lesson_with_a_cheating_husband", ripper.getGID(poolURL));
->>>>>>> upstream/master
     }
     @Test
     public void testGetURLsFromPage() throws IOException {
@@ -47,11 +40,7 @@ public class HqpornerRipperTest extends RippersTest {
         try {
             ripper.getNextPage(ripper.getFirstPage());
         } catch (IOException e) {
-<<<<<<< HEAD
-            assertEquals(e.getMessage(), "No next page found.");
-=======
             Assertions.assertEquals(e.getMessage(), "No next page found.");
->>>>>>> upstream/master
         }
     }
     @Test

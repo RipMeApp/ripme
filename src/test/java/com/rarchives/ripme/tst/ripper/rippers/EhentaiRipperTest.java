@@ -6,10 +6,7 @@ import java.util.List;
 
 import com.rarchives.ripme.ripper.rippers.EHentaiRipper;
 import com.rarchives.ripme.utils.RipUtils;
-<<<<<<< HEAD
-=======
 import org.junit.jupiter.api.Assertions;
->>>>>>> upstream/master
 import org.junit.jupiter.api.Test;
 
 public class EhentaiRipperTest extends RippersTest {
@@ -28,19 +25,11 @@ public class EhentaiRipperTest extends RippersTest {
         // Test multiple blacklisted tags
         String[] tags = {"test", "one", "yuri"};
         String blacklistedTag = RipUtils.checkTags(tags, tagsOnPage);
-<<<<<<< HEAD
-        assertEquals("yuri", blacklistedTag);
-=======
         Assertions.assertEquals("yuri", blacklistedTag);
->>>>>>> upstream/master
 
         // test tags with spaces in them
         String[] tags2 = {"test", "one", "midnight on mars"};
         blacklistedTag = RipUtils.checkTags(tags2, tagsOnPage);
-<<<<<<< HEAD
-        assertEquals("midnight on mars", blacklistedTag);
-=======
         Assertions.assertEquals("midnight on mars", blacklistedTag);
->>>>>>> upstream/master
     }
 }

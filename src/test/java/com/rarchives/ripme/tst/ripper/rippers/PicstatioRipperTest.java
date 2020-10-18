@@ -4,10 +4,7 @@ import java.io.IOException;
 import java.net.URL;
 
 import com.rarchives.ripme.ripper.rippers.PicstatioRipper;
-<<<<<<< HEAD
-=======
 import org.junit.jupiter.api.Assertions;
->>>>>>> upstream/master
 import org.junit.jupiter.api.Test;
 
 public class PicstatioRipperTest extends RippersTest {
@@ -19,10 +16,6 @@ public class PicstatioRipperTest extends RippersTest {
     @Test
     public void testGID() throws IOException {
         PicstatioRipper ripper = new PicstatioRipper(new URL("https://www.picstatio.com/aerial-view-wallpapers"));
-<<<<<<< HEAD
-        assertEquals("aerial-view-wallpapers", ripper.getGID(new URL("https://www.picstatio.com/aerial-view-wallpapers")));
-=======
         Assertions.assertEquals("aerial-view-wallpapers", ripper.getGID(new URL("https://www.picstatio.com/aerial-view-wallpapers")));
->>>>>>> upstream/master
     }
 }

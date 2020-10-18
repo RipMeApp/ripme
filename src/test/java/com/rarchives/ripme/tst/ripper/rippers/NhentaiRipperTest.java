@@ -6,10 +6,7 @@ import java.util.List;
 
 import com.rarchives.ripme.ripper.rippers.NhentaiRipper;
 import com.rarchives.ripme.utils.RipUtils;
-<<<<<<< HEAD
-=======
 import org.junit.jupiter.api.Assertions;
->>>>>>> upstream/master
 import org.junit.jupiter.api.Test;
 
 public class NhentaiRipperTest extends RippersTest {
@@ -20,11 +17,7 @@ public class NhentaiRipperTest extends RippersTest {
 
     public void testGetGID()  throws IOException {
         NhentaiRipper ripper = new NhentaiRipper(new URL("https://nhentai.net/g/233295/"));
-<<<<<<< HEAD
-        assertEquals("233295", ripper.getGID(new URL("https://nhentai.net/g/233295/")));
-=======
         Assertions.assertEquals("233295", ripper.getGID(new URL("https://nhentai.net/g/233295/")));
->>>>>>> upstream/master
     }
 
     // Test the tag black listing
@@ -36,19 +29,11 @@ public class NhentaiRipperTest extends RippersTest {
         // Test multiple blacklisted tags
         String[] tags = {"test", "one", "blowjob"};
         String blacklistedTag = RipUtils.checkTags(tags, tagsOnPage);
-<<<<<<< HEAD
-        assertEquals("blowjob", blacklistedTag);
-=======
         Assertions.assertEquals("blowjob", blacklistedTag);
->>>>>>> upstream/master
 
         // test tags with spaces in them
         String[] tags2 = {"test", "one", "sole-female"};
         blacklistedTag = RipUtils.checkTags(tags2, tagsOnPage);
-<<<<<<< HEAD
-        assertEquals("sole-female", blacklistedTag);
-=======
         Assertions.assertEquals("sole-female", blacklistedTag);
->>>>>>> upstream/master
     }
 }

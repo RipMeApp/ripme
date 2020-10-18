@@ -4,34 +4,21 @@ import java.io.IOException;
 import java.net.URL;
 
 import com.rarchives.ripme.ripper.rippers.E621Ripper;
-<<<<<<< HEAD
-=======
 import org.junit.jupiter.api.Assertions;
->>>>>>> upstream/master
 import org.junit.jupiter.api.Test;
 
 public class E621RipperTest extends RippersTest {
     public void testRip() throws IOException {
-<<<<<<< HEAD
-        E621Ripper ripper = new E621Ripper(new URL("https://e621.net/post/index/1/beach"));
-=======
         E621Ripper ripper = new E621Ripper(new URL("https://e621.net/posts?tags=beach"));
->>>>>>> upstream/master
         testRipper(ripper);
     }
     @Test
     public void testFlashOrWebm() throws IOException {
-<<<<<<< HEAD
-        E621Ripper ripper = new E621Ripper(new URL("https://e621.net/post/index/1/gif"));
-=======
         E621Ripper ripper = new E621Ripper(new URL("https://e621.net/posts?page=4&tags=gif+rating%3As+3d"));
->>>>>>> upstream/master
         testRipper(ripper);
     }
     @Test
     public void testGetNextPage() throws IOException {
-<<<<<<< HEAD
-=======
         E621Ripper nextPageRipper = new E621Ripper(new URL("https://e621.net/posts?tags=cosmicminerals"));
         try {
             nextPageRipper.getNextPage(nextPageRipper.getFirstPage());
@@ -59,7 +46,6 @@ public class E621RipperTest extends RippersTest {
     }
     @Test
     public void testOldGetNextPage() throws IOException {
->>>>>>> upstream/master
         E621Ripper nextPageRipper = new E621Ripper(new URL("https://e621.net/post/index/1/cosmicminerals"));
         try {
             nextPageRipper.getNextPage(nextPageRipper.getFirstPage());
@@ -72,11 +58,7 @@ public class E621RipperTest extends RippersTest {
         try {
             noNextPageRipper.getNextPage(noNextPageRipper.getFirstPage());
         } catch (IOException e) {
-<<<<<<< HEAD
-            assertEquals(e.getMessage(), "No more pages.");
-=======
             Assertions.assertEquals(e.getMessage(), "No more pages.");
->>>>>>> upstream/master
         }
     }
 }

@@ -5,10 +5,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 import com.rarchives.ripme.ripper.rippers.EromeRipper;
-<<<<<<< HEAD
-=======
 import org.junit.jupiter.api.Assertions;
->>>>>>> upstream/master
 import org.junit.jupiter.api.Test;
 
 public class EromeRipperTest extends RippersTest {
@@ -16,21 +13,13 @@ public class EromeRipperTest extends RippersTest {
 	public void testGetGIDProfilePage() throws IOException {
 		URL url = new URL("https://www.erome.com/Jay-Jenna");
 		EromeRipper ripper = new EromeRipper(url);
-<<<<<<< HEAD
-		assertEquals("Jay-Jenna", ripper.getGID(url));
-=======
 		Assertions.assertEquals("Jay-Jenna", ripper.getGID(url));
->>>>>>> upstream/master
 	}
 	@Test
 	public void testGetGIDAlbum() throws IOException {
 		URL url = new URL("https://www.erome.com/a/KbDAM1XT");
 		EromeRipper ripper = new EromeRipper(url);
-<<<<<<< HEAD
-		assertEquals("KbDAM1XT", ripper.getGID(url));
-=======
 		Assertions.assertEquals("KbDAM1XT", ripper.getGID(url));
->>>>>>> upstream/master
 	}
 	@Test
 	public void testGetAlbumsToQueue() throws IOException {
