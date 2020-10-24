@@ -28,6 +28,13 @@ Download `ripme.jar` from the [latest release](https://github.com/ripmeapp/ripme
 
 For information about running the `.jar` file, see [the How To Run wiki](https://github.com/ripmeapp/ripme/wiki/How-To-Run-RipMe).
 
+## Installation
+
+On macOS, there is a [cask](https://github.com/Homebrew/homebrew-cask/blob/master/Casks/ripme.rb).
+```
+breww cask install ripme && xattr -d com.apple.quarantine /Applications/ripme.jar
+```
+
 ## Changelog
 
 [Changelog](https://github.com/ripmeapp/ripme/blob/master/ripme.json) **(ripme.json)**
