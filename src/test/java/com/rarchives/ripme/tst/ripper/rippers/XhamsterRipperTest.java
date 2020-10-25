@@ -7,6 +7,7 @@ import com.rarchives.ripme.ripper.rippers.XhamsterRipper;
 import org.jsoup.nodes.Document;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 
@@ -32,6 +33,7 @@ public class XhamsterRipperTest extends RippersTest {
         testRipper(ripper);
     }
     @Test
+    @Tag("flaky")
     public void testXhamsterAlbumDesiDomain() throws IOException {
         XhamsterRipper ripper = new XhamsterRipper(new URL("https://xhamster.desi/photos/gallery/japanese-dolls-4-asahi-mizuno-7254664"));
         testRipper(ripper);
