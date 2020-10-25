@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.URL;
 
 import com.rarchives.ripme.ripper.rippers.CheveretoRipper;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 public class CheveretoRipperTest extends RippersTest {
@@ -13,6 +14,7 @@ public class CheveretoRipperTest extends RippersTest {
         testRipper(ripper);
     }
     @Test
+    @Tag("flaky")
     public void testSubdirAlbum() throws IOException {
         CheveretoRipper ripper = new CheveretoRipper(new URL("https://kenzato.uk/booru/album/TnEc"));
         testRipper(ripper);

@@ -88,12 +88,13 @@ This will include all dependencies in the JAR.
 
 # Running Tests
 
-Tests can be marked as beeing slow or not. Default is to run all tests. Slow tests can be excluded to run, and slow
-tests can be run on its own. After building you can run tests, quoting might be necessary depending on your shell:
+Tests can be marked as beeing slow, or flaky. Default is to run all but the flaky tests. Slow tests can be excluded to
+run. slow and flaky tests can be run on its own. After building you can run tests, quoting might be necessary depending
+on your shell:
 
 ```bash
 mvn test
-mvn test -Dgroups=slow
+mvn test -Dgroups=flaky,slow
 mvn test '-Dgroups=!slow'
 ```
 

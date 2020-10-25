@@ -5,6 +5,7 @@ import com.rarchives.ripme.ripper.rippers.ImgurRipper.ImgurAlbum;
 import com.rarchives.ripme.utils.RipUtils;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -57,6 +58,7 @@ public class ImgurRipperTest extends RippersTest {
     }
 
     @Test
+    @Disabled("test or ripper broken")
     public void testImgurSingleImage() throws IOException {
         List<URL> contentURLs = new ArrayList<>();
         contentURLs.add(new URL("http://imgur.com/qbfcLyG")); // Single image URL
