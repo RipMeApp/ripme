@@ -94,7 +94,7 @@ on your shell:
 
 ```bash
 mvn test
-mvn test -Dgroups=flaky,slow
+mvn test -DexcludedGroups= -Dgroups=flaky,slow
 mvn test '-Dgroups=!slow'
 ```
 

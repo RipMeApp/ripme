@@ -7,6 +7,7 @@
   <name>ripme</name>
   <url>http://rip.rarchives.com</url>
   <properties>
+    <excludedGroups>flaky</excludedGroups>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
   <dependencyManagement>
@@ -145,7 +146,7 @@
         <artifactId>maven-surefire-plugin</artifactId>
         <version>3.0.0-M5</version>
         <configuration>
-          <excludedGroups>flaky</excludedGroups>
+          <excludedGroups>${excludedGroups}</excludedGroups>
         </configuration>
       </plugin>
     </plugins>
