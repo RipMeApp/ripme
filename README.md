@@ -32,7 +32,7 @@ For information about running the `.jar` file, see [the How To Run wiki](https:/
 
 On macOS, there is a [cask](https://github.com/Homebrew/homebrew-cask/blob/master/Casks/ripme.rb).
 ```
-breww cask install ripme && xattr -d com.apple.quarantine /Applications/ripme.jar
+brew cask install ripme && xattr -d com.apple.quarantine /Applications/ripme.jar
 ```
 
 ## Changelog
