@@ -88,10 +88,14 @@ This will include all dependencies in the JAR.
 
 # Running Tests
 
-After building you can run tests by running the following:
+Tests can be marked as beeing slow, or flaky. Default is to run all but the flaky tests. Slow tests can be excluded to
+run. slow and flaky tests can be run on its own. After building you can run tests, quoting might be necessary depending
+on your shell:
 
 ```bash
 mvn test
+mvn test -DexcludedGroups= -Dgroups=flaky,slow
+mvn test '-Dgroups=!slow'
 ```
 
 Please note that some tests may fail as sites change and our rippers become out of date.

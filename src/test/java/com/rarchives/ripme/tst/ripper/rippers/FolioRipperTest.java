@@ -5,6 +5,7 @@ import java.net.URL;
 import com.rarchives.ripme.ripper.rippers.FolioRipper;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 public class FolioRipperTest extends RippersTest {
@@ -13,6 +14,7 @@ public class FolioRipperTest extends RippersTest {
      * @throws IOException
      */
     @Test
+    @Disabled("test or ripper broken")
     public void testFolioRip() throws IOException {
         FolioRipper ripper = new FolioRipper(new URL("https://folio.ink/DmBe6i"));
         testRipper(ripper);

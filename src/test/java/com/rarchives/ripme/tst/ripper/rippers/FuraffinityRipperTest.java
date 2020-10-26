@@ -5,15 +5,18 @@ import java.net.URL;
 
 import com.rarchives.ripme.ripper.rippers.FuraffinityRipper;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 public class FuraffinityRipperTest extends RippersTest {
     @Test
+    @Tag("slow")
     public void testFuraffinityAlbum() throws IOException {
         FuraffinityRipper ripper = new FuraffinityRipper(new URL("https://www.furaffinity.net/gallery/spencerdragon/"));
         testRipper(ripper);
     }
     @Test
+    @Tag("slow")
     public void testFuraffinityScrap() throws IOException {
         FuraffinityRipper ripper = new FuraffinityRipper(new URL("http://www.furaffinity.net/scraps/sssonic2/"));
         testRipper(ripper);
