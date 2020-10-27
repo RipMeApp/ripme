@@ -12,12 +12,25 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
 import com.rarchives.ripme.ripper.AbstractHTMLRipper;
+import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
 import com.rarchives.ripme.utils.Http;
 
 public class ImagefapRipper extends AbstractHTMLRipper {
 
     private Document albumDoc = null;
     private boolean isNewAlbumType = false;
+
+    private int callsMade = 0;
+    private long startTime = System.nanoTime();
+
+    private static final int RETRY_LIMIT = 10;
+    private static final int RATE_LIMIT_HOUR = 1000;
+
+    // All sleep times are in milliseconds
+    private static final int PAGE_SLEEP_TIME = 60 * 60 * 1000 / RATE_LIMIT_HOUR;
+    private static final int IMAGE_SLEEP_TIME = 60 * 60 * 1000 / RATE_LIMIT_HOUR;
+    // Timeout when blocked = 1 hours. Retry every retry within the hour mark + 1 time after the hour mark.
+    private static final int IP_BLOCK_SLEEP_TIME = (int) Math.round((double) 60 / (RETRY_LIMIT - 1) * 60 * 1000);
 
     public ImagefapRipper(URL url) throws IOException {
         super(url);
@@ -97,7 +110,7 @@ public class ImagefapRipper extends AbstractHTMLRipper {
     @Override
     public Document getFirstPage() throws IOException {
         if (albumDoc == null) {
-            albumDoc = Http.url(url).get();
+            albumDoc = getPageWithRetries(url);
         }
         return albumDoc;
     }
@@ -114,8 +127,13 @@ public class ImagefapRipper extends AbstractHTMLRipper {
         if (nextURL == null) {
             throw new IOException("No next page found");
         }
-        sleep(1000);
-        return Http.url(nextURL).get();
+        // Sleep before fetching next page.
+        sleep(PAGE_SLEEP_TIME);
+
+        // Load next page
+        Document nextPage = getPageWithRetries(new URL(nextURL));
+
+        return nextPage;
     }
 
     @Override
@@ -156,11 +174,79 @@ public class ImagefapRipper extends AbstractHTMLRipper {
 
     private String getFullSizedImage(String pageURL) {
         try {
-            Document doc = Http.url(pageURL).get();
+            // Sleep before fetching image.
+            sleep(IMAGE_SLEEP_TIME);
+
+            Document doc = getPageWithRetries(new URL(pageURL));
             return doc.select("img#mainPhoto").attr("src");
         } catch (IOException e) {
             return null;
         }
+    }
+
+    /**
+     * Attempts to get page, checks for IP ban, waits.
+     * @param url
+     * @return Page document
+     * @throws IOException If page loading errors, or if retries are exhausted
+     */
+    private Document getPageWithRetries(URL url) throws IOException {
+        Document doc;
+        int retries = RETRY_LIMIT;
+        while (true) {
+            sendUpdate(STATUS.LOADING_RESOURCE, url.toExternalForm());
+
+            // For debugging rate limit checker. Useful to track wheter the timeout should be altered or not.
+            callsMade++;
+            checkRateLimit();
+
+            LOGGER.info("Retrieving " + url);
+            doc = Http.url(url)
+                      .get();
+
+
+            if (doc.toString().contains("Your IP made too many requests to our servers and we need to check that you are a real human being")) {
+                if (retries == 0) {
+                    throw new IOException("Hit rate limit and maximum number of retries, giving up");
+                }
+                String message = "Hit rate limit while loading " + url + ", sleeping for " + IP_BLOCK_SLEEP_TIME + "ms, " + retries + " retries remaining";
+                LOGGER.warn(message);
+                sendUpdate(STATUS.DOWNLOAD_WARN, message);
+                retries--;
+                try {
+                    Thread.sleep(IP_BLOCK_SLEEP_TIME);
+                } catch (InterruptedException e) {
+                    throw new IOException("Interrupted while waiting for rate limit to subside");
+                }
+            }
+            else {
+                return doc;
+            }
+        }
+    }
+
+    /**
+     * Used for debugging the rate limit issue.
+     * This in order to prevent hitting the rate limit altoghether by remaining under the limit threshold.
+     * @return Long duration
+     */
+    private long checkRateLimit() {
+        long endTime = System.nanoTime();
+        long duration = (endTime - startTime) / 1000000;
+
+        int rateLimitMinute = 100;
+        int rateLimitFiveMinutes = 200;
+        int rateLimitHour = RATE_LIMIT_HOUR;        // Request allowed every 3.6 seconds.
+
+        if(duration / 1000 < 60){
+            LOGGER.debug("Rate limit: " + (rateLimitMinute - callsMade) + " calls remaining for first minute mark.");
+        } else if(duration / 1000 <  300){
+            LOGGER.debug("Rate limit: " + (rateLimitFiveMinutes - callsMade) + " calls remaining for first 5 minute mark.");
+        } else if(duration / 1000 <  3600){
+            LOGGER.debug("Rate limit: " + (RATE_LIMIT_HOUR - callsMade) + " calls remaining for first hour mark.");
+        }
+
+        return duration;
     }
 
 }
