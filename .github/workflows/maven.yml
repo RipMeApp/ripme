@@ -10,9 +10,12 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest, macOS-latest]
         java: [1.8]
-        include: # test newest java on one os only
+        include: # test newest java on one os only, upload from ubuntu java8
           - os: ubuntu-latest
             java: 1.14
+          - os: ubuntu-latest
+            java: 1.8
+            upload: true
 
     steps:
     - uses: actions/checkout@v1
@@ -21,4 +24,12 @@ jobs:
       with:
         java-version: ${{ matrix.java }}
     - name: Build with Maven
-      run: mvn -B package --file pom.xml
+      run: mvn -B package assembly:single --file pom.xml
+    - name: upload jar as asset
+      if: matrix.upload && github.ref == 'main'
+      uses: actions/upload-artifact@v2
+      with:
+        name: zipped-ripme-jar
+        path: target/*dependencies.jar
+
+# vim:set ts=2 sw=2 et:
