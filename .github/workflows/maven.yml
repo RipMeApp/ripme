@@ -10,6 +10,10 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest, macOS-latest]
         java: [1.8, 1.14]
+        include: # define single matrix case that performs upload
+        - os: ubuntu-latest
+          java: 1.8
+          upload: true
 
     steps:
     - uses: actions/checkout@v1
@@ -18,4 +22,12 @@ jobs:
       with:
         java-version: ${{ matrix.java }}
     - name: Build with Maven
-      run: mvn package --file pom.xml
+      run: mvn package assembly:single --file pom.xml
+    - name: upload jar as asset
+      if: matrix.upload && github.event_name == 'pull_request' && github.base_ref == 'master'
+      uses: actions/upload-artifact@v2
+      with:
+        name: zipped-ripme-jar
+        path: target/*dependencies.jar
+
+# vim:set ts=2 sw=2 et:
