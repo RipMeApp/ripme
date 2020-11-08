@@ -139,8 +139,8 @@ public class XhamsterRipper extends AbstractHTMLRipper {
 
     @Override
     public Document getNextPage(Document doc) throws IOException {
-        if (doc.select("a[data-page=next]").first() != null) {
-            String nextPageUrl = doc.select("a[data-page=next]").first().attr("href");
+        if (doc.select("a[rel=next]").first() != null) {
+            String nextPageUrl = doc.select("a[rel=next]").first().attr("href");
             if (nextPageUrl.startsWith("http")) {
                 nextPageUrl = nextPageUrl.replaceAll("https?://\\w?\\w?\\.?xhamster\\.", "https://m.xhamster.");
                 nextPageUrl = nextPageUrl.replaceAll("https?://xhamster2\\.", "https://m.xhamster2.");
