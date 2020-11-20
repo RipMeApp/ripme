@@ -157,9 +157,8 @@ public class XhamsterRipper extends AbstractHTMLRipper {
 //                System.out.println(node.getWholeData());
 				if (String.valueOf(node.getWholeData()).startsWith("window.initials")) {
 					// for implicitly converting the embedded JS code to JSON for extracting Url.
-					// The 1 is added to endIndex to include the closing curly braces in JSON string.
 					String jsonStr = String.valueOf(nodeDataStr).substring(nodeDataStr.indexOf("{"),
-							nodeDataStr.lastIndexOf("}")+1);
+							nodeDataStr.lastIndexOf(";"));
 					nextPageUrl = getNextPageUrl(jsonStr);
 				}
 			}
