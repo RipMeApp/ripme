@@ -4,16 +4,23 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.jsoup.nodes.DataNode;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
 import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 import com.rarchives.ripme.utils.Http;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.core.type.TypeReference;
 
 // WARNING
 // This ripper changes all requests to use the MOBILE version of the site
@@ -138,18 +145,69 @@ public class XhamsterRipper extends AbstractHTMLRipper {
     }
 
     @Override
-    public Document getNextPage(Document doc) throws IOException {
-        if (doc.select("a[rel=next]").first() != null) {
-            String nextPageUrl = doc.select("a[rel=next]").first().attr("href");
-            if (nextPageUrl.startsWith("http")) {
-                nextPageUrl = nextPageUrl.replaceAll("https?://\\w?\\w?\\.?xhamster\\.", "https://m.xhamster.");
-                nextPageUrl = nextPageUrl.replaceAll("https?://xhamster2\\.", "https://m.xhamster2.");
-                return Http.url(nextPageUrl).get();
-            }
-        }
-        throw new IOException("No more pages");
+	public Document getNextPage(Document doc) throws IOException {
+		Elements scriptElements = doc.select("#initials-script");
+		String nodeDataStr = "";
+		String nextPageUrl = "";
+		// For retrieving the 'next Page Url' from the JavaScript embedded in script tag
+		for (Element element : scriptElements) {
+			nodeDataStr = "";
+			for (DataNode node : element.dataNodes()) {
+				nodeDataStr = node.getWholeData();
+//                System.out.println(node.getWholeData());
+				if (String.valueOf(node.getWholeData()).startsWith("window.initials")) {
+					// for implicitly converting the embedded JS code to JSON for extracting Url.
+					String jsonStr = String.valueOf(nodeDataStr).substring(nodeDataStr.indexOf("{"),
+							nodeDataStr.lastIndexOf(";"));
+					nextPageUrl = getNextPageUrl(jsonStr);
+				}
+			}
+		}
+		if (nextPageUrl.startsWith("http")) {
+			nextPageUrl = nextPageUrl.replaceAll("https?://\\w?\\w?\\.?xhamster\\.", "https://m.xhamster.");
+			nextPageUrl = nextPageUrl.replaceAll("https?://xhamster2\\.", "https://m.xhamster2.");
+			return Http.url(nextPageUrl).get();
+		}
+//        if (doc.select("a[rel=next]").first() != null) {
+//            String nextPageUrl = doc.select("a[rel=next]").first().attr("href");*/
+		if (nextPageUrl.startsWith("http")) {
+			nextPageUrl = nextPageUrl.replaceAll("https?://\\w?\\w?\\.?xhamster\\.", "https://m.xhamster.");
+			nextPageUrl = nextPageUrl.replaceAll("https?://xhamster2\\.", "https://m.xhamster2.");
+			return Http.url(nextPageUrl).get();
+		}
+//        }
+		throw new IOException("No more pages");
 
-    }
+	}
+
+	private String getNextPageUrl(String jsonStr) {
+		String nextPageUrl = "";
+		try {
+		    ObjectMapper mapper = new ObjectMapper();
+		    Map<String, Object> jsonMap = new HashMap<>();
+	         jsonMap = mapper.readValue(jsonStr, new TypeReference<Map<String, Object>>(){}); // converts JSON to Map
+	         System.out.println(jsonMap);
+		    if(jsonMap.containsKey("pagination") && jsonMap.get("pagination") instanceof LinkedHashMap<?, ?>) {
+//		    	jsonMap.get("pagination") instanceof LinkedHashMap
+
+		    	@SuppressWarnings("unchecked")
+				Map<String, String> pagination = (LinkedHashMap<String, String>) jsonMap.get("pagination");
+		    	if(pagination.containsKey("active") && pagination.containsKey("next") && pagination.containsKey("pageLinkTemplate")) {
+		    		int active = Integer.valueOf(String.valueOf(pagination.get("active")));
+		    		int next = Integer.valueOf(String.valueOf(pagination.get("next")));
+		    		int maxPages = Integer.valueOf(String.valueOf(pagination.get("maxPages")));
+		    		int maxPage = Integer.valueOf(String.valueOf(pagination.get("maxPage")));
+		    		if(active < maxPages || active < maxPage) {
+		    			nextPageUrl = String.valueOf(pagination.get("pageLinkTemplate")).replaceAll("\\{#\\}", String.valueOf(next));
+		    		}
+
+		    	}
+		    }
+		 } catch(IOException ie) {
+		    ie.printStackTrace();
+		 }
+		return nextPageUrl;
+	}
 
     @Override
     public List<String> getURLsFromPage(Document doc) {
@@ -193,7 +251,7 @@ public class XhamsterRipper extends AbstractHTMLRipper {
             LOGGER.error("The url \"" + url + "\" is malformed");
         }
     }
-    
+
     @Override
     public String getAlbumTitle(URL url) throws MalformedURLException {
         try {
