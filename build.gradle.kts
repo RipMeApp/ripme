@@ -63,7 +63,7 @@ tasks.withType<JavaCompile> {
 tasks.test {
   useJUnitPlatform {
     // gradle-6.5.1 not yet allows passing this as parameter, so exclude it
-    excludeTags("slow")
+    excludeTags("flaky","slow")
     includeEngines("junit-jupiter")
     includeEngines("junit-vintage")
   }
