@@ -59,4 +59,11 @@ public class RedditRipperTest extends RippersTest {
                 new URL("https://www.reddit.com/r/bottesting/comments/7msmhi/bad_link/"));
         testRipper(ripper);
     }
+
+    @Test
+    public void testRedditGallery() throws IOException{
+        RedditRipper ripper = new RedditRipper(
+                new URL("https://www.reddit.com/gallery/hrrh23"));
+        testRipper(ripper);
+    }
 }
