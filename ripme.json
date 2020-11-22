@@ -1,6 +1,7 @@
 {
-    "currentHash": "357639535c112ca857117151321141cb08ad313021079d522c2c5d15ee799998",
+    "currentHash": "1ebe144d0f294c4e8b482742a2588201f8b962fbcebbbd109627e1fc9e2b6d94",
     "changeList": [
+        "1.7.94: Added reddit gallery support; Fixed AllporncomicRipper; Fix imagefap ripper; instagramRipper, replaced Nashorn with GraalVM.js",
         "1.7.93: Fixed Motherless ripper; Fixed e621 ripper; Updated pt_PT translation; Implemented redgifs Ripper; added missing translation to Korean/KR; Fixed elecx ripper; Added ripper for HentaiNexus",
         "1.7.92: Added read-comic.com ripper; Fix Pawoo ripper; Add ChineseSimplified language file; Fixed artstation ripper",
         "1.7.91: Fixed luscious ripper. Fixed VK ripper; Added Kingcomix ripper",
@@ -265,5 +266,5 @@
         "1.0.3: Added VK.com ripper",
         "1.0.1: Added auto-update functionality"
     ],
-    "latestVersion": "1.7.93"
+    "latestVersion": "1.7.94"
 }
