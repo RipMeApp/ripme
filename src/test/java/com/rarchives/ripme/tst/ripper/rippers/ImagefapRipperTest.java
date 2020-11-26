@@ -30,6 +30,7 @@ public class ImagefapRipperTest extends RippersTest {
         }
     }
     @Test
+    @Tag("flaky")
     public void testImagefapGetAlbumTitle() throws IOException {
         URL url = new URL("https://www.imagefap.com/gallery.php?gid=7789753");
         ImagefapRipper ripper = new ImagefapRipper(url);
