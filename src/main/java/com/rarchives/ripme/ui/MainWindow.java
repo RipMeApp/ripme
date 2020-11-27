@@ -1279,11 +1279,15 @@ public final class MainWindow implements Runnable, RipStatusHandler {
                 ripper.setObserver(this);
                 Thread t = new Thread(ripper);
                 if (configShowPopup.isSelected() && (!mainFrame.isVisible() || !mainFrame.isActive())) {
-                    mainFrame.toFront();
-                    mainFrame.setAlwaysOnTop(true);
-                    trayIcon.displayMessage(mainFrame.getTitle(), "Started ripping " + ripper.getURL().toExternalForm(),
-                            MessageType.INFO);
-                    mainFrame.setAlwaysOnTop(false);
+                    try {
+                        mainFrame.toFront();
+                        mainFrame.setAlwaysOnTop(true);
+                        trayIcon.displayMessage(mainFrame.getTitle(), "Started ripping " + ripper.getURL().toExternalForm(),
+                                MessageType.INFO);
+                        mainFrame.setAlwaysOnTop(false);
+                    } catch (NullPointerException e) {
+                        LOGGER.error("Could not send popup, are tray icons supported?");
+                    }
                 }
                 return t;
             } catch (Exception e) {
