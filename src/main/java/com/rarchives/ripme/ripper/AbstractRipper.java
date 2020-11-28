@@ -46,7 +46,7 @@ public abstract class AbstractRipper
     public abstract String getGID(URL url) throws MalformedURLException;
     public boolean hasASAPRipping() { return false; }
     // Everytime addUrlToDownload skips a already downloaded url this increases by 1
-    public int alreadyDownloadedUrls = 0;
+    public static int alreadyDownloadedUrls = 0;
     private boolean shouldStop = false;
     private static boolean thisIsATest = false;
 
@@ -475,7 +475,8 @@ public abstract class AbstractRipper
         }
 
         if (!completed) {
-            completed = true;
+            // Set alreadyDownloadedUrls to 0 so it doesn't carry over between rips
+            alreadyDownloadedUrls = 0;
             LOGGER.info("   Rip completed!");
 
             RipStatusComplete rsc = new RipStatusComplete(workingDir, getCount());
