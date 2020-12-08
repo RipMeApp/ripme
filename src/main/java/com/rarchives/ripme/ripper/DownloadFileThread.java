@@ -282,7 +282,14 @@ class DownloadFileThread extends Thread {
                 logger.debug("IOException", e);
                 logger.error("[!] " + Utils.getLocalizedString("exception.while.downloading.file") + ": " + url + " - "
                         + e.getMessage());
-            } finally {
+            } catch (NullPointerException npe){
+
+                logger.error("[!] " + Utils.getLocalizedString("failed.to.download") + " for URL " + url);
+                observer.downloadErrored(url,
+                        Utils.getLocalizedString("failed.to.download") + " " + url.toExternalForm());
+                return;
+
+            }finally {
                 // Close any open streams
                 try {
                     if (bis != null) {
