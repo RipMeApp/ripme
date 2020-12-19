@@ -57,7 +57,7 @@ public class GfycatRipper extends AbstractHTMLRipper {
     }
 
     public boolean isProfile() {
-        Pattern p = Pattern.compile("^https?://[wm.]*gfycat\\.com/@([a-zA-Z0-9]+).*$");
+        Pattern p = Pattern.compile("^https?://[wm.]*gfycat\\.com/@([a-zA-Z0-9\\.\\-\\_]+).*$");
         Matcher m = p.matcher(url.toExternalForm());
         return m.matches();
     }
@@ -79,11 +79,11 @@ public class GfycatRipper extends AbstractHTMLRipper {
 
     @Override
     public String getGID(URL url) throws MalformedURLException {
-        Pattern p = Pattern.compile("^https?://(thumbs\\.|[wm\\.]*)gfycat\\.com/@?([a-zA-Z0-9]+).*$");
+        Pattern p = Pattern.compile("^https?://(?:thumbs\\.|[wm\\.]*)gfycat\\.com/@?([a-zA-Z0-9\\.\\-\\_]+).*$");
         Matcher m = p.matcher(url.toExternalForm());
         
         if (m.matches())
-            return m.group(2);
+            return m.group(1);
         
         throw new MalformedURLException(
                 "Expected gfycat.com format: "
