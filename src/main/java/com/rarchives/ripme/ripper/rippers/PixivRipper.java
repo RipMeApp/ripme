@@ -242,7 +242,7 @@ public class PixivRipper extends AbstractJSONRipper {
 
             HttpURLConnection httpClient = (HttpURLConnection) auth_url.openConnection();
             httpClient.setRequestMethod("POST");
-            httpClient.setRequestProperty("User-Agent", "PixivAndroidApp/5.0.64 (Android 6.0)");
+            httpClient.setRequestProperty("User-Agent", "PixivAndroidApp/5.0.115 (Android 6.0)");
             httpClient.setRequestProperty("X-Client-Time", localtime);
             httpClient.setRequestProperty("X-Client-Hash", hexdigest(new String((localtime + HASH_SECRET).getBytes(), StandardCharsets.UTF_8)));
 
