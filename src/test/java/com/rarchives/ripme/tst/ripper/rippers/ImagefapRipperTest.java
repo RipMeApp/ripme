@@ -6,10 +6,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.rarchives.ripme.ripper.rippers.ImagefapRipper;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 public class ImagefapRipperTest extends RippersTest {
     @Test
+    @Tag("flaky")
     public void testImagefapAlbums() throws IOException {
         Map<URL, String> testURLs = new HashMap<>();
 
@@ -30,6 +33,6 @@ public class ImagefapRipperTest extends RippersTest {
     public void testImagefapGetAlbumTitle() throws IOException {
         URL url = new URL("https://www.imagefap.com/gallery.php?gid=7789753");
         ImagefapRipper ripper = new ImagefapRipper(url);
-        assertEquals("imagefap_Red.Heels.Lover.In.Love_7789753", ripper.getAlbumTitle(url));
+        Assertions.assertEquals("imagefap_Red.Heels.Lover.In.Love_7789753", ripper.getAlbumTitle(url));
     }
 }

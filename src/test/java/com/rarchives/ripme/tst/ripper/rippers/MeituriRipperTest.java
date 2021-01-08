@@ -5,6 +5,7 @@ import java.net.URL;
 
 import com.rarchives.ripme.ripper.rippers.MeituriRipper;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -20,6 +21,6 @@ public class MeituriRipperTest extends RippersTest {
     public void testGetGID() throws IOException {
         URL url = new URL("https://www.meituri.com/a/14449/");
         MeituriRipper ripper = new MeituriRipper(url);
-        assertEquals("14449", ripper.getGID(url));
+        Assertions.assertEquals("14449", ripper.getGID(url));
     }
 }

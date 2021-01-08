@@ -28,6 +28,13 @@ Download `ripme.jar` from the [latest release](https://github.com/ripmeapp/ripme
 
 For information about running the `.jar` file, see [the How To Run wiki](https://github.com/ripmeapp/ripme/wiki/How-To-Run-RipMe).
 
+## Installation
+
+On macOS, there is a [cask](https://github.com/Homebrew/homebrew-cask/blob/master/Casks/ripme.rb).
+```
+brew cask install ripme && xattr -d com.apple.quarantine /Applications/ripme.jar
+```
+
 ## Changelog
 
 [Changelog](https://github.com/ripmeapp/ripme/blob/master/ripme.json) **(ripme.json)**
@@ -81,10 +88,14 @@ This will include all dependencies in the JAR.
 
 # Running Tests
 
-After building you can run tests by running the following:
+Tests can be marked as beeing slow, or flaky. Default is to run all but the flaky tests. Slow tests can be excluded to
+run. slow and flaky tests can be run on its own. After building you can run tests, quoting might be necessary depending
+on your shell:
 
 ```bash
 mvn test
+mvn test -DexcludedGroups= -Dgroups=flaky,slow
+mvn test '-Dgroups=!slow'
 ```
 
 Please note that some tests may fail as sites change and our rippers become out of date.

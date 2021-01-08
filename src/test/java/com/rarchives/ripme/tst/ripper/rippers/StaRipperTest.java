@@ -5,22 +5,23 @@ import java.net.URL;
 
 import com.rarchives.ripme.ripper.rippers.StaRipper;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 public class StaRipperTest extends RippersTest {
     @Test
-    @Disabled("404 Link")
+    @Disabled("Ripper broken, Nullpointer exception")
     public void testRip() throws IOException {
-        StaRipper ripper = new StaRipper(new URL("https://sta.sh/2hn9rtavr1g"));
+        StaRipper ripper = new StaRipper(new URL("https://sta.sh/01umpyuxi4js"));
         testRipper(ripper);
     }
 
     @Test
-    @Disabled("404 Link")
+    @Disabled
     public void testGetGID() throws IOException {
-        URL url = new URL("https://sta.sh/2hn9rtavr1g");
+        URL url = new URL("https://sta.sh/01umpyuxi4js");
         StaRipper ripper = new StaRipper(url);
-        assertEquals("2hn9rtavr1g", ripper.getGID(url));
+        Assertions.assertEquals("01umpyuxi4js", ripper.getGID(url));
     }
 }

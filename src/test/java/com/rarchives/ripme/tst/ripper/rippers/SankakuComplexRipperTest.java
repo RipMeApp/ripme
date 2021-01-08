@@ -5,6 +5,7 @@ import java.net.URL;
 
 import com.rarchives.ripme.ripper.rippers.SankakuComplexRipper;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -29,13 +30,13 @@ public class SankakuComplexRipperTest extends RippersTest {
     public void testgetGID() throws IOException {
         URL url = new URL("https://idol.sankakucomplex.com/?tags=meme_%28me%21me%21me%21%29_%28cosplay%29");
         SankakuComplexRipper ripper = new SankakuComplexRipper(url);
-        assertEquals("idol._meme_(me!me!me!)_(cosplay)", ripper.getGID(url));
+        Assertions.assertEquals("idol._meme_(me!me!me!)_(cosplay)", ripper.getGID(url));
     }
 
     @Test
     public void testgetSubDomain() throws IOException {
         URL url = new URL("https://idol.sankakucomplex.com/?tags=meme_%28me%21me%21me%21%29_%28cosplay%29");
         SankakuComplexRipper ripper = new SankakuComplexRipper(url);
-        assertEquals("idol.", ripper.getSubDomain(url));
+        Assertions.assertEquals("idol.", ripper.getSubDomain(url));
     }
 }

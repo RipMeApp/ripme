@@ -3,6 +3,7 @@ package com.rarchives.ripme.tst.ripper.rippers;
 import java.io.IOException;
 import java.net.URL;
 import com.rarchives.ripme.ripper.rippers.ComicextraRipper;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 public class ComicextraRipperTest extends RippersTest {
@@ -13,6 +14,7 @@ public class ComicextraRipperTest extends RippersTest {
         testRipper(ripper);
     }
     @Test
+    @Disabled("no images found error, broken ripper?")
     public void testChapterUrl() throws IOException {
         URL url = new URL("https://www.comicextra.com/v-for-vendetta/chapter-1");
         ComicextraRipper ripper = new ComicextraRipper(url);

@@ -10,6 +10,7 @@ import java.util.regex.Pattern;
 import com.rarchives.ripme.ui.RipStatusMessage;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.json.JSONException;
 import org.jsoup.nodes.Document;
 
 import com.rarchives.ripme.ripper.AbstractHTMLRipper;
@@ -21,6 +22,22 @@ public class FlickrRipper extends AbstractHTMLRipper {
 
     private Document albumDoc = null;
     private final DownloadThreadPool flickrThreadPool;
+
+    private enum UrlType {
+        USER,
+        PHOTOSET
+    }
+
+    private class Album {
+        final UrlType type;
+        final String id;
+
+        Album(UrlType type, String id) {
+            this.type = type;
+            this.id = id;
+        }
+    }
+
     @Override
     public DownloadThreadPool getThreadPool() {
         return flickrThreadPool;
@@ -81,40 +98,44 @@ public class FlickrRipper extends AbstractHTMLRipper {
     }
 
     // The flickr api is a monster of weird settings so we just request everything that the webview does
-    private String apiURLBuilder(String photoset, String pageNumber, String apiKey) {
-        LOGGER.info("https://api.flickr.com/services/rest?extras=can_addmeta," +
-                "can_comment,can_download,can_share,contact,count_comments,count_faves,count_views,date_taken," +
-                "date_upload,icon_urls_deep,isfavorite,ispro,license,media,needs_interstitial,owner_name," +
-                "owner_datecreate,path_alias,realname,rotation,safety_level,secret_k,secret_h,url_c,url_f,url_h,url_k," +
-                "url_l,url_m,url_n,url_o,url_q,url_s,url_sq,url_t,url_z,visibility,visibility_source,o_dims," +
-                "is_marketplace_printable,is_marketplace_licensable,publiceditability&per_page=100&page="+ pageNumber + "&" +
-                "get_user_info=1&primary_photo_extras=url_c,%20url_h,%20url_k,%20url_l,%20url_m,%20url_n,%20url_o" +
-                ",%20url_q,%20url_s,%20url_sq,%20url_t,%20url_z,%20needs_interstitial,%20can_share&jump_to=&" +
-                "photoset_id=" + photoset + "&viewerNSID=&method=flickr.photosets.getPhotos&csrf=&" +
-                "api_key=" + apiKey + "&format=json&hermes=1&hermesClient=1&reqId=358ed6a0&nojsoncallback=1");
+    private String apiURLBuilder(Album album, String pageNumber, String apiKey) {
+        String method = null;
+        String idField = null;
+        switch (album.type) {
+            case PHOTOSET:
+                method = "flickr.photosets.getPhotos";
+                idField = "photoset_id=" + album.id;
+                break;
+            case USER:
+                method = "flickr.people.getPhotos";
+                idField = "user_id=" + album.id;
+                break;
+        }
+
         return "https://api.flickr.com/services/rest?extras=can_addmeta," +
-                "can_comment,can_download,can_share,contact,count_comments,count_faves,count_views,date_taken," +
-                "date_upload,icon_urls_deep,isfavorite,ispro,license,media,needs_interstitial,owner_name," +
-                "owner_datecreate,path_alias,realname,rotation,safety_level,secret_k,secret_h,url_c,url_f,url_h,url_k," +
-                "url_l,url_m,url_n,url_o,url_q,url_s,url_sq,url_t,url_z,visibility,visibility_source,o_dims," +
-                "is_marketplace_printable,is_marketplace_licensable,publiceditability&per_page=100&page="+ pageNumber + "&" +
-                "get_user_info=1&primary_photo_extras=url_c,%20url_h,%20url_k,%20url_l,%20url_m,%20url_n,%20url_o" +
-                ",%20url_q,%20url_s,%20url_sq,%20url_t,%20url_z,%20needs_interstitial,%20can_share&jump_to=&" +
-                "photoset_id=" + photoset + "&viewerNSID=&method=flickr.photosets.getPhotos&csrf=&" +
-                "api_key=" + apiKey + "&format=json&hermes=1&hermesClient=1&reqId=358ed6a0&nojsoncallback=1";
+        "can_comment,can_download,can_share,contact,count_comments,count_faves,count_views,date_taken," +
+        "date_upload,icon_urls_deep,isfavorite,ispro,license,media,needs_interstitial,owner_name," +
+        "owner_datecreate,path_alias,realname,rotation,safety_level,secret_k,secret_h,url_c,url_f,url_h,url_k," +
+        "url_l,url_m,url_n,url_o,url_q,url_s,url_sq,url_t,url_z,visibility,visibility_source,o_dims," +
+        "is_marketplace_printable,is_marketplace_licensable,publiceditability&per_page=100&page="+ pageNumber + "&" +
+        "get_user_info=1&primary_photo_extras=url_c,%20url_h,%20url_k,%20url_l,%20url_m,%20url_n,%20url_o" +
+        ",%20url_q,%20url_s,%20url_sq,%20url_t,%20url_z,%20needs_interstitial,%20can_share&jump_to=&" +
+        idField + "&viewerNSID=&method=" + method + "&csrf=&" +
+        "api_key=" + apiKey + "&format=json&hermes=1&hermesClient=1&reqId=358ed6a0&nojsoncallback=1";
     }
 
     private JSONObject getJSON(String page, String apiKey) {
         URL pageURL = null;
         String apiURL = null;
         try {
-            apiURL = apiURLBuilder(getPhotosetID(url.toExternalForm()), page, apiKey);
+            apiURL = apiURLBuilder(getAlbum(url.toExternalForm()), page, apiKey);
             pageURL = new URL(apiURL);
         }  catch (MalformedURLException e) {
             LOGGER.error("Unable to get api link " + apiURL + " is malformed");
         }
         try {
-            LOGGER.info(Http.url(pageURL).ignoreContentType().get().text());
+            LOGGER.info("Fetching: " + apiURL);
+            LOGGER.info("Response: " + Http.url(pageURL).ignoreContentType().get().text());
             return new JSONObject(Http.url(pageURL).ignoreContentType().get().text());
         } catch (IOException e) {
             LOGGER.error("Unable to get api link " + apiURL + " is malformed");
@@ -122,21 +143,32 @@ public class FlickrRipper extends AbstractHTMLRipper {
         }
     }
 
-    private String getPhotosetID(String url) {
+    private Album getAlbum(String url) throws MalformedURLException {
         Pattern p; Matcher m;
 
-        // Root:  https://www.flickr.com/photos/115858035@N04/
+        // User photostream:  https://www.flickr.com/photos/115858035@N04/
         // Album: https://www.flickr.com/photos/115858035@N04/sets/72157644042355643/
 
         final String domainRegex = "https?://[wm.]*flickr.com";
         final String userRegex = "[a-zA-Z0-9@_-]+";
         // Album
-        p = Pattern.compile("^" + domainRegex + "/photos/(" + userRegex + ")/(sets|albums)/([0-9]+)/?.*$");
+        p = Pattern.compile("^" + domainRegex + "/photos/" + userRegex + "/(sets|albums)/([0-9]+)/?.*$");
         m = p.matcher(url);
         if (m.matches()) {
-            return m.group(3);
+            return new Album(UrlType.PHOTOSET, m.group(2));
         }
-        return null;
+
+        // User photostream
+        p = Pattern.compile("^" + domainRegex + "/photos/(" + userRegex + ")/?$");
+        m = p.matcher(url);
+        if (m.matches()) {
+            return new Album(UrlType.USER, m.group(1));
+        }
+
+        String errorMessage = "Failed to extract photoset ID from url: " + url;
+
+        LOGGER.error(errorMessage);
+        throw new MalformedURLException(errorMessage);
     }
 
     @Override
@@ -144,7 +176,7 @@ public class FlickrRipper extends AbstractHTMLRipper {
         if (!url.toExternalForm().contains("/sets/")) {
             return super.getAlbumTitle(url);
         }
-        try {
+        try {   
             // Attempt to use album title as GID
             Document doc = getFirstPage();
             String user = url.toExternalForm();
@@ -214,9 +246,23 @@ public class FlickrRipper extends AbstractHTMLRipper {
             if (jsonData.has("stat") && jsonData.getString("stat").equals("fail")) {
                 break;
             } else {
-                int totalPages = jsonData.getJSONObject("photoset").getInt("pages");
+                // Determine root key
+                JSONObject rootData;
+
+                try {
+                    rootData = jsonData.getJSONObject("photoset");
+                } catch (JSONException e) {
+                    try {
+                        rootData = jsonData.getJSONObject("photos");
+                    } catch (JSONException innerE) {
+                        LOGGER.error("Unable to find photos in response");
+                        break;
+                    }
+                }
+
+                int totalPages = rootData.getInt("pages");
                 LOGGER.info(jsonData);
-                JSONArray pictures = jsonData.getJSONObject("photoset").getJSONArray("photo");
+                JSONArray pictures = rootData.getJSONArray("photo");
                 for (int i = 0; i < pictures.length(); i++) {
                     LOGGER.info(i);
                     JSONObject data = (JSONObject) pictures.get(i);

@@ -5,7 +5,8 @@ import java.net.URL;
 
 import com.rarchives.ripme.ripper.rippers.WordpressComicRipper;
 
-import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 public class WordpressComicRipperTest extends RippersTest {
@@ -22,7 +23,7 @@ public class WordpressComicRipperTest extends RippersTest {
     // http://shipinbottle.pepsaga.com/?p=281
 
     @Test
-    @Disabled("https://github.com/RipMeApp/ripme/issues/269 - Disabled test - WordpressRipperTest: various domains flaky in CI")
+    @Tag("flaky") // https://github.com/RipMeApp/ripme/issues/269 - Disabled test - WordpressRipperTest: various domains flaky in CI
     public void test_totempole666() throws IOException {
         WordpressComicRipper ripper = new WordpressComicRipper(
                 new URL("http://www.totempole666.com/comic/first-time-for-everything-00-cover/"));
@@ -30,14 +31,14 @@ public class WordpressComicRipperTest extends RippersTest {
     }
 
     @Test
-    @Disabled("https://github.com/RipMeApp/ripme/issues/269 - Disabled test - WordpressRipperTest: various domains flaky in CI")
+    @Tag("flaky") // https://github.com/RipMeApp/ripme/issues/269 - Disabled test - WordpressRipperTest: various domains flaky in CI
     public void test_buttsmithy() throws IOException {
         WordpressComicRipper ripper = new WordpressComicRipper(new URL("http://buttsmithy.com/archives/comic/p1"));
         testRipper(ripper);
     }
 
     @Test
-    @Disabled("https://github.com/RipMeApp/ripme/issues/269 - Disabled test - WordpressRipperTest: various domains flaky in CI")
+    @Tag("flaky") // https://github.com/RipMeApp/ripme/issues/269 - Disabled test - WordpressRipperTest: various domains flaky in CI
     public void test_themonsterunderthebed() throws IOException {
         WordpressComicRipper ripper = new WordpressComicRipper(
                 new URL("http://themonsterunderthebed.net/?comic=test-post"));
@@ -66,18 +67,19 @@ public class WordpressComicRipperTest extends RippersTest {
     public void test_konradokonski_getAlbumTitle() throws IOException {
         URL url = new URL("http://www.konradokonski.com/sawdust/comic/get-up/");
         WordpressComicRipper ripper = new WordpressComicRipper(url);
-        assertEquals("konradokonski.com_sawdust", ripper.getAlbumTitle(url));
+        Assertions.assertEquals("konradokonski.com_sawdust", ripper.getAlbumTitle(url));
 
     }
 
     @Test
-    @Disabled("https://github.com/RipMeApp/ripme/issues/269 - Disabled test - WordpressRipperTest: various domains flaky in CI")
+    @Tag("flaky") // https://github.com/RipMeApp/ripme/issues/269 - Disabled test - WordpressRipperTest: various domains flaky in CI
     public void test_freeadultcomix() throws IOException {
         WordpressComicRipper ripper = new WordpressComicRipper(
                 new URL("http://freeadultcomix.com/finders-feepaid-in-full-sparrow/"));
         testRipper(ripper);
     }
     @Test
+    @Tag("flaky")
     public void test_delvecomic() throws IOException {
         WordpressComicRipper ripper = new WordpressComicRipper(
                 new URL("http://thisis.delvecomic.com/NewWP/comic/in-too-deep/"));
@@ -93,7 +95,7 @@ public class WordpressComicRipperTest extends RippersTest {
     public void test_Eightmuses_getAlbumTitle() throws IOException {
         URL url = new URL("https://8muses.download/lustomic-playkittens-josh-samuel-porn-comics-8-muses/");
         WordpressComicRipper ripper = new WordpressComicRipper(url);
-        assertEquals("8muses.download_lustomic-playkittens-josh-samuel-porn-comics-8-muses", ripper.getAlbumTitle(url));
+        Assertions.assertEquals("8muses.download_lustomic-playkittens-josh-samuel-porn-comics-8-muses", ripper.getAlbumTitle(url));
     }
     @Test
     public void test_spyingwithlana_download() throws IOException {
@@ -105,11 +107,11 @@ public class WordpressComicRipperTest extends RippersTest {
     public void test_spyingwithlana_getAlbumTitle() throws IOException {
         URL url = new URL("http://spyingwithlana.com/comic/the-big-hookup/");
         WordpressComicRipper ripper = new WordpressComicRipper(url);
-        assertEquals("spyingwithlana_the-big-hookup", ripper.getAlbumTitle(url));
+        Assertions.assertEquals("spyingwithlana_the-big-hookup", ripper.getAlbumTitle(url));
     }
 
     @Test
-    @Disabled("https://github.com/RipMeApp/ripme/issues/269 - Disabled test - WordpressRipperTest: various domains flaky in CI")
+    @Tag("flaky") // https://github.com/RipMeApp/ripme/issues/269 - Disabled test - WordpressRipperTest: various domains flaky in CI
     public void test_pepsaga() throws IOException {
         WordpressComicRipper ripper = new WordpressComicRipper(new URL("http://shipinbottle.pepsaga.com/?p=281"));
         testRipper(ripper);

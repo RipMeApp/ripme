@@ -1,15 +1,17 @@
 package com.rarchives.ripme.tst;
 
 import com.rarchives.ripme.ripper.AbstractRipper;
-import junit.framework.TestCase;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.net.URL;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
-public class AbstractRipperTest extends TestCase {
+public class AbstractRipperTest {
 
+   @Test
     public void testGetFileName() throws IOException {
        String fileName = AbstractRipper.getFileName(new URL("http://www.tsumino.com/Image/Object?name=U1EieteEGwm6N1dGszqCpA%3D%3D"), "test", "test");
        assertEquals("test.test", fileName);

@@ -2,6 +2,7 @@ package com.rarchives.ripme.tst.ripper.rippers;
 
 import com.rarchives.ripme.ripper.rippers.VscoRipper;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -21,25 +22,14 @@ public class VscoRipperTest extends RippersTest {
     }
 
     /**
-     * Tests profile rip.
-     * 
-     * @throws IOException
-     */
-    @Test
-    public void testProfileRip() throws IOException {
-        VscoRipper ripper = new VscoRipper(new URL("https://vsco.co/jonathangodoy/images/1"));
-        testRipper(ripper);
-    }
-
-    /**
-     * Prevents Bug #679 from happening again.
+     * Tests profile rip., Prevents Bug #679 from happening again.
      * https://github.com/RipMeApp/ripme/issues/679
      * 
      * @throws IOException
      */
     @Test
     public void testHyphenatedRip() throws IOException {
-        VscoRipper ripper = new VscoRipper(new URL("https://vsco.co/jolly-roger/images/1"));
+        VscoRipper ripper = new VscoRipper(new URL("https://vsco.co/jolly-roger/gallery"));
         testRipper(ripper);
     }
 
@@ -50,11 +40,11 @@ public class VscoRipperTest extends RippersTest {
      */
     @Test
     public void testGetGID() throws IOException {
-        URL url = new URL("https://vsco.co/minijello/media/571cd612542220261a123441");
+        URL url = new URL("https://vsco.co/jolly-roger/media/590359c4ade3041f2658f407");
 
         VscoRipper ripper = new VscoRipper(url);
 
-        assertEquals("Failed to get GID", "minijello/571cd", ripper.getGID(url));
+        Assertions.assertEquals("jolly-roger/59035", ripper.getGID(url), "Failed to get GID");
     }
 
 }

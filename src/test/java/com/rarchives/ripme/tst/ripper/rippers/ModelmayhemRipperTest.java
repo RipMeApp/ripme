@@ -5,6 +5,7 @@ import java.net.URL;
 
 import com.rarchives.ripme.ripper.rippers.ModelmayhemRipper;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -22,6 +23,6 @@ public class ModelmayhemRipperTest extends RippersTest {
     public void testGetGID() throws IOException {
         ModelmayhemRipper ripper = new ModelmayhemRipper(
                 new URL("https://www.modelmayhem.com/portfolio/520206/viewall"));
-        assertEquals("520206", ripper.getGID(new URL("https://www.modelmayhem.com/portfolio/520206/viewall")));
+        Assertions.assertEquals("520206", ripper.getGID(new URL("https://www.modelmayhem.com/portfolio/520206/viewall")));
     }
 }

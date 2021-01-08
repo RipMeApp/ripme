@@ -5,6 +5,7 @@ import java.net.URL;
 
 import com.rarchives.ripme.ripper.rippers.NfsfwRipper;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -21,12 +22,12 @@ public class NfsfwRipperTest extends RippersTest {
     public void testGetGID() throws IOException {
         URL url = new URL("http://nfsfw.com/gallery/v/Kitten/");
         NfsfwRipper ripper = new NfsfwRipper(url);
-        assertEquals("Kitten", ripper.getGID(url));
+        Assertions.assertEquals("Kitten", ripper.getGID(url));
         url = new URL("http://nfsfw.com/gallery/v/Kitten");
-        assertEquals("Kitten", ripper.getGID(url));
+        Assertions.assertEquals("Kitten", ripper.getGID(url));
         url = new URL("http://nfsfw.com/gallery/v/Kitten/gif_001/");
-        assertEquals("Kitten__gif_001", ripper.getGID(url));
+        Assertions.assertEquals("Kitten__gif_001", ripper.getGID(url));
         url = new URL("http://nfsfw.com/gallery/v/Kitten/gif_001/");
-        assertEquals("Kitten__gif_001", ripper.getGID(url));
+        Assertions.assertEquals("Kitten__gif_001", ripper.getGID(url));
     }
 }

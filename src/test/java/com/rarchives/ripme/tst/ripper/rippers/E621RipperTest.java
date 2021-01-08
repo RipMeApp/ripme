@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.URL;
 
 import com.rarchives.ripme.ripper.rippers.E621Ripper;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 public class E621RipperTest extends RippersTest {
@@ -30,7 +31,7 @@ public class E621RipperTest extends RippersTest {
         try {
             noNextPageRipper.getNextPage(noNextPageRipper.getFirstPage());
         } catch (IOException e) {
-            assertEquals(e.getMessage(), "No more pages.");
+            Assertions.assertEquals(e.getMessage(), "No more pages.");
         }
     }
     @Test
@@ -57,7 +58,7 @@ public class E621RipperTest extends RippersTest {
         try {
             noNextPageRipper.getNextPage(noNextPageRipper.getFirstPage());
         } catch (IOException e) {
-            assertEquals(e.getMessage(), "No more pages.");
+            Assertions.assertEquals(e.getMessage(), "No more pages.");
         }
     }
 }

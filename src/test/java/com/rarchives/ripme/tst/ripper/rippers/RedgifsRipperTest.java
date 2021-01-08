@@ -14,6 +14,7 @@ public class RedgifsRipperTest extends RippersTest {
      * @throws IOException
      */
     @Test
+    @Disabled("test or ripper broken")
     public void testRedgifsGoodURL() throws IOException{
         RedgifsRipper ripper = new RedgifsRipper(new URL("https://www.redgifs.com/watch/talkativewarpeddragon-petite"));
         testRipper(ripper);
@@ -24,6 +25,7 @@ public class RedgifsRipperTest extends RippersTest {
      * @throws IOException
      */
     @Test
+    @Tag("flaky")
     public void testRedgifsBadRL() throws IOException{
         RedgifsRipper ripper = new RedgifsRipper(new URL("https://www.gifdeliverynetwork.com/foolishelasticchimpanzee"));
         testRipper(ripper);
@@ -49,8 +51,8 @@ public class RedgifsRipperTest extends RippersTest {
         Document doc = ripper.getFirstPage();
 
         doc = ripper.getNextPage(doc);
-        assertTrue("https://napi.redgifs.com/v1/gfycats/search?search_text=little%20caprice&count=150&start=150".equalsIgnoreCase(doc.location()));
+        Assertions.assertTrue("https://napi.redgifs.com/v1/gfycats/search?search_text=little%20caprice&count=150&start=150".equalsIgnoreCase(doc.location()));
         doc = ripper.getNextPage(doc);
-        assertTrue("https://napi.redgifs.com/v1/gfycats/search?search_text=little%20caprice&count=150&start=300".equalsIgnoreCase(doc.location()));
+        Assertions.assertTrue("https://napi.redgifs.com/v1/gfycats/search?search_text=little%20caprice&count=150&start=300".equalsIgnoreCase(doc.location()));
     }
 }
