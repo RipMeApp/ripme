@@ -45,7 +45,9 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
         "shipinbottle.pepsaga.com",
         "8muses.download",
         "spyingwithlana.com",
-        "comixfap.net"
+        "comixfap.net",
+            "manytoon.me",
+            "manhwahentai.me"
     );
 
     private static List<String> theme1 = Arrays.asList(
@@ -56,6 +58,11 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
             "www.konradokonski.com",
             "thisis.delvecomic.com",
             "spyingwithlana.com"
+    );
+
+    private static List<String> webtoonTheme = Arrays.asList(
+            "manhwahentai.me",
+            "manytoon.me"
     );
 
     @Override
@@ -172,6 +179,18 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
             }
 
             pat = Pattern.compile("https?://comixfap.net/([a-zA-Z0-9-]*)/?");
+            mat = pat.matcher(url.toExternalForm());
+            if (mat.matches()) {
+                return true;
+            }
+
+            pat = Pattern.compile("https?://manytoon.me/manhwa/([a-zA-Z0-9_-]+)/chapter-\\d+/?$");
+            mat = pat.matcher(url.toExternalForm());
+            if (mat.matches()) {
+                return true;
+            }
+
+            pat = Pattern.compile("https://manhwahentai.me/webtoon/([a-zA-Z0-9_-]+)/([a-zA-Z0-9_-])+/?");
             mat = pat.matcher(url.toExternalForm());
             if (mat.matches()) {
                 return true;
@@ -299,6 +318,19 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
             return "comixfap_" + mat.group(1);
         }
 
+        pat = Pattern.compile("https?://manytoon.me/manhwa/([a-zA-Z0-9_-]+)/([a-zA-Z0-9_-])+/?");
+        mat = pat.matcher(url.toExternalForm());
+        if (mat.matches()) {
+            return "manytoon.me_" + mat.group(1) + "_" + mat.group(2);
+        }
+
+        pat = Pattern.compile("https://manhwahentai.me/webtoon/([a-zA-Z0-9_-]+)/([a-zA-Z0-9_-])+/?");
+        mat = pat.matcher(url.toExternalForm());
+        if (mat.matches()) {
+            return "manhwahentai.me_" + mat.group(1) + "_" + mat.group(2);
+        }
+
+
         return super.getAlbumTitle(url);
     }
 
@@ -371,6 +403,11 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
             }
 
             result.add(elem.attr("src"));
+        } else if (webtoonTheme.contains(getHost())) {
+            for (Element el : doc.select("img.wp-manga-chapter-img")) {
+                LOGGER.info(el.toString());
+                result.add(getWebtoonImageUrl(el));
+            }
         }
 
         // freeadultcomix gets it own if because it needs to add http://freeadultcomix.com to the start of each link
@@ -404,6 +441,14 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
 
 
         return result;
+    }
+
+    private String getWebtoonImageUrl(Element el) {
+        if (el.attr("src").contains("http")) {
+            return el.attr("src");
+        } else {
+            return el.attr("data-src");
+        }
     }
 
     @Override
