@@ -60,7 +60,6 @@ public class RedditRipperTest extends RippersTest {
         testRipper(ripper);
     }
 
-<<<<<<< HEAD
     /**
      * GFYCAT TEST Tests a gfycat URL with the gifdeliverynetwork/redgifs hosted video
      *
@@ -70,12 +69,12 @@ public class RedditRipperTest extends RippersTest {
     public void testRedditGfycatRedirectURL() throws IOException {
         RedditRipper ripper = new RedditRipper(
                 new URL("https://www.reddit.com/r/NSFW_GIF/comments/ennwsa/gorgeous_tits/"));
-=======
+    }
+
     @Test
     public void testRedditGallery() throws IOException{
         RedditRipper ripper = new RedditRipper(
                 new URL("https://www.reddit.com/gallery/hrrh23"));
->>>>>>> upstream/master
         testRipper(ripper);
     }
 }
