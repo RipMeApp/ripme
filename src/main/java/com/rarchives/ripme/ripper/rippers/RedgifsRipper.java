@@ -55,12 +55,12 @@ public class RedgifsRipper extends AbstractHTMLRipper {
     }
 
     public Matcher isProfile() {
-        Pattern p = Pattern.compile("^https?://[wm.]*redgifs\\.com/users/([a-zA-Z0-9_-]+).*$");
+        Pattern p = Pattern.compile("^https?://[wm.]*redgifs\\.com/users/([a-zA-Z0-9_.-]+).*$");
         return p.matcher(url.toExternalForm());
     }
 
     public Matcher isSearch() {
-        Pattern p = Pattern.compile("^https?://[wm.]*redgifs\\.com/gifs/browse/([a-zA-Z0-9_-]+).*$");
+        Pattern p = Pattern.compile("^https?://[wm.]*redgifs\\.com/gifs/browse/([a-zA-Z0-9_.-]+).*$");
         return p.matcher(url.toExternalForm());
     }
 
@@ -131,7 +131,7 @@ public class RedgifsRipper extends AbstractHTMLRipper {
                        .ignoreContentType().get();
             return (hasURLs(d).isEmpty()) ? null : d;
         } else {
-            if (cursor.equals("")) {
+            if (cursor.equals("") || cursor.equals("null")) {
                 return null;
             } else {
                 Document d =  Http.url(new URL("https://napi.redgifs.com/v1/users/" +  username + "/gfycats?count=" + count + "&cursor=" + cursor)).ignoreContentType().get();
@@ -170,7 +170,7 @@ public class RedgifsRipper extends AbstractHTMLRipper {
         for (int i = 0; i < content.length(); i++) {
             result.add(content.getJSONObject(i).getString("mp4Url"));
         }
-        cursor = page.getString("cursor");
+        cursor = page.get("cursor").toString();
         return result;
     }
 
