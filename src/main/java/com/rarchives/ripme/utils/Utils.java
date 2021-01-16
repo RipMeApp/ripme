@@ -856,6 +856,10 @@ public class Utils {
         return false;
     }
 
+    public static boolean fuzzyExistsBetter(Path folder, String filename) {
+        return Files.exists(folder.resolve(filename));
+    }
+
     public static String sanitizeSaveAs(String fileNameToSan) {
         return fileNameToSan.replaceAll("[\\\\/:*?\"<>|]", "_");
     }

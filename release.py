@@ -60,7 +60,7 @@ commitMessage = ripmeJson.get("changeList")[0]
 releaseVersion = ripmeJson.get("latestVersion")
 debug = args.debug
 accessToken = args.token
-repoOwner = "ripmeapp"
+repoOwner = "borderline232"
 repoName = "ripme"
 
 if not os.path.isfile(fileToUploadPath):
