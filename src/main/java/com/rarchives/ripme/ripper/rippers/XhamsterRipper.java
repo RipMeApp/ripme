@@ -4,16 +4,18 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.jsoup.Connection.Response;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
 import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 import com.rarchives.ripme.utils.Http;
-
 
 // WARNING
 // This ripper changes all requests to use the MOBILE version of the site
@@ -27,8 +29,11 @@ public class XhamsterRipper extends AbstractHTMLRipper {
     }
 
     private int index = 1;
+    private Document albumDoc = null;
+    private Map<String, String> cookies = new HashMap<>();
 
-    @Override public boolean hasASAPRipping() {
+    @Override
+    public boolean hasASAPRipping() {
         return true;
     }
 
@@ -73,10 +78,8 @@ public class XhamsterRipper extends AbstractHTMLRipper {
             return m.group(2);
         }
 
-            throw new MalformedURLException(
-                "Expected xhamster.com gallery formats: "
-                        + "xhamster.com/photos/gallery/xxxxx-#####"
-                        + " Got: " + url);
+        throw new MalformedURLException(
+                "Expected xhamster.com gallery formats: " + "xhamster.com/photos/gallery/xxxxx-#####" + " Got: " + url);
     }
 
     @Override
@@ -97,18 +100,22 @@ public class XhamsterRipper extends AbstractHTMLRipper {
 
     @Override
     public boolean pageContainsAlbums(URL url) {
-        Pattern p = Pattern.compile("^https?://[\\w\\w.]*xhamster\\.com/users/([a-zA-Z0-9_-]+)/(photos|videos)(/\\d+)?");
+        Pattern p = Pattern
+                .compile("^https?://[\\w\\w.]*xhamster\\.com/users/([a-zA-Z0-9_-]+)/(photos|videos)(/\\d+)?");
         Matcher m = p.matcher(url.toExternalForm());
         LOGGER.info("Checking if page has albums");
         LOGGER.info(m.matches());
         return m.matches();
     }
 
-
     @Override
     public Document getFirstPage() throws IOException {
-        // "url" is an instance field of the superclass
-        return Http.url(url).get();
+        if (albumDoc == null) {
+            Response resp = Http.url(url).response();
+            cookies.putAll(resp.cookies());
+            albumDoc = resp.parse();
+        }
+        return albumDoc;
     }
 
     @Override
@@ -118,7 +125,8 @@ public class XhamsterRipper extends AbstractHTMLRipper {
         if (m.matches()) {
             return true;
         }
-        p = Pattern.compile("^https?://[\\w\\w.]*xhamster2?\\.(com|one|desi)/users/([a-zA-Z0-9_-]+)/(photos|videos)(/\\d+)?");
+        p = Pattern.compile(
+                "^https?://[\\w\\w.]*xhamster2?\\.(com|one|desi)/users/([a-zA-Z0-9_-]+)/(photos|videos)(/\\d+)?");
         m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             return true;
@@ -156,23 +164,25 @@ public class XhamsterRipper extends AbstractHTMLRipper {
         LOGGER.debug("Checking for urls");
         List<String> result = new ArrayList<>();
         if (!isVideoUrl(url)) {
-          for (Element page : doc.select("div.picture_view > div.pictures_block > div.items > div.item-container > a.item")) {
-              // Make sure we don't waste time running the loop if the ripper has been stopped
-              if (isStopped()) {
-                  break;
-              }
-              String pageWithImageUrl = page.attr("href");
-              try {
-                  // This works around some redirect fuckery xhamster likes to do where visiting m.xhamster.com sends to
-                  // the page chamster.com but displays the mobile site from m.xhamster.com
-                  pageWithImageUrl = pageWithImageUrl.replaceAll("://xhamster\\.", "://m.xhamster.");
-                  pageWithImageUrl = pageWithImageUrl.replaceAll("://xhamster2\\.", "://m.xhamster.");
-                  String image = Http.url(new URL(pageWithImageUrl)).get().select("a > img#photoCurr").attr("src");
-                  downloadFile(image);
-              } catch (IOException e) {
-                  LOGGER.error("Was unable to load page " + pageWithImageUrl);
-              }
-          }
+            for (Element page : doc
+                    .select("div.picture_view > div.pictures_block > div.items > div.item-container > a.item")) {
+                // Make sure we don't waste time running the loop if the ripper has been stopped
+                if (isStopped()) {
+                    break;
+                }
+                String pageWithImageUrl = page.attr("href");
+                try {
+                    // This works around some redirect fuckery xhamster likes to do where visiting
+                    // m.xhamster.com sends to
+                    // the page chamster.com but displays the mobile site from m.xhamster.com
+                    pageWithImageUrl = pageWithImageUrl.replaceAll("://xhamster\\.", "://m.xhamster.");
+                    pageWithImageUrl = pageWithImageUrl.replaceAll("://xhamster2\\.", "://m.xhamster.");
+                    String image = Http.url(new URL(pageWithImageUrl)).get().select("a > img#photoCurr").attr("src");
+                    downloadFile(image);
+                } catch (IOException e) {
+                    LOGGER.error("Was unable to load page " + pageWithImageUrl);
+                }
+            }
         } else {
             String imgUrl = doc.select("div.player-container > a").attr("href");
             downloadFile(imgUrl);
@@ -182,18 +192,19 @@ public class XhamsterRipper extends AbstractHTMLRipper {
 
     @Override
     public void downloadURL(URL url, int index) {
-        addURLToDownload(url, getPrefix(index));
+        // addURLToDownload(url, getPrefix(index));
+        addURLToDownload(url, getPrefix(index), "", this.url.toExternalForm(), cookies);
     }
 
     private void downloadFile(String url) {
         try {
-            addURLToDownload(new URL(url), getPrefix(index));
+            addURLToDownload(new URL(url), getPrefix(index), "", this.url.toExternalForm(), cookies);
             index = index + 1;
         } catch (MalformedURLException e) {
             LOGGER.error("The url \"" + url + "\" is malformed");
         }
     }
-    
+
     @Override
     public String getAlbumTitle(URL url) throws MalformedURLException {
         try {
