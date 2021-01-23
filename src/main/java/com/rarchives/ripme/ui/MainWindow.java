@@ -49,14 +49,15 @@ import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 
-import org.apache.log4j.ConsoleAppender;
-import org.apache.log4j.FileAppender;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-
 import com.rarchives.ripme.ripper.AbstractRipper;
 import com.rarchives.ripme.utils.RipUtils;
 import com.rarchives.ripme.utils.Utils;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.config.Configuration;
+import org.apache.logging.log4j.core.config.LoggerConfig;
 
 import javax.swing.UnsupportedLookAndFeelException;
 
@@ -65,7 +66,7 @@ import javax.swing.UnsupportedLookAndFeelException;
  */
 public final class MainWindow implements Runnable, RipStatusHandler {
 
-    private static final Logger LOGGER = Logger.getLogger(MainWindow.class);
+    private static final Logger LOGGER = LogManager.getLogger(MainWindow.class);
 
     private boolean isRipping = false; // Flag to indicate if we're ripping something
 
@@ -993,16 +994,11 @@ public final class MainWindow implements Runnable, RipStatusHandler {
             newLevel = Level.ERROR;
             break;
         }
-        Logger.getRootLogger().setLevel(newLevel);
-        LOGGER.setLevel(newLevel);
-        ConsoleAppender ca = (ConsoleAppender) Logger.getRootLogger().getAppender("stdout");
-        if (ca != null) {
-            ca.setThreshold(newLevel);
-        }
-        FileAppender fa = (FileAppender) Logger.getRootLogger().getAppender("FILE");
-        if (fa != null) {
-            fa.setThreshold(newLevel);
-        }
+        LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
+        Configuration config = ctx.getConfiguration();
+        LoggerConfig loggerConfig = config.getLoggerConfig(LogManager.ROOT_LOGGER_NAME);
+        loggerConfig.setLevel(newLevel);
+        ctx.updateLoggers();  // This causes all Loggers to refetch information from their LoggerConfig.
     }
 
     private void setupTrayIcon() {
@@ -1382,34 +1378,34 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         switch (msg.getStatus()) {
         case LOADING_RESOURCE:
         case DOWNLOAD_STARTED:
-            if (LOGGER.isEnabledFor(Level.INFO)) {
+            if (LOGGER.isEnabled(Level.INFO)) {
                 appendLog("Downloading " + msg.getObject(), Color.BLACK);
             }
             break;
         case DOWNLOAD_COMPLETE:
-            if (LOGGER.isEnabledFor(Level.INFO)) {
+            if (LOGGER.isEnabled(Level.INFO)) {
                 appendLog("Downloaded " + msg.getObject(), Color.GREEN);
             }
             break;
         case DOWNLOAD_COMPLETE_HISTORY:
-            if (LOGGER.isEnabledFor(Level.INFO)) {
+            if (LOGGER.isEnabled(Level.INFO)) {
                 appendLog("" + msg.getObject(), Color.GREEN);
             }
             break;
 
         case DOWNLOAD_ERRORED:
-            if (LOGGER.isEnabledFor(Level.ERROR)) {
+            if (LOGGER.isEnabled(Level.ERROR)) {
                 appendLog((String) msg.getObject(), Color.RED);
             }
             break;
         case DOWNLOAD_WARN:
-            if (LOGGER.isEnabledFor(Level.WARN)) {
+            if (LOGGER.isEnabled(Level.WARN)) {
                 appendLog((String) msg.getObject(), Color.ORANGE);
             }
             break;
 
         case RIP_ERRORED:
-            if (LOGGER.isEnabledFor(Level.ERROR)) {
+            if (LOGGER.isEnabled(Level.ERROR)) {
                 appendLog((String) msg.getObject(), Color.RED);
             }
             stopButton.setEnabled(false);
@@ -1511,7 +1507,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
             // Update total bytes
             break;
         case NO_ALBUM_OR_USER:
-            if (LOGGER.isEnabledFor(Level.ERROR)) {
+            if (LOGGER.isEnabled(Level.ERROR)) {
                 appendLog((String) msg.getObject(), Color.RED);
             }
             stopButton.setEnabled(false);

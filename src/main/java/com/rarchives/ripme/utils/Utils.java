@@ -3,7 +3,6 @@ package com.rarchives.ripme.utils;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Constructor;
 import java.net.URI;
@@ -40,9 +39,15 @@ import com.rarchives.ripme.ripper.AbstractRipper;
 
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
-import org.apache.log4j.PropertyConfigurator;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.appender.RollingFileAppender;
+import org.apache.logging.log4j.core.appender.rolling.DefaultRolloverStrategy;
+import org.apache.logging.log4j.core.appender.rolling.SizeBasedTriggeringPolicy;
+import org.apache.logging.log4j.core.appender.rolling.TriggeringPolicy;
+import org.apache.logging.log4j.core.config.Configuration;
+import org.apache.logging.log4j.core.config.LoggerConfig;
 
 /**
  * Common utility functions used in various places throughout the project.
@@ -54,7 +59,7 @@ public class Utils {
     private static final String RIP_DIRECTORY = "rips";
     private static final String CONFIG_FILE = "rip.properties";
     private static final String OS = System.getProperty("os.name").toLowerCase();
-    private static final Logger LOGGER = Logger.getLogger(Utils.class);
+    private static final Logger LOGGER = LogManager.getLogger(Utils.class);
     private static final int SHORTENED_PATH_LENGTH = 12;
 
     private static PropertiesConfiguration config;
@@ -602,20 +607,32 @@ public class Utils {
      * Configures root logger, either for FILE output or just console.
      */
     public static void configureLogger() {
-        LogManager.shutdown();
-        String logFile = getConfigBoolean("log.save", false) ? "log4j.file.properties" : "log4j.properties";
-        try (InputStream stream = Utils.class.getClassLoader().getResourceAsStream(logFile)) {
-            if (stream == null) {
-                PropertyConfigurator.configure("src/main/resources/" + logFile);
-            } else {
-                PropertyConfigurator.configure(stream);
+        LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
+        Configuration config = ctx.getConfiguration();
+        LoggerConfig loggerConfig = config.getLoggerConfig(LogManager.ROOT_LOGGER_NAME);
+
+        // write to ripme.log file if checked in GUI
+        boolean logSave = getConfigBoolean("log.save", false);
+        if (logSave) {
+            LOGGER.debug("add rolling appender ripmelog");
+            TriggeringPolicy tp = SizeBasedTriggeringPolicy.createPolicy("20M");
+            DefaultRolloverStrategy rs = DefaultRolloverStrategy.newBuilder().withMax("2").build();
+            RollingFileAppender rolling = RollingFileAppender.newBuilder()
+                    .setName("ripmelog")
+                    .withFileName("ripme.log")
+                    .withFilePattern("%d{yyyy-MM-dd HH:mm:ss} %p %m%n")
+                    .withPolicy(tp)
+                    .withStrategy(rs)
+                    .build();
+            loggerConfig.addAppender(rolling, null, null);
+        } else {
+            LOGGER.debug("remove rolling appender ripmelog");
+            if (config.getAppender("ripmelog") != null) {
+                config.getAppender("ripmelog").stop();
             }
-
-            LOGGER.info("Loaded " + logFile);
-        } catch (IOException e) {
-            LOGGER.error(e.getMessage(), e);
+            loggerConfig.removeAppender("ripmelog");
         }
-
+        ctx.updateLoggers();  // This causes all Loggers to refetch information from their LoggerConfig.
     }
 
     /**
