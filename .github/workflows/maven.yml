@@ -12,7 +12,7 @@ jobs:
         java: [1.8]
         include: # test newest java on one os only, upload from ubuntu java8
           - os: ubuntu-latest
-            java: 1.14
+            java: 1.15
           - os: ubuntu-latest
             upload: true
 
