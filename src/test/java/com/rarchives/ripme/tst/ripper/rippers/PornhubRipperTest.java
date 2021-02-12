@@ -29,7 +29,7 @@ public class PornhubRipperTest extends RippersTest {
 
     @Test
     public void testGetNextPage() throws IOException {
-        String baseURL = "https://www.pornhub.com/album/43902391";
+        String baseURL = "https://www.pornhub.com/album/30687901";
         PornhubRipper ripper = new PornhubRipper(new URL(baseURL));
         Document page = Http.url(baseURL).get();
         int numPagesRemaining = 1;

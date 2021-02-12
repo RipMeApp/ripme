@@ -14,6 +14,7 @@ import com.rarchives.ripme.ripper.rippers.ImgurRipper;
 import com.rarchives.ripme.ripper.rippers.RedgifsRipper;
 import com.rarchives.ripme.ripper.rippers.VidbleRipper;
 import com.rarchives.ripme.ripper.rippers.GfycatRipper;
+import com.rarchives.ripme.ripper.rippers.SoundgasmRipper;
 import org.apache.commons.lang.math.NumberUtils;
 import org.apache.log4j.Logger;
 import org.jsoup.Jsoup;
@@ -124,6 +125,20 @@ public class RipUtils {
             } catch (IOException e) {
                 // Do nothing
                 logger.warn("Exception while retrieving eroshare page:", e);
+            }
+            return result;
+        }
+        else if (url.toExternalForm().contains("soundgasm.net")) {
+            try {
+                logger.info("Getting soundgasm page " + url);
+                SoundgasmRipper r = new SoundgasmRipper(url);
+                Document tempDoc = r.getFirstPage();
+                for (String u : r.getURLsFromPage(tempDoc)) {
+                    result.add(new URL(u));
+                }
+            } catch (IOException e) {
+                // Do nothing
+                logger.warn("Exception while retrieving soundgasm page:", e);
             }
             return result;
         }

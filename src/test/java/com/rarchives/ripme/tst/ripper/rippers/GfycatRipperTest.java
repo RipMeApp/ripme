@@ -44,4 +44,13 @@ public class GfycatRipperTest extends RippersTest {
         GfycatRipper ripper = new GfycatRipper(new URL("https://gfycat.com/amp/TemptingExcellentIchthyosaurs"));
         testRipper(ripper);
     }
+
+    /**
+     * Rips a Gfycat profile with special characters in username
+     * @throws IOException
+     */
+    public void testGfycatSpecialChar() throws IOException {
+        GfycatRipper ripper = new GfycatRipper(new URL("https://gfycat.com/@rsss.kr"));
+        testRipper(ripper);
+    }
 }

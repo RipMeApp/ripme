@@ -35,7 +35,7 @@ public class XhamsterRipperTest extends RippersTest {
     @Test
     @Tag("flaky")
     public void testXhamsterAlbumDesiDomain() throws IOException {
-        XhamsterRipper ripper = new XhamsterRipper(new URL("https://xhamster.desi/photos/gallery/japanese-dolls-4-asahi-mizuno-7254664"));
+        XhamsterRipper ripper = new XhamsterRipper(new URL("https://xhamster5.desi/photos/gallery/japanese-dolls-4-asahi-mizuno-7254664"));
         testRipper(ripper);
     }
     @Test
@@ -49,9 +49,9 @@ public class XhamsterRipperTest extends RippersTest {
         XhamsterRipper ripper = new XhamsterRipper(new URL("https://pt.xhamster.com/photos/gallery/silvana-7105696"));
         testRipper(ripper);
     }
-
+    @Test
     public void testGetGID() throws IOException {
-        URL url = new URL("https://xhamster.com/photos/gallery/japanese-dolls-4-asahi-mizuno-7254664");
+        URL url = new URL("https://xhamster5.desi/photos/gallery/japanese-dolls-4-asahi-mizuno-7254664");
         XhamsterRipper ripper = new XhamsterRipper(url);
         Assertions.assertEquals("7254664", ripper.getGID(url));
     }
