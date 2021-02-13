@@ -2,7 +2,6 @@ package com.rarchives.ripme.utils;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
@@ -22,7 +21,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -32,7 +30,6 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Stream;
 
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
@@ -359,7 +356,7 @@ public class Utils {
                 if (wasFirstParam) {
                     c = "?";
                 }
-                url = url.substring(0, paramIndex) + c + url.substring(nextParam + 1, url.length());
+                url = url.substring(0, paramIndex) + c + url.substring(nextParam + 1);
             } else {
                 url = url.substring(0, paramIndex);
             }
@@ -510,8 +507,7 @@ public class Utils {
             return path;
         }
 
-        String original = path; // needs to be checked if lowercase exists
-        String lastPart = original.substring(index + 1).toLowerCase(); // setting lowercase to check if it exists
+        String lastPart = path.substring(index + 1).toLowerCase(); // setting lowercase to check if it exists
 
         // Get a List of all Directories and check its lowercase
         // if file exists return it
@@ -525,7 +521,8 @@ public class Utils {
             }
         }
 
-        return original;
+        // otherwise return original path
+        return path;
     }
 
     /**
@@ -771,7 +768,7 @@ public class Utils {
 
             Path myPath;
             if (uri.getScheme().equals("jar")) {
-                FileSystem fileSystem = FileSystems.newFileSystem(uri, Collections.<String, Object>emptyMap());
+                FileSystem fileSystem = FileSystems.newFileSystem(uri, Collections.emptyMap());
                 myPath = fileSystem.getPath("/");
             } else {
                 myPath = Paths.get(uri).getParent();
@@ -813,7 +810,7 @@ public class Utils {
      *         bar
      */
     public static String getByteStatusText(int completionPercentage, int bytesCompleted, int bytesTotal) {
-        return String.valueOf(completionPercentage) + "%  - " + Utils.bytesToHumanReadable(bytesCompleted) + " / "
+        return completionPercentage + "%  - " + Utils.bytesToHumanReadable(bytesCompleted) + " / "
                 + Utils.bytesToHumanReadable(bytesTotal);
     }
 
@@ -847,7 +844,7 @@ public class Utils {
 
         for (File file : listOfFiles) {
             if (file.isFile()) {
-                String[] filename = file.getName().split("\\.(?=[^\\.]+$)"); // split filename from it's extension
+                String[] filename = file.getName().split("\\.(?=[^.]+$)"); // split filename from it's extension
                 if (filename[0].equalsIgnoreCase(fileName)) {
                     return true;
                 }
@@ -861,15 +858,11 @@ public class Utils {
     }
 
     public static File shortenSaveAsWindows(String ripsDirPath, String fileName) throws FileNotFoundException {
-        // int ripDirLength = ripsDirPath.length();
-        // int maxFileNameLength = 260 - ripDirLength;
-        // LOGGER.info(maxFileNameLength);
         LOGGER.error("The filename " + fileName + " is to long to be saved on this file system.");
         LOGGER.info("Shortening filename");
         String fullPath = ripsDirPath + File.separator + fileName;
         // How long the path without the file name is
         int pathLength = ripsDirPath.length();
-        int fileNameLength = fileName.length();
         if (pathLength == 260) {
             // We've reached the max length, there's nothing more we can do
             throw new FileNotFoundException("File path is too long for this OS");
@@ -879,7 +872,6 @@ public class Utils {
         // file extension
         String fileExt = saveAsSplit[saveAsSplit.length - 1];
         // The max limit for paths on Windows is 260 chars
-        LOGGER.info(fullPath.substring(0, 259 - pathLength - fileExt.length() + 1) + "." + fileExt);
         fullPath = fullPath.substring(0, 259 - pathLength - fileExt.length() + 1) + "." + fileExt;
         LOGGER.info(fullPath);
         LOGGER.info(fullPath.length());
