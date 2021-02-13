@@ -11,15 +11,17 @@ repositories {
 }
 
 dependencies {
+  implementation("com.lmax:disruptor:3.4.2")
   implementation("org.java-websocket:Java-WebSocket:1.5.1")
   implementation("org.jsoup:jsoup:1.8.1")
   implementation("org.json:json:20190722")
   implementation("commons-configuration:commons-configuration:1.7")
-  implementation("log4j:log4j:1.2.17")
   implementation("commons-cli:commons-cli:1.2")
   implementation("commons-io:commons-io:1.3.2")
   implementation("org.apache.httpcomponents:httpclient:4.3.6")
   implementation("org.apache.httpcomponents:httpmime:4.3.3")
+  implementation("org.apache.logging.log4j:log4j-api:2.14.1")
+  implementation("org.apache.logging.log4j:log4j-core:2.14.1")
   implementation("org.graalvm.js:js:20.1.0")
   testImplementation(enforcedPlatform("org.junit:junit-bom:5.6.2"))
   testImplementation("org.junit.jupiter:junit-jupiter")
