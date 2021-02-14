@@ -18,6 +18,7 @@ public class XhamsterRipperTest extends RippersTest {
         testRipper(ripper);
     }
     @Test
+    @Tag("flaky")
     public void testXhamster2Album() throws IOException {
         XhamsterRipper ripper = new XhamsterRipper(new URL("https://xhamster2.com/photos/gallery/sexy-preggo-girls-9026608"));
         testRipper(ripper);
@@ -28,6 +29,7 @@ public class XhamsterRipperTest extends RippersTest {
         testRipper(ripper);
     }
     @Test
+    @Tag("flaky")
     public void testXhamsterAlbumOneDomain() throws IOException {
         XhamsterRipper ripper = new XhamsterRipper(new URL("https://xhamster.one/photos/gallery/japanese-dolls-4-asahi-mizuno-7254664"));
         testRipper(ripper);
