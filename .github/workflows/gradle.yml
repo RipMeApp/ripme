@@ -1,0 +1,44 @@
+name: CI + release
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macOS-latest]
+        java: [1.8]
+        include: # test newest java on one os only, upload from ubuntu java8
+          - os: ubuntu-latest
+            java: 1.15
+          - os: ubuntu-latest
+            upload: true
+
+    steps:
+    - uses: actions/checkout@v1
+    - name: Set up JDK
+      uses: actions/setup-java@v1
+      with:
+        java-version: ${{ matrix.java }}
+    - name: Cache Gradle packages
+      # speed up the build by caching dependencies, downloaded versions
+      uses: actions/cache@v2
+      with:
+        path: |
+          ~/.gradle/caches
+          ~/.gradle/wrapper
+        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+        restore-keys: |
+          ${{ runner.os }}-gradle-
+    - name: Build with Gradle
+      run: ./gradlew build
+    - name: upload jar as asset
+      if: matrix.upload
+      uses: actions/upload-artifact@v2
+      with:
+        name: zipped-ripme-jar
+        path: build/libs/*.jar
+
+# vim:set ts=2 sw=2 et:
