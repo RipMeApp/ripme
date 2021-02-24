@@ -1,4 +1,5 @@
 plugins {
+  id("fr.brouillard.oss.gradle.jgitver") version "0.9.1"
   id("jacoco")
   id("java")
   id("maven-publish")
@@ -29,9 +30,15 @@ group = "com.rarchives.ripme"
 version = "1.7.94"
 description = "ripme"
 
-java {                                      
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
+jgitver {
+  gitCommitIDLength = 8
+  nonQualifierBranches = "main,master"
+  useGitCommitID = true
+}
+
+java {
+  sourceCompatibility = JavaVersion.VERSION_1_8
+  targetCompatibility = JavaVersion.VERSION_1_8
 }
 
 tasks.withType<Jar> {
