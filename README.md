@@ -22,11 +22,13 @@ RipMe is an album ripper for various websites. It is a cross-platform tool that 
 
 ## Downloads
 
-Download `ripme.jar` from the [latest release](https://github.com/ripmeapp/ripme/releases).
+Download `ripme.jar` from the [latest release](/releases). For information about running the `.jar` file, see 
+[the How To Run wiki](https://github.com/ripmeapp/ripme/wiki/How-To-Run-RipMe).
 
-**Note: If you're currently using version 1.2.x, 1.3.x or 1.7.49, you will not automatically get updates to the newest versions. We recommend downloading the latest version from the link above.**
-
-For information about running the `.jar` file, see [the How To Run wiki](https://github.com/ripmeapp/ripme/wiki/How-To-Run-RipMe).
+The version number like ripme-1.7.94-17-2167aa34-feature_auto_release.jar contains a release number (1.7.94), given by
+a person the number of commits since this version (17). The commit SHA (2167aa34) is there uniquely referencing the
+source code ripme was built from. If it is not built from the main branch, the branch name (feature/auto-release) is
+given.
 
 ## Installation
 
