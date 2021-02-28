@@ -5,10 +5,12 @@ import java.net.URL;
 
 import com.rarchives.ripme.ripper.rippers.ImgboxRipper;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 public class ImgboxRipperTest extends RippersTest {
     @Test
+    @Tag("flaky")
     public void testImgboxRip() throws IOException {
         ImgboxRipper ripper = new ImgboxRipper(new URL("https://imgbox.com/g/FJPF7t26FD"));
         testRipper(ripper);
