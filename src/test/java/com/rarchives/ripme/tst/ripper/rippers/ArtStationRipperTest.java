@@ -7,12 +7,13 @@ import java.util.List;
 
 import com.rarchives.ripme.ripper.rippers.ArtStationRipper;
 
-import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 public class ArtStationRipperTest extends RippersTest {
 
     @Test
+    @Tag("flaky")
     public void testArtStationProjects() throws IOException {
         List<URL> contentURLs = new ArrayList<>();
         contentURLs.add(new URL("https://www.artstation.com/artwork/the-dwarf-mortar"));
@@ -25,7 +26,7 @@ public class ArtStationRipperTest extends RippersTest {
     }
 
     @Test
-    @Disabled("Failed with cloudflare protection")
+    @Tag("flaky")
     public void testArtStationUserProfiles() throws IOException {
         List<URL> contentURLs = new ArrayList<>();
         contentURLs.add(new URL("https://www.artstation.com/heitoramatsu"));
