@@ -77,9 +77,9 @@ tasks.test {
   finalizedBy(tasks.jacocoTestReport) // report is always generated after tests run
 }
 
-tasks.register<Test>("slowTests") {
+tasks.register<Test>("testAll") {
   useJUnitPlatform {
-    includeTags("slow")
+    includeTags("any()", "none()")
   }
 }
 
