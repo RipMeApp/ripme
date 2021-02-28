@@ -8,10 +8,12 @@ import java.util.List;
 import com.rarchives.ripme.ripper.rippers.HentaiNexusRipper;
 import org.json.JSONObject;
 import org.junit.Assert;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 public class HentainexusRipperTest extends RippersTest {
     @Test
+    @Tag("flaky")
     public void testHentaiNexusJson() throws IOException {
         List<URL> testURLs = new ArrayList<>();
         testURLs.add(new URL("https://hentainexus.com/view/9202"));
