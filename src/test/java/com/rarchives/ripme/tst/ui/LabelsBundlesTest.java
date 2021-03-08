@@ -11,7 +11,6 @@ import java.util.Set;
 import com.rarchives.ripme.utils.Utils;
 
 import org.apache.log4j.Logger;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 public class LabelsBundlesTest {

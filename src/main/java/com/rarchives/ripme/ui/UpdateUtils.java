@@ -23,7 +23,8 @@ import com.rarchives.ripme.utils.Utils;
 public class UpdateUtils {
 
     private static final Logger logger = Logger.getLogger(UpdateUtils.class);
-    private static final String DEFAULT_VERSION = "1.7.94";
+    // do not update the default version without adjusting the unit test. the real version comes from METAINF.MF
+    private static final String DEFAULT_VERSION = "1.7.94-10-b6345398";
     private static final String REPO_NAME = "ripmeapp/ripme";
     private static final String updateJsonURL = "https://raw.githubusercontent.com/" + REPO_NAME + "/master/ripme.json";
     private static String mainFileName;
@@ -165,7 +166,7 @@ public class UpdateUtils {
         }
     }
 
-    private static boolean isNewerVersion(String latestVersion) {
+    static boolean isNewerVersion(String latestVersion) {
         // If we're testing the update utils we want the program to always try to update
         if (Utils.getConfigBoolean("testing.always_try_to_update", false)) {
             logger.info("isNewerVersion is returning true because the key \"testing.always_try_to_update\" is true");
@@ -194,11 +195,18 @@ public class UpdateUtils {
     }
 
     private static int[] versionStringToInt(String version) {
-        String strippedVersion = version.split("-")[0];
-        String[] strVersions = strippedVersion.split("\\.");
-        int[] intVersions = new int[strVersions.length];
-        for (int i = 0; i < strVersions.length; i++) {
-            intVersions[i] = Integer.parseInt(strVersions[i]);
+        // a version string looks like 1.7.94, 1.7.94-10-something
+        // 10 is the number of commits since the 1.7.94 tag, so newer
+        // the int array returned then contains e.g. 1.7.94.0 or 1.7.94.10
+        String[] strVersions = version.split("[\\.-]");
+        // not consider more than 4 components of version, loop only the real number
+        // of components or maximum 4 components of the version string
+        int[] intVersions = new int[4];
+        for (int i = 0; i < Math.min(4,strVersions.length); i++) {
+            // if it is an integer, set it, otherwise leave default 0
+            if (strVersions[i].matches("\\d+")) {
+                intVersions[i] = Integer.parseInt(strVersions[i]);
+            }
         }
         return intVersions;
     }
