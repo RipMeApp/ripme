@@ -4,7 +4,7 @@ on: [push, pull_request]
 
 jobs:
   build:
-    
+
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -17,11 +17,14 @@ jobs:
             upload: true
 
     steps:
+
     - uses: actions/checkout@v1
+
     - name: Set up JDK
       uses: actions/setup-java@v1
       with:
         java-version: ${{ matrix.java }}
+
     - name: Cache Gradle packages
       # speed up the build by caching dependencies, downloaded versions
       uses: actions/cache@v2
@@ -32,13 +35,27 @@ jobs:
         key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
         restore-keys: |
           ${{ runner.os }}-gradle-
+
     - name: Build with Gradle
       run: ./gradlew build
+
     - name: upload jar as asset
       if: matrix.upload
       uses: actions/upload-artifact@v2
       with:
         name: zipped-ripme-jar
         path: build/libs/*.jar
+
+    - name: create pre-release
+      id: create-pre-release
+      if: matrix.upload
+      uses: "marvinpinto/action-automatic-releases@latest"
+      with:
+        repo_token: "${{ secrets.GITHUB_TOKEN }}"
+        automatic_release_tag: "latest"
+        prerelease: true
+        title: "development build"
+        files: |
+            build/libs/*.jar
 
 # vim:set ts=2 sw=2 et:
