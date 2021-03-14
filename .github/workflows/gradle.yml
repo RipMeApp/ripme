@@ -20,6 +20,10 @@ jobs:
 
     - uses: actions/checkout@v1
 
+    - name: Set environment CI_ variables
+      id: ci-env
+      uses: FranzDiebold/github-env-vars-action@v2
+
     - name: Set up JDK
       uses: actions/setup-java@v1
       with:
@@ -52,9 +56,9 @@ jobs:
       uses: "marvinpinto/action-automatic-releases@latest"
       with:
         repo_token: "${{ secrets.GITHUB_TOKEN }}"
-        automatic_release_tag: "latest"
+        automatic_release_tag: "latest-${{ env.CI_REF_NAME_SLUG  }}"
         prerelease: true
-        title: "development build"
+        title: "development build ${{ env.CI_REF_NAME }}"
         files: |
             build/libs/*.jar
 
