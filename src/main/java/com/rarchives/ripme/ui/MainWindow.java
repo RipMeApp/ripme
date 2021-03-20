@@ -1183,13 +1183,15 @@ public final class MainWindow implements Runnable, RipStatusHandler {
                 // Guess rip history based on rip folder
                 String[] dirs = Utils.getWorkingDirectory()
                         .list((dir, file) -> new File(dir.getAbsolutePath() + File.separator + file).isDirectory());
-                for (String dir : dirs) {
-                    String url = RipUtils.urlFromDirectoryName(dir);
-                    if (url != null) {
-                        // We found one, add it to history
-                        HistoryEntry entry = new HistoryEntry();
-                        entry.url = url;
-                        HISTORY.add(entry);
+                if (dirs != null) {
+                    for (String dir : dirs) {
+                        String url = RipUtils.urlFromDirectoryName(dir);
+                        if (url != null) {
+                            // We found one, add it to history
+                            HistoryEntry entry = new HistoryEntry();
+                            entry.url = url;
+                            HISTORY.add(entry);
+                        }
                     }
                 }
             }
