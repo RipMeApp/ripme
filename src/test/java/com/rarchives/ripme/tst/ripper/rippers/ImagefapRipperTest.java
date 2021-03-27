@@ -7,10 +7,12 @@ import java.util.Map;
 
 import com.rarchives.ripme.ripper.rippers.ImagefapRipper;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 public class ImagefapRipperTest extends RippersTest {
     @Test
+    @Tag("flaky")
     public void testImagefapAlbums() throws IOException {
         Map<URL, String> testURLs = new HashMap<>();
 

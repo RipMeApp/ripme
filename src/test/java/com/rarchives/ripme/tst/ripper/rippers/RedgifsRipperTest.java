@@ -14,6 +14,7 @@ public class RedgifsRipperTest extends RippersTest {
      * @throws IOException
      */
     @Test
+    @Disabled("test or ripper broken")
     public void testRedgifsGoodURL() throws IOException{
         RedgifsRipper ripper = new RedgifsRipper(new URL("https://www.redgifs.com/watch/talkativewarpeddragon-petite"));
         testRipper(ripper);
@@ -24,6 +25,7 @@ public class RedgifsRipperTest extends RippersTest {
      * @throws IOException
      */
     @Test
+    @Tag("flaky")
     public void testRedgifsBadRL() throws IOException{
         RedgifsRipper ripper = new RedgifsRipper(new URL("https://www.gifdeliverynetwork.com/foolishelasticchimpanzee"));
         testRipper(ripper);

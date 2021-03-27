@@ -10,6 +10,7 @@ import java.util.regex.Pattern;
 
 import com.rarchives.ripme.ui.RipStatusMessage;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
@@ -54,6 +55,13 @@ public class RedditRipper extends AlbumRipper {
     }
 
     private URL getJsonURL(URL url) throws MalformedURLException {
+        // Convert gallery to post link and append ".json"
+        Pattern p = Pattern.compile("^https?://[a-zA-Z0-9.]{0,4}reddit\\.com/gallery/([a-zA-Z0-9]+).*$");
+        Matcher m = p.matcher(url.toExternalForm());
+        if (m.matches()) {
+            return new URL("https://reddit.com/" +m.group(m.groupCount())+ ".json");
+        }
+
         // Append ".json" to URL in appropriate location.
         String result = url.getProtocol() + "://" + url.getHost() + url.getPath() + ".json";
         if (url.getQuery() != null) {
@@ -188,6 +196,8 @@ public class RedditRipper extends AlbumRipper {
             if (data.getBoolean("is_self")) {
                 // TODO Parse self text
                 handleBody(data.getString("selftext"), data.getString("id"), data.getString("title"));
+            } else if (!data.isNull("gallery_data") && !data.isNull("media_metadata")) {
+                handleGallery(data.getJSONObject("gallery_data").getJSONArray("items"), data.getJSONObject("media_metadata"), data.getString("id"), data.getString("title"));
             } else {
                 // Get link
                 handleURL(data.getString("url"), data.getString("id"), data.getString("title"));
@@ -291,6 +301,31 @@ public class RedditRipper extends AlbumRipper {
         }
     }
 
+    private void handleGallery(JSONArray data, JSONObject metadata, String id, String title){
+        //TODO handle captions and caption urls
+        String subdirectory = "";
+        if (Utils.getConfigBoolean("reddit.use_sub_dirs", true)) {
+            if (Utils.getConfigBoolean("album_titles.save", true)) {
+                subdirectory = title;
+                title = "-" + title + "-";
+            }
+        }
+        for (int i = 0; i < data.length(); i++) {
+            JSONObject media = metadata.getJSONObject(data.getJSONObject(i).getString("media_id"));
+            String prefix = id + "-";
+            if (Utils.getConfigBoolean("download.save_order", true)) {
+                //announcement says up to 20 (https://www.reddit.com/r/announcements/comments/hrrh23/now_you_can_make_posts_with_multiple_images/)
+                prefix += String.format("%02d-", i + 1);
+            }
+            try {
+                URL mediaURL = new URL(media.getJSONObject("s").getString("u").replaceAll("&amp;", "&"));
+                addURLToDownload(mediaURL, prefix, subdirectory);
+            } catch (MalformedURLException | JSONException e) {
+                LOGGER.error("[!] Unable to parse gallery JSON:\ngallery_data:\n" + data +"\nmedia_metadata:\n" + metadata);
+            }
+        }
+    }
+
     @Override
     public String getHost() {
         return HOST;
@@ -312,6 +347,13 @@ public class RedditRipper extends AlbumRipper {
             return "post_" + m.group(m.groupCount());
         }
 
+        // Gallery
+        p = Pattern.compile("^https?://[a-zA-Z0-9.]{0,4}reddit\\.com/gallery/([a-zA-Z0-9]+).*$");
+        m = p.matcher(url.toExternalForm());
+        if (m.matches()) {
+            return "post_" + m.group(m.groupCount());
+        }
+
         // Subreddit
         p = Pattern.compile("^https?://[a-zA-Z0-9.]{0,4}reddit\\.com/r/([a-zA-Z0-9_]+).*$");
         m = p.matcher(url.toExternalForm());
@@ -319,7 +361,7 @@ public class RedditRipper extends AlbumRipper {
             return "sub_" + m.group(m.groupCount());
         }
 
-        throw new MalformedURLException("Only accepts user pages, subreddits, or post, can't understand " + url);
+        throw new MalformedURLException("Only accepts user pages, subreddits, post, or gallery can't understand " + url);
     }
 
 }

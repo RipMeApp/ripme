@@ -7,19 +7,20 @@ import java.net.URL;
 import com.rarchives.ripme.ripper.rippers.RedditRipper;
 
 import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 public class RedditRipperTest extends RippersTest {
 
     @Test
-    @Disabled("Rip is flaky") // https://github.com/RipMeApp/ripme/issues/253
+    @Tag("flaky") // https://github.com/RipMeApp/ripme/issues/253
     public void testRedditSubredditRip() throws IOException {
         RedditRipper ripper = new RedditRipper(new URL("http://www.reddit.com/r/nsfw_oc"));
         testRipper(ripper);
     }
 
     @Test
-    @Disabled("Rip is flaky") // https://github.com/RipMeApp/ripme/issues/253
+    @Tag("flaky") // https://github.com/RipMeApp/ripme/issues/253
     public void testRedditSubredditTopRip() throws IOException {
         RedditRipper ripper = new RedditRipper(new URL("http://www.reddit.com/r/nsfw_oc/top?t=all"));
         testRipper(ripper);
@@ -33,12 +34,13 @@ public class RedditRipperTest extends RippersTest {
         testRipper(ripper);
     }
 
-    /**
+    /**testRedditSubredditRip:19
      * GFYCAT TEST Tests a good GfycatURL (no "/gifs/detail")
      * 
      * @throws IOException
      */
     @Test
+    @Tag("flaky")
     public void testRedditGfyGoodURL() throws IOException {
         RedditRipper ripper = new RedditRipper(
                 new URL("https://www.reddit.com/r/bottesting/comments/7msozf/good_link/"));
@@ -51,9 +53,17 @@ public class RedditRipperTest extends RippersTest {
      * @throws IOException
      */
     @Test
+    @Tag("flaky")
     public void testRedditGfyBadURL() throws IOException {
         RedditRipper ripper = new RedditRipper(
                 new URL("https://www.reddit.com/r/bottesting/comments/7msmhi/bad_link/"));
+        testRipper(ripper);
+    }
+
+    @Test
+    public void testRedditGallery() throws IOException{
+        RedditRipper ripper = new RedditRipper(
+                new URL("https://www.reddit.com/gallery/hrrh23"));
         testRipper(ripper);
     }
 }

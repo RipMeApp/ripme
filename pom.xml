@@ -3,10 +3,11 @@
   <groupId>com.rarchives.ripme</groupId>
   <artifactId>ripme</artifactId>
   <packaging>jar</packaging>
-  <version>1.7.93</version>
+  <version>1.7.94</version>
   <name>ripme</name>
   <url>http://rip.rarchives.com</url>
   <properties>
+    <excludedGroups>flaky</excludedGroups>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
   <dependencyManagement>
@@ -158,17 +159,9 @@
       </plugin>
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>2.22.2</version>
+        <version>3.0.0-M5</version>
         <configuration>
-          <!--<groups>fast</groups>-->
-          <excludedGroups>slow</excludedGroups>
-          <properties>
-            <!--
-						<configurationParameters>
-							junit.jupiter.conditions.deactivate = *
-						</configurationParameters>
-						-->
-          </properties>
+          <excludedGroups>${excludedGroups}</excludedGroups>
         </configuration>
       </plugin>
     </plugins>
@@ -178,7 +171,7 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-surefire-report-plugin</artifactId>
-          <version>3.0.0-M3</version>
+          <version>3.0.0-M5</version>
           <configuration>
             <showSuccess>false</showSuccess>
           </configuration>

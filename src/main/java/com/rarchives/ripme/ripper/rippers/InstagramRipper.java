@@ -192,7 +192,8 @@ public class InstagramRipper extends AbstractJSONRipper {
     }
 
     private String getProfileHash(String jsData) {
-        return getHashValue(jsData, "loadProfilePageExtras", -1);
+        return getHashValue(jsData, "loadProfilePageExtras", -1,
+                s -> s.replaceAll(".*queryId\\s?:\\s?\"([0-9a-f]*)\".*", "$1"));
     }
 
     private String getPinnedHash(String jsData) {
@@ -407,7 +408,8 @@ public class InstagramRipper extends AbstractJSONRipper {
 
     // Javascript parsing
     /* ------------------------------------------------------------------------------------------------------- */
-    private String getHashValue(String javaScriptData, String keyword, int offset) {
+    private String getHashValue(String javaScriptData, String keyword, int offset,
+            Function<String, String> extractHash) {
         List<Statement> statements = getJsBodyBlock(javaScriptData).getStatements();
 
         return statements.stream()
@@ -419,15 +421,22 @@ public class InstagramRipper extends AbstractJSONRipper {
                 .flatMap(expression -> filterItems(expression, FunctionNode.class))
                 .map(FunctionNode::getBody)
                 .map(Block::getStatements)
-                .map(statementList -> lookForHash(statementList, keyword, offset))
+                .map(statementList -> lookForHash(statementList, keyword, offset, extractHash))
                 .filter(Objects::nonNull)
                 .findFirst().orElse(null);
     }
 
-    private String lookForHash(List<Statement> list, String keyword, int offset) {
+    private String getHashValue(String javaScriptData, String keyword, int offset) {
+        return getHashValue(javaScriptData, keyword, offset, null);
+    }
+
+    private String lookForHash(List<Statement> list, String keyword, int offset, Function<String, String> extractHash) {
         for (int i = 0; i < list.size(); i++) {
             Statement st = list.get(i);
             if (st.toString().contains(keyword)) {
+                if (extractHash != null) {
+                    return extractHash.apply(list.get(i + offset).toString());
+                }
                 return list.get(i + offset).toString().replaceAll(".*\"([0-9a-f]*)\".*", "$1");
             }
         }
