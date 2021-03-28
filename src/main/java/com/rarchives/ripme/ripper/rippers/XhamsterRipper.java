@@ -72,7 +72,7 @@ public class XhamsterRipper extends AbstractHTMLRipper {
             return m.group(4);
         }
 
-            throw new MalformedURLException(
+        throw new MalformedURLException(
                 "Expected xhamster.com gallery formats: "
                         + "xhamster.com/photos/gallery/xxxxx-#####"
                         + " Got: " + url);
@@ -84,6 +84,9 @@ public class XhamsterRipper extends AbstractHTMLRipper {
         LOGGER.info("getting albums");
         for (Element elem : doc.select("div.item-container > a.item")) {
             urlsToAddToQueue.add(elem.attr("href"));
+            if (isStopped() || isThisATest()) {
+                break;
+            }
         }
         LOGGER.info(doc.html());
         return urlsToAddToQueue;
@@ -138,8 +141,8 @@ public class XhamsterRipper extends AbstractHTMLRipper {
 
     @Override
     public Document getNextPage(Document doc) throws IOException {
-        if (doc.select("a[rel=next]").first() != null) {
-            String nextPageUrl = doc.select("a[rel=next]").first().attr("href");
+        if (doc.select("a.prev-next-list-link").first() != null) {
+            String nextPageUrl = doc.select("a.prev-next-list-link--next").first().attr("href");
             if (nextPageUrl.startsWith("http")) {
                 nextPageUrl = nextPageUrl.replaceAll("https?://\\w?\\w?\\.?xhamster([^<]*)\\.", "https://m.xhamster$1.");
                 return Http.url(nextPageUrl).get();
@@ -154,24 +157,46 @@ public class XhamsterRipper extends AbstractHTMLRipper {
         LOGGER.debug("Checking for urls");
         List<String> result = new ArrayList<>();
         if (!isVideoUrl(url)) {
-          for (Element page : doc.select("div.picture_view > div.pictures_block > div.items > div.item-container > a.item")) {
-              // Make sure we don't waste time running the loop if the ripper has been stopped
-              if (isStopped()) {
+            if (!doc.select("div.picture_view > div.pictures_block > div.items > div.item-container > a.item").isEmpty()) {
+                // Old HTML structure is still present at some places
+                for (Element page : doc.select("div.picture_view > div.pictures_block > div.items > div.item-container > a.item")) {
+                    // Make sure we don't waste time running the loop if the ripper has been stopped
+                    if (isStopped()) {
+                        break;
+                    }
+                    String pageWithImageUrl = page.attr("href");
+                    try {
+                        // This works around some redirect fuckery xhamster likes to do where visiting m.xhamster.com sends to
+                        // the page chamster.com but displays the mobile site from m.xhamster.com
+                        pageWithImageUrl = pageWithImageUrl.replaceAll("://xhamster([^<]*)\\.", "://m.xhamster$1.");
+                        String image = Http.url(new URL(pageWithImageUrl)).get().select("a > img#photoCurr").attr("src");
+                        result.add(image);
+                        downloadFile(image);
+                    } catch (IOException e) {
+                        LOGGER.error("Was unable to load page " + pageWithImageUrl);
+              }
+              if (isStopped() || isThisATest()) {
                   break;
-              }
-              String pageWithImageUrl = page.attr("href");
-              try {
-                  // This works around some redirect fuckery xhamster likes to do where visiting m.xhamster.com sends to
-                  // the page chamster.com but displays the mobile site from m.xhamster.com
-                  pageWithImageUrl = pageWithImageUrl.replaceAll("://xhamster([^<]*)\\.", "://m.xhamster$1.");
-                  String image = Http.url(new URL(pageWithImageUrl)).get().select("a > img#photoCurr").attr("src");
-                  downloadFile(image);
-              } catch (IOException e) {
-                  LOGGER.error("Was unable to load page " + pageWithImageUrl);
-              }
-          }
+                    }
+                }
+            } else {
+                // New HTML structure
+                for (Element page : doc.select("div#photo-slider > div#photo_slider > a")) {
+                    // Make sure we don't waste time running the loop if the ripper has been stopped
+                    if (isStopped()) {
+                        break;
+                    }
+                    String image = page.attr("href");
+                    // This works around some redirect fuckery xhamster likes to do where visiting m.xhamster.com sends to
+                    // the page chamster.com but displays the mobile site from m.xhamster.com
+                    image = image.replaceAll("://xhamster([^<]*)\\.", "://m.xhamster$1.");
+                    result.add(image);
+                    downloadFile(image);
+                }
+            }
         } else {
             String imgUrl = doc.select("div.player-container > a").attr("href");
+            result.add(imgUrl);
             downloadFile(imgUrl);
         }
         return result;
@@ -190,7 +215,7 @@ public class XhamsterRipper extends AbstractHTMLRipper {
             LOGGER.error("The url \"" + url + "\" is malformed");
         }
     }
-    
+
     @Override
     public String getAlbumTitle(URL url) throws MalformedURLException {
         try {
