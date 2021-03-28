@@ -6,10 +6,12 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import org.jsoup.nodes.Document;
 
 import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
@@ -104,7 +106,15 @@ public abstract class AbstractHTMLRipper extends AbstractRipper {
             LOGGER.debug("Adding items from " + this.url + " to queue");
         }
 
+        List<String> doclocation = new ArrayList<>();
         while (doc != null) {
+
+            // catch if we saw a doc location already, save the ones seen in a list
+            if (doclocation.contains(doc.location())) {
+                break;
+            }
+            doclocation.add(doc.location());
+
             if (alreadyDownloadedUrls >= Utils.getConfigInteger("history.end_rip_after_already_seen", 1000000000) && !isThisATest()) {
                 sendUpdate(STATUS.DOWNLOAD_COMPLETE_HISTORY, "Already seen the last " + alreadyDownloadedUrls + " images ending rip");
                 break;
