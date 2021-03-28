@@ -85,6 +85,24 @@ tasks.register<Test>("testAll") {
   }
 }
 
+tasks.register<Test>("testFlaky") {
+  useJUnitPlatform {
+    includeTags("flaky")
+  }
+}
+
+tasks.register<Test>("testSlow") {
+  useJUnitPlatform {
+    includeTags("slow")
+  }
+}
+
+tasks.register<Test>("testTagged") {
+  useJUnitPlatform {
+    includeTags("any()")
+  }
+}
+
 // make all archive tasks in the build reproducible
 tasks.withType<AbstractArchiveTask>().configureEach {
   isPreserveFileTimestamps = false

@@ -79,40 +79,40 @@ If you're a developer, you can add your own Ripper by following the wiki guide:
 
 # Compiling & Building
 
-The project uses [Gradle](https://gradle.org) or [Maven](http://maven.apache.org/).
-Therefor both commands are given. To build the .jar file, navigate to the root
-project directory and run:
+The project uses [Gradle](https://gradle.org). To build the .jar file,
+navigate to the root project directory and run at least the test you 
+change, e.g. Xhamster. test execution can also excluded completely:
 
 ```bash
-mvn clean compile assembly:single
-mvn -B package assembly:single -Dmaven.test.skip=true
-```
-```bash
-./gradlew clean build
+./gradlew clean build testAll --tests XhamsterRipperTest.testXhamster2Album
 ./gradlew clean build -x test --warning-mode all
 ```
 
-This will include all dependencies in the JAR. One can skip executing the tests
-as well.
+The generated JAR (java archive) in build/libs will include all
+dependencies.
 
 # Running Tests
 
-Tests can be marked as beeing slow, or flaky. Default is to run all but the flaky tests. Slow tests can be excluded to
-run. slow and flaky tests can be run on its own. After building you can run tests, quoting might be necessary depending
-on your shell:
+Tests can be tagged as beeing slow, or flaky. The gradle build reacts to
+the following combinations of tags:
 
-```bash
-mvn test
-mvn test -DexcludedGroups= -Dgroups=flaky,slow
-mvn test '-Dgroups=!slow'
-```
+- default is to run all tests without tag.
+- testAll runs all tests.
+- testFlaky runs tests with tag "flaky".
+- testSlow runs tests with tag "slow".
+- tests can be run by test class, or single test. Use "testAll" so it does
+  not matter if a test is tagged or not.
 
 ```bash
 ./gradlew test
-./gradlew test -DexcludeTags= -DincludeTags=flaky,slow
-./gradlew test '-DincludeTags=!slow'
+./gradlew testAll
+./gradlew testFlaky
+./gradlew testSlow
+./gradlew testAll --tests XhamsterRipperTest
+./gradlew testAll --tests XhamsterRipperTest.testXhamster2Album
 ```
 
-Please note that some tests may fail as sites change and our rippers become out of date.
-Start by building and testing a released version of RipMe
-and then ensure that any changes you make do not cause more tests to break.
+Please note that some tests may fail as sites change and our rippers
+become out of date. Start by building and testing a released version
+of RipMe and then ensure that any changes you make do not cause more
+tests to break.
