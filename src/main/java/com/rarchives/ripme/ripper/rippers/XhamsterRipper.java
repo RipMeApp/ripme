@@ -159,7 +159,7 @@ public class XhamsterRipper extends AbstractHTMLRipper {
         if (!isVideoUrl(url)) {
             if (!doc.select("div.picture_view > div.pictures_block > div.items > div.item-container > a.item").isEmpty()) {
                 // Old HTML structure is still present at some places
-                for (Element page : doc.select("div.picture_view > div.pictures_block > div.items > div.item-container > a.item")) {
+                for (Element page : doc.select(".clearfix > div > a.slided")) {
                     // Make sure we don't waste time running the loop if the ripper has been stopped
                     if (isStopped()) {
                         break;
