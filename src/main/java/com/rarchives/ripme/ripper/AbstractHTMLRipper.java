@@ -24,9 +24,9 @@ import com.rarchives.ripme.ui.RipStatusMessage;
  */
 public abstract class AbstractHTMLRipper extends AbstractRipper {
     
-    private Map<URL, File> itemsPending = Collections.synchronizedMap(new HashMap<URL, File>());
-    private Map<URL, File> itemsCompleted = Collections.synchronizedMap(new HashMap<URL, File>());
-    private Map<URL, String> itemsErrored = Collections.synchronizedMap(new HashMap<URL, String>());
+    private final Map<URL, File> itemsPending = Collections.synchronizedMap(new HashMap<>());
+    private final Map<URL, File> itemsCompleted = Collections.synchronizedMap(new HashMap<>());
+    private final Map<URL, String> itemsErrored = Collections.synchronizedMap(new HashMap<>());
 
     protected AbstractHTMLRipper(URL url) throws IOException {
         super(url);
@@ -205,7 +205,7 @@ public abstract class AbstractHTMLRipper extends AbstractRipper {
      */
     private String fileNameFromURL(URL url) {
         String saveAs = url.toExternalForm();
-        if (saveAs.substring(saveAs.length() - 1) == "/") { saveAs = saveAs.substring(0,saveAs.length() - 1) ;}
+        if (saveAs.substring(saveAs.length() - 1).equals("/")) { saveAs = saveAs.substring(0,saveAs.length() - 1) ;}
         saveAs = saveAs.substring(saveAs.lastIndexOf('/')+1);
         if (saveAs.indexOf('?') >= 0) { saveAs = saveAs.substring(0, saveAs.indexOf('?')); }
         if (saveAs.indexOf('#') >= 0) { saveAs = saveAs.substring(0, saveAs.indexOf('#')); }
@@ -291,16 +291,16 @@ public abstract class AbstractHTMLRipper extends AbstractRipper {
     }
 
     @Override
-    /**
-     * Returns total amount of files attempted.
+    /*
+      Returns total amount of files attempted.
      */
     public int getCount() {
         return itemsCompleted.size() + itemsErrored.size();
     }
 
     @Override
-    /**
-     * Queues multiple URLs of single images to download from a single Album URL
+    /*
+      Queues multiple URLs of single images to download from a single Album URL
      */
     public boolean addURLToDownload(URL url, File saveAs, String referrer, Map<String,String> cookies, Boolean getFileExtFromMIME) {
             // Only download one file if this is a test.
@@ -362,8 +362,8 @@ public abstract class AbstractHTMLRipper extends AbstractRipper {
     }
 
     @Override
-    /**
-     * Cleans up & tells user about successful download
+    /*
+      Cleans up & tells user about successful download
      */
     public void downloadCompleted(URL url, File saveAs) {
         if (observer == null) {
@@ -398,9 +398,9 @@ public abstract class AbstractHTMLRipper extends AbstractRipper {
     }
 
     @Override
-    /**
-     * Tells user that a single file in the album they wish to download has
-     * already been downloaded in the past.
+    /*
+      Tells user that a single file in the album they wish to download has
+      already been downloaded in the past.
      */
     public void downloadExists(URL url, File file) {
         if (observer == null) {
@@ -476,13 +476,12 @@ public abstract class AbstractHTMLRipper extends AbstractRipper {
      */
     @Override
     public String getStatusText() {
-        StringBuilder sb = new StringBuilder();
-        sb.append(getCompletionPercentage())
-          .append("% ")
-          .append("- Pending: "  ).append(itemsPending.size())
-          .append(", Completed: ").append(itemsCompleted.size())
-          .append(", Errored: "  ).append(itemsErrored.size());
-        return sb.toString();
+        String sb = getCompletionPercentage() +
+                "% " +
+                "- Pending: " + itemsPending.size() +
+                ", Completed: " + itemsCompleted.size() +
+                ", Errored: " + itemsErrored.size();
+        return sb;
     }
 
 
