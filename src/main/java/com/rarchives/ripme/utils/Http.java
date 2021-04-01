@@ -165,6 +165,13 @@ public class Http {
         return response().parse();
     }
 
+    public JSONObject postJSON() throws IOException {
+        ignoreContentType();
+        connection.method(Method.POST);
+        String jsonString = response().body();
+        return new JSONObject(jsonString);
+    }
+
     public JSONObject getJSON() throws IOException {
         ignoreContentType();
         String jsonString = response().body();

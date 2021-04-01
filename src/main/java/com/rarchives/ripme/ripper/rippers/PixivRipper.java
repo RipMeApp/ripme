@@ -1,5 +1,6 @@
 package com.rarchives.ripme.ripper.rippers;
 
+import com.google.common.base.Strings;
 import com.rarchives.ripme.ripper.AbstractJSONRipper;
 import com.rarchives.ripme.utils.Http;
 import com.rarchives.ripme.utils.Utils;
@@ -8,24 +9,14 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.*;
-import java.math.BigInteger;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.time.Instant;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
+import java.net.*;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+
+
 public class PixivRipper extends AbstractJSONRipper {
-    public static final String PIXIV_USERNAME = Utils.getConfigString("pixiv.username", null);
-    public static final String PIXIV_PASSWORD = Utils.getConfigString("pixiv.password", null);
 
     private static final String[] urlsRegex = {
             "^https?://www.pixiv.net(?:/en)?/artworks/.*$",
@@ -39,15 +30,13 @@ public class PixivRipper extends AbstractJSONRipper {
             Pattern.compile("^https?://www.pixiv.net/member_illust.php\\?(?:mode=(?:small|medium|large)&)?illust_id=([0-9]+).*$"),
             Pattern.compile("^https?://www.pixiv.net/member.php\\?id=([0-9]+).*$"),
             Pattern.compile("^https?://www.pixiv.net(?:/en)?/users/([0-9]+).*$"));
-    private static String auth_time = Utils.getConfigString("pixiv.auth_time", Long.toString(3601L));
+
     private static String access_token = Utils.getConfigString("pixiv.access_token", null);
-    private static String user_id = Utils.getConfigString("pixiv.user_id", null);
+    private static String refresh_token = Utils.getConfigString("pixiv.refresh_token", null);
 
     // From https://github.com/upbit/pixivpy/blob/master/pixivpy3/api.py
     private static final String CLIENT_ID = "MOBrBDS8blbauoSck0ZfDbtuzpyT";
     private static final String CLIENT_SECRET = "lsACyCD94FhDUtGTXi3QzcFE2uU1hqtDaKeqrdwj";
-    private static final String HASH_SECRET = "28c1fdd170a5204386cb1313c7077b34f83e4aaf4aa829ce78c231e05b0bae2c";
-    private static String refresh_token = Utils.getConfigString("pixiv.refresh_token", null);
 
     private static String api_endpoint = "https://app-api.pixiv.net/v1/";
     private RIP_TYPE ripType;
@@ -91,11 +80,6 @@ public class PixivRipper extends AbstractJSONRipper {
 
     @Override
     public String getGID(URL url) throws MalformedURLException {
-        try {
-            auth();
-        } catch (Exception e) {
-            throw new MalformedURLException(e.getMessage());
-        }
         for (Pattern url_pattern : url_patterns) {
             Matcher m = url_pattern.matcher(url.toExternalForm());
             if (m.matches()) {
@@ -127,6 +111,9 @@ public class PixivRipper extends AbstractJSONRipper {
 
     @Override
     protected JSONObject getFirstPage() throws IOException {
+        if (Strings.isNullOrEmpty(access_token) || Strings.isNullOrEmpty(refresh_token)) {
+            throw new IOException("Pixiv access token or refresh token not specified.");
+        }
         JSONObject jsonObj;
         Http httpClient;
         switch (ripType) {
@@ -144,7 +131,18 @@ public class PixivRipper extends AbstractJSONRipper {
         }
 
         httpClient.header("Authorization", "Bearer " + access_token);
-        jsonObj = httpClient.getJSON();
+        try {
+            jsonObj = httpClient.getJSON();
+        } catch (IOException e) {
+            try {
+                //attempt to obtain a new auth token.
+                refreshToken(refresh_token);
+            } catch (Exception e2) {
+                throw new IOException("Unable to authenticate to pixiv.");
+            }
+            jsonObj = httpClient.getJSON();
+        }
+
 
         return jsonObj;
     }
@@ -231,75 +229,18 @@ public class PixivRipper extends AbstractJSONRipper {
         return new ArrayList<>();
     }
 
-    private void auth() throws Exception {
-        auth_time = Utils.getConfigString("pixiv.auth_time", Long.toString(3601L));
-        long session_time = Instant.now().getEpochSecond() - Long.parseLong(auth_time, 10);
-        if ((access_token == null) || (user_id == null) || (refresh_token == null) || session_time >= 3600L) {
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("u-MM-d'T'kk':'mm':'ss'+00:00'");
-            ZonedDateTime currentTime = ZonedDateTime.now(ZoneOffset.UTC);
-            String localtime = currentTime.format(formatter);
-            URL auth_url = new URL("https://oauth.secure.pixiv.net/auth/token");
-
-            HttpURLConnection httpClient = (HttpURLConnection) auth_url.openConnection();
-            httpClient.setRequestMethod("POST");
-            httpClient.setRequestProperty("User-Agent", "PixivAndroidApp/5.0.115 (Android 6.0)");
-            httpClient.setRequestProperty("X-Client-Time", localtime);
-            httpClient.setRequestProperty("X-Client-Hash", hexdigest(new String((localtime + HASH_SECRET).getBytes(), StandardCharsets.UTF_8)));
-
-            List<BasicNameValuePair> httpData = new ArrayList<>();
-            httpData.add(new BasicNameValuePair("get_secure_url", Integer.toString(1)));
-            httpData.add(new BasicNameValuePair("client_id", CLIENT_ID));
-            httpData.add(new BasicNameValuePair("client_secret", CLIENT_SECRET));
-
-            if ((PIXIV_USERNAME != null) && (PIXIV_PASSWORD != null)) {
-                httpData.add(new BasicNameValuePair("grant_type", "password"));
-                httpData.add(new BasicNameValuePair("username", PIXIV_USERNAME));
-                httpData.add(new BasicNameValuePair("password", PIXIV_PASSWORD));
-            } else {
-                throw new Exception("Pixiv username or password not provided.");
-            }
-
-            httpClient.setDoOutput(true);
-            OutputStream os = httpClient.getOutputStream();
-            BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os, StandardCharsets.UTF_8));
-
-            writer.write(getQuery(httpData));
-            writer.flush();
-            writer.close();
-
-
-            httpClient.connect();
-
-            BufferedReader br;
-            if (200 <= httpClient.getResponseCode() && httpClient.getResponseCode() <= 299) {
-                br = new BufferedReader(new InputStreamReader(httpClient.getInputStream()));
-            } else {
-                br = new BufferedReader(new InputStreamReader(httpClient.getErrorStream()));
-            }
-
-            StringBuilder sb = new StringBuilder();
-            String jsonOutput;
-
-            while ((jsonOutput = br.readLine()) != null) {
-                sb.append(jsonOutput);
-            }
-
-            JSONObject jsonObj = new JSONObject(sb.toString());
-
-            access_token = jsonObj.getJSONObject("response").getString("access_token");
-            user_id = jsonObj.getJSONObject("response").getJSONObject("user").getString("id");
-            refresh_token = jsonObj.getJSONObject("response").getString("refresh_token");
-
-            // Need to reduce login api calls, so store the tokens.
-            Utils.setConfigString("pixiv.auth_time", Long.toString(Instant.now().getEpochSecond()));
-            Utils.setConfigString("pixiv.access_token", access_token);
-            Utils.setConfigString("pixiv.user_id", user_id);
-            Utils.setConfigString("pixiv.refresh_token", refresh_token);
-            Utils.saveConfig();
-
-        }
+    private void refreshToken(String token) throws Exception {
+        Http http = new Http("https://oauth.secure.pixiv.net/auth/token");
+        http.data("client_id", CLIENT_ID);
+        http.data("client_secret", CLIENT_SECRET);
+        http.data("grant_type", "refresh_token");
+        http.data("include_policy", "true");
+        http.data("refresh_token", token);
+        http.header("User-Agent", "PixivAndroidApp/5.0.234 (Android 11; Pixel 5)");
+        JSONObject response = http.postJSON();
+        access_token = response.getString("access_token");
+        Utils.setConfigString("pixiv.access_token", response.getString("access_token"));
     }
-
     @Override
     protected void downloadURL(URL url, int index) {
     }
@@ -320,18 +261,6 @@ public class PixivRipper extends AbstractJSONRipper {
         }
 
         return result.toString();
-    }
-
-    public String hexdigest(String message) throws Exception {
-        StringBuilder hd;
-        MessageDigest md5 = MessageDigest.getInstance("MD5");
-        md5.update(message.getBytes());
-        BigInteger hash = new BigInteger(1, md5.digest());
-        hd = new StringBuilder(hash.toString(16)); // BigInteger strips leading 0's
-        while (hd.length() < 32) {
-            hd.insert(0, "0");
-        } // pad with leading 0's
-        return hd.toString();
     }
 
     private enum RIP_TYPE {

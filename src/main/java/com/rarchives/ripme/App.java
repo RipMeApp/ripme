@@ -55,6 +55,8 @@ public class App {
      * @param args Array of command line arguments.
      */
     public static void main(String[] args) throws MalformedURLException {
+        System.setProperty("webdriver.chrome.driver", "chromedriver.exe");
+
         CommandLine cl = getArgs(args);
 
         if (args.length > 0 && cl.hasOption('v')){

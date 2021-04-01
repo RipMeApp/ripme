@@ -281,6 +281,7 @@ class DownloadFileThread extends Thread {
                         String newFileName = saveAs.getParent() + File.separator + md5hash + "." + split_filename[ext_index];
                         Files.move(saveAs.toPath(), Paths.get(newFileName));
                         logger.info("Renamed file to " + newFileName);
+                        this.prettySaveAs = Paths.get(newFileName).toString();
                     } catch (NoSuchAlgorithmException e) {
                         logger.error("Unable to rename file to md5 hash, using original name.");
                     }
