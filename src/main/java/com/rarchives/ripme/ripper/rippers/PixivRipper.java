@@ -1,9 +1,9 @@
 package com.rarchives.ripme.ripper.rippers;
 
-import com.google.common.base.Strings;
 import com.rarchives.ripme.ripper.AbstractJSONRipper;
 import com.rarchives.ripme.utils.Http;
 import com.rarchives.ripme.utils.Utils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -111,7 +111,7 @@ public class PixivRipper extends AbstractJSONRipper {
 
     @Override
     protected JSONObject getFirstPage() throws IOException {
-        if (Strings.isNullOrEmpty(access_token) || Strings.isNullOrEmpty(refresh_token)) {
+        if ((StringUtils.isEmpty(access_token) )|| StringUtils.isEmpty(refresh_token)) {
             throw new IOException("Pixiv access token or refresh token not specified.");
         }
         JSONObject jsonObj;
