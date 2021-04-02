@@ -15,13 +15,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.apache.log4j.Logger;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 public class PahealRipper extends AbstractHTMLRipper {
-    private static final Logger logger = Logger.getLogger(PahealRipper.class);
+    private static final Logger logger = LogManager.getLogger(PahealRipper.class);
 
     private static Map<String, String> cookies = null;
     private static Pattern gidPattern = null;

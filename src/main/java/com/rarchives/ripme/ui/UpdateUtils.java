@@ -11,7 +11,8 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.jsoup.Connection.Response;
@@ -22,7 +23,7 @@ import com.rarchives.ripme.utils.Utils;
 
 public class UpdateUtils {
 
-    private static final Logger logger = Logger.getLogger(UpdateUtils.class);
+    private static final Logger logger = LogManager.getLogger(UpdateUtils.class);
     // do not update the default version without adjusting the unit test. the real version comes from METAINF.MF
     private static final String DEFAULT_VERSION = "1.7.94-10-b6345398";
     private static final String REPO_NAME = "ripmeapp/ripme";

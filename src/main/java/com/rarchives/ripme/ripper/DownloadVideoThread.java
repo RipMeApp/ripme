@@ -11,10 +11,10 @@ import java.net.URL;
 
 import javax.net.ssl.HttpsURLConnection;
 
-import org.apache.log4j.Logger;
-
 import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
 import com.rarchives.ripme.utils.Utils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * Thread for downloading files.
@@ -22,7 +22,7 @@ import com.rarchives.ripme.utils.Utils;
  */
 class DownloadVideoThread extends Thread {
 
-    private static final Logger logger = Logger.getLogger(DownloadVideoThread.class);
+    private static final Logger logger = LogManager.getLogger(DownloadVideoThread.class);
 
     private URL url;
     private File saveAs;

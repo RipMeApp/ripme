@@ -16,14 +16,15 @@ import com.rarchives.ripme.ripper.rippers.VidbleRipper;
 import com.rarchives.ripme.ripper.rippers.GfycatRipper;
 import com.rarchives.ripme.ripper.rippers.SoundgasmRipper;
 import org.apache.commons.lang.math.NumberUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
 
 public class RipUtils {
-    private static final Logger logger = Logger.getLogger(RipUtils.class);
+    private static final Logger logger = LogManager.getLogger(RipUtils.class);
 
     public static List<URL> getFilesFromURL(URL url) {
         List<URL> result = new ArrayList<>();

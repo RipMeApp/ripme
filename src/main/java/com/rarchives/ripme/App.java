@@ -24,7 +24,6 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.lang.SystemUtils;
-import org.apache.log4j.Logger;
 
 import com.rarchives.ripme.ripper.AbstractRipper;
 import com.rarchives.ripme.ui.History;
@@ -34,6 +33,8 @@ import com.rarchives.ripme.ui.UpdateUtils;
 import com.rarchives.ripme.utils.Proxy;
 import com.rarchives.ripme.utils.RipUtils;
 import com.rarchives.ripme.utils.Utils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * Entry point to application.
@@ -44,7 +45,7 @@ import com.rarchives.ripme.utils.Utils;
  */
 public class App {
 
-    public static final Logger logger = Logger.getLogger(App.class);
+    public static final Logger logger = LogManager.getLogger(App.class);
     public static String stringToAppendToFoldername = null;
     private static final History HISTORY = new History();
 

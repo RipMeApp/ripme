@@ -17,7 +17,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.apache.log4j.Logger;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -25,7 +27,7 @@ import org.jsoup.select.Elements;
 
 
 public class E621Ripper extends AbstractHTMLRipper {
-    private static final Logger logger = Logger.getLogger(E621Ripper.class);
+    private static final Logger logger = LogManager.getLogger(E621Ripper.class);
 
     private static Pattern gidPattern = null;
     private static Pattern gidPattern2 = null;
