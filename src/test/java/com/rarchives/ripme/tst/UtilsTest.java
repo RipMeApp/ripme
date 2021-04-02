@@ -6,10 +6,20 @@ import java.util.Arrays;
 
 import com.rarchives.ripme.utils.Utils;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 public class UtilsTest {
+
+    private final Logger LOGGER = LogManager.getLogger(UtilsTest.class);
+
+    @Test
+    public void testConfigureLogger() {
+        Utils.configureLogger();
+        LOGGER.warn("this is a warning messaage.");
+    }
 
     public void testGetEXTFromMagic()
     {
