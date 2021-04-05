@@ -14,8 +14,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Scanner;
-import org.apache.log4j.FileAppender;
-import org.apache.log4j.Logger;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jsoup.HttpStatusException;
 import com.rarchives.ripme.App;
 import com.rarchives.ripme.ui.RipStatusComplete;
@@ -28,7 +29,7 @@ public abstract class AbstractRipper
                 extends Observable
                 implements RipperInterface, Runnable {
 
-    protected static final Logger LOGGER = Logger.getLogger(AbstractRipper.class);
+    protected static final Logger LOGGER = LogManager.getLogger(AbstractRipper.class);
     private final String URLHistoryFile = Utils.getURLHistoryFile();
 
     public static final String USER_AGENT =
@@ -177,12 +178,15 @@ public abstract class AbstractRipper
      */
     public void setup() throws IOException {
         setWorkingDir(this.url);
-        Logger rootLogger = Logger.getRootLogger();
-        FileAppender fa = (FileAppender) rootLogger.getAppender("FILE");
-        if (fa != null) {
-            fa.setFile(this.workingDir + File.separator + "log.txt");
-            fa.activateOptions();
-        }
+        // we do not care if the rollingfileappender is active, just change the logfile in case
+        // TODO this does not work - not even with
+        //                     .withFileName("${sys:logFilename}")
+        // in Utils.java, RollingFileAppender.
+//        System.setProperty("logFilename", this.workingDir + "/log.txt");
+//        LOGGER.debug("Changing log file to '{}/log.txt'", this.workingDir);
+//        LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
+//        ctx.reconfigure();
+//        ctx.updateLoggers();
 
         this.threadPool = new DownloadThreadPool();
     }
@@ -482,13 +486,13 @@ public abstract class AbstractRipper
             RipStatusMessage msg = new RipStatusMessage(STATUS.RIP_COMPLETE, rsc);
             observer.update(this, msg);
 
-            Logger rootLogger = Logger.getRootLogger();
-            FileAppender fa = (FileAppender) rootLogger.getAppender("FILE");
-            if (fa != null) {
-                LOGGER.debug("Changing log file back to 'ripme.log'");
-                fa.setFile("ripme.log");
-                fa.activateOptions();
-            }
+            // we do not care if the rollingfileappender is active, just change the logfile in case
+            // TODO - does not work.
+//            System.setProperty("logFilename", "ripme.log");
+//            LOGGER.debug("Changing log file back to 'ripme.log'");
+//            LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
+//            ctx.reconfigure();
+
             if (Utils.getConfigBoolean("urls_only.save", false)) {
                 String urlFile = this.workingDir + File.separator + "urls.txt";
                 try {

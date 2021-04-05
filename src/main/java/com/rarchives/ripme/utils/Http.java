@@ -8,7 +8,8 @@ import java.util.Map;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
 import org.jsoup.Connection;
 import org.jsoup.Connection.Method;
@@ -28,7 +29,7 @@ import com.rarchives.ripme.ripper.AbstractRipper;
 public class Http {
 
     private static final int TIMEOUT = Utils.getConfigInteger("page.timeout", 5 * 1000);
-    private static final Logger logger = Logger.getLogger(Http.class);
+    private static final Logger logger = LogManager.getLogger(Http.class);
 
     private int retries;
     private String url;

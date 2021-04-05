@@ -13,7 +13,8 @@ import java.util.ResourceBundle;
 import javax.net.ssl.HttpsURLConnection;
 
 import com.rarchives.ripme.ui.MainWindow;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jsoup.HttpStatusException;
 
 import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
@@ -24,7 +25,7 @@ import com.rarchives.ripme.utils.Utils;
  * and other goodies.
  */
 class DownloadFileThread extends Thread {
-    private static final Logger logger = Logger.getLogger(DownloadFileThread.class);
+    private static final Logger logger = LogManager.getLogger(DownloadFileThread.class);
 
     private String referrer = "";
     private Map<String, String> cookies = new HashMap<>();

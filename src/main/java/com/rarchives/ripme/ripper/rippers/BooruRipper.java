@@ -12,12 +12,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.apache.log4j.Logger;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
 public class BooruRipper extends AbstractHTMLRipper {
-    private static final Logger logger = Logger.getLogger(BooruRipper.class);
+    private static final Logger logger = LogManager.getLogger(BooruRipper.class);
 
     private static Pattern gidPattern = null;
 
