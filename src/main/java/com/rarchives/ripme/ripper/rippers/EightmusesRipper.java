@@ -186,9 +186,10 @@ public class EightmusesRipper extends AbstractHTMLRipper {
     private String deobfuscateChar(char c) {
         if ((int) c == 32) {
             return fromCharCode(32);
+        } else if ((int) c > 120){
+            return fromCharCode((int)c);
         }
         return fromCharCode(33 + (c + 14) % 94);
-
     }
 
     private static String fromCharCode(int... codePoints) {
