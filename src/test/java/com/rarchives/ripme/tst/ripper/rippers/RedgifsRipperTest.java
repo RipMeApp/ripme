@@ -36,6 +36,7 @@ public class RedgifsRipperTest extends RippersTest {
      * @throws IOException
      */
     @Test
+    @Tag("flaky")
     public void testRedgifsProfile() throws IOException {
         RedgifsRipper ripper  = new RedgifsRipper(new URL("https://redgifs.com/users/margo_monty"));
         testRipper(ripper);
