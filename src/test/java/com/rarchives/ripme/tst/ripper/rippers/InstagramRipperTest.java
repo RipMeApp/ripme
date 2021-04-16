@@ -3,6 +3,7 @@ package com.rarchives.ripme.tst.ripper.rippers;
 import com.rarchives.ripme.ripper.rippers.InstagramRipper;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -37,15 +38,23 @@ public class InstagramRipperTest extends RippersTest {
 
     @Test
     @Disabled("Ripper broken for single items")
-    public void testInstagramAlbums() throws IOException {
+    public void testInstagramSingle() throws IOException {
         List<URL> contentURLs = new ArrayList<>();
-        // This unit test is a bit flaky 
-        //contentURLs.add(new URL("https://www.instagram.com/Test_User/"));
         contentURLs.add(new URL("https://www.instagram.com/p/BaNPpaHn2zU/?hl=en"));
         contentURLs.add(new URL("https://www.instagram.com/p/BaNPpaHn2zU/"));
         for (URL url : contentURLs) {
             InstagramRipper ripper = new InstagramRipper(url);
             testRipper(ripper);
         }
+    }
+
+    @Test
+    @Tag("flaky")
+    public void testInstagramAlbums() throws IOException {
+        // do not test, in case of rate limit 200/hr since 2021. see
+        // https://github.com/ripmeapp2/ripme/issues/32
+        URL url = new URL("https://www.instagram.com/Test_User/");
+        InstagramRipper ripper = new InstagramRipper(url);
+        testRipper(ripper);
     }
 }
