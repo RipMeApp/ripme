@@ -47,7 +47,7 @@ tasks.withType<Jar> {
   manifest {
     attributes["Main-Class"] = "com.rarchives.ripme.App"
     attributes["Implementation-Version"] =  archiveVersion
-
+    attributes["Multi-Release"] = "true"
   }
  
   // To add all of the dependencies otherwise a "NoClassDefFoundError" error
