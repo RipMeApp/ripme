@@ -509,7 +509,7 @@ public class Utils {
      * @param path - original path entered to be ripped
      * @return path of existing folder or the original path if not present
      */
-    public static String getOriginalDirectory(String path) {
+    public static String getOriginalDirectory(String path) throws IOException {
 
         int index;
         if (isUnix() || isMacOS()) {
@@ -524,6 +524,9 @@ public class Utils {
         // Get a List of all Directories and check its lowercase
         // if file exists return it
         File file = new File(path.substring(0, index));
+        if (! (file.isDirectory() && file.canWrite() && file.canExecute())) {
+            throw new IOException("Original directory \"" + file + "\" is no directory or not writeable.");
+        }
         ArrayList<String> names = new ArrayList<>(Arrays.asList(file.list()));
 
         for (String name : names) {
