@@ -55,7 +55,7 @@ public class App {
      *
      * @param args Array of command line arguments.
      */
-    public static void main(String[] args) throws MalformedURLException {
+    public static void main(String[] args) {
         CommandLine cl = getArgs(args);
 
         if (args.length > 0 && cl.hasOption('v')){
@@ -114,7 +114,7 @@ public class App {
             entry.dir = ripper.getWorkingDir().getAbsolutePath();
             try {
                 entry.title = ripper.getAlbumTitle(ripper.getURL());
-            } catch (MalformedURLException e) { }
+            } catch (MalformedURLException ignored) { }
             HISTORY.add(entry);
         }
     }
