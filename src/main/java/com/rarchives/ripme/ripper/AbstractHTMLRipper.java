@@ -455,7 +455,9 @@ public abstract class AbstractHTMLRipper extends AbstractRipper {
         this.workingDir = new File(path);
         if (!this.workingDir.exists()) {
             LOGGER.info("[+] Creating directory: " + Utils.removeCWD(this.workingDir));
-            this.workingDir.mkdirs();
+            if (!this.workingDir.mkdirs()) {
+                throw new IOException("Failed creating dir: \"" + this.workingDir + "\"");
+            }
         }
         LOGGER.debug("Set working directory to: " + this.workingDir);
     }

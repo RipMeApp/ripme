@@ -1,5 +1,10 @@
 package com.rarchives.ripme.ripper;
 
+import com.rarchives.ripme.ui.RipStatusMessage;
+import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
+import com.rarchives.ripme.utils.Utils;
+import org.json.JSONObject;
+
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -9,10 +14,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.json.JSONObject;
-import com.rarchives.ripme.ui.RipStatusMessage;
-import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
-import com.rarchives.ripme.utils.Utils;
 
 /**
  * Simplified ripper, designed for ripping from sites by parsing JSON.
@@ -293,7 +294,9 @@ public abstract class AbstractJSONRipper extends AbstractRipper {
         this.workingDir = new File(path);
         if (!this.workingDir.exists()) {
             LOGGER.info("[+] Creating directory: " + Utils.removeCWD(this.workingDir));
-            this.workingDir.mkdirs();
+            if (!this.workingDir.mkdirs()) {
+                throw new IOException("Failed creating dir: \"" + this.workingDir + "\"");
+            }
         }
         LOGGER.debug("Set working directory to: " + this.workingDir);
     }
