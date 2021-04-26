@@ -32,7 +32,7 @@ For information about running the `.jar` file, see [the How To Run wiki](https:/
 
 On macOS, there is a [cask](https://github.com/Homebrew/homebrew-cask/blob/master/Casks/ripme.rb).
 ```
-brew cask install ripme && xattr -d com.apple.quarantine /Applications/ripme.jar
+brew install --cask ripme && xattr -d com.apple.quarantine /Applications/ripme.jar
 ```
 
 ## Changelog
@@ -77,14 +77,21 @@ If you're a developer, you can add your own Ripper by following the wiki guide:
 
 # Compiling & Building
 
-The project uses [Maven](http://maven.apache.org/).
-To build the .jar file using Maven, navigate to the root project directory and run:
+The project uses [Gradle](https://gradle.org) or [Maven](http://maven.apache.org/).
+Therefor both commands are given. To build the .jar file, navigate to the root
+project directory and run:
 
 ```bash
 mvn clean compile assembly:single
+mvn -B package assembly:single -Dmaven.test.skip=true
+```
+```bash
+./gradlew clean build
+./gradlew clean build -x test --warning-mode all
 ```
 
-This will include all dependencies in the JAR.
+This will include all dependencies in the JAR. One can skip executing the tests
+as well.
 
 # Running Tests
 
@@ -96,6 +103,12 @@ on your shell:
 mvn test
 mvn test -DexcludedGroups= -Dgroups=flaky,slow
 mvn test '-Dgroups=!slow'
+```
+
+```bash
+./gradlew test
+./gradlew test -DexcludeTags= -DincludeTags=flaky,slow
+./gradlew test '-DincludeTags=!slow'
 ```
 
 Please note that some tests may fail as sites change and our rippers become out of date.

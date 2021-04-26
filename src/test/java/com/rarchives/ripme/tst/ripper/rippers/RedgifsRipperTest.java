@@ -46,6 +46,7 @@ public class RedgifsRipperTest extends RippersTest {
      * @throws IOException
      */
     @Test
+    @Disabled("test or ripper broken")
     public void testRedgifsSearch() throws IOException {
         RedgifsRipper ripper  = new RedgifsRipper(new URL("https://redgifs.com/gifs/browse/little-caprice"));
         Document doc = ripper.getFirstPage();
