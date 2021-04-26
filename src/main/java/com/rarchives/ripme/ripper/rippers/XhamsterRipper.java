@@ -34,12 +34,12 @@ public class XhamsterRipper extends AbstractHTMLRipper {
 
     @Override
     public String getHost() {
-        return "xhamster";
+        return "xhamster7";
     }
 
     @Override
     public String getDomain() {
-        return "xhamster.com";
+        return "xhamster7.desi";
     }
 
     @Override
@@ -49,7 +49,7 @@ public class XhamsterRipper extends AbstractHTMLRipper {
         }
         String URLToReturn = url.toExternalForm();
         URLToReturn = URLToReturn.replaceAll("https?://\\w?\\w?\\.?xhamster\\.", "https://m.xhamster.");
-        URLToReturn = URLToReturn.replaceAll("https?://xhamster2\\.", "https://m.xhamster2.");
+        URLToReturn = URLToReturn.replaceAll("https?://xhamster7\\.", "https://m.xhamster7.");
         URL san_url = new URL(URLToReturn);
         LOGGER.info("sanitized URL is " + san_url.toExternalForm());
         return san_url;
@@ -57,17 +57,17 @@ public class XhamsterRipper extends AbstractHTMLRipper {
 
     @Override
     public String getGID(URL url) throws MalformedURLException {
-        Pattern p = Pattern.compile("^https?://[\\w\\w.]*xhamster2?\\.com/photos/gallery/.*?(\\d+)$");
+        Pattern p = Pattern.compile("^https?://[\\w\\w.]*xhamster7?\\.com/photos/gallery/.*?(\\d+)$");
         Matcher m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             return m.group(1);
         }
-        p = Pattern.compile("^https?://[\\w\\w.]*xhamster2?\\.com/users/([a-zA-Z0-9_-]+)/(photos|videos)(/\\d+)?");
+        p = Pattern.compile("^https?://[\\w\\w.]*xhamster7?\\.com/users/([a-zA-Z0-9_-]+)/(photos|videos)(/\\d+)?");
         m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             return "user_" + m.group(1);
         }
-        p = Pattern.compile("^https?://.*xhamster2?\\.com/(movies|videos)/(.*)$");
+        p = Pattern.compile("^https?://.*xhamster7?\\.com/(movies|videos)/(.*)$");
         m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             return m.group(2);
@@ -113,17 +113,17 @@ public class XhamsterRipper extends AbstractHTMLRipper {
 
     @Override
     public boolean canRip(URL url) {
-        Pattern p = Pattern.compile("^https?://([\\w\\w]*\\.)?xhamster2?\\.(com|one|desi)/photos/gallery/.*?(\\d+)$");
+        Pattern p = Pattern.compile("^https?://([\\w\\w]*\\.)?xhamster7?\\.(com|one|desi)/photos/gallery/.*?(\\d+)$");
         Matcher m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             return true;
         }
-        p = Pattern.compile("^https?://[\\w\\w.]*xhamster2?\\.(com|one|desi)/users/([a-zA-Z0-9_-]+)/(photos|videos)(/\\d+)?");
+        p = Pattern.compile("^https?://[\\w\\w.]*xhamster7?\\.(com|one|desi)/users/([a-zA-Z0-9_-]+)/(photos|videos)(/\\d+)?");
         m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             return true;
         }
-        p = Pattern.compile("^https?://.*xhamster2?\\.(com|one|desi)/(movies|videos)/.*$");
+        p = Pattern.compile("^https?://.*xhamster7?\\.(com|one|desi)/(movies|videos)/.*$");
         m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             return true;
@@ -132,7 +132,7 @@ public class XhamsterRipper extends AbstractHTMLRipper {
     }
 
     private boolean isVideoUrl(URL url) {
-        Pattern p = Pattern.compile("^https?://.*xhamster2?\\.(com|one|desi)/(movies|videos)/.*$");
+        Pattern p = Pattern.compile("^https?://.*xhamster7?\\.(com|one|desi)/(movies|videos)/.*$");
         Matcher m = p.matcher(url.toExternalForm());
         return m.matches();
     }
@@ -143,7 +143,7 @@ public class XhamsterRipper extends AbstractHTMLRipper {
             String nextPageUrl = doc.select("a[data-page=next]").first().attr("href");
             if (nextPageUrl.startsWith("http")) {
                 nextPageUrl = nextPageUrl.replaceAll("https?://\\w?\\w?\\.?xhamster\\.", "https://m.xhamster.");
-                nextPageUrl = nextPageUrl.replaceAll("https?://xhamster2\\.", "https://m.xhamster2.");
+                nextPageUrl = nextPageUrl.replaceAll("https?://xhamster7\\.", "https://m.xhamster7.");
                 return Http.url(nextPageUrl).get();
             }
         }
@@ -166,7 +166,7 @@ public class XhamsterRipper extends AbstractHTMLRipper {
                   // This works around some redirect fuckery xhamster likes to do where visiting m.xhamster.com sends to
                   // the page chamster.com but displays the mobile site from m.xhamster.com
                   pageWithImageUrl = pageWithImageUrl.replaceAll("://xhamster\\.", "://m.xhamster.");
-                  pageWithImageUrl = pageWithImageUrl.replaceAll("://xhamster2\\.", "://m.xhamster.");
+                  pageWithImageUrl = pageWithImageUrl.replaceAll("://xhamster7\\.", "://m.xhamster.");
                   String image = Http.url(new URL(pageWithImageUrl)).get().select("a > img#photoCurr").attr("src");
                   downloadFile(image);
               } catch (IOException e) {
