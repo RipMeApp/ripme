@@ -61,6 +61,7 @@ public class RedditRipperTest extends RippersTest {
     }
 
     @Test
+    @Tag("flaky")
     public void testRedditGallery() throws IOException{
         RedditRipper ripper = new RedditRipper(
                 new URL("https://www.reddit.com/gallery/hrrh23"));
