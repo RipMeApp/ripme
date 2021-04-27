@@ -20,9 +20,9 @@ import com.rarchives.ripme.utils.Http;
 // If you're changing anything be sure to use the mobile sites html/css or you're just wasting your time!
 // WARNING
 
-public class XhamsterRipper extends AbstractHTMLRipper {
+public class XhamsterRipper1 extends AbstractHTMLRipper {
 
-    public XhamsterRipper(URL url) throws IOException {
+    public XhamsterRipper1(URL url) throws IOException {
         super(url);
     }
 
