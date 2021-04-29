@@ -17,7 +17,7 @@ dependencies {
   implementation("org.json:json:20190722")
   implementation("commons-configuration:commons-configuration:1.7")
   implementation("commons-cli:commons-cli:1.2")
-  implementation("commons-io:commons-io:1.3.2")
+  implementation("commons-io:commons-io:2.7")
   implementation("org.apache.httpcomponents:httpclient:4.3.6")
   implementation("org.apache.httpcomponents:httpmime:4.3.3")
   implementation("org.apache.logging.log4j:log4j-api:2.14.1")
