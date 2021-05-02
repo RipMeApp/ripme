@@ -118,7 +118,6 @@ rips/
 .history
 ripme.jar.update
 *.swp
-*.properties
 !LabelsBundle*.properties
 history.json
 *.iml
