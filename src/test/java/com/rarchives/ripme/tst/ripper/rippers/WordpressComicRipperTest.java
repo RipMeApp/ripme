@@ -51,6 +51,7 @@ public class WordpressComicRipperTest extends RippersTest {
         testRipper(ripper);
     }
     @Test
+    @Tag("flaky")
     public void test_konradokonski_1() throws IOException {
         WordpressComicRipper ripper = new WordpressComicRipper(
                 new URL("http://www.konradokonski.com/sawdust/comic/get-up/"));
@@ -58,6 +59,7 @@ public class WordpressComicRipperTest extends RippersTest {
 
     }
     @Test
+    @Tag("flaky")
     public void test_konradokonski_2() throws IOException {
         WordpressComicRipper ripper = new WordpressComicRipper(
                 new URL("http://www.konradokonski.com/wiory/comic/08182008/"));
