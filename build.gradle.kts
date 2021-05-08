@@ -35,6 +35,7 @@ java {
 }
 
 tasks.withType<Jar> {
+  duplicatesStrategy = DuplicatesStrategy.INCLUDE
   manifest {
     attributes["Main-Class"] = "com.rarchives.ripme.App"
   }
