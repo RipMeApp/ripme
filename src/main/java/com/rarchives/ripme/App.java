@@ -169,6 +169,12 @@ public class App {
             Utils.setConfigBoolean("errors.skip404", true);
         }
 
+        //Destination directory
+        if (cl.hasOption('l')) {
+            // change the default rips directory
+            Utils.setConfigString("rips.directory", cl.getOptionValue('l'));
+        }
+        
         //Re-rip <i>all</i> previous albums
         if (cl.hasOption('r')) {
             // Re-rip all via command-line
@@ -243,12 +249,6 @@ public class App {
         if ((cl.hasOption('d'))&&(cl.hasOption('D'))) {
             logger.error("\nCannot specify '-d' and '-D' simultaneously");
             System.exit(-1);
-        }
-
-        //Destination directory
-        if (cl.hasOption('l')) {
-            // change the default rips directory
-            Utils.setConfigString("rips.directory", cl.getOptionValue('l'));
         }
 
         //Read URLs from File
