@@ -7,6 +7,7 @@ import java.util.List;
 import com.rarchives.ripme.ripper.rippers.NhentaiRipper;
 import com.rarchives.ripme.utils.RipUtils;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 public class NhentaiRipperTest extends RippersTest {
@@ -22,6 +23,7 @@ public class NhentaiRipperTest extends RippersTest {
 
     // Test the tag black listing
     @Test
+    @Tag("flaky")
     public void testTagBlackList()  throws IOException {
         URL url = new URL("https://nhentai.net/g/233295/");
         NhentaiRipper ripper = new NhentaiRipper(url);

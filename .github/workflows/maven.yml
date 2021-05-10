@@ -9,7 +9,11 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macOS-latest]
-        java: [1.8, 1.14]
+        java: [1.8]
+        include: # test newest java on one os only
+          - os: ubuntu-latest
+            java: 1.15
+
 
     steps:
     - uses: actions/checkout@v1
