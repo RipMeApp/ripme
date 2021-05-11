@@ -5,10 +5,12 @@ import java.net.URL;
 
 import com.rarchives.ripme.ripper.rippers.SmuttyRipper;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 public class SmuttyRipperTest extends RippersTest {
     @Test
+    @Tag("flaky")
     public void testRip() throws IOException {
         SmuttyRipper ripper = new SmuttyRipper(new URL("https://smutty.com/user/QUIGON/"));
         testRipper(ripper);

@@ -8,6 +8,7 @@ import com.rarchives.ripme.utils.Http;
 import com.rarchives.ripme.utils.Utils;
 import org.jsoup.nodes.Document;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 public class PornhubRipperTest extends RippersTest {
@@ -28,6 +29,7 @@ public class PornhubRipperTest extends RippersTest {
     }
 
     @Test
+    @Tag("flaky")
     public void testGetNextPage() throws IOException {
         String baseURL = "https://www.pornhub.com/album/30687901";
         PornhubRipper ripper = new PornhubRipper(new URL(baseURL));
