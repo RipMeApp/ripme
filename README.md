@@ -114,3 +114,12 @@ mvn test '-Dgroups=!slow'
 Please note that some tests may fail as sites change and our rippers become out of date.
 Start by building and testing a released version of RipMe
 and then ensure that any changes you make do not cause more tests to break.
+
+# New GUI - compose-jb
+As Java Swing will go away in future, a new GUI technology should be used. One of the
+candidates is [Jetpack Compose for Desktop](https://github.com/JetBrains/compose-jb/).
+
+The library leverages the compose library for android and provides it for android, 
+desktop and web. The navigation library is not available for desktop, so Arkadii Ivanov
+implemented 
+[decompose](https://proandroiddev.com/a-comprehensive-hundred-line-navigation-for-jetpack-desktop-compose-5b723c4f256e).
