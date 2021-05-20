@@ -14,7 +14,9 @@ public class YoupornRipperTest  extends RippersTest {
     @Tag("flaky")
     public void testYoupornRipper() throws IOException {
         List<URL> contentURLs = new ArrayList<>();
-        contentURLs.add(new URL("http://www.youporn.com/watch/7669155/mrs-li-amateur-69-orgasm/?from=categ"));
+        // Video cannot be loaded: "Video has been flagged for verification"
+        //contentURLs.add(new URL("http://www.youporn.com/watch/7669155/mrs-li-amateur-69-orgasm/?from=categ"));
+        contentURLs.add(new URL("https://www.youporn.com/watch/13158849/smashing-star-slut-part-2/"));
         for (URL url : contentURLs) {
             YoupornRipper ripper = new YoupornRipper(url);
             testRipper(ripper);
