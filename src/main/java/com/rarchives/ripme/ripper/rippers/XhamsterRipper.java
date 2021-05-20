@@ -177,6 +177,9 @@ public class XhamsterRipper extends AbstractHTMLRipper {
               }
               if (isStopped() || isThisATest()) {
                   break;
+              }
+              if (isStopped() || isThisATest()) {
+                  break;
                     }
                 }
             } else {
