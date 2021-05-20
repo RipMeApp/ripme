@@ -11,6 +11,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.apache.commons.lang.StringUtils;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -80,7 +82,7 @@ public class ImagebamRipper extends AbstractHTMLRipper {
     @Override
     public List<String> getURLsFromPage(Document doc) {
         List<String> imageURLs = new ArrayList<>();
-        for (Element thumb : doc.select("div > a[target=_blank]:not(.footera)")) {
+        for (Element thumb : doc.select("div > a[class=thumbnail]:not(.footera)")) {
             imageURLs.add(thumb.attr("href"));
         }
         return imageURLs;
@@ -97,15 +99,12 @@ public class ImagebamRipper extends AbstractHTMLRipper {
     public String getAlbumTitle(URL url) throws MalformedURLException {
         try {
             // Attempt to use album title as GID
-            Elements elems = getFirstPage().select("legend");
+            Elements elems = getFirstPage().select("[id=gallery-name]");
             String title = elems.first().text();
             LOGGER.info("Title text: '" + title + "'");
-            Pattern p = Pattern.compile("^(.*)\\s\\d* image.*$");
-            Matcher m = p.matcher(title);
-            if (m.matches()) {
-                return getHost() + "_" + getGID(url) + " (" + m.group(1).trim() + ")";
+            if (StringUtils.isNotBlank(title)) {
+                return getHost() + "_" + getGID(url) + " (" + title + ")";
             }
-            LOGGER.info("Doesn't match " + p.pattern());
         } catch (Exception e) {
             // Fall back to default album naming convention
             LOGGER.warn("Failed to get album title from " + url, e);
@@ -143,14 +142,9 @@ public class ImagebamRipper extends AbstractHTMLRipper {
                 Elements metaTags = doc.getElementsByTag("meta");
                 
                 String imgsrc = "";//initialize, so no NullPointerExceptions should ever happen.
-                
-                for (Element metaTag: metaTags) {
-                    //the direct link to the image seems to always be linked in the <meta> part of the html.
-                    if (metaTag.attr("property").equals("og:image")) {
-                        imgsrc = metaTag.attr("content");
-                        LOGGER.info("Found URL " + imgsrc);
-                        break;//only one (useful) image possible for an "image page".
-                    }
+                Elements elem = doc.select("img[class*=main-image]");
+                if ((elem != null) && (elem.size() > 0)) {
+                    imgsrc = elem.first().attr("src");
                 }
                
                 //for debug, or something goes wrong.
