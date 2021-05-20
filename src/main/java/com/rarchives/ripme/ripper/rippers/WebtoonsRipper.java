@@ -84,7 +84,10 @@ public class WebtoonsRipper extends AbstractHTMLRipper {
     public Document getFirstPage() throws IOException {
         Response resp = Http.url(url).response();
         cookies = resp.cookies();
-        return Http.url(url).get();
+        cookies.put("needCOPPA", "false");
+        cookies.put("needCCPA", "false");
+        cookies.put("needGDPR", "false");
+        return Http.url(url).cookies(cookies).get();
     }
 
     @Override
