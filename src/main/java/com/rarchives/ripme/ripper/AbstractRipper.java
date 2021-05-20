@@ -14,6 +14,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Scanner;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import org.apache.log4j.FileAppender;
 import org.apache.log4j.Logger;
 import org.jsoup.HttpStatusException;
@@ -47,17 +49,18 @@ public abstract class AbstractRipper
     public boolean hasASAPRipping() { return false; }
     // Everytime addUrlToDownload skips a already downloaded url this increases by 1
     public int alreadyDownloadedUrls = 0;
-    private boolean shouldStop = false;
+    private final AtomicBoolean shouldStop = new AtomicBoolean(false);
     private static boolean thisIsATest = false;
 
     public void stop() {
-        shouldStop = true;
+        LOGGER.trace("stop()");
+        shouldStop.set(true);
     }
     public boolean isStopped() {
-        return shouldStop;
+        return shouldStop.get();
     }
     protected void stopCheck() throws IOException {
-        if (shouldStop) {
+        if (shouldStop.get()) {
             throw new IOException("Ripping interrupted");
         }
     }
