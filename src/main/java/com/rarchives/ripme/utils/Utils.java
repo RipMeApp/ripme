@@ -486,8 +486,15 @@ public class Utils {
         return text;
     }
 
+    /**
+     * Removes any potentially unsafe characters from a string and truncates it on a maximum length of 100 characters.
+     * Characters considered safe are alpha numerical characters as well as minus, dot, comma, underscore and whitespace.
+     *
+     * @param text The potentially unsafe text
+     * @return a filesystem safe string
+     */
     public static String filesystemSafe(String text) {
-        text = text.replaceAll("[^a-zA-Z0-9.-]", "_").replaceAll("__", "_").replaceAll("_+$", "");
+        text = text.replaceAll("[^a-zA-Z0-9-.,_ ]", "");
         if (text.length() > 100) {
             text = text.substring(0, 99);
         }
