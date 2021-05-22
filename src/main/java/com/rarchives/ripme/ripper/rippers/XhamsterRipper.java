@@ -84,6 +84,9 @@ public class XhamsterRipper extends AbstractHTMLRipper {
         LOGGER.info("getting albums");
         for (Element elem : doc.select("div.item-container > a.item")) {
             urlsToAddToQueue.add(elem.attr("href"));
+            if (isStopped() || isThisATest()) {
+                break;
+            }
         }
         LOGGER.info(doc.html());
         return urlsToAddToQueue;
@@ -171,6 +174,9 @@ public class XhamsterRipper extends AbstractHTMLRipper {
                         downloadFile(image);
                     } catch (IOException e) {
                         LOGGER.error("Was unable to load page " + pageWithImageUrl);
+              }
+              if (isStopped() || isThisATest()) {
+                  break;
                     }
                 }
             } else {
