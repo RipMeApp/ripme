@@ -376,7 +376,7 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
         // freeadultcomix gets it own if because it needs to add http://freeadultcomix.com to the start of each link
         // TODO review the above comment which no longer applies -- see if there's a refactoring we should do here.
         if (url.toExternalForm().contains("freeadultcomix.com")) {
-            for (Element elem : doc.select("div.single-post > p > img.aligncenter")) {
+            for (Element elem : doc.select("div.post-texto > p > noscript > img[class*=aligncenter]")) {
                 result.add(elem.attr("src"));
             }
         } else if (url.toExternalForm().contains("comics-xxx.com")) {
@@ -384,7 +384,7 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
                 result.add(elem.attr("src"));
             }
         } else if (url.toExternalForm().contains("shipinbottle.pepsaga.com")) {
-            for (Element elem : doc.select("div#comic > div.comicpane > a > img")) {
+            for (Element elem : doc.select("div#comic > a > img")) {
                 result.add(elem.attr("src"));
             }
         } else if (url.toExternalForm().contains("8muses.download")) {
