@@ -39,6 +39,13 @@ public class RippersTest {
             ripper.setup();
             ripper.markAsTest();
             ripper.rip();
+            if (logger.isTraceEnabled()) {
+                logger.trace("working dir: " + ripper.getWorkingDir());
+                logger.trace("list files: " + ripper.getWorkingDir().listFiles().length);
+                for (int i = 0; i < ripper.getWorkingDir().listFiles().length; i++) {
+                    logger.trace("   " + ripper.getWorkingDir().listFiles()[i]);
+                }
+            }
             Assertions.assertTrue(ripper.getWorkingDir().listFiles().length >= 1,
                     "Failed to download a single file from " + ripper.getURL());
         } catch (IOException e) {

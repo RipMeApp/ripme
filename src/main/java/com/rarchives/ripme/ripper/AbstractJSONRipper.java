@@ -142,10 +142,10 @@ public abstract class AbstractJSONRipper extends AbstractRipper {
      * Queues multiple URLs of single images to download from a single Album URL
      */
     public boolean addURLToDownload(URL url, File saveAs, String referrer, Map<String,String> cookies, Boolean getFileExtFromMIME) {
-            // Only download one file if this is a test.
-        if (super.isThisATest() &&
-                (itemsPending.size() > 0 || itemsCompleted.size() > 0 || itemsErrored.size() > 0)) {
+        // Only download one file if this is a test.
+        if (super.isThisATest() && (itemsCompleted.size() > 0 || itemsErrored.size() > 0)) {
             stop();
+            itemsPending.clear();
             return false;
         }
         if (!allowDuplicates()
