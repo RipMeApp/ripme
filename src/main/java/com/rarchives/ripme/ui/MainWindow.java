@@ -902,6 +902,11 @@ public final class MainWindow implements Runnable, RipStatusHandler {
             String chosenPath = null;
             try {
                 chosenPath = chosenFile.getCanonicalPath();
+
+                File theDir = new File(chosenPath);
+                if (!theDir.exists()){
+                    theDir.mkdirs();
+                }
             } catch (Exception e) {
                 LOGGER.error("Error while getting selected path: ", e);
                 return;
