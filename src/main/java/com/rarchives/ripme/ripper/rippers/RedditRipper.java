@@ -318,7 +318,12 @@ public class RedditRipper extends AlbumRipper {
                 prefix += String.format("%02d-", i + 1);
             }
             try {
-                URL mediaURL = new URL(media.getJSONObject("s").getString("u").replaceAll("&amp;", "&"));
+                URL mediaURL;
+            	if (!media.getJSONObject("s").isNull("gif")) {
+            		mediaURL = new URL(media.getJSONObject("s").getString("gif").replaceAll("&amp;", "&"));
+            	} else {
+            		mediaURL = new URL(media.getJSONObject("s").getString("u").replaceAll("&amp;", "&"));
+            	}
                 addURLToDownload(mediaURL, prefix, subdirectory);
             } catch (MalformedURLException | JSONException e) {
                 LOGGER.error("[!] Unable to parse gallery JSON:\ngallery_data:\n" + data +"\nmedia_metadata:\n" + metadata);
