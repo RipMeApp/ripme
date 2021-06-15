@@ -125,6 +125,9 @@ public class FuraffinityRipper extends AbstractHTMLRipper {
                     urls.add(urlToAdd);
                 }
             }
+            if (isStopped() || isThisATest()) {
+                break;
+            }
         }
         return urls;
     }
