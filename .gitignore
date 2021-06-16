@@ -121,3 +121,10 @@ history.json
 *.txt
 bin/
 nsfwsorted.csv
+.gradle/7.0/dependencies-accessors/dependencies-accessors.lock
+.gradle/7.0/executionHistory/executionHistory.lock
+.gradle/7.0/fileChanges/last-build.bin
+.gradle/7.0/fileHashes/fileHashes.lock
+.gradle/buildOutputCleanup/buildOutputCleanup.lock
+.gradle/buildOutputCleanup/outputFiles.bin
+.gradle/checksums/checksums.lock
