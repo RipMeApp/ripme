@@ -39,14 +39,14 @@ public class XhamsterRipperTest extends RippersTest {
         testRipper(ripper);
     }
     @Test
-    @Disabled("ripper broken?")
+    @Tag("flaky")
     public void testXhamsterVideo() throws IOException {
         XhamsterRipper ripper = new XhamsterRipper(new URL("https://xhamster.com/videos/brazzers-busty-big-booty-milf-lisa-ann-fucks-her-masseur-1492828"));
         testRipper(ripper);
     }
     @Test
     public void testBrazilianXhamster() throws IOException {
-        XhamsterRipper ripper = new XhamsterRipper(new URL("https://pt.xhamster.com/photos/gallery/silvana-7105696"));
+        XhamsterRipper ripper = new XhamsterRipper(new URL("https://pt.xhamster.com/photos/gallery/cartoon-babe-15786301"));
         testRipper(ripper);
     }
     @Test
