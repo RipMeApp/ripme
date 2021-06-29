@@ -5,10 +5,12 @@ import java.net.URL;
 
 import com.rarchives.ripme.ripper.rippers.DynastyscansRipper;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 public class DynastyscansRipperTest extends RippersTest {
     @Test
+    @Tag("flaky")
     public void testRip() throws IOException {
         DynastyscansRipper ripper = new DynastyscansRipper(new URL("https://dynasty-scans.com/chapters/under_one_roof_ch01"));
         testRipper(ripper);

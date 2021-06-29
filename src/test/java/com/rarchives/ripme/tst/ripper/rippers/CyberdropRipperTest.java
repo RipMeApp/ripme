@@ -4,6 +4,7 @@ import com.rarchives.ripme.ripper.rippers.CyberdropRipper;
 import com.rarchives.ripme.utils.Http;
 import org.jsoup.nodes.Document;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -29,6 +30,7 @@ public class CyberdropRipperTest extends RippersTest {
     }
 
     @Test
+    @Tag("flaky")
     public void testCyberdropNumberOfFiles() throws IOException {
         List<URL> testURLs = new ArrayList<URL>();
 
