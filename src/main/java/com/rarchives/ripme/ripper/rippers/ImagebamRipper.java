@@ -47,7 +47,7 @@ public class ImagebamRipper extends AbstractHTMLRipper {
         Pattern p;
         Matcher m;
 
-        p = Pattern.compile("^https?://[wm.]*imagebam.com/gallery/([a-zA-Z0-9]+).*$");
+        p = Pattern.compile("^https?://[wm.]*imagebam.com/(gallery|view)/([a-zA-Z0-9]+).*$");
         m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             return m.group(1);
