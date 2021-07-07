@@ -85,8 +85,12 @@ public class VscoRipper extends AbstractHTMLRipper {
             while (true) {
                 profileJSON = getProfileJSON(userTkn, username, Integer.toString(pageNumber), siteID);
                 for (int i = 0; i < profileJSON.getJSONArray("media").length(); i++) {
-                    toRip.add("https://" + profileJSON.getJSONArray("media").getJSONObject(i).getString("responsive_url"));
-                }
+                    // Check if video or image and add corresponding to queue
+                    if(profileJSON.getJSONArray("media").getJSONObject(i).has("video_url")) {
+                        toRip.add("https://" + profileJSON.getJSONArray("media").getJSONObject(i).getString("video_url"));
+                    } else {
+                        toRip.add("https://" + profileJSON.getJSONArray("media").getJSONObject(i).getString("responsive_url"));
+                    }                }
                 if (pageNumber * 1000 > profileJSON.getInt("total")) {
                     return toRip;
                 }
