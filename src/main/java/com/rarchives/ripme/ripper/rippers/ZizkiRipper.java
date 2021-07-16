@@ -87,14 +87,12 @@ public class ZizkiRipper extends AbstractHTMLRipper {
             if (thumb.hasAttr("typeof")) {
                 img_type = thumb.attr("typeof");
                 if (img_type.equals("foaf:Image")) {
-                  LOGGER.debug("Found image with " + img_type);
                   if (thumb.parent() != null &&
-                      thumb.parent().parent() != null &&
-                      thumb.parent().parent().attr("class") != null &&
-                      thumb.parent().parent().attr("class").equals("aimage-center")
+                      thumb.parent().attr("class") != null &&
+                      thumb.parent().attr("class").contains("colorbox")
                      )
                   {
-                     src = thumb.attr("src");
+                     src = thumb.parent().attr("href");
                      LOGGER.debug("Found url with " + src);
                      if (!src.contains("zizki.com")) {
                      } else {
