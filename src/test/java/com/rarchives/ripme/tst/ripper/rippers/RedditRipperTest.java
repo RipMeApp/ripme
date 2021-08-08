@@ -50,14 +50,14 @@ public class RedditRipperTest extends RippersTest {
     @Test
     public void testSelfPostRip() throws IOException {
         RedditRipper ripper = new RedditRipper(
-                new URL("https://www.reddit.com/r/gonewildstories/comments/oz7d97/f_18_finally_having_a_normal_sex_life/")
+                new URL("https://www.reddit.com/r/gonewildstories/comments/jheurr/mf_got_tired_of_edging_myself_f_so_i_begged_my/")
         );
         testRipper(ripper);
     }
 
     @Test
     public void testSelfPostAuthorRip() throws IOException {
-        RedditRipper ripper = new RedditRipper(new URL("https://www.reddit.com/user/ickybabie_"));
+        RedditRipper ripper = new RedditRipper(new URL("https://www.reddit.com/user/IWriteALotSometimes"));
         testRipper(ripper);
     }
 

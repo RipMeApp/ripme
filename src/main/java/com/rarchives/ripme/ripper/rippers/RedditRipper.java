@@ -240,7 +240,7 @@ public class RedditRipper extends AlbumRipper {
         }
     }
 
-    private void saveText(JSONArray jsonArray) throws JSONException {
+    private void saveText(JSONArray jsonArray) {
         File saveFileAs;
 
         JSONObject selfPost = jsonArray.getJSONObject(0).getJSONObject("data")
@@ -331,13 +331,20 @@ public class RedditRipper extends AlbumRipper {
                         .getJSONArray("children")
                         .getJSONObject(i).getJSONObject("data");
 
+                if (!nestedComment.has("author")) { continue; }
+
+                final String commentAuthor = nestedComment.getString("author");
+                final String name = nestedComment.getString("name");
+                final String body_html = nestedComment.getString("body_html");
+
+
                 ContainerTag childDiv =
                         div(
                                 div(
-                                        span(nestedComment.getString("author")).withClasses("author", iff(nestedComment.getString("author").equals(author), "op")),
-                                        a(new Date((long) nestedComment.getInt("created") * 1000).toString()).withHref("#" + nestedComment.getString("name"))
-                                ).withClass("comment").withId(nestedComment.getString("name"))
-                                        .with(rawHtml(Jsoup.parse(nestedComment.getString("body_html")).text()))
+                                        span(commentAuthor).withClasses("author", iff(commentAuthor.equals(author), "op")),
+                                        a(new Date((long) nestedComment.getInt("created") * 1000).toString()).withHref("#" + name)
+                                ).withClass("comment").withId(name)
+                                        .with(rawHtml(Jsoup.parse(body_html).text()))
                         ).withClass("child");
 
                 parentDiv.with(getNestedComments(nestedComment, childDiv, author));
