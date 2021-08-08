@@ -47,6 +47,20 @@ public class RedditRipperTest extends RippersTest {
         testRipper(ripper);
     }
 
+    @Test
+    public void testSelfPostRip() throws IOException {
+        RedditRipper ripper = new RedditRipper(
+                new URL("https://www.reddit.com/r/gonewildstories/comments/oz7d97/f_18_finally_having_a_normal_sex_life/")
+        );
+        testRipper(ripper);
+    }
+
+    @Test
+    public void testSelfPostAuthorRip() throws IOException {
+        RedditRipper ripper = new RedditRipper(new URL("https://www.reddit.com/user/ickybabie_"));
+        testRipper(ripper);
+    }
+
     /**
      * GFYCAT TEST Tests a Bad URL with the "/gifs/detail" inside.
      * 

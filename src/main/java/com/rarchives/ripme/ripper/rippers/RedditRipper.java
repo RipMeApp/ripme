@@ -1,14 +1,18 @@
 package com.rarchives.ripme.ripper.rippers;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Date;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.rarchives.ripme.ui.RipStatusMessage;
+import j2html.TagCreator;
+import j2html.tags.ContainerTag;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -19,6 +23,9 @@ import com.rarchives.ripme.ui.UpdateUtils;
 import com.rarchives.ripme.utils.Http;
 import com.rarchives.ripme.utils.RipUtils;
 import com.rarchives.ripme.utils.Utils;
+import org.jsoup.Jsoup;
+
+import static j2html.TagCreator.*;
 
 public class RedditRipper extends AlbumRipper {
 
@@ -104,6 +111,14 @@ public class RedditRipper extends AlbumRipper {
             children = data.getJSONArray("children");
             for (int j = 0; j < children.length(); j++) {
                 parseJsonChild(children.getJSONObject(j));
+
+                if (children.getJSONObject(j).getString("kind").equals("t3") &&
+                        children.getJSONObject(j).getJSONObject("data").getBoolean("is_self")
+                ) {
+                    URL selfPostURL = new URL(children.getJSONObject(j).getJSONObject("data").getString("url"));
+                    System.out.println(selfPostURL.toExternalForm());
+                    saveText(getJsonArrayFromURL(getJsonURL(selfPostURL)));
+                }
             }
             if (data.has("after") && !data.isNull("after")) {
                 String nextURLString = Utils.stripURLParameter(url.toExternalForm(), "after");
@@ -223,6 +238,112 @@ public class RedditRipper extends AlbumRipper {
             }
             handleURL(url, id, title);
         }
+    }
+
+    private void saveText(JSONArray jsonArray) throws JSONException {
+        File saveFileAs;
+
+        JSONObject selfPost = jsonArray.getJSONObject(0).getJSONObject("data")
+                .getJSONArray("children").getJSONObject(0).getJSONObject("data");
+        JSONArray comments = jsonArray.getJSONObject(1).getJSONObject("data")
+                .getJSONArray("children");
+
+        if (selfPost.getString("selftext").equals("")) { return; }
+
+        final String title = selfPost.getString("title");
+        final String id = selfPost.getString("id");
+        final String author = selfPost.getString("author");
+        final String creationDate = new Date((long) selfPost.getInt("created") * 1000).toString();
+        final String subreddit = selfPost.getString("subreddit");
+        final String selfText = selfPost.getString("selftext_html");
+        final String permalink = selfPost.getString("url");
+
+        String html = TagCreator.html(
+                head(
+                        title(title),
+                        style(rawHtml(HTML_STYLING))
+                ),
+                body(
+                        div(
+                                h1(title),
+                                a(subreddit).withHref("https://www.reddit.com/r/" + subreddit),
+                                a("Original").withHref(permalink),
+                                br()
+                        ).withClass("thing"),
+                        div(
+                                div(
+                                        span(
+                                                a(author).withHref("https://www.reddit.com/u/" + author)
+                                        ).withClass("author op")
+                                ).withClass("thing oppost")
+                                        .withText(creationDate)
+                                        .with(rawHtml(Jsoup.parse(selfText).text()))
+                        ).withClass("flex")
+                ).with(getComments(comments, author)),
+                script(rawHtml(HTML_SCRIPT))
+        ).renderFormatted();
+
+        try {
+            saveFileAs = new File(workingDir.getCanonicalPath()
+                    + "" + File.separator
+                    + id + "_" + title.replaceAll("[\\\\/:*?\"<>|]", "")
+                    + ".html");
+            FileOutputStream out = new FileOutputStream(saveFileAs);
+            out.write(html.getBytes());
+            out.close();
+        } catch (IOException e) {
+            LOGGER.error("[!] Error creating save file path for description '" + url + "':", e);
+            return;
+        }
+
+        LOGGER.debug("Downloading " + url + "'s self post to " + saveFileAs);
+        super.retrievingSource(permalink);
+        if (!saveFileAs.getParentFile().exists()) {
+            LOGGER.info("[+] Creating directory: " + Utils.removeCWD(saveFileAs.getParent()));
+            saveFileAs.getParentFile().mkdirs();
+        }
+    }
+
+    private ContainerTag getComments(JSONArray comments, String author) {
+        ContainerTag commentsDiv = div().withId("comments");
+
+        for (int i = 0; i < comments.length(); i++) {
+            JSONObject data = comments.getJSONObject(i).getJSONObject("data");
+
+            ContainerTag commentDiv =
+                    div(
+                            span(data.getString("author")).withClasses("author", iff(data.getString("author").equals(author), "op")),
+                            a(new Date((long) data.getInt("created") * 1000).toString()).withHref("#" + data.getString("name"))
+                    ).withClass("thing comment").withId(data.getString("name"))
+                            .with(rawHtml(Jsoup.parse(data.getString("body_html")).text()));
+
+            commentDiv = getNestedComments(data, commentDiv, author);
+            commentsDiv.with(commentDiv);
+        }
+        return commentsDiv;
+    }
+
+    private ContainerTag getNestedComments(JSONObject data, ContainerTag parentDiv, String author) {
+        if (data.has("replies") && data.get("replies") instanceof JSONObject) {
+            for (int i = 0; i <= data.getJSONObject("replies").getJSONObject("data").getJSONArray("children").length() - 1; i++) {
+                JSONObject nestedComment = data.getJSONObject("replies")
+                        .getJSONObject("data")
+                        .getJSONArray("children")
+                        .getJSONObject(i).getJSONObject("data");
+
+                ContainerTag childDiv =
+                        div(
+                                div(
+                                        span(nestedComment.getString("author")).withClasses("author", iff(nestedComment.getString("author").equals(author), "op")),
+                                        a(new Date((long) nestedComment.getInt("created") * 1000).toString()).withHref("#" + nestedComment.getString("name"))
+                                ).withClass("comment").withId(nestedComment.getString("name"))
+                                        .with(rawHtml(Jsoup.parse(nestedComment.getString("body_html")).text()))
+                        ).withClass("child");
+
+                parentDiv.with(getNestedComments(nestedComment, childDiv, author));
+            }
+        }
+        return parentDiv;
     }
 
     private URL parseRedditVideoMPD(String vidURL) {
@@ -368,5 +489,8 @@ public class RedditRipper extends AlbumRipper {
 
         throw new MalformedURLException("Only accepts user pages, subreddits, post, or gallery can't understand " + url);
     }
+
+    private static final String HTML_STYLING = " .author { font-weight: bold; } .op { color: blue; } .comment { border: 0px; margin: 0 0 25px; padding-left: 5px; } .child { margin: 2px 0 0 20px; border-left: 2px dashed #AAF; } .collapsed { background: darkgrey; margin-bottom: 0; } .collapsed > div { display: none; } .md { max-width: 840px; padding-right: 1em; } h1 { margin: 0; } body { position: relative; background-color: #eeeeec; color: #00000a; font-weight: 400; font-style: normal; font-variant: normal; font-family: Helvetica,Arial,sans-serif; line-height: 1.4 } blockquote { margin: 5px 5px 5px 15px; padding: 1px 1px 1px 15px; max-width: 60em; border: 1px solid #ccc; border-width: 0 0 0 1px; } pre { white-space: pre-wrap; } img, video { max-width: 60vw; max-height: 90vh; object-fit: contain; } .thing { overflow: hidden; margin: 0 5px 3px 40px; border: 1px solid #e0e0e0; background-color: #fcfcfb; } :target > .md { border: 5px solid blue; } .post { margin-bottom: 20px; margin-top: 20px; } .gold { background: goldenrod; } .silver { background: silver; } .platinum { background: aqua; } .deleted { background: #faa; } .md.deleted { background: inherit; border: 5px solid #faa; } .oppost { background-color: #EEF; } blockquote > p { margin: 0; } #related { max-height: 20em; overflow-y: scroll; background-color: #F4FFF4; } #related h3 { position: sticky; top: 0; background-color: white; } .flex { display: flex; flex-flow: wrap; flex-direction: row-reverse; justify-content: flex-end; } ";
+    private static final String HTML_SCRIPT = "document.addEventListener('mousedown', function(e) { var t = e.target; if (t.className == 'author') { t = t.parentElement; } if (t.classList.contains('comment')) { t.classList.toggle('collapsed'); e.preventDefault(); e.stopPropagation(); return false; } });";
 
 }

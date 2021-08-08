@@ -1,5 +1,6 @@
 package com.rarchives.ripme.tst.ripper.rippers;
 
+import com.rarchives.ripme.ripper.rippers.RedditRipper;
 import com.rarchives.ripme.ripper.rippers.RedgifsRipper;
 import org.jsoup.nodes.Document;
 import org.junit.jupiter.api.*;
@@ -53,8 +54,14 @@ public class RedgifsRipperTest extends RippersTest {
         Document doc = ripper.getFirstPage();
 
         doc = ripper.getNextPage(doc);
-        Assertions.assertTrue("https://napi.redgifs.com/v1/gfycats/search?search_text=little%20caprice&count=150&start=150".equalsIgnoreCase(doc.location()));
+        Assertions.assertTrue("https://api.redgifs.com/v1/gfycats/search?search_text=little%20caprice&count=150&start=150".equalsIgnoreCase(doc.location()));
         doc = ripper.getNextPage(doc);
-        Assertions.assertTrue("https://napi.redgifs.com/v1/gfycats/search?search_text=little%20caprice&count=150&start=300".equalsIgnoreCase(doc.location()));
+        Assertions.assertTrue("https://api.redgifs.com/v1/gfycats/search?search_text=little%20caprice&count=150&start=300".equalsIgnoreCase(doc.location()));
+    }
+
+    @Test
+    public void testRedditRedgifs() throws IOException {
+        RedditRipper ripper = new RedditRipper(new URL("https://www.reddit.com/r/nsfwhardcore/comments/ouz5bw/me_cumming_on_his_face/"));
+        testRipper(ripper);
     }
 }
