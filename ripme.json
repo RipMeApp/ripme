@@ -1,6 +1,7 @@
 {
-    "currentHash": "9884729069dcb9a778022814b0bef6688f39aab1e3749f749305c21d2fdca8c6",
+    "currentHash": "c479c8ec99671bf475ae13b74edeef14a023195e68c9df8c1f77256681e483bd",
     "changeList": [
+        "1.7.97: Added selfpost ripping for Reddit and fixed redgifs not ripping mp4",
         "1.7.96: Replaced fuzzyExists with library exists and added dot query's for redgifs user and search",
         "1.7.95: Added soundgasm ripper, and redirection for gfycat to gifdeliverynetwork/redgifs",
         "1.7.94: Added reddit gallery support; Fixed AllporncomicRipper; Fix imagefap ripper; instagramRipper, replaced Nashorn with GraalVM.js",
@@ -268,5 +269,5 @@
         "1.0.3: Added VK.com ripper",
         "1.0.1: Added auto-update functionality"
     ],
-    "latestVersion": "1.7.94"
+    "latestVersion": "1.7.97"
 }
