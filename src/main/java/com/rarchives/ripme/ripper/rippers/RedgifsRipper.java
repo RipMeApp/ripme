@@ -4,6 +4,7 @@ import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 import com.rarchives.ripme.utils.Http;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -72,14 +73,15 @@ public class RedgifsRipper extends AbstractHTMLRipper {
     @Override
     public Document getFirstPage() throws IOException {
         if (!isProfile().matches() && !isSearch().matches()) {
-            return Http.url(url).get();
+            return Jsoup.connect(getJsonURL(url).toExternalForm())
+                    .ignoreContentType(true).get();
         } else if (isSearch().matches()) {
             searchText = getGID(url).replace("-", " ");
             return Http.url(
-                    new URL("https://napi.redgifs.com/v1/gfycats/search?search_text=" + searchText + "&count=" + searchCount + "&start=" + searchStart*searchCount)).ignoreContentType().get();
+                    new URL("https://api.redgifs.com/v1/gfycats/search?search_text=" + searchText + "&count=" + searchCount + "&start=" + searchStart*searchCount)).ignoreContentType().get();
         } else {
             username = getGID(url);
-            return Http.url(new URL("https://napi.redgifs.com/v1/users/" +  username + "/gfycats?count=" + count))
+            return Http.url(new URL("https://api.redgifs.com/v1/users/" +  username + "/gfycats?count=" + count))
                        .ignoreContentType().get();
         }
     }
@@ -126,7 +128,7 @@ public class RedgifsRipper extends AbstractHTMLRipper {
     public Document getNextPage(Document doc) throws IOException {
         if (isSearch().matches()) {
             Document d = Http.url(
-                    new URL("https://napi.redgifs.com/v1/gfycats/search?search_text=" + searchText
+                    new URL("https://api.redgifs.com/v1/gfycats/search?search_text=" + searchText
                                     + "&count=" + searchCount + "&start=" + searchCount*++searchStart))
                        .ignoreContentType().get();
             return (hasURLs(d).isEmpty()) ? null : d;
@@ -134,7 +136,7 @@ public class RedgifsRipper extends AbstractHTMLRipper {
             if (cursor.equals("") || cursor.equals("null")) {
                 return null;
             } else {
-                Document d =  Http.url(new URL("https://napi.redgifs.com/v1/users/" +  username + "/gfycats?count=" + count + "&cursor=" + cursor)).ignoreContentType().get();
+                Document d =  Http.url(new URL("https://api.redgifs.com/v1/users/" +  username + "/gfycats?count=" + count + "&cursor=" + cursor)).ignoreContentType().get();
                 return (hasURLs(d).isEmpty()) ? null : d;
             }
         }
@@ -146,14 +148,9 @@ public class RedgifsRipper extends AbstractHTMLRipper {
         if (isProfile().matches() || isSearch().matches()) {
             result = hasURLs(doc);
         } else {
-            Elements videos = doc.select("script");
-            for (Element el : videos) {
-                String json = el.html();
-                if (json.startsWith("{")) {
-                    JSONObject page = new JSONObject(json);
-                    result.add(page.getJSONObject("video").getString("contentUrl"));
-                }
-            }
+            JSONObject api = new JSONObject(doc.body().html());
+            result.add(api.getJSONObject("gfyItem").getString("mp4Url"));
+
         }
         return result;
     }
@@ -183,19 +180,29 @@ public class RedgifsRipper extends AbstractHTMLRipper {
     public static String getVideoURL(URL url) throws IOException {
         LOGGER.info("Retrieving " + url.toExternalForm());
 
-        //Sanitize the URL first
-        url = new URL(url.toExternalForm().replace("/gifs/detail", ""));
+        try {
+            Document doc = Jsoup.connect(getJsonURL(url).toExternalForm())
+                    .ignoreContentType(true).get();
 
-        Document doc = Http.url(url).get();
-        Elements videos = doc.select("script");
-        for (Element el : videos) {
-            String json = el.html();
-            if (json.startsWith("{")) {
-                JSONObject page = new JSONObject(json);
-                return page.getJSONObject("video").getString("contentUrl");
-            }
+            JSONObject api = new JSONObject(doc.body().html());
+            return api.getJSONObject("gfyItem").getJSONObject("content_urls")
+                    .getJSONObject("mp4").getString("url");
+
+        } catch (NullPointerException e) {
+            return null;
         }
-        throw new IOException();
     }
 
+    public static URL getJsonURL(URL url) throws MalformedURLException{
+        String regex = "^https?://[wm.]*redgifs\\.com/watch/([a-zA-Z0-9_]+).*$";
+
+        final Pattern pattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
+        final Matcher matcher = pattern.matcher(url.toExternalForm());
+
+        if (matcher.matches()) {
+            return new URL("https://api.redgifs.com/v1/gfycats/" + matcher.group(1));
+        }
+
+        return null;
+    }
 }
