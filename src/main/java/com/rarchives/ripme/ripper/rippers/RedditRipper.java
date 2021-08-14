@@ -116,7 +116,6 @@ public class RedditRipper extends AlbumRipper {
                         children.getJSONObject(j).getJSONObject("data").getBoolean("is_self")
                 ) {
                     URL selfPostURL = new URL(children.getJSONObject(j).getJSONObject("data").getString("url"));
-                    System.out.println(selfPostURL.toExternalForm());
                     saveText(getJsonArrayFromURL(getJsonURL(selfPostURL)));
                 }
             }
@@ -240,7 +239,7 @@ public class RedditRipper extends AlbumRipper {
         }
     }
 
-    private void saveText(JSONArray jsonArray) {
+    private void saveText(JSONArray jsonArray) throws MalformedURLException{
         File saveFileAs;
 
         JSONObject selfPost = jsonArray.getJSONObject(0).getJSONObject("data")
@@ -257,6 +256,24 @@ public class RedditRipper extends AlbumRipper {
         final String subreddit = selfPost.getString("subreddit");
         final String selfText = selfPost.getString("selftext_html");
         final String permalink = selfPost.getString("url");
+
+        try {
+            saveFileAs = new File(workingDir.getCanonicalPath()
+                    + "" + File.separator
+                    + id + "_" + title.replaceAll("[\\\\/:*?\"<>|]", "")
+                    + ".html");
+
+            if (saveFileAs.exists() && !Utils.getConfigBoolean("file.overwrite", false)) {
+                LOGGER.debug("[!] File " + saveFileAs.toString() + " already exists in directory", null);
+                super.downloadExists(new URL(permalink), saveFileAs);
+                return;
+            }
+        } catch (IOException e) {
+            super.downloadErrored(new URL(permalink), "Error creating save file path for " + permalink);
+            return;
+        }
+
+        super.retrievingSource(permalink);
 
         String html = TagCreator.html(
                 head(
@@ -284,20 +301,17 @@ public class RedditRipper extends AlbumRipper {
         ).renderFormatted();
 
         try {
-            saveFileAs = new File(workingDir.getCanonicalPath()
-                    + "" + File.separator
-                    + id + "_" + title.replaceAll("[\\\\/:*?\"<>|]", "")
-                    + ".html");
             FileOutputStream out = new FileOutputStream(saveFileAs);
             out.write(html.getBytes());
             out.close();
+            super.downloadCompleted(new URL(permalink), saveFileAs);
         } catch (IOException e) {
+            super.downloadErrored(new URL(permalink), "Error creating save file path for " + permalink);
             LOGGER.error("[!] Error creating save file path for description '" + url + "':", e);
             return;
         }
 
-        LOGGER.debug("Downloading " + url + "'s self post to " + saveFileAs);
-        super.retrievingSource(permalink);
+        LOGGER.debug("Downloaded " + url + "'s self post to " + saveFileAs);
         if (!saveFileAs.getParentFile().exists()) {
             LOGGER.info("[+] Creating directory: " + Utils.removeCWD(saveFileAs.getParent()));
             saveFileAs.getParentFile().mkdirs();
@@ -308,6 +322,8 @@ public class RedditRipper extends AlbumRipper {
         ContainerTag commentsDiv = div().withId("comments");
 
         for (int i = 0; i < comments.length(); i++) {
+            if (comments.getJSONObject(i).getString("kind").equals("more")) { break; }
+
             JSONObject data = comments.getJSONObject(i).getJSONObject("data");
 
             ContainerTag commentDiv =

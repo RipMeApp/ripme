@@ -57,7 +57,7 @@ public class RedditRipperTest extends RippersTest {
 
     @Test
     public void testSelfPostAuthorRip() throws IOException {
-        RedditRipper ripper = new RedditRipper(new URL("https://www.reddit.com/user/IWriteALotSometimes"));
+        RedditRipper ripper = new RedditRipper(new URL("https://www.reddit.com/user/freshbeaver"));
         testRipper(ripper);
     }
 
@@ -83,6 +83,7 @@ public class RedditRipperTest extends RippersTest {
     public void testRedditGfycatRedirectURL() throws IOException {
         RedditRipper ripper = new RedditRipper(
                 new URL("https://www.reddit.com/r/NSFW_GIF/comments/ennwsa/gorgeous_tits/"));
+        testRipper(ripper);
     }
 
     @Test

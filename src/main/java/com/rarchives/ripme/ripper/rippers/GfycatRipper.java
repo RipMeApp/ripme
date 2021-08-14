@@ -152,7 +152,7 @@ public class GfycatRipper extends AbstractHTMLRipper {
             String json = el.html();
             if (json.startsWith("{")) {
                 JSONObject page = new JSONObject(json);
-                return page.getJSONObject("video").getString("contentUrl");
+                return page.getJSONObject("video").getString("contentUrl").replace("-mobile", "");
             }
         }
         // Check for gifdeliverynetwork/redgifs videos
@@ -161,6 +161,6 @@ public class GfycatRipper extends AbstractHTMLRipper {
         if (vidUrl.startsWith("//")) {
             vidUrl = "https:" + vidUrl;
         }
-        return vidUrl;
+        return vidUrl.replace("-mobile", "");
     }
 }

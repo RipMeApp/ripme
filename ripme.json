@@ -1,5 +1,5 @@
 {
-    "currentHash": "404c7bcfc71fc5e6352a8d6f9a152e0b1952a1e4bcd3c312f65c5fde5e8dd83b",
+    "currentHash": "9517df85c0885a4cb38bbc761376f0d4c115d7da2903000b8f8afe365d0d2ffd",
     "changeList": [
         "1.7.97: Added selfpost ripping for Reddit and fixed redgifs not ripping mp4",
         "1.7.96: Replaced fuzzyExists with library exists and added dot query's for redgifs user and search",
