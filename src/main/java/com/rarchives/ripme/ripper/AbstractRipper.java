@@ -23,6 +23,7 @@ import com.rarchives.ripme.ui.RipStatusHandler;
 import com.rarchives.ripme.ui.RipStatusMessage;
 import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
 import com.rarchives.ripme.utils.Utils;
+import redis.clients.jedis.Jedis; 
 
 public abstract class AbstractRipper
                 extends Observable
@@ -40,7 +41,7 @@ public abstract class AbstractRipper
     RipStatusHandler observer = null;
 
     private boolean completed = true;
-
+    private Jedis jedis;
     public abstract void rip() throws IOException;
     public abstract String getHost();
     public abstract String getGID(URL url) throws MalformedURLException;
@@ -62,6 +63,14 @@ public abstract class AbstractRipper
         }
     }
 
+    protected void initializeJedis() {
+        String host = Utils.getConfigString("url_history.redis_cache.host", "");
+        if (host != "") {
+            Integer port = Utils.getConfigInteger("url_history.redis_cache.port", 6379);
+            jedis = new Jedis(host, port);
+        }
+    }
+
 
     /**
      * Adds a URL to the url history file
@@ -72,6 +81,12 @@ public abstract class AbstractRipper
         if (Utils.getConfigBoolean("urls_only.save", false)) {
             return;
         }
+
+        if (Utils.getConfigString("url_history.redis_cache.host", "") != "") {
+            LOGGER.info("Setting in Redis: " + downloadedURL.trim());
+            jedis.set(downloadedURL.trim(), "true");
+        }
+
         downloadedURL = normalizeUrl(downloadedURL);
         BufferedWriter bw = null;
         FileWriter fw = null;
@@ -132,6 +147,39 @@ public abstract class AbstractRipper
      *      Returns false if not yet downloaded.
      */
     protected boolean hasDownloadedURL(String url) {
+        if (Utils.getConfigString("url_history.redis_cache.host", "") != "") {
+            return reddisContainsURL(url);
+        } else {
+            return fileContainsURL(url);
+        }
+    }
+
+    /**
+     * Checks redis to see if Ripme has already downloaded a URL
+     * @param url URL to check if downloaded
+     * @return 
+     *      Returns true if previously downloaded.
+     *      Returns false if not yet downloaded.
+     */
+    private boolean reddisContainsURL(String url) {
+        String jedisResult = jedis.get(url.trim());
+        if (jedisResult == null) {
+            LOGGER.info(url.trim() + " not found in redis");
+            return false;
+        } else {
+            LOGGER.info(url.trim() + " was found in redis");
+            return true;
+        }
+    }
+
+    /**
+     * Checks history file to see if Ripme has already downloaded a URL
+     * @param url URL to check if downloaded
+     * @return 
+     *      Returns true if previously downloaded.
+     *      Returns false if not yet downloaded.
+     */
+    private boolean fileContainsURL(String url) {
         File file = new File(URLHistoryFile);
         url = normalizeUrl(url);
 
@@ -145,10 +193,8 @@ public abstract class AbstractRipper
         } catch (FileNotFoundException e) {
             return false;
         }
-
         return false;
     }
-
 
     /**
      * Ensures inheriting ripper can rip this URL, raises exception if not.
@@ -333,6 +379,7 @@ public abstract class AbstractRipper
             LOGGER.info("[+] Creating directory: " + Utils.removeCWD(saveFileAs.getParent()));
             saveFileAs.getParentFile().mkdirs();
         }
+
         if (Utils.getConfigBoolean("remember.url_history", true) && !isThisATest()) {
             LOGGER.info("Writing " + url.toExternalForm() + " to file");
             try {
@@ -613,6 +660,7 @@ public abstract class AbstractRipper
      */
     public void run() {
         try {
+            initializeJedis();
             rip();
         } catch (HttpStatusException e) {
             LOGGER.error("Got exception while running ripper:", e);
