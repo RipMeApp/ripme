@@ -83,8 +83,10 @@ public abstract class AbstractRipper
         }
 
         if (Utils.getConfigString("url_history.redis_cache.host", "") != "") {
-            LOGGER.info("Setting in Redis: " + downloadedURL.trim());
-            jedis.set(downloadedURL.trim(), "true");
+            String keyPrefix = Utils.getConfigString("url_history.redis_cache.key_prefix", "");
+            String key = keyPrefix + downloadedURL.trim();
+            LOGGER.info("Setting in Redis: " + key);
+            jedis.set(key, "true");
         }
 
         downloadedURL = normalizeUrl(downloadedURL);
@@ -162,12 +164,14 @@ public abstract class AbstractRipper
      *      Returns false if not yet downloaded.
      */
     private boolean reddisContainsURL(String url) {
-        String jedisResult = jedis.get(url.trim());
+        String keyPrefix = Utils.getConfigString("url_history.redis_cache.key_prefix", "");
+        String key = keyPrefix + url.trim();
+        String jedisResult = jedis.get(key);
         if (jedisResult == null) {
-            LOGGER.info(url.trim() + " not found in redis");
+            LOGGER.info(key + " not found in redis");
             return false;
         } else {
-            LOGGER.info(url.trim() + " was found in redis");
+            LOGGER.info(key + " was found in redis");
             return true;
         }
     }
