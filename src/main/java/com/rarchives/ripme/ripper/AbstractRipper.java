@@ -74,6 +74,7 @@ public abstract class AbstractRipper
             File file = new File(URLHistoryFile);
             if (file.exists()) {
                 try (Scanner scanner = new Scanner(file)) {
+                    LOGGER.debug("Building url hash set");
                     while (scanner.hasNextLine()) {
                         final String lineFromFile = scanner.nextLine();
                         urlHistoryHashSet.add(lineFromFile.trim());
@@ -200,7 +201,9 @@ public abstract class AbstractRipper
      */
     private boolean fileContainsURL(String url) {
         url = normalizeUrl(url.trim());
-        return urlHistoryHashSet.contains(url);
+        Boolean foundUrl = urlHistoryHashSet.contains(url);
+        LOGGER.debug("Found url in hash set: " + foundUrl.toString());
+        return foundUrl;
     }
 
     /**
