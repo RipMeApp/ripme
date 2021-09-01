@@ -5,12 +5,17 @@ import java.net.HttpURLConnection;
 import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.ResourceBundle;
 
 import javax.net.ssl.HttpsURLConnection;
+import javax.xml.bind.DatatypeConverter;
 
 import com.rarchives.ripme.ui.MainWindow;
 import org.apache.log4j.Logger;
@@ -264,6 +269,24 @@ class DownloadFileThread extends Thread {
                 }
                 bis.close();
                 fos.close();
+
+                if (Utils.getConfigBoolean("save_as.md5", false)) {
+                    try {
+                        MessageDigest md = MessageDigest.getInstance("MD5");
+                        md.update(Files.readAllBytes(saveAs.toPath()));
+                        byte[] digest = md.digest();
+                        String md5hash = DatatypeConverter.printHexBinary(digest).toLowerCase();
+                        String [] split_filename = saveAs.getName().split("\\.");
+                        int ext_index = split_filename.length - 1;
+                        String newFileName = saveAs.getParent() + File.separator + md5hash + "." + split_filename[ext_index];
+                        Files.move(saveAs.toPath(), Paths.get(newFileName));
+                        logger.info("Renamed file to " + newFileName);
+                        this.prettySaveAs = Paths.get(newFileName).toString();
+                    } catch (NoSuchAlgorithmException e) {
+                        logger.error("Unable to rename file to md5 hash, using original name.");
+                    }
+                }
+
                 break; // Download successful: break out of infinite loop
             } catch (SocketTimeoutException timeoutEx) {
                 // Handle the timeout

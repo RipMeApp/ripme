@@ -108,6 +108,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
     private static JTextField configTimeoutText;
     private static JTextField configThreadsText;
     private static JCheckBox configOverwriteCheckbox;
+    private static JCheckBox configSaveAsMd5Checkbox;
     private static JLabel configSaveDirLabel;
     private static JButton configSaveDirButton;
     private static JTextField configRetriesText;
@@ -128,6 +129,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
     private static JLabel configThreadsLabel;
     private static JLabel configTimeoutLabel;
     private static JLabel configRetriesLabel;
+    private static JCheckBox configSaveinOneDirectory;
     // This doesn't really belong here but I have no idea where else to put it
     private static JButton configUrlFileChooserButton;
 
@@ -231,6 +233,8 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         Utils.setConfigBoolean("prefer.mp4", configPreferMp4.isSelected());
         Utils.setConfigBoolean("remember.url_history", configURLHistoryCheckbox.isSelected());
         Utils.setConfigString("lang", configSelectLangComboBox.getSelectedItem().toString());
+        Utils.setConfigBoolean("save_as.md5", configSaveAsMd5Checkbox.isSelected());
+        Utils.setConfigBoolean("save_in_one_directory", configSaveinOneDirectory.isSelected());
         saveWindowPosition(mainFrame);
         saveHistory();
         Utils.saveConfig();
@@ -519,6 +523,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         configOverwriteCheckbox = addNewCheckbox(Utils.getLocalizedString("overwrite.existing.files"), "file.overwrite",
                 false);
         configAutoupdateCheckbox = addNewCheckbox(Utils.getLocalizedString("auto.update"), "auto.update", true);
+        configSaveAsMd5Checkbox = addNewCheckbox(Utils.getLocalizedString("save.as.md5"), "save_as.md5", false);
         configPlaySound = addNewCheckbox(Utils.getLocalizedString("sound.when.rip.completes"), "play.sound", false);
         configShowPopup = addNewCheckbox(Utils.getLocalizedString("notification.when.rip.starts"),
                 "download.show_popup", false);
@@ -539,6 +544,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
                 "remember.url_history", true);
         configUrlFileChooserButton = new JButton(Utils.getLocalizedString("download.url.list"));
 
+        configSaveinOneDirectory = addNewCheckbox(Utils.getLocalizedString("save_in_one_directory"), "save_in_one_directory", false);
         configLogLevelCombobox = new JComboBox<>(
                 new String[] { "Log level: Error", "Log level: Warn", "Log level: Info", "Log level: Debug" });
         configSelectLangComboBox = new JComboBox<>(Utils.getSupportedLanguages());
@@ -570,7 +576,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         addItemToConfigGridBagConstraints(gbc, 10, configWindowPosition, configURLHistoryCheckbox);
         addItemToConfigGridBagConstraints(gbc, 11, configSelectLangComboBox, configUrlFileChooserButton);
         addItemToConfigGridBagConstraints(gbc, 12, configSaveDirLabel, configSaveDirButton);
-
+        addItemToConfigGridBagConstraints(gbc, 13, configSaveAsMd5Checkbox, configSaveinOneDirectory);
         emptyPanel = new JPanel();
         emptyPanel.setPreferredSize(new Dimension(0, 0));
         emptyPanel.setSize(0, 0);
@@ -627,14 +633,12 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         configurationPanel.add(thing2ToAdd, gbc);
     }
 
-    private void addItemToConfigGridBagConstraints(GridBagConstraints gbc, int gbcYValue, JCheckBox thing1ToAdd,
-            JComboBox thing2ToAdd) {
+    private void addItemToConfigGridBagConstraints(GridBagConstraints gbc, int gbcYValue, JCheckBox thing1ToAdd) {
         gbc.gridy = gbcYValue;
         gbc.gridx = 0;
         configurationPanel.add(thing1ToAdd, gbc);
-        gbc.gridx = 1;
-        configurationPanel.add(thing2ToAdd, gbc);
     }
+
 
     private void addItemToConfigGridBagConstraints(GridBagConstraints gbc, int gbcYValue, JComboBox thing1ToAdd,
             JButton thing2ToAdd) {
@@ -644,6 +648,17 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         gbc.gridx = 1;
         configurationPanel.add(thing2ToAdd, gbc);
     }
+
+    private void addItemToConfigGridBagConstraints(GridBagConstraints gbc, int gbcYValue, JCheckBox thing1ToAdd,
+                                                   JComboBox thing2ToAdd) {
+        gbc.gridy = gbcYValue;
+        gbc.gridx = 0;
+        configurationPanel.add(thing1ToAdd, gbc);
+        gbc.gridx = 1;
+        configurationPanel.add(thing2ToAdd, gbc);
+    }
+
+
 
     private void addItemToConfigGridBagConstraints(GridBagConstraints gbc, int gbcYValue, JComboBox thing1ToAdd) {
         gbc.gridy = gbcYValue;
@@ -948,6 +963,8 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         addCheckboxListener(configSaveDescriptions, "descriptions.save");
         addCheckboxListener(configPreferMp4, "prefer.mp4");
         addCheckboxListener(configWindowPosition, "window.position");
+        addCheckboxListener(configSaveAsMd5Checkbox, "save_as.md5");
+        addCheckboxListener(configSaveinOneDirectory, "save_in_one_directory");
 
         configClipboardAutorip.addActionListener(arg0 -> {
             Utils.setConfigBoolean("clipboard.autorip", configClipboardAutorip.isSelected());
