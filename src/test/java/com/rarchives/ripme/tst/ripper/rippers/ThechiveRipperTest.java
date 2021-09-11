@@ -26,6 +26,7 @@ package com.rarchives.ripme.tst.ripper.rippers;
 import com.rarchives.ripme.ripper.rippers.ThechiveRipper;
 
 import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -43,6 +44,7 @@ public class ThechiveRipperTest extends RippersTest {
      * @throws IOException
      */
     @Test
+    @Tag("flaky")
     public void testTheChiveRip() throws IOException {
         ThechiveRipper ripper = new ThechiveRipper(new URL(
                 "https://thechive.com/2019/03/16/beautiful-badasses-lookin-good-in-and-out-of-uniform-35-photos/"));
@@ -50,6 +52,7 @@ public class ThechiveRipperTest extends RippersTest {
     }
 
     @Test
+    @Tag("flaky")
     public void testTheChiveGif() throws IOException {
         ThechiveRipper ripper = new ThechiveRipper(
                 new URL("https://thechive.com/2019/03/14/dont-tease-me-just-squeeze-me-20-gifs/"));
