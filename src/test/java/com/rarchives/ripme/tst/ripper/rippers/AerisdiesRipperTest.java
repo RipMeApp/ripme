@@ -25,12 +25,14 @@ public class AerisdiesRipperTest extends RippersTest {
     }
 
     @Test
+    @Tag("flaky")
     public void testDjAlbum() throws IOException {
         AerisdiesRipper ripper = new AerisdiesRipper(new URL("http://www.aerisdies.com/html/lb/douj_5230_1.html"));
         testRipper(ripper);
     }
 
     @Test
+    @Tag("flaky")
     public void testGetGID() throws IOException {
         URL url = new URL("http://www.aerisdies.com/html/lb/douj_5230_1.html");
         AerisdiesRipper ripper = new AerisdiesRipper(url);
