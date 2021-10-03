@@ -75,6 +75,9 @@ tasks.withType<JavaCompile> {
 }
 
 tasks.test {
+  testLogging {
+    showStackTraces = true
+  }
   useJUnitPlatform {
     // gradle-6.5.1 not yet allows passing this as parameter, so exclude it
     excludeTags("flaky","slow")
