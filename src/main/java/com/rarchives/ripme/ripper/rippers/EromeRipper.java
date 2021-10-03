@@ -43,7 +43,7 @@ public class EromeRipper extends AbstractHTMLRipper {
 
     @Override
     public void downloadURL(URL url, int index) {
-        addURLToDownload(url, getPrefix(index));
+        addURLToDownload(url, getPrefix(index), "", "erome.com", this.cookies);
     }
 
     @Override
