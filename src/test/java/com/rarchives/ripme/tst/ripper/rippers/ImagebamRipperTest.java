@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 
 public class ImagebamRipperTest extends RippersTest {
     @Test
+    @Tag("flaky")
     public void testImagebamRip() throws IOException {
         ImagebamRipper ripper = new ImagebamRipper(new URL("http://www.imagebam.com/gallery/488cc796sllyf7o5srds8kpaz1t4m78i"));
         testRipper(ripper);
