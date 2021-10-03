@@ -5,6 +5,7 @@ import java.net.URL;
 
 import com.rarchives.ripme.ripper.rippers.E621Ripper;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 public class E621RipperTest extends RippersTest {
@@ -13,11 +14,13 @@ public class E621RipperTest extends RippersTest {
         testRipper(ripper);
     }
     @Test
+    @Tag("flaky")
     public void testFlashOrWebm() throws IOException {
         E621Ripper ripper = new E621Ripper(new URL("https://e621.net/posts?page=4&tags=gif+rating%3As+3d"));
         testRipper(ripper);
     }
     @Test
+    @Tag("flaky")
     public void testGetNextPage() throws IOException {
         E621Ripper nextPageRipper = new E621Ripper(new URL("https://e621.net/posts?tags=cosmicminerals"));
         try {
@@ -35,16 +38,19 @@ public class E621RipperTest extends RippersTest {
         }
     }
     @Test
+    @Tag("flaky")
     public void testOldRip() throws IOException {
         E621Ripper ripper = new E621Ripper(new URL("https://e621.net/post/index/1/beach"));
         testRipper(ripper);
     }
     @Test
+    @Tag("flaky")
     public void testOldFlashOrWebm() throws IOException {
         E621Ripper ripper = new E621Ripper(new URL("https://e621.net/post/index/1/gif"));
         testRipper(ripper);
     }
     @Test
+    @Tag("flaky")
     public void testOldGetNextPage() throws IOException {
         E621Ripper nextPageRipper = new E621Ripper(new URL("https://e621.net/post/index/1/cosmicminerals"));
         try {
