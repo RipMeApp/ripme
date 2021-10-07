@@ -38,6 +38,12 @@
       <scope>test</scope>
     </dependency>
     <dependency>
+      <groupId>it.ozimov</groupId>
+      <artifactId>embedded-redis</artifactId>
+      <version>0.7.2</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <!-- jsoup HTML parser library @ http://jsoup.org/ -->
       <groupId>org.jsoup</groupId>
       <artifactId>jsoup</artifactId>

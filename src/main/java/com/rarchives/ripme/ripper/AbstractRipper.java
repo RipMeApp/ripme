@@ -43,7 +43,7 @@ public abstract class AbstractRipper
 
     private boolean completed = true;
     private Jedis jedis;
-    private HashSet<String> urlHistoryHashSet = new HashSet();
+    protected HashSet<String> urlHistoryHashSet = new HashSet();
     public abstract void rip() throws IOException;
     public abstract String getHost();
     public abstract String getGID(URL url) throws MalformedURLException;
