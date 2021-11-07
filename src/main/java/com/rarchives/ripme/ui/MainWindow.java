@@ -724,8 +724,8 @@ public final class MainWindow implements Runnable, RipStatusHandler {
                 statusProgress.setVisible(false);
                 pack();
                 statusProgress.setValue(0);
-                status(Utils.getLocalizedString("ripping.interrupted"));
-                appendLog("Ripper interrupted", Color.RED);
+                status(Utils.getLocalizedString("download.interrupted"));
+                appendLog("Download interrupted", Color.RED);
             }
         });
         optionLog.addActionListener(event -> {
