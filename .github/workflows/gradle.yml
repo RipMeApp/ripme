@@ -9,10 +9,10 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macOS-latest]
-        java: [1.8]
+        java: [8]
         include: # test newest java on one os only, upload from ubuntu java8
           - os: ubuntu-latest
-            java: 1.15
+            java: 17
           - os: ubuntu-latest
             upload: true
 
@@ -24,9 +24,10 @@ jobs:
       id: ci-env
       uses: FranzDiebold/github-env-vars-action@v2
 
-    - name: Set up JDK
-      uses: actions/setup-java@v1
+    - name: Set up Java
+      uses: actions/setup-java@v2
       with:
+        distribution: 'temurin'
         java-version: ${{ matrix.java }}
 
     - name: Cache Gradle packages
