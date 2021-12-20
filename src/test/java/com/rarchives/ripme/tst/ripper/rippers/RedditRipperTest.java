@@ -56,6 +56,7 @@ public class RedditRipperTest extends RippersTest {
     }
 
     @Test
+    @Tag("flaky")
     public void testSelfPostAuthorRip() throws IOException {
         RedditRipper ripper = new RedditRipper(new URL("https://www.reddit.com/user/ickybabie_"));
         testRipper(ripper);
