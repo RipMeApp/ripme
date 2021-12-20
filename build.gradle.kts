@@ -15,6 +15,7 @@ dependencies {
   implementation("org.java-websocket:Java-WebSocket:1.5.2")
   implementation("org.jsoup:jsoup:1.14.3")
   implementation("org.json:json:20211205")
+  implementation("com.j2html:j2html:1.5.0")
   implementation("commons-configuration:commons-configuration:1.10")
   implementation("commons-cli:commons-cli:1.5.0")
   implementation("commons-io:commons-io:2.11.0")
