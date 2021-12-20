@@ -11,21 +11,20 @@ repositories {
 }
 
 dependencies {
-  implementation("com.lmax:disruptor:3.4.2")
-  implementation("org.java-websocket:Java-WebSocket:1.5.1")
-  implementation("org.jsoup:jsoup:1.8.1")
-  implementation("org.json:json:20190722")
-  implementation("commons-configuration:commons-configuration:1.7")
-  implementation("log4j:log4j:1.2.17")
-  implementation("commons-cli:commons-cli:1.4")
-  implementation("commons-io:commons-io:2.9.0")
+  implementation("com.lmax:disruptor:3.4.4")
+  implementation("org.java-websocket:Java-WebSocket:1.5.2")
+  implementation("org.jsoup:jsoup:1.14.3")
+  implementation("org.json:json:20211205")
+  implementation("commons-configuration:commons-configuration:1.10")
+  implementation("commons-cli:commons-cli:1.5.0")
+  implementation("commons-io:commons-io:2.11.0")
   implementation("org.apache.httpcomponents:httpclient:4.5.13")
   implementation("org.apache.httpcomponents:httpmime:4.5.13")
-
-  implementation("org.apache.logging.log4j:log4j-api:2.14.1")
-  implementation("org.apache.logging.log4j:log4j-core:2.14.1")
-  implementation("org.graalvm.js:js:21.1.0")
-  testImplementation(enforcedPlatform("org.junit:junit-bom:5.7.2"))
+  implementation("log4j:log4j:1.2.17")
+  implementation("org.apache.logging.log4j:log4j-api:2.17.0")
+  implementation("org.apache.logging.log4j:log4j-core:2.17.0")
+  implementation("org.graalvm.js:js:21.3.0")
+  testImplementation(enforcedPlatform("org.junit:junit-bom:5.8.2"))
   testImplementation("org.junit.jupiter:junit-jupiter")
   testImplementation("junit:junit:4.13.2")
 }
