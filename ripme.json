@@ -1,7 +1,9 @@
 {
-    "currentHash": "9eb4d095293653898eeecdf8cbf033a9c6a37c70e8da38a0f07029d86aa15745",
+    "latestVersion": "2.0.2",
+    "currentHash": "0e543535f274b60c2d391163f8a53344293a61e118bcf840819facce5ca7e714",
     "changeList": [
-        "2.0.1: Fixed reddit, tujigu, xhamster, imagebam; marked some tests as flaky.",
+        "2.0.2: Add greek translation, fixed reddit, redgif.",
+        "2.0.1: Fixed reddit, tujigu, xhamster, imagebam, erome; marked some tests as flaky.",
         "2.0.0: Fixed Zizki, WordpressComics, Imagebam; marked some tests as flaky ",
         "1.7.95: Added porncomixinfo.net; Fixed ripper for HentaiNexus; move l option to before r and R; marked some tests as flaky ",
         "1.7.94: Added reddit gallery support; Fixed AllporncomicRipper; Fix imagefap ripper; instagramRipper, replaced Nashorn with GraalVM.js",
@@ -268,6 +270,5 @@
         "1.0.4: Fixed spaces-in-directory bug",
         "1.0.3: Added VK.com ripper",
         "1.0.1: Added auto-update functionality"
-    ],
-    "latestVersion": "1.7.95"
+    ]
 }
