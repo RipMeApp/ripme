@@ -3,6 +3,7 @@ package com.rarchives.ripme.tst.ripper.rippers;
 import com.rarchives.ripme.ripper.rippers.VscoRipper;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -28,6 +29,7 @@ public class VscoRipperTest extends RippersTest {
      * @throws IOException
      */
     @Test
+    @Tag("flaky")
     public void testHyphenatedRip() throws IOException {
         VscoRipper ripper = new VscoRipper(new URL("https://vsco.co/jolly-roger/gallery"));
         testRipper(ripper);
