@@ -26,8 +26,8 @@ public class UpdateUtils {
     private static final Logger logger = LogManager.getLogger(UpdateUtils.class);
     // do not update the default version without adjusting the unit test. the real version comes from METAINF.MF
     private static final String DEFAULT_VERSION = "1.7.94-10-b6345398";
-    private static final String REPO_NAME = "ripmeapp/ripme";
-    private static final String updateJsonURL = "https://raw.githubusercontent.com/" + REPO_NAME + "/master/ripme.json";
+    private static final String REPO_NAME = "ripmeapp2/ripme";
+    private static final String updateJsonURL = "https://raw.githubusercontent.com/" + REPO_NAME + "/main/ripme.json";
     private static String mainFileName;
 
     static {
@@ -44,7 +44,7 @@ public class UpdateUtils {
     private static JSONObject ripmeJson;
 
     private static String getUpdateJarURL(String latestVersion) {
-        return "https://github.com/" + REPO_NAME + "/releases/download/" + latestVersion + "/ripme.jar";
+        return "https://github.com/" + REPO_NAME + "/releases/download/latest-" + latestVersion + "/ripme"+ latestVersion + ".jar";
     }
 
     public static String getThisJarVersion() {
