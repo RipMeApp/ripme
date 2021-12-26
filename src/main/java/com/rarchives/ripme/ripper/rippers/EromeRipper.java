@@ -22,6 +22,8 @@ import com.rarchives.ripme.utils.Http;
  */
 public class EromeRipper extends AbstractHTMLRipper {
 
+    private static final String EROME_REFERER = "https://www.erome.com/";
+
     boolean rippingProfile;
 
 
@@ -41,7 +43,7 @@ public class EromeRipper extends AbstractHTMLRipper {
 
     @Override
     public void downloadURL(URL url, int index) {
-        addURLToDownload(url, getPrefix(index));
+        addURLToDownload(url, getPrefix(index), "", EROME_REFERER, null, null);
     }
 
     @Override
