@@ -1,16 +1,6 @@
 package com.rarchives.ripme.ui;
 
-import java.awt.Dimension;
-import java.io.*;
-import java.net.URISyntaxException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-
-import javax.swing.JEditorPane;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JScrollPane;
-
+import com.rarchives.ripme.utils.Utils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
@@ -19,7 +9,19 @@ import org.jsoup.Connection.Response;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
-import com.rarchives.ripme.utils.Utils;
+import javax.swing.*;
+import java.awt.*;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URISyntaxException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 public class UpdateUtils {
 
@@ -28,7 +30,9 @@ public class UpdateUtils {
     private static final String DEFAULT_VERSION = "1.7.94-10-b6345398";
     private static final String REPO_NAME = "ripmeapp2/ripme";
     private static final String updateJsonURL = "https://raw.githubusercontent.com/" + REPO_NAME + "/main/ripme.json";
+    private static final String updateFileName = "ripme.jar.update";
     private static String mainFileName;
+    private static JSONObject ripmeJson;
 
     static {
         try {
@@ -40,11 +44,8 @@ public class UpdateUtils {
         }
     }
 
-    private static final String updateFileName = "ripme.jar.update";
-    private static JSONObject ripmeJson;
-
     private static String getUpdateJarURL(String latestVersion) {
-        return "https://github.com/" + REPO_NAME + "/releases/download/"+ latestVersion + "/ripme-"+ latestVersion + ".jar";
+        return "https://github.com/" + REPO_NAME + "/releases/download/" + latestVersion + "/ripme-" + latestVersion + ".jar";
     }
 
     public static String getThisJarVersion() {
@@ -72,7 +73,7 @@ public class UpdateUtils {
     public static void updateProgramCLI() {
         logger.info("Checking for update...");
 
-        Document doc = null;
+        Document doc;
         try {
             logger.debug("Retrieving " + UpdateUtils.updateJsonURL);
             doc = Jsoup.connect(UpdateUtils.updateJsonURL).timeout(10 * 1000).ignoreContentType(true).get();
@@ -113,7 +114,7 @@ public class UpdateUtils {
     public static void updateProgramGUI(JLabel configUpdateLabel) {
         configUpdateLabel.setText("Checking for update...");
 
-        Document doc = null;
+        Document doc;
         try {
             logger.debug("Retrieving " + UpdateUtils.updateJsonURL);
             doc = Jsoup.connect(UpdateUtils.updateJsonURL).timeout(10 * 1000).ignoreContentType(true).get();
@@ -199,11 +200,11 @@ public class UpdateUtils {
         // a version string looks like 1.7.94, 1.7.94-10-something
         // 10 is the number of commits since the 1.7.94 tag, so newer
         // the int array returned then contains e.g. 1.7.94.0 or 1.7.94.10
-        String[] strVersions = version.split("[\\.-]");
+        String[] strVersions = version.split("[.-]");
         // not consider more than 4 components of version, loop only the real number
         // of components or maximum 4 components of the version string
         int[] intVersions = new int[4];
-        for (int i = 0; i < Math.min(4,strVersions.length); i++) {
+        for (int i = 0; i < Math.min(4, strVersions.length); i++) {
             // if it is an integer, set it, otherwise leave default 0
             if (strVersions[i].matches("\\d+")) {
                 intVersions[i] = Integer.parseInt(strVersions[i]);
@@ -234,11 +235,9 @@ public class UpdateUtils {
             // As patch.py writes the hash in lowercase this must return the has in
             // lowercase
             return sb.toString().toLowerCase();
-        } catch (NoSuchAlgorithmException e) {
-            logger.error("Got error getting file hash " + e.getMessage());
         } catch (FileNotFoundException e) {
             logger.error("Could not find file: " + file.getName());
-        } catch (IOException e) {
+        } catch (NoSuchAlgorithmException | IOException e) {
             logger.error("Got error getting file hash " + e.getMessage());
         }
         return null;
@@ -273,15 +272,15 @@ public class UpdateUtils {
             // Windows
             final String batchFile = "update_ripme.bat";
             final String batchPath = new File(batchFile).getAbsolutePath();
-            String script = "@echo off\r\n" + "timeout 1\r\n" 
+            String script = "@echo off\r\n" + "timeout 1\r\n"
                     + "copy \"" + updateFileName + "\" \"" + mainFileName + "\"\r\n"
                     + "del \"" + updateFileName + "\"\r\n";
-            
-            if (shouldLaunch) 
+
+            if (shouldLaunch)
                 script += "\"" + mainFileName + "\"\r\n";
             script += "del \"" + batchPath + "\"\r\n";
-            
-            final String[] batchExec = new String[] { batchPath };
+
+            final String[] batchExec = new String[]{batchPath};
             // Create updater script
             try (BufferedWriter bw = new BufferedWriter(new FileWriter(batchFile))) {
                 bw.write(script);
