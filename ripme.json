@@ -1,7 +1,8 @@
 {
-    "latestVersion": "2.0.2",
-    "currentHash": "0e543535f274b60c2d391163f8a53344293a61e118bcf840819facce5ca7e714",
+    "latestVersion": "2.0.3",
+    "currentHash": "fe2e5ddec836420329a9348ccf5b019087fc750128fe485479e8b7ccee75fc93",
     "changeList": [
+        "2.0.3: Check new version against ripme2app.",
         "2.0.2: Add greek translation, fixed reddit, redgif.",
         "2.0.1: Fixed reddit, tujigu, xhamster, imagebam, erome; marked some tests as flaky.",
         "2.0.0: Fixed Zizki, WordpressComics, Imagebam; marked some tests as flaky ",
