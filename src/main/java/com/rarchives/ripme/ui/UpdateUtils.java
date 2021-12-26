@@ -44,7 +44,7 @@ public class UpdateUtils {
     private static JSONObject ripmeJson;
 
     private static String getUpdateJarURL(String latestVersion) {
-        return "https://github.com/" + REPO_NAME + "/releases/download/latest-" + latestVersion + "/ripme"+ latestVersion + ".jar";
+        return "https://github.com/" + REPO_NAME + "/releases/download/latest/ripme"+ latestVersion + ".jar";
     }
 
     public static String getThisJarVersion() {

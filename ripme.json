@@ -1,6 +1,7 @@
 {
-    "currentHash": "8f51271e5a9e138a9d7f7febe11809619a28e7272cb231fed9b4a6faef88e8b6",
+    "currentHash": "9eb4d095293653898eeecdf8cbf033a9c6a37c70e8da38a0f07029d86aa15745",
     "changeList": [
+        "2.0.1: Fixed reddit, tujigu, xhamster, imagebam; marked some tests as flaky.",
         "2.0.0: Fixed Zizki, WordpressComics, Imagebam; marked some tests as flaky ",
         "1.7.95: Added porncomixinfo.net; Fixed ripper for HentaiNexus; move l option to before r and R; marked some tests as flaky ",
         "1.7.94: Added reddit gallery support; Fixed AllporncomicRipper; Fix imagefap ripper; instagramRipper, replaced Nashorn with GraalVM.js",
