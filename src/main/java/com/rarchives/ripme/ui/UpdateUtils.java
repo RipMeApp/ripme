@@ -1,16 +1,6 @@
 package com.rarchives.ripme.ui;
 
-import java.awt.Dimension;
-import java.io.*;
-import java.net.URISyntaxException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-
-import javax.swing.JEditorPane;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JScrollPane;
-
+import com.rarchives.ripme.utils.Utils;
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -18,7 +8,19 @@ import org.jsoup.Connection.Response;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
-import com.rarchives.ripme.utils.Utils;
+import javax.swing.*;
+import java.awt.*;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URISyntaxException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 public class UpdateUtils {
 
@@ -26,7 +28,9 @@ public class UpdateUtils {
     private static final String DEFAULT_VERSION = "1.7.95";
     private static final String REPO_NAME = "ripmeapp/ripme";
     private static final String updateJsonURL = "https://raw.githubusercontent.com/" + REPO_NAME + "/master/ripme.json";
+    private static final String updateFileName = "ripme.jar.update";
     private static String mainFileName;
+    private static JSONObject ripmeJson;
 
     static {
         try {
@@ -37,9 +41,6 @@ public class UpdateUtils {
             e.printStackTrace();
         }
     }
-
-    private static final String updateFileName = "ripme.jar.update";
-    private static JSONObject ripmeJson;
 
     private static String getUpdateJarURL(String latestVersion) {
         return "https://github.com/" + REPO_NAME + "/releases/download/" + latestVersion + "/ripme.jar";
@@ -70,7 +71,7 @@ public class UpdateUtils {
     public static void updateProgramCLI() {
         logger.info("Checking for update...");
 
-        Document doc = null;
+        Document doc;
         try {
             logger.debug("Retrieving " + UpdateUtils.updateJsonURL);
             doc = Jsoup.connect(UpdateUtils.updateJsonURL).timeout(10 * 1000).ignoreContentType(true).get();
@@ -111,7 +112,7 @@ public class UpdateUtils {
     public static void updateProgramGUI(JLabel configUpdateLabel) {
         configUpdateLabel.setText("Checking for update...");
 
-        Document doc = null;
+        Document doc;
         try {
             logger.debug("Retrieving " + UpdateUtils.updateJsonURL);
             doc = Jsoup.connect(UpdateUtils.updateJsonURL).timeout(10 * 1000).ignoreContentType(true).get();
@@ -225,11 +226,9 @@ public class UpdateUtils {
             // As patch.py writes the hash in lowercase this must return the has in
             // lowercase
             return sb.toString().toLowerCase();
-        } catch (NoSuchAlgorithmException e) {
-            logger.error("Got error getting file hash " + e.getMessage());
         } catch (FileNotFoundException e) {
             logger.error("Could not find file: " + file.getName());
-        } catch (IOException e) {
+        } catch (NoSuchAlgorithmException | IOException e) {
             logger.error("Got error getting file hash " + e.getMessage());
         }
         return null;
@@ -264,15 +263,15 @@ public class UpdateUtils {
             // Windows
             final String batchFile = "update_ripme.bat";
             final String batchPath = new File(batchFile).getAbsolutePath();
-            String script = "@echo off\r\n" + "timeout 1\r\n" 
+            String script = "@echo off\r\n" + "timeout 1\r\n"
                     + "copy \"" + updateFileName + "\" \"" + mainFileName + "\"\r\n"
                     + "del \"" + updateFileName + "\"\r\n";
-            
-            if (shouldLaunch) 
+
+            if (shouldLaunch)
                 script += "\"" + mainFileName + "\"\r\n";
             script += "del \"" + batchPath + "\"\r\n";
-            
-            final String[] batchExec = new String[] { batchPath };
+
+            final String[] batchExec = new String[]{batchPath};
             // Create updater script
             try (BufferedWriter bw = new BufferedWriter(new FileWriter(batchFile))) {
                 bw.write(script);
