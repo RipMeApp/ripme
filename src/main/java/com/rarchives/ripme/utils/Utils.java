@@ -1,8 +1,18 @@
 package com.rarchives.ripme.utils;
 
+import com.rarchives.ripme.ripper.AbstractRipper;
+import org.apache.commons.configuration.ConfigurationException;
+import org.apache.commons.configuration.PropertiesConfiguration;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
+import org.apache.log4j.PropertyConfigurator;
+
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
+import javax.sound.sampled.Line;
+import javax.sound.sampled.LineEvent;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
@@ -22,7 +32,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -32,20 +41,6 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Stream;
-
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.Clip;
-import javax.sound.sampled.Line;
-import javax.sound.sampled.LineEvent;
-
-import com.rarchives.ripme.ripper.AbstractRipper;
-
-import org.apache.commons.configuration.ConfigurationException;
-import org.apache.commons.configuration.PropertiesConfiguration;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
-import org.apache.log4j.PropertyConfigurator;
 
 /**
  * Common utility functions used in various places throughout the project.
@@ -61,8 +56,8 @@ public class Utils {
     private static final int SHORTENED_PATH_LENGTH = 12;
 
     private static PropertiesConfiguration config;
-    private static HashMap<String, HashMap<String, String>> cookieCache;
-    private static HashMap<ByteBuffer, String> magicHash = new HashMap<>();
+    private static final HashMap<String, HashMap<String, String>> cookieCache;
+    private static final HashMap<ByteBuffer, String> magicHash = new HashMap<>();
 
     private static ResourceBundle resourceBundle = null;
 
@@ -359,7 +354,7 @@ public class Utils {
                 if (wasFirstParam) {
                     c = "?";
                 }
-                url = url.substring(0, paramIndex) + c + url.substring(nextParam + 1, url.length());
+                url = url.substring(0, paramIndex) + c + url.substring(nextParam + 1);
             } else {
                 url = url.substring(0, paramIndex);
             }
@@ -536,7 +531,7 @@ public class Utils {
      */
     public static String bytesToHumanReadable(int bytes) {
         float fbytes = (float) bytes;
-        String[] mags = new String[] { "", "K", "M", "G", "T" };
+        String[] mags = new String[]{"", "K", "M", "G", "T"};
         int magIndex = 0;
         while (fbytes >= 1024) {
             fbytes /= 1024;
@@ -731,7 +726,7 @@ public class Utils {
      * of the UI.
      *
      * @return Returns the default resource bundle using the language specified in
-     *         the config file.
+     * the config file.
      */
     public static ResourceBundle getResourceBundle(String langSelect) {
         if (langSelect == null) {
@@ -771,7 +766,7 @@ public class Utils {
 
             Path myPath;
             if (uri.getScheme().equals("jar")) {
-                FileSystem fileSystem = FileSystems.newFileSystem(uri, Collections.<String, Object>emptyMap());
+                FileSystem fileSystem = FileSystems.newFileSystem(uri, Collections.emptyMap());
                 myPath = fileSystem.getPath("/");
             } else {
                 myPath = Paths.get(uri).getParent();
@@ -791,7 +786,7 @@ public class Utils {
         } catch (Exception e) {
             e.printStackTrace();
             // On error return default language
-            return new String[] { DEFAULT_LANG };
+            return new String[]{DEFAULT_LANG};
         }
     }
 
@@ -810,10 +805,10 @@ public class Utils {
      * @param bytesTotal           The total size of the file that is being
      *                             downloaded
      * @return Returns the formatted status text for rippers using the byte progress
-     *         bar
+     * bar
      */
     public static String getByteStatusText(int completionPercentage, int bytesCompleted, int bytesTotal) {
-        return String.valueOf(completionPercentage) + "%  - " + Utils.bytesToHumanReadable(bytesCompleted) + " / "
+        return completionPercentage + "%  - " + Utils.bytesToHumanReadable(bytesCompleted) + " / "
                 + Utils.bytesToHumanReadable(bytesTotal);
     }
 
@@ -830,8 +825,8 @@ public class Utils {
     }
 
     private static void initialiseMagicHashMap() {
-        magicHash.put(ByteBuffer.wrap(new byte[] { -1, -40, -1, -37, 0, 0, 0, 0 }), "jpeg");
-        magicHash.put(ByteBuffer.wrap(new byte[] { -119, 80, 78, 71, 13, 0, 0, 0 }), "png");
+        magicHash.put(ByteBuffer.wrap(new byte[]{-1, -40, -1, -37, 0, 0, 0, 0}), "jpeg");
+        magicHash.put(ByteBuffer.wrap(new byte[]{-119, 80, 78, 71, 13, 0, 0, 0}), "png");
     }
 
     // Checks if a file exists ignoring it's extension.
