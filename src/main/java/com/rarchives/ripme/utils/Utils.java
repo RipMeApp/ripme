@@ -1,5 +1,22 @@
 package com.rarchives.ripme.utils;
 
+import com.rarchives.ripme.ripper.AbstractRipper;
+import org.apache.commons.configuration.ConfigurationException;
+import org.apache.commons.configuration.PropertiesConfiguration;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.appender.RollingFileAppender;
+import org.apache.logging.log4j.core.appender.rolling.DefaultRolloverStrategy;
+import org.apache.logging.log4j.core.appender.rolling.SizeBasedTriggeringPolicy;
+import org.apache.logging.log4j.core.appender.rolling.TriggeringPolicy;
+import org.apache.logging.log4j.core.config.Configuration;
+import org.apache.logging.log4j.core.config.LoggerConfig;
+
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
+import javax.sound.sampled.Line;
+import javax.sound.sampled.LineEvent;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -24,30 +41,12 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.MissingResourceException;
+import java.util.Objects;
 import java.util.ResourceBundle;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.Clip;
-import javax.sound.sampled.Line;
-import javax.sound.sampled.LineEvent;
-
-import com.rarchives.ripme.ripper.AbstractRipper;
-
-import org.apache.commons.configuration.ConfigurationException;
-import org.apache.commons.configuration.PropertiesConfiguration;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.core.LoggerContext;
-import org.apache.logging.log4j.core.appender.RollingFileAppender;
-import org.apache.logging.log4j.core.appender.rolling.DefaultRolloverStrategy;
-import org.apache.logging.log4j.core.appender.rolling.SizeBasedTriggeringPolicy;
-import org.apache.logging.log4j.core.appender.rolling.TriggeringPolicy;
-import org.apache.logging.log4j.core.config.Configuration;
-import org.apache.logging.log4j.core.config.LoggerConfig;
 
 /**
  * Common utility functions used in various places throughout the project.
@@ -64,9 +63,9 @@ public class Utils {
 
     private static PropertiesConfiguration config;
     private static HashMap<String, HashMap<String, String>> cookieCache;
-    private static HashMap<ByteBuffer, String> magicHash = new HashMap<>();
+    private static final HashMap<ByteBuffer, String> magicHash = new HashMap<>();
 
-    private static ResourceBundle resourceBundle = null;
+    private static ResourceBundle resourceBundle;
 
     static {
         cookieCache = new HashMap<>();
@@ -242,7 +241,7 @@ public class Utils {
     }
 
     private static File getJarDirectory() {
-        File jarDirectory = Utils.class.getResource("/rip.properties").toString().contains("jar:")
+        File jarDirectory = Objects.requireNonNull(Utils.class.getResource("/rip.properties")).toString().contains("jar:")
                 ? new File(System.getProperty("java.class.path")).getParentFile()
                 : new File(System.getProperty("user.dir"));
 
@@ -412,6 +411,7 @@ public class Utils {
         if (directory != null && directory.exists()) {
             // Get the list of the files contained in the package
             String[] files = directory.list();
+            assert files != null;
             for (String file : files) {
                 if (file.endsWith(".class") && !file.contains("$")) {
                     String className = pkgname + '.' + file.substring(0, file.length() - 6);
@@ -524,10 +524,10 @@ public class Utils {
         // Get a List of all Directories and check its lowercase
         // if file exists return it
         File file = new File(path.substring(0, index));
-        if (! (file.isDirectory() && file.canWrite() && file.canExecute())) {
+        if (!(file.isDirectory() && file.canWrite() && file.canExecute())) {
             throw new IOException("Original directory \"" + file + "\" is no directory or not writeable.");
         }
-        ArrayList<String> names = new ArrayList<>(Arrays.asList(file.list()));
+        ArrayList<String> names = new ArrayList<>(Arrays.asList(Objects.requireNonNull(file.list())));
 
         for (String name : names) {
             if (name.toLowerCase().equals(lastPart)) {
@@ -548,7 +548,7 @@ public class Utils {
      */
     public static String bytesToHumanReadable(int bytes) {
         float fbytes = (float) bytes;
-        String[] mags = new String[] { "", "K", "M", "G", "T" };
+        String[] mags = new String[]{"", "K", "M", "G", "T"};
         int magIndex = 0;
         while (fbytes >= 1024) {
             fbytes /= 1024;
@@ -755,7 +755,7 @@ public class Utils {
      * of the UI.
      *
      * @return Returns the default resource bundle using the language specified in
-     *         the config file.
+     * the config file.
      */
     public static ResourceBundle getResourceBundle(String langSelect) {
         if (langSelect == null) {
@@ -791,7 +791,7 @@ public class Utils {
     public static String[] getSupportedLanguages() {
         ArrayList<Path> filesList = new ArrayList<>();
         try {
-            URI uri = Utils.class.getResource("/rip.properties").toURI();
+            URI uri = Objects.requireNonNull(Utils.class.getResource("/rip.properties")).toURI();
 
             Path myPath;
             if (uri.getScheme().equals("jar")) {
@@ -815,7 +815,7 @@ public class Utils {
         } catch (Exception e) {
             e.printStackTrace();
             // On error return default language
-            return new String[] { DEFAULT_LANG };
+            return new String[]{DEFAULT_LANG};
         }
     }
 
@@ -833,8 +833,7 @@ public class Utils {
      * @param bytesCompleted       How many bytes have been downloaded
      * @param bytesTotal           The total size of the file that is being
      *                             downloaded
-     * @return Returns the formatted status text for rippers using the byte progress
-     *         bar
+     * @return Returns the formatted status text for rippers using the byte progresbar
      */
     public static String getByteStatusText(int completionPercentage, int bytesCompleted, int bytesTotal) {
         return completionPercentage + "%  - " + Utils.bytesToHumanReadable(bytesCompleted) + " / "
@@ -854,8 +853,8 @@ public class Utils {
     }
 
     private static void initialiseMagicHashMap() {
-        magicHash.put(ByteBuffer.wrap(new byte[] { -1, -40, -1, -37, 0, 0, 0, 0 }), "jpeg");
-        magicHash.put(ByteBuffer.wrap(new byte[] { -119, 80, 78, 71, 13, 0, 0, 0 }), "png");
+        magicHash.put(ByteBuffer.wrap(new byte[]{-1, -40, -1, -37, 0, 0, 0, 0}), "jpeg");
+        magicHash.put(ByteBuffer.wrap(new byte[]{-119, 80, 78, 71, 13, 0, 0, 0}), "png");
     }
 
     // Checks if a file exists ignoring it's extension.
