@@ -19,7 +19,7 @@ import com.rarchives.ripme.utils.Http;
 public class LusciousRipper extends AbstractHTMLRipper {
     private static final int RETRY_COUNT = 5; // Keeping it high for read timeout exception.
 
-    private static final Pattern P = Pattern.compile("^https?:\\/\\/(?:members\\.|old\\.|www\\.)?luscious.net\\/albums\\/([-_.0-9a-zA-Z]+)\\/?");
+    private static final Pattern P = Pattern.compile("^https?:\\/\\/(?:members\\.|legacy\\.|www\\.)?luscious.net\\/albums\\/([-_.0-9a-zA-Z]+)\\/?");
     private DownloadThreadPool lusciousThreadPool = new DownloadThreadPool("lusciousThreadPool");
 
     public LusciousRipper(URL url) throws IOException {
@@ -89,15 +89,15 @@ public class LusciousRipper extends AbstractHTMLRipper {
 
     @Override
     public URL sanitizeURL(URL url) throws MalformedURLException {
-        // Sanitizes the url removing GET parameters and convert to old api url.
-        // "https://old.luscious.net/albums/albumname"
+        // Sanitizes the url removing GET parameters and convert to legacy api url.
+        // "https://legacy.luscious.net/albums/albumname"
         try {
             Matcher m = P.matcher(url.toString());
             if (m.matches()) {
                 String sanitizedUrl = m.group();
                 sanitizedUrl = sanitizedUrl.replaceFirst(
-                        "^https?:\\/\\/(?:members\\.|old\\.|www\\.)?luscious.net",
-                        "https://old.luscious.net");
+                        "^https?:\\/\\/(?:members\\.|legacy\\.|www\\.)?luscious.net",
+                        "https://legacy.luscious.net");
                 return new URL(sanitizedUrl);
             }
 
@@ -113,7 +113,7 @@ public class LusciousRipper extends AbstractHTMLRipper {
     public String normalizeUrl(String url) {
         try {
             return url.toString().replaceFirst(
-                    "^https?:\\/\\/(?:members\\.|old\\.)?luscious.net", "https://www.luscious.net");
+                    "^https?:\\/\\/(?:members\\.|legacy\\.)?luscious.net", "https://www.luscious.net");
         } catch (Exception e) {
             LOGGER.info("Error normalizing the url.");
             LOGGER.error(e);
