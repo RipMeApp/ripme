@@ -1,5 +1,12 @@
 package com.rarchives.ripme.ripper.rippers;
 
+import com.rarchives.ripme.ripper.AbstractHTMLRipper;
+import com.rarchives.ripme.ripper.DownloadThreadPool;
+import com.rarchives.ripme.utils.Http;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -8,19 +15,11 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-
-import com.rarchives.ripme.ripper.AbstractHTMLRipper;
-import com.rarchives.ripme.ripper.DownloadThreadPool;
-import com.rarchives.ripme.utils.Http;
-
 public class LusciousRipper extends AbstractHTMLRipper {
     private static final int RETRY_COUNT = 5; // Keeping it high for read timeout exception.
 
-    private static final Pattern P = Pattern.compile("^https?:\\/\\/(?:members\\.|legacy\\.|www\\.)?luscious.net\\/albums\\/([-_.0-9a-zA-Z]+)\\/?");
-    private DownloadThreadPool lusciousThreadPool = new DownloadThreadPool("lusciousThreadPool");
+    private static final Pattern P = Pattern.compile("^https?://(?:members\\.|legacy\\.|www\\.)?luscious.net/albums/([-_.0-9a-zA-Z]+)/?");
+    private final DownloadThreadPool lusciousThreadPool = new DownloadThreadPool("lusciousThreadPool");
 
     public LusciousRipper(URL url) throws IOException {
         super(url);
@@ -96,7 +95,7 @@ public class LusciousRipper extends AbstractHTMLRipper {
             if (m.matches()) {
                 String sanitizedUrl = m.group();
                 sanitizedUrl = sanitizedUrl.replaceFirst(
-                        "^https?:\\/\\/(?:members\\.|legacy\\.|www\\.)?luscious.net",
+                        "^https?://(?:members\\.|legacy\\.|www\\.)?luscious.net",
                         "https://legacy.luscious.net");
                 return new URL(sanitizedUrl);
             }
@@ -112,8 +111,8 @@ public class LusciousRipper extends AbstractHTMLRipper {
     @Override
     public String normalizeUrl(String url) {
         try {
-            return url.toString().replaceFirst(
-                    "^https?:\\/\\/(?:members\\.|legacy\\.)?luscious.net", "https://www.luscious.net");
+            return url.replaceFirst(
+                    "^https?://(?:members\\.|legacy\\.)?luscious.net", "https://www.luscious.net");
         } catch (Exception e) {
             LOGGER.info("Error normalizing the url.");
             LOGGER.error(e);
@@ -122,8 +121,8 @@ public class LusciousRipper extends AbstractHTMLRipper {
     }
 
     public class LusciousDownloadThread extends Thread {
-        private URL url;
-        private int index;
+        private final URL url;
+        private final int index;
 
         public LusciousDownloadThread(URL url, int index) {
             this.url = url;
