@@ -119,9 +119,9 @@ tasks.withType<AbstractArchiveTask>().configureEach {
 tasks.jacocoTestReport {
   dependsOn(tasks.test) // tests are required to run before generating the report
   reports {
-    xml.isEnabled = false
-    csv.isEnabled = false
-    html.destination = file("${buildDir}/jacocoHtml")
+    xml.required.set(false)
+    csv.required.set(false)
+    html.outputLocation.set(file("${buildDir}/jacocoHtml"))
   }
 }
 
