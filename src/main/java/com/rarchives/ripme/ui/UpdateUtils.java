@@ -20,8 +20,13 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 public class UpdateUtils {
 
@@ -103,8 +108,7 @@ public class UpdateUtils {
         String latestVersion = ripmeJson.getString("latestVersion");
         if (UpdateUtils.isNewerVersion(latestVersion)) {
             logger.info("Found newer version: " + latestVersion);
-            logger.info("Downloading new version...");
-            logger.info("New version found, downloading...");
+            logger.info("Downloading" +getUpdateJarURL(latestVersion) + " ...");
             try {
                 UpdateUtils.downloadJarAndLaunch(getUpdateJarURL(latestVersion), false);
             } catch (IOException e) {
@@ -157,7 +161,7 @@ public class UpdateUtils {
                 return;
             }
             configUpdateLabel.setText("<html><font color=\"green\">Downloading new version...</font></html>");
-            logger.info("New version found, downloading...");
+            logger.info("New version found, downloading " + getUpdateJarURL(latestVersion));
             try {
                 UpdateUtils.downloadJarAndLaunch(getUpdateJarURL(latestVersion), true);
             } catch (IOException e) {
@@ -313,13 +317,13 @@ public class UpdateUtils {
             // Modifying file and launching it: *nix distributions don't have any issues
             // with modifying/deleting files
             // while they are being run
-            File mainFile = new File(mainFileName);
-            String mainFilePath = mainFile.getAbsolutePath();
-            mainFile.delete();
-            new File(updateFileName).renameTo(new File(mainFilePath));
+            Path newFile = Paths.get(updateFileName);
+            Path oldFile = Paths.get(mainFileName);
+            Files.move(newFile, oldFile, REPLACE_EXISTING);
             if (shouldLaunch) {
                 // No need to do it during shutdown: the file used will indeed be the new one
-                Runtime.getRuntime().exec("java -jar " + mainFileName);
+                logger.info("Executing: " + oldFile);
+                Runtime.getRuntime().exec("java -jar " + oldFile);
             }
             logger.info("Update installed, newer version should be executed upon relaunch");
             System.exit(0);
