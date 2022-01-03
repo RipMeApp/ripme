@@ -6,6 +6,7 @@ import com.rarchives.ripme.utils.RipUtils;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -35,6 +36,7 @@ public class ImgurRipperTest extends RippersTest {
     }
 
     @Test
+    @Tag("flaky")
     public void testImgurAlbums() throws IOException {
         List<URL> contentURLs = new ArrayList<>();
         // URLs that should return more than 1 image
