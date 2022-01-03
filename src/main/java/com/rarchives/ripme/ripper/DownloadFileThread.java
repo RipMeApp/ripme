@@ -81,7 +81,7 @@ class DownloadFileThread extends Thread {
             return;
         }
         if (saveAs.exists() && !observer.tryResumeDownload() && !getFileExtFromMIME
-                || Utils.fuzzyExistsBetter(Paths.get(saveAs.getParent()), saveAs.getName()) && getFileExtFromMIME
+                || Utils.fuzzyExists(Paths.get(saveAs.getParent()), saveAs.getName()) && getFileExtFromMIME
                         && !observer.tryResumeDownload()) {
             if (Utils.getConfigBoolean("file.overwrite", false)) {
                 logger.info("[!] " + Utils.getLocalizedString("deleting.existing.file") + prettySaveAs);
