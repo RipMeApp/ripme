@@ -1,7 +1,8 @@
 {
-    "latestVersion": "2.0.3",
-    "currentHash": "fe2e5ddec836420329a9348ccf5b019087fc750128fe485479e8b7ccee75fc93",
+    "latestVersion": "2.0.4-13-03e32cb7",
+    "currentHash": "2d2437911a63f1bc75ed4b761a4cb464bd14f84dea5dab19b122bb35905381b2",
     "changeList": [
+        "2.0.4-13-03e32cb7.: fix vsco, add danbooru.",
         "2.0.3: Check new version against ripme2app.",
         "2.0.2: Add greek translation, fixed reddit, redgif.",
         "2.0.1: Fixed reddit, tujigu, xhamster, imagebam, erome; marked some tests as flaky.",
