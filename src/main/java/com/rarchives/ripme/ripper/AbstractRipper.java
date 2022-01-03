@@ -224,7 +224,7 @@ public abstract class AbstractRipper
      *      True if downloaded successfully
      *      False if failed to download
      */
-    protected abstract boolean addURLToDownload(URL url, File saveAs, String referrer, Map<String, String> cookies,
+    protected abstract boolean addURLToDownload(URL url, Path saveAs, String referrer, Map<String, String> cookies,
                                                 Boolean getFileExtFromMIME);
 
     /**
@@ -350,7 +350,7 @@ public abstract class AbstractRipper
                 LOGGER.debug("Unable to write URL history file");
             }
         }
-        return addURLToDownload(url, saveFileAs, referrer, cookies, getFileExtFromMIME);
+        return addURLToDownload(url, saveFileAs.toPath(), referrer, cookies, getFileExtFromMIME);
     }
 
     protected boolean addURLToDownload(URL url, String prefix, String subdirectory, String referrer, Map<String,String> cookies, String fileName, String extension) {

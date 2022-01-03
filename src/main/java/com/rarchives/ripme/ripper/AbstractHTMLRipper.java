@@ -303,7 +303,7 @@ public abstract class AbstractHTMLRipper extends AbstractRipper {
     /*
       Queues multiple URLs of single images to download from a single Album URL
      */
-    public boolean addURLToDownload(URL url, File saveAs, String referrer, Map<String,String> cookies, Boolean getFileExtFromMIME) {
+    public boolean addURLToDownload(URL url, Path saveAs, String referrer, Map<String,String> cookies, Boolean getFileExtFromMIME) {
         // Only download one file if this is a test.
         if (super.isThisATest() && (itemsCompleted.size() > 0 || itemsErrored.size() > 0)) {
             stop();
@@ -315,7 +315,7 @@ public abstract class AbstractHTMLRipper extends AbstractRipper {
                   || itemsCompleted.containsKey(url)
                   || itemsErrored.containsKey(url) )) {
             // Item is already downloaded/downloading, skip it.
-            LOGGER.info("[!] Skipping " + url + " -- already attempted: " + Utils.removeCWD(saveAs));
+            LOGGER.info("[!] Skipping " + url + " -- already attempted: " + Utils.removeCWD(saveAs.toFile()));
             return false;
         }
         if (Utils.getConfigBoolean("urls_only.save", false)) {
@@ -330,8 +330,8 @@ public abstract class AbstractHTMLRipper extends AbstractRipper {
             }
         }
         else {
-            itemsPending.put(url, saveAs);
-            DownloadFileThread dft = new DownloadFileThread(url,  saveAs,  this, getFileExtFromMIME);
+            itemsPending.put(url, saveAs.toFile());
+            DownloadFileThread dft = new DownloadFileThread(url,  saveAs.toFile(),  this, getFileExtFromMIME);
             if (referrer != null) {
                 dft.setReferrer(referrer);
             }
@@ -346,7 +346,7 @@ public abstract class AbstractHTMLRipper extends AbstractRipper {
 
     @Override
     public boolean addURLToDownload(URL url, Path saveAs) {
-        return addURLToDownload(url, saveAs.toFile(), null, null, false);
+        return addURLToDownload(url, saveAs, null, null, false);
     }
 
     /**

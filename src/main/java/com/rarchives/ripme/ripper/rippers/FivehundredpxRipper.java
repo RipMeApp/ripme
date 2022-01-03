@@ -333,7 +333,7 @@ public class FivehundredpxRipper extends AbstractJSONRipper {
         String[] fields = u.split("/");
         String prefix = "/" + getPrefix(index) + fields[fields.length - 3];
         Path saveAs = Paths.get(getWorkingDir() + prefix + ".jpg");
-        addURLToDownload(url,  saveAs.toFile(),  "", null, false);
+        addURLToDownload(url,  saveAs,  "", null, false);
     }
 
 }

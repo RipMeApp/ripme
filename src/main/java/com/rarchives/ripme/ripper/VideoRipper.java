@@ -73,8 +73,8 @@ public abstract class VideoRipper extends AbstractRipper {
     }
 
     @Override
-    public boolean addURLToDownload(URL url, File saveAs, String referrer, Map<String, String> cookies, Boolean getFileExtFromMIME) {
-        return addURLToDownload(url, saveAs.toPath());
+    public boolean addURLToDownload(URL url, Path saveAs, String referrer, Map<String, String> cookies, Boolean getFileExtFromMIME) {
+        return addURLToDownload(url, saveAs);
     }
 
     /**
