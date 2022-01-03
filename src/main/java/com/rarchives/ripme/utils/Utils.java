@@ -72,9 +72,9 @@ public class Utils {
 
         try {
             String configPath = getConfigFilePath();
-            File file = new File(configPath);
+            Path file = Paths.get(configPath);
 
-            if (!file.exists()) {
+            if (!Files.exists(file)) {
                 // Use default bundled with .jar
                 configPath = CONFIG_FILE;
             }
@@ -82,7 +82,7 @@ public class Utils {
             config = new PropertiesConfiguration(configPath);
             LOGGER.info("Loaded " + config.getPath());
 
-            if (file.exists()) {
+            if (Files.exists(file)) {
                 // Config was loaded from file
                 if (!config.containsKey("twitter.auth") || !config.containsKey("twitter.max_requests")
                         || !config.containsKey("tumblr.auth") || !config.containsKey("error.skip404")
@@ -92,7 +92,7 @@ public class Utils {
                     // Need to reload the default config
                     // See https://github.com/4pr0n/ripme/issues/158
                     LOGGER.warn("Config does not contain key fields, deleting old config");
-                    file.delete();
+                    Files.delete(file);
                     config = new PropertiesConfiguration(CONFIG_FILE);
                     LOGGER.info("Loaded " + config.getPath());
                 }
