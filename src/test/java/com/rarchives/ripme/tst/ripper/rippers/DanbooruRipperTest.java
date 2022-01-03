@@ -2,6 +2,7 @@ package com.rarchives.ripme.tst.ripper.rippers;
 
 import com.rarchives.ripme.ripper.rippers.DanbooruRipper;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -11,6 +12,7 @@ import java.util.List;
 
 public class DanbooruRipperTest extends RippersTest {
     @Test
+    @Tag("flaky")
     public void testRip() throws IOException {
         List<URL> passURLs = new ArrayList<>();
         passURLs.add(new URL("https://danbooru.donmai.us/posts?tags=brown_necktie"));
