@@ -1,13 +1,13 @@
 package com.rarchives.ripme.ripper;
 
 import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import javax.net.ssl.HttpsURLConnection;
 
@@ -25,16 +25,16 @@ class DownloadVideoThread extends Thread {
     private static final Logger logger = LogManager.getLogger(DownloadVideoThread.class);
 
     private URL url;
-    private File saveAs;
+    private Path saveAs;
     private String prettySaveAs;
     private AbstractRipper observer;
     private int retries;
 
-    public DownloadVideoThread(URL url, File saveAs, AbstractRipper observer) {
+    public DownloadVideoThread(URL url, Path saveAs, AbstractRipper observer) {
         super();
         this.url = url;
         this.saveAs = saveAs;
-        this.prettySaveAs = Utils.removeCWD(saveAs);
+        this.prettySaveAs = Utils.removeCWD(saveAs.toFile());
         this.observer = observer;
         this.retries = Utils.getConfigInteger("download.retries", 1);
     }
@@ -50,13 +50,17 @@ class DownloadVideoThread extends Thread {
             observer.downloadErrored(url, "Download interrupted");
             return;
         }
-        if (saveAs.exists()) {
+        if (Files.exists(saveAs)) {
             if (Utils.getConfigBoolean("file.overwrite", false)) {
                 logger.info("[!] Deleting existing file" + prettySaveAs);
-                saveAs.delete();
+                try {
+                    Files.delete(saveAs);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             } else {
                 logger.info("[!] Skipping " + url + " -- file already exists: " + prettySaveAs);
-                observer.downloadExists(url, saveAs);
+                observer.downloadExists(url, saveAs.toFile());
                 return;
             }
         }
@@ -100,7 +104,7 @@ class DownloadVideoThread extends Thread {
                 huc.connect();
                 // Check status code
                 bis = new BufferedInputStream(huc.getInputStream());
-                fos = new FileOutputStream(saveAs);
+                fos = Files.newOutputStream(saveAs);
                 while ( (bytesRead = bis.read(data)) != -1) {
                     try {
                         observer.stopCheck();
@@ -122,10 +126,10 @@ class DownloadVideoThread extends Thread {
                 // Close any open streams
                 try {
                     if (bis != null) { bis.close(); }
-                } catch (IOException e) { }
+                } catch (IOException ignored) { }
                 try {
                     if (fos != null) { fos.close(); }
-                } catch (IOException e) { }
+                } catch (IOException ignored) { }
             }
             if (tries > this.retries) {
                 logger.error("[!] Exceeded maximum retries (" + this.retries + ") for URL " + url);
@@ -133,7 +137,7 @@ class DownloadVideoThread extends Thread {
                 return;
             }
         } while (true);
-        observer.downloadCompleted(url, saveAs);
+        observer.downloadCompleted(url, saveAs.toFile());
         logger.info("[+] Saved " + url + " as " + this.prettySaveAs);
     }
 
