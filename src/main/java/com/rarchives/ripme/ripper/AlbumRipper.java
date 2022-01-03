@@ -63,7 +63,7 @@ public abstract class AlbumRipper extends AbstractRipper {
                   || itemsCompleted.containsKey(url)
                   || itemsErrored.containsKey(url) )) {
             // Item is already downloaded/downloading, skip it.
-            LOGGER.info("[!] Skipping " + url + " -- already attempted: " + Utils.removeCWD(saveAs.toFile()));
+            LOGGER.info("[!] Skipping " + url + " -- already attempted: " + Utils.removeCWD(saveAs));
             return false;
         }
         if (Utils.getConfigBoolean("urls_only.save", false)) {
@@ -119,7 +119,7 @@ public abstract class AlbumRipper extends AbstractRipper {
             return;
         }
         try {
-            String path = Utils.removeCWD(saveAs);
+            String path = Utils.removeCWD(saveAs.toPath());
             RipStatusMessage msg = new RipStatusMessage(STATUS.DOWNLOAD_COMPLETE, path);
             itemsPending.remove(url);
             itemsCompleted.put(url, saveAs);
@@ -205,7 +205,7 @@ public abstract class AlbumRipper extends AbstractRipper {
 
         this.workingDir = new File(path);
         if (!this.workingDir.exists()) {
-            LOGGER.info("[+] Creating directory: " + Utils.removeCWD(this.workingDir));
+            LOGGER.info("[+] Creating directory: " + Utils.removeCWD(this.workingDir.toPath()));
             this.workingDir.mkdirs();
         }
         LOGGER.debug("Set working directory to: " + this.workingDir);

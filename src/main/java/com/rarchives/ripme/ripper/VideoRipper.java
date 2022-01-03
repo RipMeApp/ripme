@@ -96,7 +96,7 @@ public abstract class VideoRipper extends AbstractRipper {
         workingDir = new File(path);
 
         if (!workingDir.exists()) {
-            LOGGER.info("[+] Creating directory: " + Utils.removeCWD(workingDir));
+            LOGGER.info("[+] Creating directory: " + Utils.removeCWD(workingDir.toPath()));
             workingDir.mkdirs();
         }
 
@@ -124,7 +124,7 @@ public abstract class VideoRipper extends AbstractRipper {
         }
 
         try {
-            String path = Utils.removeCWD(saveAs);
+            String path = Utils.removeCWD(saveAs.toPath());
             RipStatusMessage msg = new RipStatusMessage(STATUS.DOWNLOAD_COMPLETE, path);
             observer.update(this, msg);
 

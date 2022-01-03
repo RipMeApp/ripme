@@ -10,7 +10,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -154,7 +156,7 @@ public abstract class AbstractJSONRipper extends AbstractRipper {
                   || itemsCompleted.containsKey(url)
                   || itemsErrored.containsKey(url) )) {
             // Item is already downloaded/downloading, skip it.
-            LOGGER.info("[!] Skipping " + url + " -- already attempted: " + Utils.removeCWD(saveAs.toFile()));
+            LOGGER.info("[!] Skipping " + url + " -- already attempted: " + Utils.removeCWD(saveAs));
             return false;
         }
         if (Utils.getConfigBoolean("urls_only.save", false)) {
@@ -210,7 +212,7 @@ public abstract class AbstractJSONRipper extends AbstractRipper {
             return;
         }
         try {
-            String path = Utils.removeCWD(saveAs);
+            String path = Utils.removeCWD(saveAs.toPath());
             RipStatusMessage msg = new RipStatusMessage(STATUS.DOWNLOAD_COMPLETE, path);
             itemsPending.remove(url);
             itemsCompleted.put(url, saveAs);
@@ -277,11 +279,6 @@ public abstract class AbstractJSONRipper extends AbstractRipper {
     @Override
     public void setWorkingDir(URL url) throws IOException {
         Path wd = Utils.getWorkingDirectory();
-        // TODO - change to nio
-        String path = wd.toAbsolutePath().toString();
-        if (!path.endsWith(File.separator)) {
-            path += File.separator;
-        }
         String title;
         if (Utils.getConfigBoolean("album_titles.save", true)) {
             title = getAlbumTitle(this.url);
@@ -291,15 +288,11 @@ public abstract class AbstractJSONRipper extends AbstractRipper {
         LOGGER.debug("Using album title '" + title + "'");
 
         title = Utils.filesystemSafe(title);
-        path += title;
-        path = Utils.getOriginalDirectory(path) + File.separator;   // check for case sensitive (unix only)
-
-        this.workingDir = new File(path);
-        if (!this.workingDir.exists()) {
-            LOGGER.info("[+] Creating directory: " + Utils.removeCWD(this.workingDir));
-            if (!this.workingDir.mkdirs()) {
-                throw new IOException("Failed creating dir: \"" + this.workingDir + "\"");
-            }
+        wd = wd.resolve(title);
+        if (!Files.exists(wd)) {
+            LOGGER.info("[+] Creating directory: " + Utils.removeCWD(wd));
+            Files.createDirectory(wd);
+            this.workingDir = wd.toFile();
         }
         LOGGER.debug("Set working directory to: " + this.workingDir);
     }

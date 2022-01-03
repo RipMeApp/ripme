@@ -320,15 +320,8 @@ public class Utils {
      * @param saveAs The File path
      * @return saveAs in relation to the CWD
      */
-    public static String removeCWD(File saveAs) {
-        String prettySaveAs = saveAs.toString();
-        try {
-            prettySaveAs = saveAs.getCanonicalPath();
-            String cwd = new File(".").getCanonicalPath() + File.separator;
-            prettySaveAs = prettySaveAs.replace(cwd, "." + File.separator);
-        } catch (Exception e) {
-            LOGGER.error("Exception: ", e);
-        }
+    public static String removeCWD(Path saveAs) {
+        String prettySaveAs = saveAs.relativize(Paths.get(".").toAbsolutePath()).toString();
         return prettySaveAs;
     }
 
@@ -371,7 +364,7 @@ public class Utils {
      * @return 'file' without the leading current working directory
      */
     public static String removeCWD(String file) {
-        return removeCWD(new File(file));
+        return removeCWD(Paths.get(file));
     }
 
     /**
@@ -465,7 +458,7 @@ public class Utils {
      * @return The simplified path to the file.
      */
     public static String shortenPath(File file) {
-        String path = removeCWD(file);
+        String path = removeCWD(file.toPath());
         if (path.length() < SHORTENED_PATH_LENGTH * 2) {
             return path;
         }

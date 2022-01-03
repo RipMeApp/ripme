@@ -34,7 +34,7 @@ class DownloadVideoThread extends Thread {
         super();
         this.url = url;
         this.saveAs = saveAs;
-        this.prettySaveAs = Utils.removeCWD(saveAs.toFile());
+        this.prettySaveAs = Utils.removeCWD(saveAs);
         this.observer = observer;
         this.retries = Utils.getConfigInteger("download.retries", 1);
     }

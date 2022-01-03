@@ -208,7 +208,7 @@ public class FuraffinityRipper extends AbstractHTMLRipper {
         }
         LOGGER.debug("Downloading " + url + "'s description to " + saveFileAs);
         if (!Files.exists(saveFileAs.getParent())) {
-            LOGGER.info("[+] Creating directory: " + Utils.removeCWD(saveFileAs.getParent().toFile()));
+            LOGGER.info("[+] Creating directory: " + Utils.removeCWD(saveFileAs.getParent()));
             try {
                 Files.createDirectory(saveFileAs.getParent());
             } catch (IOException e) {

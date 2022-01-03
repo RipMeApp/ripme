@@ -302,7 +302,7 @@ public class RedditRipper extends AlbumRipper {
         LOGGER.debug("Downloading " + url + "'s self post to " + saveFileAs);
         super.retrievingSource(permalink);
         if (!Files.exists(saveFileAs.getParent())) {
-            LOGGER.info("[+] Creating directory: " + Utils.removeCWD(saveFileAs.getParent().toFile()));
+            LOGGER.info("[+] Creating directory: " + Utils.removeCWD(saveFileAs.getParent()));
             try {
                 Files.createDirectory(saveFileAs.getParent());
             } catch (IOException e) {

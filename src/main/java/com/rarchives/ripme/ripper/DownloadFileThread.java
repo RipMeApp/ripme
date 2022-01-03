@@ -45,7 +45,7 @@ class DownloadFileThread extends Thread {
         super();
         this.url = url;
         this.saveAs = saveAs;
-        this.prettySaveAs = Utils.removeCWD(saveAs);
+        this.prettySaveAs = Utils.removeCWD(saveAs.toPath());
         this.observer = observer;
         this.retries = Utils.getConfigInteger("download.retries", 1);
         this.TIMEOUT = Utils.getConfigInteger("download.timeout", 60000);
