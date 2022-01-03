@@ -60,7 +60,7 @@ class DownloadVideoThread extends Thread {
                 }
             } else {
                 logger.info("[!] Skipping " + url + " -- file already exists: " + prettySaveAs);
-                observer.downloadExists(url, saveAs.toFile());
+                observer.downloadExists(url, saveAs);
                 return;
             }
         }

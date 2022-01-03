@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -464,7 +465,7 @@ public abstract class AbstractRipper
      * @param url
      * @param file
      */
-    public abstract void downloadExists(URL url, File file);
+    public abstract void downloadExists(URL url, Path file);
 
     /**
      * @return Number of files downloaded.

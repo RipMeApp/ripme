@@ -242,14 +242,14 @@ public abstract class AbstractJSONRipper extends AbstractRipper {
      * Tells user that a single file in the album they wish to download has
      * already been downloaded in the past.
      */
-    public void downloadExists(URL url, File file) {
+    public void downloadExists(URL url, Path file) {
         if (observer == null) {
             return;
         }
 
         itemsPending.remove(url);
-        itemsCompleted.put(url, file);
-        observer.update(this, new RipStatusMessage(STATUS.DOWNLOAD_WARN, url + " already saved as " + file.getAbsolutePath()));
+        itemsCompleted.put(url, file.toFile());
+        observer.update(this, new RipStatusMessage(STATUS.DOWNLOAD_WARN, url + " already saved as " + file));
 
         checkIfComplete();
     }

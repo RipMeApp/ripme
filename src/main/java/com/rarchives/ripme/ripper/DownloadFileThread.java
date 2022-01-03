@@ -89,7 +89,7 @@ class DownloadFileThread extends Thread {
             } else {
                 logger.info("[!] " + Utils.getLocalizedString("skipping") + " " + url + " -- "
                         + Utils.getLocalizedString("file.already.exists") + ": " + prettySaveAs);
-                observer.downloadExists(url, saveAs);
+                observer.downloadExists(url, saveAs.toPath());
                 return;
             }
         }

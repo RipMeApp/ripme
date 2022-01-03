@@ -153,12 +153,11 @@ public abstract class VideoRipper extends AbstractRipper {
 
     /**
      * Runs if user tries to redownload an already existing File.
-     *
-     * @param url  Target URL
+     *  @param url  Target URL
      * @param file Existing file
      */
     @Override
-    public void downloadExists(URL url, File file) {
+    public void downloadExists(URL url, Path file) {
         if (observer == null) {
             return;
         }
