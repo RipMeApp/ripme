@@ -29,7 +29,6 @@ public class VscoRipperTest extends RippersTest {
      * @throws IOException
      */
     @Test
-    @Tag("flaky")
     public void testHyphenatedRip() throws IOException {
         VscoRipper ripper = new VscoRipper(new URL("https://vsco.co/jolly-roger/gallery"));
         testRipper(ripper);
