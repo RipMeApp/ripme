@@ -297,8 +297,12 @@ public class Utils {
      * Delete the url history file
      */
     public static void clearURLHistory() {
-        File file = new File(getURLHistoryFile());
-        file.delete();
+        Path file = Paths.get(getURLHistoryFile());
+        try {
+            Files.delete(file);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
