@@ -45,7 +45,14 @@ public class UpdateUtils {
     }
 
     private static String getUpdateJarURL(String latestVersion) {
-        return "https://github.com/" + REPO_NAME + "/releases/download/" + latestVersion + "/ripme-" + latestVersion + ".jar";
+        // this works with a tag created in github, and thus download URLs like:
+        // https://github.com/ripmeapp2/ripme/releases/download/2.0.4/ripme-2.0.4-12-487e38cc.jar
+        return "https://github.com/"
+                + REPO_NAME
+                + "/releases/download/"
+                + latestVersion.substring(0, latestVersion.indexOf("-"))
+                + "/ripme-"
+                + latestVersion + ".jar";
     }
 
     public static String getThisJarVersion() {
