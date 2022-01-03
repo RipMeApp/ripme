@@ -1,10 +1,12 @@
 package com.rarchives.ripme.ripper.rippers;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Date;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -13,6 +15,7 @@ import java.util.regex.Pattern;
 import com.rarchives.ripme.ui.RipStatusMessage;
 import j2html.TagCreator;
 import j2html.tags.ContainerTag;
+import j2html.tags.specialized.DivTag;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -241,7 +244,7 @@ public class RedditRipper extends AlbumRipper {
     }
 
     private void saveText(JSONArray jsonArray) throws JSONException {
-        File saveFileAs;
+        Path saveFileAs;
 
         JSONObject selfPost = jsonArray.getJSONObject(0).getJSONObject("data")
                 .getJSONArray("children").getJSONObject(0).getJSONObject("data");
@@ -284,11 +287,11 @@ public class RedditRipper extends AlbumRipper {
         ).renderFormatted();
 
         try {
-            saveFileAs = new File(workingDir.getCanonicalPath()
-                    + "" + File.separator
+            saveFileAs = Paths.get(workingDir
+                    + "/"
                     + id + "_" + title.replaceAll("[\\\\/:*?\"<>|]", "")
                     + ".html");
-            FileOutputStream out = new FileOutputStream(saveFileAs);
+            OutputStream out = Files.newOutputStream(saveFileAs);
             out.write(html.getBytes());
             out.close();
         } catch (IOException e) {
@@ -298,26 +301,30 @@ public class RedditRipper extends AlbumRipper {
 
         LOGGER.debug("Downloading " + url + "'s self post to " + saveFileAs);
         super.retrievingSource(permalink);
-        if (!saveFileAs.getParentFile().exists()) {
-            LOGGER.info("[+] Creating directory: " + Utils.removeCWD(saveFileAs.getParent()));
-            saveFileAs.getParentFile().mkdirs();
+        if (!Files.exists(saveFileAs.getParent())) {
+            LOGGER.info("[+] Creating directory: " + Utils.removeCWD(saveFileAs.getParent().toFile()));
+            try {
+                Files.createDirectory(saveFileAs.getParent());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
     private ContainerTag getComments(JSONArray comments, String author) {
-        ContainerTag commentsDiv = div().withId("comments");
+        ContainerTag<DivTag> commentsDiv = div().withId("comments");
 
         for (int i = 0; i < comments.length(); i++) {
             JSONObject data = comments.getJSONObject(i).getJSONObject("data");
 
-            ContainerTag commentDiv =
+            ContainerTag<DivTag> commentDiv =
                     div(
                             span(data.getString("author")).withClasses("author", iff(data.getString("author").equals(author), "op")),
                             a(new Date((long) data.getInt("created") * 1000).toString()).withHref("#" + data.getString("name"))
                     ).withClass("thing comment").withId(data.getString("name"))
                             .with(rawHtml(Jsoup.parse(data.getString("body_html")).text()));
 
-            commentDiv = getNestedComments(data, commentDiv, author);
+            getNestedComments(data, commentDiv, author);
             commentsDiv.with(commentDiv);
         }
         return commentsDiv;
@@ -331,7 +338,7 @@ public class RedditRipper extends AlbumRipper {
                         .getJSONArray("children")
                         .getJSONObject(i).getJSONObject("data");
 
-                ContainerTag childDiv =
+                ContainerTag<DivTag> childDiv =
                         div(
                                 div(
                                         span(nestedComment.getString("author")).withClasses("author", iff(nestedComment.getString("author").equals(author), "op")),
@@ -347,7 +354,7 @@ public class RedditRipper extends AlbumRipper {
     }
 
     private URL parseRedditVideoMPD(String vidURL) {
-        org.jsoup.nodes.Document doc = null;
+        org.jsoup.nodes.Document doc;
         try {
             doc = Http.url(vidURL + "/DASHPlaylist.mpd").ignoreContentType().get();
             int largestHeight = 0;
@@ -395,17 +402,17 @@ public class RedditRipper extends AlbumRipper {
             Matcher m = p.matcher(url);
             if (m.matches()) {
                 // It's from reddituploads. Assume .jpg extension.
-                String savePath = this.workingDir + File.separator;
+                String savePath = this.workingDir + "/";
                 savePath += id + "-" + m.group(1) + title + ".jpg";
-                addURLToDownload(urls.get(0), new File(savePath));
+                addURLToDownload(urls.get(0), Paths.get(savePath).toFile());
             }
             if (url.contains("v.redd.it")) {
-                String savePath = this.workingDir + File.separator;
+                String savePath = this.workingDir + "/";
                 savePath += id + "-" + url.split("/")[3] + title + ".mp4";
                 URL urlToDownload = parseRedditVideoMPD(urls.get(0).toExternalForm());
                 if (urlToDownload != null) {
                     LOGGER.info("url: " + urlToDownload + " file: " + savePath);
-                    addURLToDownload(urlToDownload, new File(savePath));
+                    addURLToDownload(urlToDownload, Paths.get(savePath).toFile());
                 }
             }
             else {
@@ -428,7 +435,6 @@ public class RedditRipper extends AlbumRipper {
         if (Utils.getConfigBoolean("reddit.use_sub_dirs", true)) {
             if (Utils.getConfigBoolean("album_titles.save", true)) {
                 subdirectory = title;
-                title = "-" + title + "-";
             }
         }
         for (int i = 0; i < data.length(); i++) {

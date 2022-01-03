@@ -1,10 +1,12 @@
 package com.rarchives.ripme.ripper.rippers;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -15,7 +17,6 @@ import java.util.regex.Pattern;
 import com.rarchives.ripme.ui.RipStatusMessage;
 import com.rarchives.ripme.utils.Utils;
 import org.jsoup.Connection.Response;
-import org.jsoup.HttpStatusException;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -91,14 +92,13 @@ public class FuraffinityRipper extends AbstractHTMLRipper {
         String nextUrl = urlBase + nextPageUrl.first().attr("href");
 
         sleep(500);
-        Document nextPage = Http.url(nextUrl).cookies(cookies).get();
 
-        return nextPage;
+        return Http.url(nextUrl).cookies(cookies).get();
     }
 
     private String getImageFromPost(String url) {
         sleep(1000);
-        Document d = null;
+        Document d;
         try {
             d = Http.url(url).cookies(cookies).get();
             Elements links = d.getElementsByTag("a");
@@ -184,24 +184,22 @@ public class FuraffinityRipper extends AbstractHTMLRipper {
         }
         String newText = "";
         String saveAs = "";
-        File saveFileAs;
+        Path saveFileAs;
         saveAs = text.split("\n")[0];
         saveAs = saveAs.replaceAll("^(\\S+)\\s+by\\s+(.*)$", "$2_$1");
         for (int i = 1;i < text.split("\n").length; i++) {
             newText = newText.replace("\\","").replace("/","").replace("~","") + "\n" + text.split("\n")[i];
         }
         try {
-            if (!subdirectory.equals("")) {
-                subdirectory = File.separator + subdirectory;
-            }
-            saveFileAs = new File(
-                    workingDir.getCanonicalPath()
+            saveFileAs = Paths.get(
+                    workingDir
+                            + "/"
                             + subdirectory
-                            + File.separator
+                            + "/"
                             + saveAs
                             + ".txt");
             // Write the file
-            FileOutputStream out = (new FileOutputStream(saveFileAs));
+            OutputStream out = Files.newOutputStream(saveFileAs);
             out.write(text.getBytes());
             out.close();
         } catch (IOException e) {
@@ -209,9 +207,13 @@ public class FuraffinityRipper extends AbstractHTMLRipper {
             return false;
         }
         LOGGER.debug("Downloading " + url + "'s description to " + saveFileAs);
-        if (!saveFileAs.getParentFile().exists()) {
-            LOGGER.info("[+] Creating directory: " + Utils.removeCWD(saveFileAs.getParent()));
-            saveFileAs.getParentFile().mkdirs();
+        if (!Files.exists(saveFileAs.getParent())) {
+            LOGGER.info("[+] Creating directory: " + Utils.removeCWD(saveFileAs.getParent().toFile()));
+            try {
+                Files.createDirectory(saveFileAs.getParent());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
         return true;
     }

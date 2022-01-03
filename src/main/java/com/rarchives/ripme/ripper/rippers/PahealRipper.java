@@ -3,12 +3,13 @@ package com.rarchives.ripme.ripper.rippers;
 import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 import com.rarchives.ripme.utils.Http;
 import com.rarchives.ripme.utils.Utils;
-import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -58,7 +59,7 @@ public class PahealRipper extends AbstractHTMLRipper {
     @Override
     public Document getNextPage(Document page) throws IOException {
         for (Element e : page.select("#paginator a")) {
-            if (e.text().toLowerCase().equals("next")) {
+            if (e.text().equalsIgnoreCase("next")) {
                 return Http.url(e.absUrl("href")).cookies(getCookies()).get();
             }
         }
@@ -90,12 +91,12 @@ public class PahealRipper extends AbstractHTMLRipper {
                 name = name.substring(0, name.length() - ext.length());
             }
 
-            File outFile = new File(workingDir.getCanonicalPath()
-                + File.separator
+            Path outFile = Paths.get(workingDir
+                + "/"
                 + Utils.filesystemSafe(new URI(name).getPath())
                 + ext);
-            addURLToDownload(url, outFile);
-        } catch (IOException | URISyntaxException ex) {
+            addURLToDownload(url, outFile.toFile());
+        } catch (URISyntaxException ex) {
             logger.error("Error while downloading URL " + url, ex);
         }
     }

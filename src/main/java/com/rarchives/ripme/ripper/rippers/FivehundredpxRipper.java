@@ -1,10 +1,11 @@
 package com.rarchives.ripme.ripper.rippers;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -330,9 +331,9 @@ public class FivehundredpxRipper extends AbstractJSONRipper {
     public void downloadURL(URL url, int index) {
         String u = url.toExternalForm();
         String[] fields = u.split("/");
-        String prefix = getPrefix(index) + fields[fields.length - 3];
-        File saveAs = new File(getWorkingDir() + File.separator + prefix + ".jpg");
-        addURLToDownload(url,  saveAs,  "", null, false);
+        String prefix = "/" + getPrefix(index) + fields[fields.length - 3];
+        Path saveAs = Paths.get(getWorkingDir() + prefix + ".jpg");
+        addURLToDownload(url,  saveAs.toFile(),  "", null, false);
     }
 
 }

@@ -1,9 +1,9 @@
 package com.rarchives.ripme.ripper.rippers;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -74,7 +74,7 @@ public class PornhubRipper extends AbstractHTMLRipper {
 
     @Override
     protected void downloadURL(URL url, int index) {
-        PornhubImageThread t = new PornhubImageThread(url, index, this.workingDir);
+        PornhubImageThread t = new PornhubImageThread(url, index, this.workingDir.toPath());
         pornhubThreadPool.addThread(t);
         try {
             Thread.sleep(IMAGE_SLEEP_TIME);
@@ -130,7 +130,7 @@ public class PornhubRipper extends AbstractHTMLRipper {
         private URL url;
         private int index;
 
-        PornhubImageThread(URL url, int index, File workingDir) {
+        PornhubImageThread(URL url, int index, Path workingDir) {
             super();
             this.url = url;
             this.index = index;
