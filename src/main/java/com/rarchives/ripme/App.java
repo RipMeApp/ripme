@@ -1,11 +1,10 @@
 package com.rarchives.ripme;
 
 import java.awt.*;
-import java.io.File;
-import java.io.IOException;
 import java.io.BufferedReader;
-import java.io.FileReader;
+import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -254,9 +253,9 @@ public class App {
 
         //Read URLs from File
         if (cl.hasOption('f')) {
-            String filename = cl.getOptionValue('f');
+            Path urlfile = Paths.get(cl.getOptionValue('f'));
 
-            try (BufferedReader br = new BufferedReader(new FileReader(filename))) {
+            try (BufferedReader br = Files.newBufferedReader(urlfile)) {
                 String url;
                 while ((url = br.readLine()) != null) {
                     if (url.startsWith("//") || url.startsWith("#")) {
@@ -350,19 +349,18 @@ public class App {
 
     /**
      * Loads history from history file into memory.
-     * @see MainWindow.loadHistory
      */
     private static void loadHistory() {
-        File historyFile = new File(Utils.getConfigDir() + File.separator + "history.json");
+        Path historyFile = Paths.get(Utils.getConfigDir() + "/history.json");
         HISTORY.clear();
-        if (historyFile.exists()) {
+        if (Files.exists(historyFile)) {
             try {
-                logger.info("Loading history from " + historyFile.getCanonicalPath());
-                HISTORY.fromFile(historyFile.getCanonicalPath());
+                logger.info("Loading history from " + historyFile);
+                HISTORY.fromFile(historyFile.toString());
             } catch (IOException e) {
                 logger.error("Failed to load history from file " + historyFile, e);
                 logger.warn(
-                        "RipMe failed to load the history file at " + historyFile.getAbsolutePath() + "\n\n" +
+                        "RipMe failed to load the history file at " + historyFile + "\n\n" +
                         "Error: " + e.getMessage() + "\n\n" +
                         "Closing RipMe will automatically overwrite the contents of this file,\n" +
                         "so you may want to back the file up before closing RipMe!");
@@ -374,6 +372,7 @@ public class App {
                 // Loaded from config, still no entries.
                 // Guess rip history based on rip folder
                 String[] dirs = Utils.getWorkingDirectory().list((dir, file) -> new File(dir.getAbsolutePath() + File.separator + file).isDirectory());
+                assert dirs != null;
                 for (String dir : dirs) {
                     String url = RipUtils.urlFromDirectoryName(dir);
                     if (url != null) {
@@ -391,7 +390,7 @@ public class App {
     * @see MainWindow.saveHistory
     */
     private static void saveHistory() {
-        Path historyFile = Paths.get(Utils.getConfigDir() + File.separator + "history.json");
+        Path historyFile = Paths.get(Utils.getConfigDir() + "/history.json");
         try {
             if (!Files.exists(historyFile)) {
                 Files.createDirectories(historyFile.getParent());
