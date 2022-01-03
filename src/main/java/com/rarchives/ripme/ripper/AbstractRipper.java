@@ -486,7 +486,7 @@ public abstract class AbstractRipper
             completed = true;
             LOGGER.info("   Rip completed!");
 
-            RipStatusComplete rsc = new RipStatusComplete(workingDir, getCount());
+            RipStatusComplete rsc = new RipStatusComplete(workingDir.toPath(), getCount());
             RipStatusMessage msg = new RipStatusMessage(STATUS.RIP_COMPLETE, rsc);
             observer.update(this, msg);
 

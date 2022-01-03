@@ -1440,8 +1440,8 @@ public final class MainWindow implements Runnable, RipStatusHandler {
             statusProgress.setValue(0);
             statusProgress.setVisible(false);
             openButton.setVisible(true);
-            File f = rsc.dir;
-            String prettyFile = Utils.shortenPath(f);
+            Path f = rsc.dir;
+            String prettyFile = Utils.shortenPath(f.toFile());
             openButton.setText(Utils.getLocalizedString("open") + prettyFile);
             mainFrame.setTitle("RipMe v" + UpdateUtils.getThisJarVersion());
             try {
@@ -1458,7 +1458,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
                 try {
                     String commandToRun = Utils.getConfigString("finish.command", "ls");
                     commandToRun = commandToRun.replaceAll("%url%", url);
-                    commandToRun = commandToRun.replaceAll("%path%", f.getAbsolutePath());
+                    commandToRun = commandToRun.replaceAll("%path%", f.toAbsolutePath().toString());
                     LOGGER.info("RUnning command " + commandToRun);
                     // code from:
                     // https://stackoverflow.com/questions/5711084/java-runtime-getruntime-getting-output-from-executing-a-command-line-program
@@ -1484,7 +1484,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
                     LOGGER.error(e.getStackTrace());
                 }
             }
-            appendLog("Rip complete, saved to " + f.getAbsolutePath(), Color.GREEN);
+            appendLog("Rip complete, saved to " + f, Color.GREEN);
             openButton.setActionCommand(f.toString());
             openButton.addActionListener(event -> {
                 try {
