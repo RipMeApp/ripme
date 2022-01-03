@@ -1,5 +1,16 @@
 package com.rarchives.ripme.ripper.rippers;
 
+import com.rarchives.ripme.ripper.AbstractHTMLRipper;
+import com.rarchives.ripme.ripper.DownloadThreadPool;
+import com.rarchives.ripme.ui.RipStatusMessage;
+import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
+import com.rarchives.ripme.utils.Http;
+import com.rarchives.ripme.utils.RipUtils;
+import com.rarchives.ripme.utils.Utils;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -11,44 +22,31 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.rarchives.ripme.ui.RipStatusMessage;
-import com.rarchives.ripme.utils.RipUtils;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-
-import com.rarchives.ripme.ripper.AbstractHTMLRipper;
-import com.rarchives.ripme.ripper.DownloadThreadPool;
-import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
-import com.rarchives.ripme.utils.Http;
-import com.rarchives.ripme.utils.Utils;
-
 public class EHentaiRipper extends AbstractHTMLRipper {
     // All sleep times are in milliseconds
-    private static final int PAGE_SLEEP_TIME     = 3000;
-    private static final int IMAGE_SLEEP_TIME    = 1500;
-    private static final int IP_BLOCK_SLEEP_TIME = 60  * 1000;
+    private static final int PAGE_SLEEP_TIME = 3000;
+    private static final int IMAGE_SLEEP_TIME = 1500;
+    private static final int IP_BLOCK_SLEEP_TIME = 60 * 1000;
+    private static final Map<String, String> cookies = new HashMap<>();
 
-    private String lastURL = null;
-
-    // Thread pool for finding direct image links from "image" pages (html)
-    private DownloadThreadPool ehentaiThreadPool = new DownloadThreadPool("ehentai");
-    @Override
-    public DownloadThreadPool getThreadPool() {
-        return ehentaiThreadPool;
-    }
-
-    // Current HTML document
-    private Document albumDoc = null;
-
-    private static final Map<String,String> cookies = new HashMap<>();
     static {
         cookies.put("nw", "1");
         cookies.put("tip", "1");
     }
 
+    private String lastURL = null;
+    // Thread pool for finding direct image links from "image" pages (html)
+    private final DownloadThreadPool ehentaiThreadPool = new DownloadThreadPool("ehentai");
+    // Current HTML document
+    private Document albumDoc = null;
+
     public EHentaiRipper(URL url) throws IOException {
         super(url);
+    }
+
+    @Override
+    public DownloadThreadPool getThreadPool() {
+        return ehentaiThreadPool;
     }
 
     @Override
@@ -95,6 +93,7 @@ public class EHentaiRipper extends AbstractHTMLRipper {
 
     /**
      * Attempts to get page, checks for IP ban, waits.
+     *
      * @param url
      * @return Page document
      * @throws IOException If page loading errors, or if retries are exhausted
@@ -106,9 +105,9 @@ public class EHentaiRipper extends AbstractHTMLRipper {
             sendUpdate(STATUS.LOADING_RESOURCE, url.toExternalForm());
             LOGGER.info("Retrieving " + url);
             doc = Http.url(url)
-                      .referrer(this.url)
-                      .cookies(cookies)
-                      .get();
+                    .referrer(this.url)
+                    .cookies(cookies)
+                    .get();
             if (doc.toString().contains("IP address will be automatically banned")) {
                 if (retries == 0) {
                     throw new IOException("Hit rate limit and maximum number of retries, giving up");
@@ -120,8 +119,7 @@ public class EHentaiRipper extends AbstractHTMLRipper {
                 } catch (InterruptedException e) {
                     throw new IOException("Interrupted while waiting for rate limit to subside");
                 }
-            }
-            else {
+            } else {
                 return doc;
             }
         }
@@ -197,21 +195,20 @@ public class EHentaiRipper extends AbstractHTMLRipper {
         ehentaiThreadPool.addThread(t);
         try {
             Thread.sleep(IMAGE_SLEEP_TIME);
-        }
-        catch (InterruptedException e) {
+        } catch (InterruptedException e) {
             LOGGER.warn("Interrupted while waiting to load next image", e);
         }
     }
 
     /**
      * Helper class to find and download images found on "image" pages
-     *
+     * <p>
      * Handles case when site has IP-banned the user.
      */
     private class EHentaiImageThread extends Thread {
-        private URL url;
-        private int index;
-        private File workingDir;
+        private final URL url;
+        private final int index;
+        private final File workingDir;
 
         EHentaiImageThread(URL url, int index, File workingDir) {
             super();
@@ -252,8 +249,7 @@ public class EHentaiRipper extends AbstractHTMLRipper {
                     }
                     savePath += m.group(1);
                     addURLToDownload(new URL(imgsrc), new File(savePath));
-                }
-                else {
+                } else {
                     // Provide prefix and let the AbstractRipper "guess" the filename
                     String prefix = "";
                     if (Utils.getConfigBoolean("download.save_order", true)) {
