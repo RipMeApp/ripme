@@ -1,8 +1,8 @@
 package com.rarchives.ripme.tst.ripper.rippers;
 
 import com.rarchives.ripme.ripper.rippers.RedditRipper;
-import org.junit.Test;
 import com.rarchives.ripme.ripper.rippers.SoundgasmRipper;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.net.URL;

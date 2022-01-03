@@ -26,7 +26,6 @@ dependencies {
   implementation("org.graalvm.js:js:21.3.0")
   testImplementation(enforcedPlatform("org.junit:junit-bom:5.8.2"))
   testImplementation("org.junit.jupiter:junit-jupiter")
-  testImplementation("junit:junit:4.13.2")
 }
 
 group = "com.rarchives.ripme"

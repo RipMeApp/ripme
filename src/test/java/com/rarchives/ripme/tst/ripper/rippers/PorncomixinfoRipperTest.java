@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.net.URL;
 
 import com.rarchives.ripme.ripper.rippers.PorncomixinfoRipper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class PorncomixinfoRipperTest extends RippersTest {
     @Test
