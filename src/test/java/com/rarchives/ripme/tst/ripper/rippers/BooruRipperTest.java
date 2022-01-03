@@ -7,10 +7,12 @@ import java.util.List;
 
 import com.rarchives.ripme.ripper.rippers.BooruRipper;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 public class BooruRipperTest extends RippersTest {
     @Test
+    @Tag("flaky")
     public void testRip() throws IOException {
         List<URL> passURLs = new ArrayList<>();
         passURLs.add(new URL("https://xbooru.com/index.php?page=post&s=list&tags=furry"));
