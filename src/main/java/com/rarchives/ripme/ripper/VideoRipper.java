@@ -44,10 +44,11 @@ public abstract class VideoRipper extends AbstractRipper {
     }
 
     @Override
-    public boolean addURLToDownload(URL url, File saveAs) {
+    public boolean addURLToDownload(URL url, File saveAsF) {
+        Path saveAs = saveAsF.toPath();
         if (Utils.getConfigBoolean("urls_only.save", false)) {
             // Output URL to file
-            String urlFile = this.workingDir + File.separator + "urls.txt";
+            String urlFile = this.workingDir + "/urls.txt";
 
             try (FileWriter fw = new FileWriter(urlFile, true)) {
                 fw.write(url.toExternalForm());
