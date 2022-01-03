@@ -109,21 +109,16 @@ public class Utils {
      *
      * @return Root directory to save rips to.
      */
-    public static File getWorkingDirectory() {
-        String currentDir = "";
-        try {
-            currentDir = getJarDirectory().getCanonicalPath() + File.separator + RIP_DIRECTORY + File.separator;
-        } catch (IOException e) {
-            LOGGER.error("Error while finding working dir: ", e);
-        }
+    public static Path getWorkingDirectory() throws IOException {
+        String currentDir = getJarDirectory() + File.separator + RIP_DIRECTORY + File.separator;
 
         if (config != null) {
             currentDir = getConfigString("rips.directory", currentDir);
         }
 
-        File workingDir = new File(currentDir);
-        if (!workingDir.exists()) {
-            workingDir.mkdirs();
+        Path workingDir = Paths.get(currentDir);
+        if (!Files.exists(workingDir)) {
+            Files.createDirectory(workingDir);
         }
         return workingDir;
     }
@@ -240,13 +235,13 @@ public class Utils {
                 + File.separator + "ripme";
     }
 
-    private static File getJarDirectory() {
-        File jarDirectory = Objects.requireNonNull(Utils.class.getResource("/rip.properties")).toString().contains("jar:")
-                ? new File(System.getProperty("java.class.path")).getParentFile()
-                : new File(System.getProperty("user.dir"));
+    private static Path getJarDirectory() {
+        Path jarDirectory = Objects.requireNonNull(Utils.class.getResource("/rip.properties")).toString().contains("jar:")
+                ? Paths.get(System.getProperty("java.class.path")).getParent()
+                : Paths.get(System.getProperty("user.dir"));
 
         if (jarDirectory == null)
-            jarDirectory = new File(".");
+            jarDirectory = Paths.get(".");
 
         return jarDirectory;
     }
@@ -255,13 +250,9 @@ public class Utils {
      * Determines if the app is running in a portable mode. i.e. on a USB stick
      */
     private static boolean portableMode() {
-        try {
-            File file = new File(getJarDirectory().getCanonicalPath() + File.separator + CONFIG_FILE);
-            if (file.exists() && !file.isDirectory()) {
-                return true;
-            }
-        } catch (IOException e) {
-            return false;
+        Path file = getJarDirectory().resolve(CONFIG_FILE);
+        if (Files.exists(file) && !Files.isDirectory(file)) {
+            return true;
         }
 
         return false;
@@ -273,7 +264,7 @@ public class Utils {
     public static String getConfigDir() {
         if (portableMode()) {
             try {
-                return getJarDirectory().getCanonicalPath();
+                return getJarDirectory().toAbsolutePath().toString();
             } catch (Exception e) {
                 return ".";
             }
@@ -287,7 +278,7 @@ public class Utils {
             return getUnixConfigDir();
 
         try {
-            return getJarDirectory().getCanonicalPath();
+            return getJarDirectory().toAbsolutePath().toString();
         } catch (Exception e) {
             return ".";
         }

@@ -10,6 +10,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -275,7 +276,9 @@ public abstract class AbstractJSONRipper extends AbstractRipper {
      */
     @Override
     public void setWorkingDir(URL url) throws IOException {
-        String path = Utils.getWorkingDirectory().getCanonicalPath();
+        Path wd = Utils.getWorkingDirectory();
+        // TODO - change to nio
+        String path = wd.toAbsolutePath().toString();
         if (!path.endsWith(File.separator)) {
             path += File.separator;
         }

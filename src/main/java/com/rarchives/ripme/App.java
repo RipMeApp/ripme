@@ -1,29 +1,5 @@
 package com.rarchives.ripme;
 
-import java.awt.*;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Date;
-
-import javax.swing.SwingUtilities;
-
-import org.apache.commons.cli.BasicParser;
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.HelpFormatter;
-import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
-import org.apache.commons.lang.SystemUtils;
-
 import com.rarchives.ripme.ripper.AbstractRipper;
 import com.rarchives.ripme.ui.History;
 import com.rarchives.ripme.ui.HistoryEntry;
@@ -32,8 +8,29 @@ import com.rarchives.ripme.ui.UpdateUtils;
 import com.rarchives.ripme.utils.Proxy;
 import com.rarchives.ripme.utils.RipUtils;
 import com.rarchives.ripme.utils.Utils;
+import org.apache.commons.cli.BasicParser;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
+import org.apache.commons.lang.SystemUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import javax.swing.*;
+import java.awt.*;
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
+import java.util.stream.Stream;
 
 /**
  * Entry point to application.
@@ -54,7 +51,7 @@ public class App {
      *
      * @param args Array of command line arguments.
      */
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         CommandLine cl = getArgs(args);
 
         if (args.length > 0 && cl.hasOption('v')){
@@ -122,7 +119,7 @@ public class App {
      * For dealing with command-line arguments.
      * @param args Array of Command-line arguments
      */
-    private static void handleArguments(String[] args) {
+    private static void handleArguments(String[] args) throws IOException {
         CommandLine cl = getArgs(args);
 
         //Help (list commands)
@@ -350,7 +347,7 @@ public class App {
     /**
      * Loads history from history file into memory.
      */
-    private static void loadHistory() {
+    private static void loadHistory() throws IOException {
         Path historyFile = Paths.get(Utils.getConfigDir() + "/history.json");
         HISTORY.clear();
         if (Files.exists(historyFile)) {
@@ -371,17 +368,18 @@ public class App {
             if (HISTORY.toList().isEmpty()) {
                 // Loaded from config, still no entries.
                 // Guess rip history based on rip folder
-                String[] dirs = Utils.getWorkingDirectory().list((dir, file) -> new File(dir.getAbsolutePath() + File.separator + file).isDirectory());
-                assert dirs != null;
-                for (String dir : dirs) {
-                    String url = RipUtils.urlFromDirectoryName(dir);
+                Stream<Path> stream = Files.list(Utils.getWorkingDirectory())
+                        .filter(Files::isDirectory);
+
+                stream.forEach(dir -> {
+                    String url = RipUtils.urlFromDirectoryName(dir.toString());
                     if (url != null) {
                         // We found one, add it to history
                         HistoryEntry entry = new HistoryEntry();
                         entry.url = url;
                         HISTORY.add(entry);
                     }
-                }
+                });
             }
         }
     }

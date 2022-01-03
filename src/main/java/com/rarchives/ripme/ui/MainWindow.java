@@ -1,54 +1,5 @@
 package com.rarchives.ripme.ui;
 
-import java.awt.*;
-import java.awt.TrayIcon.MessageType;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.io.*;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.*;
-import java.util.List;
-
-import javax.imageio.ImageIO;
-import javax.swing.DefaultListModel;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JFileChooser;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JProgressBar;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.JTextField;
-import javax.swing.JTextPane;
-import javax.swing.ListSelectionModel;
-import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
-import javax.swing.border.EmptyBorder;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import javax.swing.event.ListDataEvent;
-import javax.swing.event.ListDataListener;
-import javax.swing.table.AbstractTableModel;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.SimpleAttributeSet;
-import javax.swing.text.StyleConstants;
-import javax.swing.text.StyledDocument;
-
 import com.rarchives.ripme.ripper.AbstractRipper;
 import com.rarchives.ripme.utils.RipUtils;
 import com.rarchives.ripme.utils.Utils;
@@ -59,7 +10,42 @@ import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.config.LoggerConfig;
 
-import javax.swing.UnsupportedLookAndFeelException;
+import javax.imageio.ImageIO;
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.event.ListDataEvent;
+import javax.swing.event.ListDataListener;
+import javax.swing.table.AbstractTableModel;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyledDocument;
+import java.awt.*;
+import java.awt.TrayIcon.MessageType;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Collections;
+import java.util.Date;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.stream.Stream;
 
 /**
  * Everything UI-related starts and ends here.
@@ -176,7 +162,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         queueListModel.addElement(url);
     }
 
-    public MainWindow() {
+    public MainWindow() throws IOException {
         mainFrame = new JFrame("RipMe v" + UpdateUtils.getThisJarVersion());
         mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         mainFrame.setLayout(new GridBagLayout());
@@ -548,7 +534,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         setLogLevel(configLogLevelCombobox.getSelectedItem().toString());
         configSaveDirLabel = new JLabel();
         try {
-            String workingDir = (Utils.shortenPath(Utils.getWorkingDirectory()));
+            String workingDir = (Utils.shortenPath(Utils.getWorkingDirectory().toString()));
             configSaveDirLabel.setText(workingDir);
             configSaveDirLabel.setForeground(Color.BLUE);
             configSaveDirLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
@@ -883,17 +869,23 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         configSaveDirLabel.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                File file = new File(Utils.getWorkingDirectory().toString());
-                Desktop desktop = Desktop.getDesktop();
+                Path file = null;
                 try {
-                    desktop.open(file);
-                } catch (Exception e1) {
+                    file = Utils.getWorkingDirectory();
+                    Desktop desktop = Desktop.getDesktop();
+                    desktop.open(file.toFile());
+                } catch (IOException ex) {
                 }
             }
         });
         configSaveDirButton.addActionListener(arg0 -> {
             UIManager.put("FileChooser.useSystemExtensionHiding", false);
-            JFileChooser jfc = new JFileChooser(Utils.getWorkingDirectory());
+            JFileChooser jfc = null;
+            try {
+                jfc = new JFileChooser(Utils.getWorkingDirectory().toString());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
             jfc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
             int returnVal = jfc.showDialog(null, "select directory");
             if (returnVal != JFileChooser.APPROVE_OPTION) {
@@ -912,7 +904,12 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         });
         configUrlFileChooserButton.addActionListener(arg0 -> {
             UIManager.put("FileChooser.useSystemExtensionHiding", false);
-            JFileChooser jfc = new JFileChooser(Utils.getWorkingDirectory());
+            JFileChooser jfc = null;
+            try {
+                jfc = new JFileChooser(Utils.getWorkingDirectory().toAbsolutePath().toString());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
             jfc.setFileSelectionMode(JFileChooser.FILES_ONLY);
             int returnVal = jfc.showDialog(null, "Open");
             if (returnVal != JFileChooser.APPROVE_OPTION) {
@@ -1157,7 +1154,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         LOGGER.error(line);
     }
 
-    private void loadHistory() {
+    private void loadHistory() throws IOException {
         File historyFile = new File(Utils.getConfigDir() + File.separator + "history.json");
         HISTORY.clear();
         if (historyFile.exists()) {
@@ -1177,19 +1174,18 @@ public final class MainWindow implements Runnable, RipStatusHandler {
             if (HISTORY.toList().isEmpty()) {
                 // Loaded from config, still no entries.
                 // Guess rip history based on rip folder
-                String[] dirs = Utils.getWorkingDirectory()
-                        .list((dir, file) -> new File(dir.getAbsolutePath() + File.separator + file).isDirectory());
-                if (dirs != null) {
-                    for (String dir : dirs) {
-                        String url = RipUtils.urlFromDirectoryName(dir);
-                        if (url != null) {
-                            // We found one, add it to history
-                            HistoryEntry entry = new HistoryEntry();
-                            entry.url = url;
-                            HISTORY.add(entry);
-                        }
+                Stream<Path> stream = Files.list(Utils.getWorkingDirectory())
+                        .filter(Files::isDirectory);
+
+                stream.forEach(dir -> {
+                    String url = RipUtils.urlFromDirectoryName(dir.toString());
+                    if (url != null) {
+                        // We found one, add it to history
+                        HistoryEntry entry = new HistoryEntry();
+                        entry.url = url;
+                        HISTORY.add(entry);
                     }
-                }
+                });
             }
         }
     }
