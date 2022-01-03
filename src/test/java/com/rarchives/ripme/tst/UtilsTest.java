@@ -1,7 +1,8 @@
 package com.rarchives.ripme.tst;
 
-import java.io.File;
 import java.io.FileNotFoundException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 
 import com.rarchives.ripme.utils.Utils;
@@ -60,8 +61,8 @@ public class UtilsTest {
     public void testShortenFileNameWindows() throws FileNotFoundException {
         String filename = "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff.png";
         // Test filename shortening for windows
-        File f = Utils.shortenSaveAsWindows("D:/rips/test/reddit/deep", filename);
-        Assertions.assertEquals(new File(
+        Path f = Utils.shortenSaveAsWindows("D:/rips/test/reddit/deep", filename);
+        Assertions.assertEquals(Paths.get(
                 "D:/rips/test/reddit/deep/ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff.png"),
                 f);
     }

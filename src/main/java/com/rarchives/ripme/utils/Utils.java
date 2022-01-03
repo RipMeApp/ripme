@@ -891,7 +891,7 @@ public class Utils {
         return fileNameToSan.replaceAll("[\\\\/:*?\"<>|]", "_");
     }
 
-    public static File shortenSaveAsWindows(String ripsDirPath, String fileName) throws FileNotFoundException {
+    public static Path shortenSaveAsWindows(String ripsDirPath, String fileName) throws FileNotFoundException {
         LOGGER.error("The filename " + fileName + " is to long to be saved on this file system.");
         LOGGER.info("Shortening filename");
         String fullPath = ripsDirPath + File.separator + fileName;
@@ -909,7 +909,7 @@ public class Utils {
         fullPath = fullPath.substring(0, 259 - pathLength - fileExt.length() + 1) + "." + fileExt;
         LOGGER.info(fullPath);
         LOGGER.info(fullPath.length());
-        return new File(fullPath);
+        return Paths.get(fullPath);
     }
 
 }

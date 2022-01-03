@@ -5,6 +5,7 @@ import java.net.HttpURLConnection;
 import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -237,7 +238,7 @@ class DownloadFileThread extends Thread {
                         } else if (saveAs.getAbsolutePath().length() > 259 && Utils.isWindows()) {
                             // This if is for when the file path has gone above 260 chars which windows does
                             // not allow
-                            fos = new FileOutputStream(
+                            fos = Files.newOutputStream(
                                     Utils.shortenSaveAsWindows(saveAs.getParentFile().getPath(), saveAs.getName()));
                         }
                     }
