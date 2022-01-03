@@ -11,10 +11,11 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -191,7 +192,7 @@ public class EHentaiRipper extends AbstractHTMLRipper {
 
     @Override
     public void downloadURL(URL url, int index) {
-        EHentaiImageThread t = new EHentaiImageThread(url, index, this.workingDir);
+        EHentaiImageThread t = new EHentaiImageThread(url, index, this.workingDir.toPath());
         ehentaiThreadPool.addThread(t);
         try {
             Thread.sleep(IMAGE_SLEEP_TIME);
@@ -208,9 +209,9 @@ public class EHentaiRipper extends AbstractHTMLRipper {
     private class EHentaiImageThread extends Thread {
         private final URL url;
         private final int index;
-        private final File workingDir;
+        private final Path workingDir;
 
-        EHentaiImageThread(URL url, int index, File workingDir) {
+        EHentaiImageThread(URL url, int index, Path workingDir) {
             super();
             this.url = url;
             this.index = index;
@@ -243,12 +244,12 @@ public class EHentaiRipper extends AbstractHTMLRipper {
                 Matcher m = p.matcher(imgsrc);
                 if (m.matches()) {
                     // Manually discover filename from URL
-                    String savePath = this.workingDir + File.separator;
+                    String savePath = this.workingDir + "/";
                     if (Utils.getConfigBoolean("download.save_order", true)) {
                         savePath += String.format("%03d_", index);
                     }
                     savePath += m.group(1);
-                    addURLToDownload(new URL(imgsrc), new File(savePath));
+                    addURLToDownload(new URL(imgsrc), Paths.get(savePath).toFile());
                 } else {
                     // Provide prefix and let the AbstractRipper "guess" the filename
                     String prefix = "";
