@@ -12,13 +12,10 @@ import org.jsoup.nodes.Document;
 import javax.swing.*;
 import java.awt.*;
 import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -35,15 +32,15 @@ public class UpdateUtils {
     private static final String DEFAULT_VERSION = "1.7.94-10-b6345398";
     private static final String REPO_NAME = "ripmeapp2/ripme";
     private static final String updateJsonURL = "https://raw.githubusercontent.com/" + REPO_NAME + "/main/ripme.json";
-    private static final String updateFileName = "ripme.jar.update";
-    private static String mainFileName;
+    private static final Path newFile = Paths.get("ripme.jar.new");
+    private static Path mainFile;
     private static JSONObject ripmeJson;
 
     static {
         try {
-            mainFileName = new File(UpdateUtils.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getAbsolutePath();
+            mainFile = Paths.get(UpdateUtils.class.getProtectionDomain().getCodeSource().getLocation().toURI());
         } catch (URISyntaxException | IllegalArgumentException e) {
-            mainFileName = "ripme.jar";
+            mainFile = Paths.get("ripme.jar");
             logger.error("Unable to get path of jar");
             e.printStackTrace();
         }
@@ -225,10 +222,10 @@ public class UpdateUtils {
     }
 
     // Code take from https://stackoverflow.com/a/30925550
-    public static String createSha256(File file) {
+    public static String createSha256(Path file) {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            InputStream fis = new FileInputStream(file);
+            InputStream fis = Files.newInputStream(file);
             int n = 0;
             byte[] buffer = new byte[8192];
             while (n != -1) {
@@ -247,7 +244,7 @@ public class UpdateUtils {
             // lowercase
             return sb.toString().toLowerCase();
         } catch (FileNotFoundException e) {
-            logger.error("Could not find file: " + file.getName());
+            logger.error("Could not find file: " + file);
         } catch (NoSuchAlgorithmException | IOException e) {
             logger.error("Got error getting file hash " + e.getMessage());
         }
@@ -260,13 +257,13 @@ public class UpdateUtils {
                 .timeout(Utils.getConfigInteger("download.timeout", 60 * 1000)).maxBodySize(1024 * 1024 * 100)
                 .execute();
 
-        try (FileOutputStream out = new FileOutputStream(updateFileName)) {
+        try (OutputStream out = Files.newOutputStream(newFile)) {
             out.write(response.bodyAsBytes());
         }
         // Only check the hash if the user hasn't disabled hash checking
         if (Utils.getConfigBoolean("security.check_update_hash", true)) {
-            String updateHash = createSha256(new File(updateFileName));
-            logger.info("Download of new version complete; saved to " + updateFileName);
+            String updateHash = createSha256(newFile);
+            logger.info("Download of new version complete; saved to " + newFile);
             logger.info("Checking hash of update");
 
             if (!ripmeJson.getString("currentHash").equals(updateHash)) {
@@ -281,19 +278,17 @@ public class UpdateUtils {
 
         if (System.getProperty("os.name").toLowerCase().contains("win")) {
             // Windows
-            final String batchFile = "update_ripme.bat";
-            final String batchPath = new File(batchFile).getAbsolutePath();
+            final Path batchFile = Paths.get("update_ripme.bat");
             String script = "@echo off\r\n" + "timeout 1\r\n"
-                    + "copy \"" + updateFileName + "\" \"" + mainFileName + "\"\r\n"
-                    + "del \"" + updateFileName + "\"\r\n";
+                    + "copy \"" + newFile + "\" \"" + mainFile + "\"\r\n"
+                    + "del \"" + newFile + "\"\r\n";
 
             if (shouldLaunch)
-                script += "\"" + mainFileName + "\"\r\n";
-            script += "del \"" + batchPath + "\"\r\n";
+                script += "\"" + mainFile + "\"\r\n";
+            script += "del \"" + batchFile + "\"\r\n";
 
-            final String[] batchExec = new String[]{batchPath};
             // Create updater script
-            try (BufferedWriter bw = new BufferedWriter(new FileWriter(batchFile))) {
+            try (BufferedWriter bw = Files.newBufferedWriter(batchFile)) {
                 bw.write(script);
                 bw.flush();
             }
@@ -303,7 +298,7 @@ public class UpdateUtils {
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {
                 try {
                     logger.info("Executing: " + batchFile);
-                    Runtime.getRuntime().exec(batchExec);
+                    Runtime.getRuntime().exec(String.valueOf(batchFile));
                 } catch (IOException e) {
                     // TODO implement proper stack trace handling this is really just intented as a
                     // placeholder until you implement proper error handling
@@ -317,13 +312,11 @@ public class UpdateUtils {
             // Modifying file and launching it: *nix distributions don't have any issues
             // with modifying/deleting files
             // while they are being run
-            Path newFile = Paths.get(updateFileName);
-            Path oldFile = Paths.get(mainFileName);
-            Files.move(newFile, oldFile, REPLACE_EXISTING);
+            Files.move(newFile, mainFile, REPLACE_EXISTING);
             if (shouldLaunch) {
                 // No need to do it during shutdown: the file used will indeed be the new one
-                logger.info("Executing: " + oldFile);
-                Runtime.getRuntime().exec("java -jar " + oldFile);
+                logger.info("Executing: " + mainFile);
+                Runtime.getRuntime().exec("java -jar " + mainFile);
             }
             logger.info("Update installed, newer version should be executed upon relaunch");
             System.exit(0);
