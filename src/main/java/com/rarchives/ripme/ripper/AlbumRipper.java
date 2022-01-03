@@ -93,8 +93,8 @@ public abstract class AlbumRipper extends AbstractRipper {
     }
 
     @Override
-    public boolean addURLToDownload(URL url, File saveAs) {
-        return addURLToDownload(url, saveAs, null, null, false);
+    public boolean addURLToDownload(URL url, Path saveAs) {
+        return addURLToDownload(url, saveAs.toFile(), null, null, false);
     }
 
     /**

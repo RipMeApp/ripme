@@ -230,7 +230,7 @@ public class ImgurRipper extends AlbumRipper {
             }
             saveAs += imgurImage.getSaveAs();
             saveAs = saveAs.replaceAll("\\?\\d", "");
-            addURLToDownload(imgurImage.url, new File(saveAs));
+            addURLToDownload(imgurImage.url, new File(saveAs).toPath());
         }
     }
 

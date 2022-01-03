@@ -44,8 +44,7 @@ public abstract class VideoRipper extends AbstractRipper {
     }
 
     @Override
-    public boolean addURLToDownload(URL url, File saveAsF) {
-        Path saveAs = saveAsF.toPath();
+    public boolean addURLToDownload(URL url, Path saveAs) {
         if (Utils.getConfigBoolean("urls_only.save", false)) {
             // Output URL to file
             String urlFile = this.workingDir + "/urls.txt";
@@ -75,7 +74,7 @@ public abstract class VideoRipper extends AbstractRipper {
 
     @Override
     public boolean addURLToDownload(URL url, File saveAs, String referrer, Map<String, String> cookies, Boolean getFileExtFromMIME) {
-        return addURLToDownload(url, saveAs);
+        return addURLToDownload(url, saveAs.toPath());
     }
 
     /**

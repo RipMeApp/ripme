@@ -404,7 +404,7 @@ public class RedditRipper extends AlbumRipper {
                 // It's from reddituploads. Assume .jpg extension.
                 String savePath = this.workingDir + "/";
                 savePath += id + "-" + m.group(1) + title + ".jpg";
-                addURLToDownload(urls.get(0), Paths.get(savePath).toFile());
+                addURLToDownload(urls.get(0), Paths.get(savePath));
             }
             if (url.contains("v.redd.it")) {
                 String savePath = this.workingDir + "/";
@@ -412,7 +412,7 @@ public class RedditRipper extends AlbumRipper {
                 URL urlToDownload = parseRedditVideoMPD(urls.get(0).toExternalForm());
                 if (urlToDownload != null) {
                     LOGGER.info("url: " + urlToDownload + " file: " + savePath);
-                    addURLToDownload(urlToDownload, Paths.get(savePath).toFile());
+                    addURLToDownload(urlToDownload, Paths.get(savePath));
                 }
             }
             else {

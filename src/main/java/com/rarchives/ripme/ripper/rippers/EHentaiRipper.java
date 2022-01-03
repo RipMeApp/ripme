@@ -249,7 +249,7 @@ public class EHentaiRipper extends AbstractHTMLRipper {
                         savePath += String.format("%03d_", index);
                     }
                     savePath += m.group(1);
-                    addURLToDownload(new URL(imgsrc), Paths.get(savePath).toFile());
+                    addURLToDownload(new URL(imgsrc), Paths.get(savePath));
                 } else {
                     // Provide prefix and let the AbstractRipper "guess" the filename
                     String prefix = "";

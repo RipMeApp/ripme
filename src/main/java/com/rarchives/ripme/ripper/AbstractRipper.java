@@ -208,7 +208,7 @@ public abstract class AbstractRipper
      *      Path of the local file to save the content to.
      * @return True on success, false on failure.
      */
-    public abstract boolean addURLToDownload(URL url, File saveAs);
+    public abstract boolean addURLToDownload(URL url, Path saveAs);
 
     /**
      * Queues image to be downloaded and saved.
