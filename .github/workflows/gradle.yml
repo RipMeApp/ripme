@@ -50,6 +50,10 @@ jobs:
     - name: Build with Gradle
       run: ./gradlew build
 
+    - name: SHA256
+      if: matrix.upload
+      run: shasum -a 256 build/libs/*.jar
+
     - name: upload jar as asset
       if: matrix.upload
       uses: actions/upload-artifact@v2
