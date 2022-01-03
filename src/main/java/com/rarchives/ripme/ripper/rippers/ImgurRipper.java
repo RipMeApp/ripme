@@ -1,9 +1,10 @@
 package com.rarchives.ripme.ripper.rippers;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -91,7 +92,7 @@ public class ImgurRipper extends AlbumRipper {
                     albumDoc = Http.url(url).get();
                 }
 
-                Elements elems = null;
+                Elements elems;
 
                 /*
                 // TODO: Add config option for including username in album title.
@@ -106,15 +107,13 @@ public class ImgurRipper extends AlbumRipper {
                 }
                 */
 
-                String title = null;
+                String title;
                 final String defaultTitle1 = "Imgur: The most awesome images on the Internet";
                 final String defaultTitle2 = "Imgur: The magic of the Internet";
                 LOGGER.info("Trying to get album title");
                 elems = albumDoc.select("meta[property=og:title]");
-                if (elems != null) {
-                    title = elems.attr("content");
-                    LOGGER.debug("Title is " + title);
-                }
+                title = elems.attr("content");
+                LOGGER.debug("Title is " + title);
                 // This is here encase the album is unnamed, to prevent
                 // Imgur: The most awesome images on the Internet from being added onto the album name
                 if (title.contains(defaultTitle1) || title.contains(defaultTitle2)) {
@@ -124,27 +123,17 @@ public class ImgurRipper extends AlbumRipper {
                     title = "";
                     LOGGER.debug("Trying to use title tag to get title");
                     elems = albumDoc.select("title");
-                    if (elems != null) {
-                        if (elems.text().contains(defaultTitle1) || elems.text().contains(defaultTitle2)) {
-                            LOGGER.debug("Was unable to get album title or album was untitled");
-                        }
-                        else {
-                            title = elems.text();
-                        }
+                    if (elems.text().contains(defaultTitle1) || elems.text().contains(defaultTitle2)) {
+                        LOGGER.debug("Was unable to get album title or album was untitled");
+                    }
+                    else {
+                        title = elems.text();
                     }
                 }
 
                 String albumTitle = "imgur_";
-                /*
-                // TODO: Add config option (see above)
-                if (user != null) {
-                    albumTitle += "user_" + user;
-                }
-                */
                 albumTitle += gid;
-                if (title != null) {
-                    albumTitle += "_" + title;
-                }
+                albumTitle += "_" + title;
 
                 return albumTitle;
             } catch (IOException e) {
@@ -204,33 +193,25 @@ public class ImgurRipper extends AlbumRipper {
     }
 
     private void ripAlbum(URL url, String subdirectory) throws IOException {
-        int index = 0;
+        int index;
         this.sendUpdate(STATUS.LOADING_RESOURCE, url.toExternalForm());
         index = 0;
         ImgurAlbum album = getImgurAlbum(url);
         for (ImgurImage imgurImage : album.images) {
             stopCheck();
-            String saveAs = workingDir.getCanonicalPath();
-            if (!saveAs.endsWith(File.separator)) {
-                saveAs += File.separator;
-            }
+            Path saveAs = workingDir.toPath();
             if (subdirectory != null && !subdirectory.equals("")) {
-                saveAs += subdirectory;
+                saveAs.resolve(subdirectory);
             }
-            if (!saveAs.endsWith(File.separator)) {
-                saveAs += File.separator;
-            }
-            File subdirFile = new File(saveAs);
-            if (!subdirFile.exists()) {
-                subdirFile.mkdirs();
+            if (!Files.exists(saveAs)) {
+                Files.createDirectory(saveAs);
             }
             index += 1;
             if (Utils.getConfigBoolean("download.save_order", true)) {
-                saveAs += String.format("%03d_", index);
+                saveAs.resolve(String.format("%03d_", index));
             }
-            saveAs += imgurImage.getSaveAs();
-            saveAs = saveAs.replaceAll("\\?\\d", "");
-            addURLToDownload(imgurImage.url, new File(saveAs).toPath());
+            saveAs.resolve(imgurImage.getSaveAs().replaceAll("\\?\\d", ""));
+            addURLToDownload(imgurImage.url, saveAs);
         }
     }
 
@@ -309,7 +290,7 @@ public class ImgurRipper extends AlbumRipper {
                 image = "http:" + thumb.select("img").attr("src");
             } else {
                 // Unable to find image in this div
-                LOGGER.error("[!] Unable to find image in div: " + thumb.toString());
+                LOGGER.error("[!] Unable to find image in div: " + thumb);
                 continue;
             }
             if (image.endsWith(".gif") && Utils.getConfigBoolean("prefer.mp4", false)) {
@@ -334,10 +315,6 @@ public class ImgurRipper extends AlbumRipper {
             imgurAlbum.addImage(new ImgurImage( new URL(ob.getString("link"))));
         }
         return imgurAlbum;
-    }
-
-    private static ImgurImage createImgurImageFromJson(JSONObject json) throws MalformedURLException {
-        return new ImgurImage(extractImageUrlFromJson(json));
     }
 
     private static URL extractImageUrlFromJson(JSONObject json) throws MalformedURLException {
@@ -374,7 +351,6 @@ public class ImgurRipper extends AlbumRipper {
      * Rips all albums in an imgur user's account.
      * @param url
      *      URL to imgur user account (http://username.imgur.com)
-     * @throws IOException
      */
     private void ripUserAccount(URL url) throws IOException {
         LOGGER.info("Retrieving " + url);
@@ -390,14 +366,14 @@ public class ImgurRipper extends AlbumRipper {
             URL albumURL = new URL("http:" + album.attr("href") + "/noscript");
             try {
                 ripAlbum(albumURL, albumID);
-                Thread.sleep(SLEEP_BETWEEN_ALBUMS * 1000);
+                Thread.sleep(SLEEP_BETWEEN_ALBUMS * 1000L);
             } catch (Exception e) {
                 LOGGER.error("Error while ripping album: " + e.getMessage(), e);
             }
         }
     }
 
-    private void ripUserImages(URL url) throws IOException {
+    private void ripUserImages(URL url) {
         int page = 0; int imagesFound = 0; int imagesTotal = 0;
         String jsonUrl = url.toExternalForm().replace("/all", "/ajax/images");
         if (jsonUrl.contains("#")) {
@@ -478,8 +454,8 @@ public class ImgurRipper extends AlbumRipper {
 
     @Override
     public String getGID(URL url) throws MalformedURLException {
-        Pattern p = null;
-        Matcher m = null;
+        Pattern p;
+        Matcher m;
 
         p = Pattern.compile("^https?://(www\\.|m\\.)?imgur\\.com/(a|gallery)/([a-zA-Z0-9]{5,}).*$");
         m = p.matcher(url.toExternalForm());
@@ -529,13 +505,13 @@ public class ImgurRipper extends AlbumRipper {
         if (m.matches()) {
             // Imgur subreddit aggregator
             albumType = ALBUM_TYPE.SUBREDDIT;
-            String album = m.group(2);
+            StringBuilder album = new StringBuilder(m.group(2));
             for (int i = 3; i <= m.groupCount(); i++) {
                 if (m.group(i) != null) {
-                    album += "_" + m.group(i).replace("/", "");
+                    album.append("_").append(m.group(i).replace("/", ""));
                 }
             }
-            return album;
+            return album.toString();
         }
         p = Pattern.compile("^https?://(i\\.|www\\.|m\\.)?imgur\\.com/r/(\\w+)/([a-zA-Z0-9,]{5,}).*$");
         m = p.matcher(url.toExternalForm());
@@ -568,15 +544,11 @@ public class ImgurRipper extends AlbumRipper {
         throw new MalformedURLException("Unsupported imgur URL format: " + url.toExternalForm());
     }
 
-    public ALBUM_TYPE getAlbumType() {
-        return albumType;
-    }
-
     public static class ImgurImage {
         String title = "";
         String description = "";
-        String extension   = "";
-        public URL url = null;
+        String extension;
+        public URL url;
 
         ImgurImage(URL url) {
             this.url = url;
@@ -586,14 +558,7 @@ public class ImgurRipper extends AlbumRipper {
                 this.extension = this.extension.substring(0, this.extension.indexOf("?"));
             }
         }
-        ImgurImage(URL url, String title) {
-            this(url);
-            this.title = title;
-        }
-        public ImgurImage(URL url, String title, String description) {
-            this(url, title);
-            this.description = description;
-        }
+
         String getSaveAs() {
             String saveAs = this.title;
             String u = url.toExternalForm();
@@ -613,7 +578,7 @@ public class ImgurRipper extends AlbumRipper {
 
     public static class ImgurAlbum {
         String title = null;
-        public URL    url = null;
+        public URL    url;
         public List<ImgurImage> images = new ArrayList<>();
         ImgurAlbum(URL url) {
             this.url = url;
