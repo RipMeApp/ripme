@@ -6,7 +6,11 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -26,7 +30,7 @@ import com.rarchives.ripme.ui.RipStatusMessage;
 public abstract class AbstractHTMLRipper extends AbstractRipper {
     
     private final Map<URL, File> itemsPending = Collections.synchronizedMap(new HashMap<>());
-    private final Map<URL, File> itemsCompleted = Collections.synchronizedMap(new HashMap<>());
+    private final Map<URL, Path> itemsCompleted = Collections.synchronizedMap(new HashMap<>());
     private final Map<URL, String> itemsErrored = Collections.synchronizedMap(new HashMap<>());
 
     protected AbstractHTMLRipper(URL url) throws IOException {
@@ -320,11 +324,11 @@ public abstract class AbstractHTMLRipper extends AbstractRipper {
         }
         if (Utils.getConfigBoolean("urls_only.save", false)) {
             // Output URL to file
-            String urlFile = this.workingDir + File.separator + "urls.txt";
-            try (FileWriter fw = new FileWriter(urlFile, true)) {
-                fw.write(url.toExternalForm());
-                fw.write(System.lineSeparator());
-                itemsCompleted.put(url, new File(urlFile));
+            Path urlFile = Paths.get(this.workingDir + "/urls.txt");
+            String text = url.toExternalForm() + System.lineSeparator();
+            try {
+                Files.write(urlFile, text.getBytes(StandardCharsets.UTF_8), StandardOpenOption.APPEND);
+                itemsCompleted.put(url, urlFile);
             } catch (IOException e) {
                 LOGGER.error("Error while writing to " + urlFile, e);
             }
@@ -366,12 +370,12 @@ public abstract class AbstractHTMLRipper extends AbstractRipper {
     /*
       Cleans up & tells user about successful download
      */
-    public void downloadCompleted(URL url, File saveAs) {
+    public void downloadCompleted(URL url, Path saveAs) {
         if (observer == null) {
             return;
         }
         try {
-            String path = Utils.removeCWD(saveAs.toPath());
+            String path = Utils.removeCWD(saveAs);
             RipStatusMessage msg = new RipStatusMessage(STATUS.DOWNLOAD_COMPLETE, path);
             itemsPending.remove(url);
             itemsCompleted.put(url, saveAs);
@@ -409,7 +413,7 @@ public abstract class AbstractHTMLRipper extends AbstractRipper {
         }
 
         itemsPending.remove(url);
-        itemsCompleted.put(url, file.toFile());
+        itemsCompleted.put(url, file);
         observer.update(this, new RipStatusMessage(STATUS.DOWNLOAD_WARN, url + " already saved as " + file));
 
         checkIfComplete();

@@ -118,13 +118,13 @@ public abstract class VideoRipper extends AbstractRipper {
      * @param saveAs Path to file, including filename.
      */
     @Override
-    public void downloadCompleted(URL url, File saveAs) {
+    public void downloadCompleted(URL url, Path saveAs) {
         if (observer == null) {
             return;
         }
 
         try {
-            String path = Utils.removeCWD(saveAs.toPath());
+            String path = Utils.removeCWD(saveAs);
             RipStatusMessage msg = new RipStatusMessage(STATUS.DOWNLOAD_COMPLETE, path);
             observer.update(this, msg);
 

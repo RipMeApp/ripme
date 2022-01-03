@@ -137,7 +137,7 @@ class DownloadVideoThread extends Thread {
                 return;
             }
         } while (true);
-        observer.downloadCompleted(url, saveAs.toFile());
+        observer.downloadCompleted(url, saveAs);
         logger.info("[+] Saved " + url + " as " + this.prettySaveAs);
     }
 

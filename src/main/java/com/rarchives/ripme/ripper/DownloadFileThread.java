@@ -315,7 +315,7 @@ class DownloadFileThread extends Thread {
                 return;
             }
         } while (true);
-        observer.downloadCompleted(url, saveAs);
+        observer.downloadCompleted(url, saveAs.toPath());
         logger.info("[+] Saved " + url + " as " + this.prettySaveAs);
     }
 

@@ -452,7 +452,7 @@ public abstract class AbstractRipper
      * @param saveAs
      *      Where the downloaded file is stored.
      */
-    public abstract void downloadCompleted(URL url, File saveAs);
+    public abstract void downloadCompleted(URL url, Path saveAs);
     /**
      * Notifies observers that a file could not be downloaded (includes a reason).
      * @param url
