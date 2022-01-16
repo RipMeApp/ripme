@@ -59,7 +59,7 @@ public class App {
         CommandLine cl = getArgs(args);
 
         if (args.length > 0 && cl.hasOption('v')){
-            logger.info(UpdateUtils.getThisJarVersion());
+            System.out.println(UpdateUtils.getThisJarVersion());
             System.exit(0);
         }
 
