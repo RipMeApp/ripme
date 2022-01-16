@@ -26,7 +26,7 @@ public class ListalRipper extends AbstractHTMLRipper {
 
     private Pattern p1 = Pattern.compile("https:\\/\\/www.listal.com\\/list\\/([a-zA-Z0-9-]+)");
     private Pattern p2 =
-            Pattern.compile("https:\\/\\/www.listal.com\\/((?:(?:[a-zA-Z0-9-]+)\\/?)+)");
+            Pattern.compile("https:\\/\\/www.listal.com\\/((?:(?:[a-zA-Z0-9-_%]+)\\/?)+)");
     private String listId = null; // listId to get more images via POST.
     private String postUrl = "https://www.listal.com/item-list/"; //to load more images.
     private UrlType urlType = UrlType.UNKNOWN;
