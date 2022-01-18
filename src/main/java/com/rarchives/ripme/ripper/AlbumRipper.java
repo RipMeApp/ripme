@@ -158,6 +158,8 @@ public abstract class AlbumRipper extends AbstractRipper {
         itemsPending.remove(url);
         itemsCompleted.put(url, file);
         observer.update(this, new RipStatusMessage(STATUS.DOWNLOAD_WARN, url + " already saved as " + file.getAbsolutePath()));
+        // If the file exists on disk we bump alreadyDownloadedUrls so that end_riper_after_already_seen works without a url history file
+        AbstractRipper.alreadyDownloadedUrls += 1;
 
         checkIfComplete();
     }
