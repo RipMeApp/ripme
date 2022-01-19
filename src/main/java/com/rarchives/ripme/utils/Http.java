@@ -14,7 +14,7 @@ import org.json.JSONObject;
 import org.jsoup.Connection;
 import org.jsoup.Connection.Method;
 import org.jsoup.Connection.Response;
-import org.jsoup.helper.StringUtil;
+import org.jsoup.internal.StringUtil;
 import org.jsoup.Jsoup;
 import org.jsoup.HttpStatusException;
 import org.jsoup.nodes.Document;
