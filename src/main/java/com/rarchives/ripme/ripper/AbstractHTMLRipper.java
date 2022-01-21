@@ -128,7 +128,7 @@ public abstract class AbstractHTMLRipper extends AbstractRipper {
                     index += 1;
                     LOGGER.debug("Found image url #" + index + ": " + imageURL);
                     downloadURL(new URL(imageURL), index);
-                    if (isStopped()) {
+                    if (isStopped() || isThisATest()) {
                         break;
                     }
                 }
@@ -139,7 +139,7 @@ public abstract class AbstractHTMLRipper extends AbstractRipper {
                 if (!textURLs.isEmpty()) {
                     LOGGER.debug("Found description link(s) from " + doc.location());
                     for (String textURL : textURLs) {
-                        if (isStopped()) {
+                        if (isStopped() || isThisATest()) {
                             break;
                         }
                         textindex += 1;
@@ -293,10 +293,10 @@ public abstract class AbstractHTMLRipper extends AbstractRipper {
      * Queues multiple URLs of single images to download from a single Album URL
      */
     public boolean addURLToDownload(URL url, File saveAs, String referrer, Map<String,String> cookies, Boolean getFileExtFromMIME) {
-            // Only download one file if this is a test.
-        if (super.isThisATest() &&
-                (itemsPending.size() > 0 || itemsCompleted.size() > 0 || itemsErrored.size() > 0)) {
+        // Only download one file if this is a test.
+        if (super.isThisATest() && (itemsCompleted.size() > 0 || itemsErrored.size() > 0)) {
             stop();
+            itemsPending.clear();
             return false;
         }
         if (!allowDuplicates()
