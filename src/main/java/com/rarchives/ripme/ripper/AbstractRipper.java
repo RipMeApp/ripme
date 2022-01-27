@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Scanner;
+import java.util.HashSet;
 import org.apache.log4j.FileAppender;
 import org.apache.log4j.Logger;
 import org.jsoup.HttpStatusException;
@@ -23,6 +24,7 @@ import com.rarchives.ripme.ui.RipStatusHandler;
 import com.rarchives.ripme.ui.RipStatusMessage;
 import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
 import com.rarchives.ripme.utils.Utils;
+import redis.clients.jedis.Jedis; 
 
 public abstract class AbstractRipper
                 extends Observable
@@ -40,7 +42,8 @@ public abstract class AbstractRipper
     RipStatusHandler observer = null;
 
     private boolean completed = true;
-
+    private Jedis jedis;
+    protected HashSet<String> urlHistoryHashSet = new HashSet();
     public abstract void rip() throws IOException;
     public abstract String getHost();
     public abstract String getGID(URL url) throws MalformedURLException;
@@ -62,6 +65,27 @@ public abstract class AbstractRipper
         }
     }
 
+    protected void initializeHistoryStore() {
+        String host = Utils.getConfigString("url_history.redis_cache.host", "");
+        if (host != "") {
+            Integer port = Utils.getConfigInteger("url_history.redis_cache.port", 6379);
+            jedis = new Jedis(host, port);
+        } else {
+            File file = new File(URLHistoryFile);
+            if (file.exists()) {
+                try (Scanner scanner = new Scanner(file)) {
+                    LOGGER.debug("Building url hash set");
+                    while (scanner.hasNextLine()) {
+                        final String lineFromFile = scanner.nextLine();
+                        urlHistoryHashSet.add(lineFromFile.trim());
+                    }
+                } catch (FileNotFoundException e) {
+                    LOGGER.error(e.toString());
+                }
+            }
+        }
+    }
+
 
     /**
      * Adds a URL to the url history file
@@ -72,7 +96,16 @@ public abstract class AbstractRipper
         if (Utils.getConfigBoolean("urls_only.save", false)) {
             return;
         }
+
+        if (Utils.getConfigString("url_history.redis_cache.host", "") != "") {
+            String keyPrefix = Utils.getConfigString("url_history.redis_cache.key_prefix", "");
+            String key = keyPrefix + downloadedURL.trim();
+            LOGGER.info("Setting in Redis: " + key);
+            jedis.set(key, "true");
+        }
+
         downloadedURL = normalizeUrl(downloadedURL);
+        urlHistoryHashSet.add(downloadedURL);
         BufferedWriter bw = null;
         FileWriter fw = null;
         try {
@@ -132,23 +165,46 @@ public abstract class AbstractRipper
      *      Returns false if not yet downloaded.
      */
     protected boolean hasDownloadedURL(String url) {
-        File file = new File(URLHistoryFile);
-        url = normalizeUrl(url);
-
-        try (Scanner scanner = new Scanner(file)) {
-            while (scanner.hasNextLine()) {
-                final String lineFromFile = scanner.nextLine();
-                if (lineFromFile.equals(url)) {
-                    return true;
-                }
-            }
-        } catch (FileNotFoundException e) {
-            return false;
+        if (Utils.getConfigString("url_history.redis_cache.host", "") != "") {
+            return redisContainsURL(url);
+        } else {
+            return fileContainsURL(url);
         }
-
-        return false;
     }
 
+    /**
+     * Checks redis to see if Ripme has already downloaded a URL
+     * @param url URL to check if downloaded
+     * @return 
+     *      Returns true if previously downloaded.
+     *      Returns false if not yet downloaded.
+     */
+    private boolean redisContainsURL(String url) {
+        String keyPrefix = Utils.getConfigString("url_history.redis_cache.key_prefix", "");
+        String key = keyPrefix + normalizeUrl(url.trim());
+        String jedisResult = jedis.get(key);
+        if (jedisResult == null) {
+            LOGGER.info(key + " not found in redis");
+            return false;
+        } else {
+            LOGGER.info(key + " was found in redis");
+            return true;
+        }
+    }
+
+    /**
+     * Checks history file to see if Ripme has already downloaded a URL
+     * @param url URL to check if downloaded
+     * @return 
+     *      Returns true if previously downloaded.
+     *      Returns false if not yet downloaded.
+     */
+    private boolean fileContainsURL(String url) {
+        url = normalizeUrl(url.trim());
+        Boolean foundUrl = urlHistoryHashSet.contains(url);
+        LOGGER.debug("Found url in hash set: " + foundUrl.toString());
+        return foundUrl;
+    }
 
     /**
      * Ensures inheriting ripper can rip this URL, raises exception if not.
@@ -333,6 +389,7 @@ public abstract class AbstractRipper
             LOGGER.info("[+] Creating directory: " + Utils.removeCWD(saveFileAs.getParent()));
             saveFileAs.getParentFile().mkdirs();
         }
+
         if (Utils.getConfigBoolean("remember.url_history", true) && !isThisATest()) {
             LOGGER.info("Writing " + url.toExternalForm() + " to file");
             try {
@@ -613,6 +670,7 @@ public abstract class AbstractRipper
      */
     public void run() {
         try {
+            initializeHistoryStore();
             rip();
         } catch (HttpStatusException e) {
             LOGGER.error("Got exception while running ripper:", e);
