@@ -1,9 +1,12 @@
 package com.rarchives.ripme.ui;
 
+import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.File;
+import java.io.IOException;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -15,9 +18,10 @@ import com.rarchives.ripme.utils.Utils;
 class HistoryMenuMouseListener extends MouseAdapter {
     private JPopupMenu popup = new JPopupMenu();
     private JTable tableComponent;
+    private Point lastPoint;
 
     @SuppressWarnings("serial")
-    public HistoryMenuMouseListener() {
+    public HistoryMenuMouseListener(History history) {
         Action checkAllAction = new AbstractAction(Utils.getLocalizedString("history.check.all")) {
             @Override
             public void actionPerformed(ActionEvent ae) {
@@ -59,6 +63,21 @@ class HistoryMenuMouseListener extends MouseAdapter {
             }
         };
         popup.add(uncheckSelected);
+        popup.addSeparator();
+        popup.add(new AbstractAction(Utils.getLocalizedString("history.open.folder")) {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    String url = tableComponent.getValueAt(tableComponent.rowAtPoint(lastPoint), 0).toString();
+                    File dir = new File(history.getEntryByURL(url).dir);
+                    if (dir.exists())
+                        java.awt.Desktop.getDesktop().open(dir);
+                } catch (IOException e1) {
+                    e1.printStackTrace();
+                }
+            }
+        });
     }
 
     @Override
@@ -70,6 +89,8 @@ class HistoryMenuMouseListener extends MouseAdapter {
 
             tableComponent = (JTable) e.getSource();
             tableComponent.requestFocus();
+
+            lastPoint = e.getPoint();
 
             int nx = e.getX();
 
