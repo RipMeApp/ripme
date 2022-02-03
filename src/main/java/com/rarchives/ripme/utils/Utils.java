@@ -482,12 +482,12 @@ public class Utils {
      * @return The sanitized text.
      */
     public static String filesystemSanitized(String text) {
-        text = text.replaceAll("[^a-zA-Z0-9.-]", "_");
+        text = text.replaceAll("[^ !#-)+-.0-9;=@-\\[\\]-{}~]", "").trim().replaceAll("\\.+$", "");
         return text;
     }
 
     public static String filesystemSafe(String text) {
-        text = text.replaceAll("[^a-zA-Z0-9.-]", "_").replaceAll("__", "_").replaceAll("_+$", "");
+        text = text.replaceAll("[^ !#-)+-.0-9;=@-\\[\\]-{}~]", "").trim().replaceAll("\\.+$", "");
         if (text.length() > 100) {
             text = text.substring(0, 99);
         }
@@ -857,7 +857,7 @@ public class Utils {
     }
 
     public static String sanitizeSaveAs(String fileNameToSan) {
-        return fileNameToSan.replaceAll("[\\\\/:*?\"<>|]", "_");
+        return fileNameToSan.replaceAll("[^ !#-)+-.0-9;=@-\\[\\]-{}~]", "").trim().replaceAll("\\.+$", "");
     }
 
     public static File shortenSaveAsWindows(String ripsDirPath, String fileName) throws FileNotFoundException {
