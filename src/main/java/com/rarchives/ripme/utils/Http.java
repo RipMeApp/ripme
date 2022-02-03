@@ -21,6 +21,9 @@ import org.jsoup.nodes.Document;
 
 import com.rarchives.ripme.ripper.AbstractRipper;
 
+import java.nio.charset.StandardCharsets;
+import java.net.URLEncoder;
+
 /**
  * Wrapper around the Jsoup connection methods.
  *
@@ -46,9 +49,11 @@ public class Http {
     }
 
     public static Http url(String url) {
-        return new Http(url);
+        String encodedURL =  URLEncoder.encode(url, StandardCharsets.UTF_8);
+        return new Http(encodedURL);
     }
     public static Http url(URL url) {
+        // TODO: Endcode URL
         return new Http(url);
     }
 
