@@ -78,7 +78,7 @@ If you're a developer, you can add your own Ripper by following the wiki guide:
 # Compiling & Building
 
 The project uses [Gradle](https://gradle.org) or [Maven](http://maven.apache.org/).
-Therefor both commands are given. To build the .jar file, navigate to the root
+Therefore, both commands are given. To build .jar file, navigate to the root
 project directory and run:
 
 ```bash
