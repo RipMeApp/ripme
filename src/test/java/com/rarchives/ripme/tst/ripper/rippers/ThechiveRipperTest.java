@@ -63,6 +63,7 @@ public class ThechiveRipperTest extends RippersTest {
      * "i.thechive.com" test.
      */
     @Test
+    @Tag("flaky")
     public void testIDotThechive() throws IOException {
         ThechiveRipper ripper = new ThechiveRipper(new URL("https://i.thechive.com/witcheva"));
         testRipper(ripper);
