@@ -30,25 +30,15 @@ jobs:
       id: ci-env
       uses: FranzDiebold/github-env-vars-action@v2
 
-    - name: Set up Java
-      uses: actions/setup-java@v2
+    - name: Set up java
+      uses: actions/setup-java@v2.5.0
       with:
-        distribution: 'temurin'
         java-version: ${{ matrix.java }}
-
-    - name: Cache Gradle packages
-      # speed up the build by caching dependencies, downloaded versions
-      uses: actions/cache@v2
-      with:
-        path: |
-          ~/.gradle/caches
-          ~/.gradle/wrapper
-        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-        restore-keys: |
-          ${{ runner.os }}-gradle-
+        distribution: temurin
+        cache: gradle
 
     - name: Build with Gradle
-      run: ./gradlew build
+      run: gradle clean build -PjavacRelease=${{ matrix.java }}
 
     - name: SHA256
       if: matrix.upload

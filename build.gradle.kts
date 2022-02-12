@@ -1,3 +1,8 @@
+//    permits to start the build setting the javac release parameter, no parameter means build for java8:
+// gradle clean build -PjavacRelease=8
+// gradle clean build -PjavacRelease=17
+val javacRelease = (project.findProperty("javacRelease") ?: "8") as String
+
 plugins {
   id("fr.brouillard.oss.gradle.jgitver") version "0.9.1"
   id("jacoco")
@@ -38,9 +43,12 @@ jgitver {
   useGitCommitID = true
 }
 
-java {
-  sourceCompatibility = JavaVersion.VERSION_1_8
-  targetCompatibility = JavaVersion.VERSION_1_8
+tasks.compileJava {
+  if (JavaVersion.current().isJava8) {
+    java.targetCompatibility = JavaVersion.VERSION_1_8
+  } else {
+    options.release.set(Integer.parseInt(javacRelease))
+  }
 }
 
 tasks.withType<Jar> {
