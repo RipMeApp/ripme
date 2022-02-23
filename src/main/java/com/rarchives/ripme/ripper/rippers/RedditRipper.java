@@ -311,7 +311,7 @@ public class RedditRipper extends AlbumRipper {
         }
     }
 
-    private ContainerTag getComments(JSONArray comments, String author) {
+    private ContainerTag<DivTag> getComments(JSONArray comments, String author) {
         ContainerTag<DivTag> commentsDiv = div().withId("comments");
 
         for (int i = 0; i < comments.length(); i++) {
@@ -330,24 +330,26 @@ public class RedditRipper extends AlbumRipper {
         return commentsDiv;
     }
 
-    private ContainerTag getNestedComments(JSONObject data, ContainerTag parentDiv, String author) {
+    private ContainerTag<DivTag> getNestedComments(JSONObject data, ContainerTag<DivTag> parentDiv, String author) {
         if (data.has("replies") && data.get("replies") instanceof JSONObject) {
-            for (int i = 0; i <= data.getJSONObject("replies").getJSONObject("data").getJSONArray("children").length() - 1; i++) {
-                JSONObject nestedComment = data.getJSONObject("replies")
-                        .getJSONObject("data")
-                        .getJSONArray("children")
+            JSONArray commentChildren = data.getJSONObject("replies").getJSONObject("data").getJSONArray("children");
+            for (int i = 0; i < commentChildren.length(); i++) {
+                JSONObject nestedComment = commentChildren
                         .getJSONObject(i).getJSONObject("data");
 
-                ContainerTag<DivTag> childDiv =
-                        div(
-                                div(
-                                        span(nestedComment.getString("author")).withClasses("author", iff(nestedComment.getString("author").equals(author), "op")),
-                                        a(new Date((long) nestedComment.getInt("created") * 1000).toString()).withHref("#" + nestedComment.getString("name"))
-                                ).withClass("comment").withId(nestedComment.getString("name"))
-                                        .with(rawHtml(Jsoup.parse(nestedComment.getString("body_html")).text()))
-                        ).withClass("child");
+                String nestedCommentAuthor = nestedComment.optString("author");
+                if (!nestedCommentAuthor.isBlank()) {
+                    ContainerTag<DivTag> childDiv =
+                            div(
+                                    div(
+                                            span(nestedCommentAuthor).withClasses("author", iff(nestedCommentAuthor.equals(author), "op")),
+                                            a(new Date((long) nestedComment.getInt("created") * 1000).toString()).withHref("#" + nestedComment.getString("name"))
+                                    ).withClass("comment").withId(nestedComment.getString("name"))
+                                            .with(rawHtml(Jsoup.parse(nestedComment.getString("body_html")).text()))
+                            ).withClass("child");
 
-                parentDiv.with(getNestedComments(nestedComment, childDiv, author));
+                    parentDiv.with(getNestedComments(nestedComment, childDiv, author));
+                }
             }
         }
         return parentDiv;
