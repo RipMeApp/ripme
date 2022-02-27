@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Test;
 
 public class XhamsterRipperTest extends RippersTest {
     @Test
+    @Tag("flaky")
     public void testXhamsterAlbum1() throws IOException {
         XhamsterRipper ripper = new XhamsterRipper(new URL("https://xhamster.com/photos/gallery/sexy-preggo-girls-9026608"));
         testRipper(ripper);
@@ -24,6 +25,7 @@ public class XhamsterRipperTest extends RippersTest {
         testRipper(ripper);
     }
     @Test
+    @Tag("flaky")
     public void testXhamsterAlbum2() throws IOException {
         XhamsterRipper ripper = new XhamsterRipper(new URL("https://xhamster.com/photos/gallery/japanese-dolls-4-asahi-mizuno-7254664"));
         testRipper(ripper);
@@ -47,6 +49,7 @@ public class XhamsterRipperTest extends RippersTest {
         testRipper(ripper);
     }
     @Test
+    @Tag("flaky")
     public void testBrazilianXhamster() throws IOException {
         XhamsterRipper ripper = new XhamsterRipper(new URL("https://pt.xhamster.com/photos/gallery/cartoon-babe-15786301"));
         testRipper(ripper);
