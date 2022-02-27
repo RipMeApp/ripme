@@ -15,8 +15,8 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macOS-latest]
-        java: [8]
-        include: # test newest java on one os only, upload from ubuntu java8
+        java: [11]
+        include: # test newest java on one os only, upload from ubuntu java11
           - os: ubuntu-latest
             java: 17
           - os: ubuntu-latest
