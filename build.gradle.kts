@@ -26,9 +26,9 @@ dependencies {
   implementation("commons-io:commons-io:2.11.0")
   implementation("org.apache.httpcomponents:httpclient:4.5.13")
   implementation("org.apache.httpcomponents:httpmime:4.5.13")
-  implementation("org.apache.logging.log4j:log4j-api:2.17.0")
-  implementation("org.apache.logging.log4j:log4j-core:2.17.0")
-  implementation("org.graalvm.js:js:21.3.0")
+  implementation("org.apache.logging.log4j:log4j-api:2.17.1")
+  implementation("org.apache.logging.log4j:log4j-core:2.17.1")
+  implementation("org.graalvm.js:js:22.0.0.2")
   testImplementation(enforcedPlatform("org.junit:junit-bom:5.8.2"))
   testImplementation("org.junit.jupiter:junit-jupiter")
 }
