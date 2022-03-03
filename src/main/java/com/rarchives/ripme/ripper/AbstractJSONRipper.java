@@ -293,9 +293,9 @@ public abstract class AbstractJSONRipper extends AbstractRipper {
         if (!Files.exists(wd)) {
             LOGGER.info("[+] Creating directory: " + Utils.removeCWD(wd));
             Files.createDirectory(wd);
-            this.workingDir = wd.toFile();
         }
-        LOGGER.debug("Set working directory to: " + this.workingDir);
+        this.workingDir = wd.toFile();
+        LOGGER.info("Set working directory to: {}", this.workingDir);
     }
 
     /**
