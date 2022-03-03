@@ -220,23 +220,4 @@ public class MrCongRipper extends AbstractHTMLRipper {
             }
         }
     }
-
-    /*
-    public static void main(String[] args) {
-        try {
-            MrCongRipper a = new MrCongRipper(URI.create("https://mrcong.com/ruisg-vol-084-xiao-hui-49-anh/").toURL());
-            a.getFirstPage();
-            System.out.println("Current Page#: " + a.getCurrentPageNum(a.currDoc));
-            System.out.println("Max Page#: " + a.getMaxPageNumber(a.currDoc));
-
-            while(a.getNextPage() != null) {
-
-            }
-        }catch(Exception IOException) {
-            System.out.println("IOException");
-        }
-    }
-    */
 }
-// https://mrcong.com/tag/zhu-ke-er/
-// https://mrcong.com/tag/%e9%9b%aa%e7%90%aasama/
