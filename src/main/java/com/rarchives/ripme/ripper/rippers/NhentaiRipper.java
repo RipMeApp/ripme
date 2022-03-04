@@ -126,7 +126,7 @@ public class NhentaiRipper extends AbstractHTMLRipper {
         List<String> imageURLs = new ArrayList<>();
         Elements thumbs = page.select("a.gallerythumb > img");
         for (Element el : thumbs) {
-            imageURLs.add(el.attr("data-src").replaceAll("t\\.n", "i.n").replaceAll("t\\.", "."));
+            imageURLs.add(el.attr("data-src").replaceAll("://t", "://i").replaceAll("t\\.", "."));
         }
         return imageURLs;
     }
