@@ -880,12 +880,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         });
         configSaveDirButton.addActionListener(arg0 -> {
             UIManager.put("FileChooser.useSystemExtensionHiding", false);
-            JFileChooser jfc = null;
-            try {
-                jfc = new JFileChooser(Utils.getWorkingDirectory().toString());
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            JFileChooser jfc =  new JFileChooser(Utils.getWorkingDirectory().toString());
             jfc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
             int returnVal = jfc.showDialog(null, "select directory");
             if (returnVal != JFileChooser.APPROVE_OPTION) {
@@ -904,12 +899,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         });
         configUrlFileChooserButton.addActionListener(arg0 -> {
             UIManager.put("FileChooser.useSystemExtensionHiding", false);
-            JFileChooser jfc = null;
-            try {
-                jfc = new JFileChooser(Utils.getWorkingDirectory().toAbsolutePath().toString());
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            JFileChooser jfc =  new JFileChooser(Utils.getWorkingDirectory().toAbsolutePath().toString());
             jfc.setFileSelectionMode(JFileChooser.FILES_ONLY);
             int returnVal = jfc.showDialog(null, "Open");
             if (returnVal != JFileChooser.APPROVE_OPTION) {

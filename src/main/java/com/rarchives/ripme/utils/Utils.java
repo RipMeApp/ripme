@@ -109,7 +109,7 @@ public class Utils {
      *
      * @return Root directory to save rips to.
      */
-    public static Path getWorkingDirectory() throws IOException {
+    public static Path getWorkingDirectory() {
         String currentDir = getJarDirectory() + File.separator + RIP_DIRECTORY + File.separator;
 
         if (config != null) {
@@ -118,7 +118,12 @@ public class Utils {
 
         Path workingDir = Paths.get(currentDir);
         if (!Files.exists(workingDir)) {
-            Files.createDirectory(workingDir);
+            try {
+                Files.createDirectory(workingDir);
+            } catch (IOException e) {
+                LOGGER.error("WorkingDir " + workingDir + " not exists, and could not be created. Set to user.home, continue.");
+                workingDir = Paths.get(System.getProperty("user.home"));
+            }
         }
         return workingDir;
     }
