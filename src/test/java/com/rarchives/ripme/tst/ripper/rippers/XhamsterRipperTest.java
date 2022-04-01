@@ -61,6 +61,7 @@ public class XhamsterRipperTest extends RippersTest {
         Assertions.assertEquals("7254664", ripper.getGID(url));
     }
     @Test
+    @Tag("flaky")
     public void testGetNextPage() throws IOException {
         XhamsterRipper ripper = new XhamsterRipper(new URL("https://pt.xhamster.com/photos/gallery/mega-compil-6-10728626"));
         Document doc = ripper.getFirstPage();
