@@ -20,13 +20,13 @@ import javax.sound.sampled.LineEvent;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Constructor;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
@@ -62,7 +62,7 @@ public class Utils {
     private static final int SHORTENED_PATH_LENGTH = 12;
 
     private static PropertiesConfiguration config;
-    private static HashMap<String, HashMap<String, String>> cookieCache;
+    private static final HashMap<String, HashMap<String, String>> cookieCache;
     private static final HashMap<ByteBuffer, String> magicHash = new HashMap<>();
 
     private static ResourceBundle resourceBundle;
@@ -256,11 +256,7 @@ public class Utils {
      */
     private static boolean portableMode() {
         Path file = getJarDirectory().resolve(CONFIG_FILE);
-        if (Files.exists(file) && !Files.isDirectory(file)) {
-            return true;
-        }
-
-        return false;
+        return Files.exists(file) && !Files.isDirectory(file);
     }
 
     /**
@@ -326,8 +322,7 @@ public class Utils {
      * @return saveAs in relation to the CWD
      */
     public static String removeCWD(Path saveAs) {
-        String prettySaveAs = saveAs.relativize(Paths.get(".").toAbsolutePath()).toString();
-        return prettySaveAs;
+        return saveAs.relativize(Paths.get(".").toAbsolutePath()).toString();
     }
 
     /**
@@ -409,7 +404,7 @@ public class Utils {
             // Load from JAR
             try {
                 String jarPath = fullPath.replaceFirst("[.]jar[!].*", ".jar").replaceFirst("file:", "");
-                jarPath = URLDecoder.decode(jarPath, "UTF-8");
+                jarPath = URLDecoder.decode(jarPath, StandardCharsets.UTF_8);
                 JarFile jarFile = new JarFile(jarPath);
                 Enumeration<JarEntry> entries = jarFile.entries();
                 while (entries.hasMoreElements()) {
@@ -662,18 +657,13 @@ public class Utils {
         String[] parts = query.split("&");
         int pos;
 
-        try {
-            for (String part : parts) {
-                if ((pos = part.indexOf('=')) >= 0) {
-                    res.put(URLDecoder.decode(part.substring(0, pos), "UTF-8"),
-                            URLDecoder.decode(part.substring(pos + 1), "UTF-8"));
-                } else {
-                    res.put(URLDecoder.decode(part, "UTF-8"), "");
-                }
+        for (String part : parts) {
+            if ((pos = part.indexOf('=')) >= 0) {
+                res.put(URLDecoder.decode(part.substring(0, pos), StandardCharsets.UTF_8),
+                        URLDecoder.decode(part.substring(pos + 1), StandardCharsets.UTF_8));
+            } else {
+                res.put(URLDecoder.decode(part, StandardCharsets.UTF_8), "");
             }
-        } catch (UnsupportedEncodingException e) {
-            // Shouldn't happen since UTF-8 is required to be supported
-            throw new RuntimeException(e);
         }
 
         return res;
@@ -694,20 +684,15 @@ public class Utils {
         String[] parts = query.split("&");
         int pos;
 
-        try {
-            for (String part : parts) {
-                if ((pos = part.indexOf('=')) >= 0) {
-                    if (URLDecoder.decode(part.substring(0, pos), "UTF-8").equals(key)) {
-                        return URLDecoder.decode(part.substring(pos + 1), "UTF-8");
-                    }
-
-                } else if (URLDecoder.decode(part, "UTF-8").equals(key)) {
-                    return "";
+        for (String part : parts) {
+            if ((pos = part.indexOf('=')) >= 0) {
+                if (URLDecoder.decode(part.substring(0, pos), StandardCharsets.UTF_8).equals(key)) {
+                    return URLDecoder.decode(part.substring(pos + 1), StandardCharsets.UTF_8);
                 }
+
+            } else if (URLDecoder.decode(part, StandardCharsets.UTF_8).equals(key)) {
+                return "";
             }
-        } catch (UnsupportedEncodingException e) {
-            // Shouldn't happen since UTF-8 is required to be supported
-            throw new RuntimeException(e);
         }
 
         return null;

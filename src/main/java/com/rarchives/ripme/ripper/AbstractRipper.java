@@ -243,7 +243,7 @@ public abstract class AbstractRipper
      */
     protected boolean addURLToDownload(URL url, Map<String, String> options, Map<String, String> cookies) {
         // Bit of a hack but this lets us pass a bool using a map<string,String>
-        boolean useMIME = options.getOrDefault("getFileExtFromMIME", "false").toLowerCase().equals("true");
+        boolean useMIME = options.getOrDefault("getFileExtFromMIME", "false").equalsIgnoreCase("true");
         return addURLToDownload(url, options.getOrDefault("prefix", ""), options.getOrDefault("subdirectory", ""), options.getOrDefault("referrer", null),
                 cookies, options.getOrDefault("fileName", null), options.getOrDefault("extension", null), useMIME);
     }
@@ -455,15 +455,11 @@ public abstract class AbstractRipper
     public abstract void downloadCompleted(URL url, Path saveAs);
     /**
      * Notifies observers that a file could not be downloaded (includes a reason).
-     * @param url
-     * @param reason
      */
     public abstract void downloadErrored(URL url, String reason);
     /**
      * Notify observers that a download could not be completed,
      * but was not technically an "error".
-     * @param url
-     * @param file
      */
     public abstract void downloadExists(URL url, Path file);
 
@@ -581,7 +577,6 @@ public abstract class AbstractRipper
      *      The package name.
      * @return
      *      List of constructors for all eligible Rippers.
-     * @throws Exception
      */
     public static List<Constructor<?>> getRipperConstructors(String pkg) throws Exception {
         List<Constructor<?>> constructors = new ArrayList<>();
@@ -595,8 +590,7 @@ public abstract class AbstractRipper
 
     /**
      * Sends an update message to the relevant observer(s) on this ripper.
-     * @param status 
-     * @param message
+     * @param status
      */
     public void sendUpdate(STATUS status, Object message) {
         if (observer == null) {

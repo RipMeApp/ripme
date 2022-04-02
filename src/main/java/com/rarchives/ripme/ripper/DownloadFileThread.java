@@ -10,11 +10,9 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.ResourceBundle;
 
 import javax.net.ssl.HttpsURLConnection;
 
-import com.rarchives.ripme.ui.MainWindow;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jsoup.HttpStatusException;
@@ -32,12 +30,12 @@ class DownloadFileThread extends Thread {
     private String referrer = "";
     private Map<String, String> cookies = new HashMap<>();
 
-    private URL url;
+    private final URL url;
     private File saveAs;
-    private String prettySaveAs;
-    private AbstractRipper observer;
-    private int retries;
-    private Boolean getFileExtFromMIME;
+    private final String prettySaveAs;
+    private final AbstractRipper observer;
+    private final int retries;
+    private final Boolean getFileExtFromMIME;
 
     private final int TIMEOUT;
 
@@ -69,7 +67,7 @@ class DownloadFileThread extends Thread {
         saveAs = new File(
                 saveAs.getParentFile().getAbsolutePath() + File.separator + Utils.sanitizeSaveAs(saveAs.getName()));
         long fileSize = 0;
-        int bytesTotal = 0;
+        int bytesTotal;
         int bytesDownloaded = 0;
         if (saveAs.exists() && observer.tryResumeDownload()) {
             fileSize = saveAs.length();
@@ -85,7 +83,7 @@ class DownloadFileThread extends Thread {
                         && !observer.tryResumeDownload()) {
             if (Utils.getConfigBoolean("file.overwrite", false)) {
                 logger.info("[!] " + Utils.getLocalizedString("deleting.existing.file") + prettySaveAs);
-                saveAs.delete();
+                if (!saveAs.delete()) logger.error("could not delete existing file: " + saveAs.getAbsolutePath());
             } else {
                 logger.info("[!] " + Utils.getLocalizedString("skipping") + " " + url + " -- "
                         + Utils.getLocalizedString("file.already.exists") + ": " + prettySaveAs);
@@ -98,8 +96,6 @@ class DownloadFileThread extends Thread {
         int tries = 0; // Number of attempts to download
         do {
             tries += 1;
-            InputStream bis = null;
-            OutputStream fos = null;
             try {
                 logger.info("    Downloading file: " + urlToDownload + (tries > 0 ? " Retry #" + tries : ""));
                 observer.sendUpdate(STATUS.DOWNLOAD_STARTED, url.toExternalForm());
@@ -122,14 +118,14 @@ class DownloadFileThread extends Thread {
                     huc.setRequestProperty("Referer", referrer); // Sic
                 }
                 huc.setRequestProperty("User-agent", AbstractRipper.USER_AGENT);
-                String cookie = "";
+                StringBuilder cookie = new StringBuilder();
                 for (String key : cookies.keySet()) {
-                    if (!cookie.equals("")) {
-                        cookie += "; ";
+                    if (!cookie.toString().equals("")) {
+                        cookie.append("; ");
                     }
-                    cookie += key + "=" + cookies.get(key);
+                    cookie.append(key).append("=").append(cookies.get(key));
                 }
-                huc.setRequestProperty("Cookie", cookie);
+                huc.setRequestProperty("Cookie", cookie.toString());
                 if (observer.tryResumeDownload()) {
                     if (fileSize != 0) {
                         huc.setRequestProperty("Range", "bytes=" + fileSize + "-");
@@ -187,6 +183,7 @@ class DownloadFileThread extends Thread {
                 }
 
                 // Save file
+                InputStream bis;
                 bis = new BufferedInputStream(huc.getInputStream());
 
                 // Check if we should get the file ext from the MIME type
@@ -212,6 +209,7 @@ class DownloadFileThread extends Thread {
                     }
                 }
                 // If we're resuming a download we append data to the existing file
+                OutputStream fos = null;
                 if (statusCode == 206) {
                     fos = new FileOutputStream(saveAs, true);
                 } else {
@@ -240,7 +238,9 @@ class DownloadFileThread extends Thread {
                             // not allow
                             fos = Files.newOutputStream(
                                     Utils.shortenSaveAsWindows(saveAs.getParentFile().getPath(), saveAs.getName()));
+                            assert fos != null: "After shortenSaveAsWindows: " + saveAs.getAbsolutePath();
                         }
+                        assert fos != null: e.getStackTrace();
                     }
                 }
                 byte[] data = new byte[1024 * 256];
@@ -292,20 +292,6 @@ class DownloadFileThread extends Thread {
                         Utils.getLocalizedString("failed.to.download") + " " + url.toExternalForm());
                 return;
 
-            }finally {
-                // Close any open streams
-                try {
-                    if (bis != null) {
-                        bis.close();
-                    }
-                } catch (IOException e) {
-                }
-                try {
-                    if (fos != null) {
-                        fos.close();
-                    }
-                } catch (IOException e) {
-                }
             }
             if (tries > this.retries) {
                 logger.error("[!] " + Utils.getLocalizedString("exceeded.maximum.retries") + " (" + this.retries

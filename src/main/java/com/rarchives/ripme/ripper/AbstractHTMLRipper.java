@@ -309,7 +309,7 @@ public abstract class AbstractHTMLRipper extends AbstractRipper {
      */
     public boolean addURLToDownload(URL url, Path saveAs, String referrer, Map<String,String> cookies, Boolean getFileExtFromMIME) {
         // Only download one file if this is a test.
-        if (super.isThisATest() && (itemsCompleted.size() > 0 || itemsErrored.size() > 0)) {
+        if (isThisATest() && (itemsCompleted.size() > 0 || itemsErrored.size() > 0)) {
             stop();
             itemsPending.clear();
             return false;
@@ -388,7 +388,7 @@ public abstract class AbstractHTMLRipper extends AbstractRipper {
     }
 
     @Override
-    /**
+    /*
      * Cleans up & tells user about failed download.
      */
     public void downloadErrored(URL url, String reason) {
@@ -436,8 +436,6 @@ public abstract class AbstractHTMLRipper extends AbstractRipper {
      * Sets directory to save all ripped files to.
      * @param url
      *      URL to define how the working directory should be saved.
-     * @throws
-     *      IOException
      */
     @Override
     public void setWorkingDir(URL url) throws IOException {
@@ -447,12 +445,7 @@ public abstract class AbstractHTMLRipper extends AbstractRipper {
         if (!path.endsWith(File.separator)) {
             path += File.separator;
         }
-        String title;
-        if (Utils.getConfigBoolean("album_titles.save", true)) {
-            title = getAlbumTitle(this.url);
-        } else {
-            title = super.getAlbumTitle(this.url);
-        }
+        String title = getAlbumTitle(this.url);
         LOGGER.debug("Using album title '" + title + "'");
 
         title = Utils.filesystemSafe(title);
@@ -485,12 +478,11 @@ public abstract class AbstractHTMLRipper extends AbstractRipper {
      */
     @Override
     public String getStatusText() {
-        String sb = getCompletionPercentage() +
+        return getCompletionPercentage() +
                 "% " +
                 "- Pending: " + itemsPending.size() +
                 ", Completed: " + itemsCompleted.size() +
                 ", Errored: " + itemsErrored.size();
-        return sb;
     }
 
 
