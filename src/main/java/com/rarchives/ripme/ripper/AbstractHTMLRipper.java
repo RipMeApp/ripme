@@ -265,7 +265,7 @@ public abstract class AbstractHTMLRipper extends AbstractRipper {
         }
         LOGGER.debug("Downloading " + url + "'s description to " + saveFileAs);
         if (!saveFileAs.getParentFile().exists()) {
-            LOGGER.info("[+] Creating directory: " + Utils.removeCWD(saveFileAs.getParent()));
+            LOGGER.info("[+] Creating directory: " + saveFileAs.getParent());
             saveFileAs.getParentFile().mkdirs();
         }
         return true;

@@ -363,16 +363,6 @@ public class Utils {
     }
 
     /**
-     * Removes the current working directory from a given filename
-     *
-     * @param file Path to the file
-     * @return 'file' without the leading current working directory
-     */
-    public static String removeCWD(String file) {
-        return removeCWD(Paths.get(file));
-    }
-
-    /**
      * Get a list of all Classes within a package. Works with file system projects
      * and jar files! Borrowed from StackOverflow, but I don't have a link :[
      *
