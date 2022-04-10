@@ -34,7 +34,7 @@ class ClipboardUtils {
             return (String) Toolkit
                     .getDefaultToolkit()
                     .getSystemClipboard()
-                    .getData(DataFlavor.stringFlavor);
+                    .getData(DataFlavor.getTextPlainUnicodeFlavor());
         } catch (IllegalStateException e) {
             e.printStackTrace();
             logger.error("Caught and recovered from IllegalStateException: " + e.getMessage());
