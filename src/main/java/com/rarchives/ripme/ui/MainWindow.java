@@ -500,9 +500,9 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         configThreadsLabel = new JLabel(Utils.getLocalizedString("max.download.threads") + ":", JLabel.RIGHT);
         configTimeoutLabel = new JLabel(Utils.getLocalizedString("timeout.mill"), JLabel.RIGHT);
         configRetriesLabel = new JLabel(Utils.getLocalizedString("retry.download.count"), JLabel.RIGHT);
-        configThreadsText = new JTextField(Integer.toString(Utils.getConfigInteger("threads.size", 3)));
-        configTimeoutText = new JTextField(Integer.toString(Utils.getConfigInteger("download.timeout", 60000)));
-        configRetriesText = new JTextField(Integer.toString(Utils.getConfigInteger("download.retries", 3)));
+        configThreadsText = configField("threads.size", 3);
+        configTimeoutText = configField("download.timeout", 60000);
+        configRetriesText = configField("download.retries", 3);
         configOverwriteCheckbox = addNewCheckbox(Utils.getLocalizedString("overwrite.existing.files"), "file.overwrite",
                 false);
         configAutoupdateCheckbox = addNewCheckbox(Utils.getLocalizedString("auto.update"), "auto.update", true);
@@ -585,6 +585,39 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         pane.add(emptyPanel, gbc);
         gbc.weighty = 0;
         gbc.fill = GridBagConstraints.HORIZONTAL;
+    }
+
+    private JTextField configField(String key, int defaultValue) {
+        final var field = new JTextField(Integer.toString(Utils.getConfigInteger(key, defaultValue)));
+        field.getDocument().addDocumentListener(new DocumentListener() {
+
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                checkAndUpdate();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                checkAndUpdate();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                checkAndUpdate();
+            }
+
+            private void checkAndUpdate() {
+                final var txt = field.getText();
+                try {
+                    final var newValue = Integer.parseInt(txt);
+                    if (newValue>0) {
+                        Utils.setConfigInteger(key, newValue);
+                    }
+                } catch (final Exception e) {
+                }
+            }
+        });
+        return field;
     }
 
     private void addItemToConfigGridBagConstraints(GridBagConstraints gbc, int gbcYValue, JLabel thing1ToAdd,
