@@ -299,6 +299,15 @@ class DownloadFileThread extends Thread {
                 observer.downloadErrored(url,
                         Utils.getLocalizedString("failed.to.download") + " " + url.toExternalForm());
                 return;
+            } else {
+                final var retrySleep = Utils.getConfigInteger("download.retry.sleep", 0);
+                if (retrySleep > 0) {
+                    try {
+                        sleep(retrySleep);
+                    } catch (final InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
             }
         } while (true);
         observer.downloadCompleted(url, saveAs.toPath());
