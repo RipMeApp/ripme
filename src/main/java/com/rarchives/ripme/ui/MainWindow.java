@@ -97,6 +97,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
     private static JLabel configSaveDirLabel;
     private static JButton configSaveDirButton;
     private static JTextField configRetriesText;
+    private JTextField configRetrySleepText;
     private static JCheckBox configAutoupdateCheckbox;
     private static JComboBox<String> configLogLevelCombobox;
     private static JCheckBox configURLHistoryCheckbox;
@@ -114,6 +115,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
     private static JLabel configThreadsLabel;
     private static JLabel configTimeoutLabel;
     private static JLabel configRetriesLabel;
+    private static JLabel configRetrySleepLabel;
     // This doesn't really belong here but I have no idea where else to put it
     private static JButton configUrlFileChooserButton;
 
@@ -502,9 +504,12 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         configThreadsLabel = new JLabel(Utils.getLocalizedString("max.download.threads") + ":", JLabel.RIGHT);
         configTimeoutLabel = new JLabel(Utils.getLocalizedString("timeout.mill"), JLabel.RIGHT);
         configRetriesLabel = new JLabel(Utils.getLocalizedString("retry.download.count"), JLabel.RIGHT);
+        configRetrySleepLabel = new JLabel(Utils.getLocalizedString("retry.sleep.mill"), JLabel.RIGHT);
         configThreadsText = configField("threads.size", 3);
         configTimeoutText = configField("download.timeout", 60000);
         configRetriesText = configField("download.retries", 3);
+        configRetrySleepText = configField("download.retry.sleep", 5000);
+
         configOverwriteCheckbox = addNewCheckbox(Utils.getLocalizedString("overwrite.existing.files"), "file.overwrite",
                 false);
         configAutoupdateCheckbox = addNewCheckbox(Utils.getLocalizedString("auto.update"), "auto.update", true);
@@ -547,19 +552,21 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         configSaveDirLabel.setHorizontalAlignment(JLabel.RIGHT);
         configSaveDirButton = new JButton(Utils.getLocalizedString("select.save.dir") + "...");
 
-        addItemToConfigGridBagConstraints(gbc, 0, configUpdateLabel, configUpdateButton);
-        addItemToConfigGridBagConstraints(gbc, 1, configAutoupdateCheckbox, configLogLevelCombobox);
-        addItemToConfigGridBagConstraints(gbc, 2, configThreadsLabel, configThreadsText);
-        addItemToConfigGridBagConstraints(gbc, 3, configTimeoutLabel, configTimeoutText);
-        addItemToConfigGridBagConstraints(gbc, 4, configRetriesLabel, configRetriesText);
-        addItemToConfigGridBagConstraints(gbc, 5, configOverwriteCheckbox, configSaveOrderCheckbox);
-        addItemToConfigGridBagConstraints(gbc, 6, configPlaySound, configSaveLogs);
-        addItemToConfigGridBagConstraints(gbc, 7, configShowPopup, configSaveURLsOnly);
-        addItemToConfigGridBagConstraints(gbc, 8, configClipboardAutorip, configSaveAlbumTitles);
-        addItemToConfigGridBagConstraints(gbc, 9, configSaveDescriptions, configPreferMp4);
-        addItemToConfigGridBagConstraints(gbc, 10, configWindowPosition, configURLHistoryCheckbox);
-        addItemToConfigGridBagConstraints(gbc, 11, configSelectLangComboBox, configUrlFileChooserButton);
-        addItemToConfigGridBagConstraints(gbc, 12, configSaveDirLabel, configSaveDirButton);
+        var idx = 0;
+        addItemToConfigGridBagConstraints(gbc, idx++, configUpdateLabel, configUpdateButton);
+        addItemToConfigGridBagConstraints(gbc, idx++, configAutoupdateCheckbox, configLogLevelCombobox);
+        addItemToConfigGridBagConstraints(gbc, idx++, configThreadsLabel, configThreadsText);
+        addItemToConfigGridBagConstraints(gbc, idx++, configTimeoutLabel, configTimeoutText);
+        addItemToConfigGridBagConstraints(gbc, idx++, configRetriesLabel, configRetriesText);
+        addItemToConfigGridBagConstraints(gbc, idx++, configRetrySleepLabel, configRetrySleepText);
+        addItemToConfigGridBagConstraints(gbc, idx++, configOverwriteCheckbox, configSaveOrderCheckbox);
+        addItemToConfigGridBagConstraints(gbc, idx++, configPlaySound, configSaveLogs);
+        addItemToConfigGridBagConstraints(gbc, idx++, configShowPopup, configSaveURLsOnly);
+        addItemToConfigGridBagConstraints(gbc, idx++, configClipboardAutorip, configSaveAlbumTitles);
+        addItemToConfigGridBagConstraints(gbc, idx++, configSaveDescriptions, configPreferMp4);
+        addItemToConfigGridBagConstraints(gbc, idx++, configWindowPosition, configURLHistoryCheckbox);
+        addItemToConfigGridBagConstraints(gbc, idx++, configSelectLangComboBox, configUrlFileChooserButton);
+        addItemToConfigGridBagConstraints(gbc, idx++, configSaveDirLabel, configSaveDirButton);
 
         emptyPanel = new JPanel();
         emptyPanel.setPreferredSize(new Dimension(0, 0));

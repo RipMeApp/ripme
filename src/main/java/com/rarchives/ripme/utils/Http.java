@@ -30,6 +30,7 @@ public class Http {
     private static final Logger logger = LogManager.getLogger(Http.class);
 
     private int retries;
+    private int retrySleep = 0;
     private final String url;
     private Connection connection;
 
@@ -54,6 +55,7 @@ public class Http {
 
     private void defaultSettings() {
         this.retries = Utils.getConfigInteger("download.retries", 1);
+        this.retrySleep = Utils.getConfigInteger("download.retry.sleep", 5000);
         connection = Jsoup.connect(this.url);
         connection.userAgent(AbstractRipper.USER_AGENT);
         connection.method(Method.GET);
@@ -210,9 +212,21 @@ public class Http {
                     if (status == 401 || status == 403) {
                         throw new IOException("Failed to load " + url + ": Status Code " + status + ". You might be able to circumvent this error by setting cookies for this domain", e);
                     }
+                    if (status == 404) {
+                        throw new IOException("File not found " + url + ": Status Code " + status + ". ", e);
+                    }
                 }
 
-                logger.warn("Error while loading " + url, e);
+                if (retrySleep > 0 && retries >= 0) {
+                    try {
+                        logger.warn("Error while loading " + url + " waiting "+ retrySleep + " ms before retrying.", e);
+                        Thread.sleep(retrySleep);
+                    } catch (final InterruptedException e1) {
+                        e1.printStackTrace();
+                    }
+                } else {
+                    logger.warn("Error while loading " + url, e);
+                }
                 lastException = e;
             }
         }
