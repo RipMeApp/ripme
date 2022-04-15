@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -317,30 +318,17 @@ public abstract class AbstractRipper
             return false;
         }
         LOGGER.debug("url: " + url + ", subdirectory" + subdirectory + ", referrer: " + referrer + ", cookies: " + cookies + ", prefix: " + prefix + ", fileName: " + fileName);
-        String saveAs = getFileName(url, prefix, fileName, extension);
-        File saveFileAs;
+        Path saveAs;
         try {
-            if (!subdirectory.equals("")) {
-                subdirectory = Utils.filesystemSafe(subdirectory);
-                subdirectory = File.separator + subdirectory;
+            saveAs = getFilePath(url, subdirectory, prefix, fileName, extension);
+            LOGGER.debug("Downloading " + url + " to " + saveAs);
+            if (!Files.exists(saveAs.getParent())) {
+                LOGGER.info("[+] Creating directory: " + saveAs.getParent());
+                Files.createDirectories(saveAs.getParent());
             }
-            String topFolderName = workingDir.getCanonicalPath();
-            if (App.stringToAppendToFoldername != null) {
-                topFolderName = topFolderName + App.stringToAppendToFoldername;
-            }
-            saveFileAs = new File(
-                    topFolderName
-                    + subdirectory
-                    + File.separator
-                    + saveAs);
         } catch (IOException e) {
             LOGGER.error("[!] Error creating save file path for URL '" + url + "':", e);
             return false;
-        }
-        LOGGER.debug("Downloading " + url + " to " + saveFileAs);
-        if (!saveFileAs.getParentFile().exists()) {
-            LOGGER.info("[+] Creating directory: " + saveFileAs.getParent());
-            saveFileAs.getParentFile().mkdirs();
         }
         if (Utils.getConfigBoolean("remember.url_history", true) && !isThisATest()) {
             LOGGER.info("Writing " + url.toExternalForm() + " to file");
@@ -350,7 +338,7 @@ public abstract class AbstractRipper
                 LOGGER.debug("Unable to write URL history file");
             }
         }
-        return addURLToDownload(url, saveFileAs.toPath(), referrer, cookies, getFileExtFromMIME);
+        return addURLToDownload(url, saveAs, referrer, cookies, getFileExtFromMIME);
     }
 
     protected boolean addURLToDownload(URL url, String prefix, String subdirectory, String referrer, Map<String,String> cookies, String fileName, String extension) {
@@ -391,6 +379,21 @@ public abstract class AbstractRipper
     protected boolean addURLToDownload(URL url, String prefix) {
         // Use empty subdirectory
         return addURLToDownload(url, prefix, "");
+    }
+
+    public Path getFilePath(URL url, String subdir, String prefix, String fileName, String extension) throws IOException {
+        // construct the path: workingdir + subdir + prefix + filename + extension
+        // save into working dir
+        Path filepath = Paths.get(workingDir.getCanonicalPath());
+
+        if (null != App.stringToAppendToFoldername)
+            filepath = filepath.resolveSibling(filepath.getFileName() + App.stringToAppendToFoldername);
+
+        if (null != subdir && !subdir.trim().isEmpty())
+            filepath = filepath.resolve(Utils.filesystemSafe(subdir));
+
+        filepath = filepath.resolve(getFileName(url, prefix, fileName, extension));
+        return filepath;
     }
 
     public static String getFileName(URL url, String prefix, String fileName, String extension) {

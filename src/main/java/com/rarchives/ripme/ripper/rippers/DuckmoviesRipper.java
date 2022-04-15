@@ -131,7 +131,7 @@ public class DuckmoviesRipper extends AbstractSingleFileRipper {
 
     @Override
     public void downloadURL(URL url, int index) {
-        addURLToDownload(url, "", "", null, null, AbstractRipper.getFileName(url, null, null).replaceAll("%20", "_"));
+        addURLToDownload(url, "", "", null, null, null);
     }
 
     @Override
