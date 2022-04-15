@@ -419,7 +419,7 @@ public abstract class AbstractRipper
         if (extension != null) {
             saveAs = saveAs + "." + extension;
         }
-        return saveAs;
+        return Utils.sanitizeSaveAs(saveAs);
     }
 
 
