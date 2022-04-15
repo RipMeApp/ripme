@@ -124,7 +124,7 @@ public class EightmusesRipper extends AbstractHTMLRipper {
                         for (int i = 0; i != json.getJSONArray("pictures").length(); i++) {
                             image = "https://www.8muses.com/image/fl/" + json.getJSONArray("pictures").getJSONObject(i).getString("publicUri");
                             URL imageUrl = new URL(image);
-                            addURLToDownload(imageUrl, getPrefixShort(x), getSubdir(page.select("title").text()), this.url.toExternalForm(), cookies, "", null, true);
+                            addURLToDownload(imageUrl, getSubdir(page.select("title").text()), this.url.toExternalForm(), cookies, getPrefixShort(x), "", null, true);
                             // X is our page index
                             x++;
                             if (isThisATest()) {

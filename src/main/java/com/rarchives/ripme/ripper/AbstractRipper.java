@@ -244,8 +244,9 @@ public abstract class AbstractRipper
     protected boolean addURLToDownload(URL url, Map<String, String> options, Map<String, String> cookies) {
         // Bit of a hack but this lets us pass a bool using a map<string,String>
         boolean useMIME = options.getOrDefault("getFileExtFromMIME", "false").equalsIgnoreCase("true");
-        return addURLToDownload(url, options.getOrDefault("prefix", ""), options.getOrDefault("subdirectory", ""), options.getOrDefault("referrer", null),
-                cookies, options.getOrDefault("fileName", null), options.getOrDefault("extension", null), useMIME);
+        return addURLToDownload(url, options.getOrDefault("subdirectory", ""), options.getOrDefault("referrer", null),  cookies,
+                options.getOrDefault("prefix", ""), options.getOrDefault("fileName", null), options.getOrDefault("extension", null),
+                useMIME);
     }
 
 
@@ -283,7 +284,7 @@ public abstract class AbstractRipper
      *      True if downloaded successfully
      *      False if failed to download
      */
-    protected boolean addURLToDownload(URL url, String prefix, String subdirectory, String referrer, Map<String, String> cookies, String fileName, String extension, Boolean getFileExtFromMIME) {
+    protected boolean addURLToDownload(URL url, String subdirectory, String referrer, Map<String, String> cookies, String prefix, String fileName, String extension, Boolean getFileExtFromMIME) {
         // A common bug is rippers adding urls that are just "http:". This rejects said urls
         if (url.toExternalForm().equals("http:") || url.toExternalForm().equals("https:")) {
             LOGGER.info(url.toExternalForm() + " is a invalid url amd will be changed");
@@ -314,7 +315,7 @@ public abstract class AbstractRipper
             LOGGER.debug("Ripper has been stopped");
             return false;
         }
-        LOGGER.debug("url: " + url + ", prefix: " + prefix + ", subdirectory" + subdirectory + ", referrer: " + referrer + ", cookies: " + cookies + ", fileName: " + fileName);
+        LOGGER.debug("url: " + url + ", subdirectory" + subdirectory + ", referrer: " + referrer + ", cookies: " + cookies + ", prefix: " + prefix + ", fileName: " + fileName);
         String saveAs = getFileName(url, fileName, extension);
         File saveFileAs;
         try {
@@ -354,7 +355,7 @@ public abstract class AbstractRipper
     }
 
     protected boolean addURLToDownload(URL url, String prefix, String subdirectory, String referrer, Map<String,String> cookies, String fileName, String extension) {
-        return addURLToDownload(url, prefix, subdirectory, referrer, cookies, fileName, extension, false);
+        return addURLToDownload(url, subdirectory, referrer, cookies, prefix, fileName, extension, false);
     }
 
     protected boolean addURLToDownload(URL url, String prefix, String subdirectory, String referrer, Map<String, String> cookies, String fileName) {

@@ -127,6 +127,6 @@ public class TsuminoRipper extends AbstractHTMLRipper {
         There is no way to tell if an image returned from tsumino.com is a png to jpg. The content-type header is always
         "image/jpeg" even when the image is a png. The file ext is not included in the url.
          */
-        addURLToDownload(url, getPrefix(index), "", null, null, null, null, true);
+        addURLToDownload(url, "", null, null, getPrefix(index), null, null, true);
     }
 }
