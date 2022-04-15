@@ -10,6 +10,7 @@ import java.lang.reflect.Constructor;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -316,14 +317,13 @@ public abstract class AbstractRipper
             return false;
         }
         LOGGER.debug("url: " + url + ", subdirectory" + subdirectory + ", referrer: " + referrer + ", cookies: " + cookies + ", prefix: " + prefix + ", fileName: " + fileName);
-        String saveAs = getFileName(url, fileName, extension);
+        String saveAs = getFileName(url, prefix, fileName, extension);
         File saveFileAs;
         try {
             if (!subdirectory.equals("")) {
                 subdirectory = Utils.filesystemSafe(subdirectory);
                 subdirectory = File.separator + subdirectory;
             }
-            prefix = Utils.filesystemSanitized(prefix);
             String topFolderName = workingDir.getCanonicalPath();
             if (App.stringToAppendToFoldername != null) {
                 topFolderName = topFolderName + App.stringToAppendToFoldername;
@@ -332,7 +332,6 @@ public abstract class AbstractRipper
                     topFolderName
                     + subdirectory
                     + File.separator
-                    + prefix
                     + saveAs);
         } catch (IOException e) {
             LOGGER.error("[!] Error creating save file path for URL '" + url + "':", e);
@@ -394,7 +393,7 @@ public abstract class AbstractRipper
         return addURLToDownload(url, prefix, "");
     }
 
-    public static String getFileName(URL url, String fileName, String extension) {
+    public static String getFileName(URL url, String prefix, String fileName, String extension) {
         // retrieve filename from URL if not passed
         if (fileName == null || fileName.trim().isEmpty()) {
             fileName = url.toExternalForm();
@@ -404,6 +403,11 @@ public abstract class AbstractRipper
         if (fileName.indexOf('#') >= 0) { fileName = fileName.substring(0, fileName.indexOf('#')); }
         if (fileName.indexOf('&') >= 0) { fileName = fileName.substring(0, fileName.indexOf('&')); }
         if (fileName.indexOf(':') >= 0) { fileName = fileName.substring(0, fileName.indexOf(':')); }
+
+        // add prefix
+        if (prefix != null && !prefix.trim().isEmpty()) {
+            fileName = prefix + fileName;
+        }
 
         // retrieve extension from URL if not passed, no extension if nothing found
         if (extension == null || extension.trim().isEmpty()) {
