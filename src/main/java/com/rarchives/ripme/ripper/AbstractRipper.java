@@ -395,18 +395,17 @@ public abstract class AbstractRipper
     }
 
     public static String getFileName(URL url, String fileName, String extension) {
-        if (fileName == null) {
+        if (fileName == null || fileName.trim().isEmpty()) {
             fileName = url.toExternalForm();
             fileName = fileName.substring(fileName.lastIndexOf('/')+1);
         }
-        if (extension == null) {
+        if (extension == null || extension.trim().isEmpty()) {
             // Get the extension of the file
             String[] lastBitOfURL = url.toExternalForm().split("/");
 
             String[] lastBit = lastBitOfURL[lastBitOfURL.length - 1].split(".");
             if (lastBit.length != 0) {
                 extension = lastBit[lastBit.length - 1];
-                fileName = fileName + "." + extension;
             }
         }
 
