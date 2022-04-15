@@ -16,7 +16,7 @@ RipMe is maintained with ♥️ and in our limited free time by **[@MetaPrime](h
 
 # About
 
-RipMe is an album ripper for various websites. It is a cross-platform tool that runs on your computer, and requires Java 8. RipMe has been tested and confirmed working on Windows, Linux and MacOS. 
+RipMe is an album ripper for various websites. It is a cross-platform tool that runs on your computer, and requires Java 11. RipMe has been tested and confirmed working on Windows, Linux and MacOS.
 
 ![Screenshot](https://i.imgur.com/UCQNjeg.png)
 
@@ -26,7 +26,7 @@ Download `ripme.jar` from the [latest release](/releases). For information about
 [the How To Run wiki](https://github.com/ripmeapp/ripme/wiki/How-To-Run-RipMe).
 
 The version number like ripme-1.7.94-17-2167aa34-feature_auto_release.jar contains a release number (1.7.94), given by
-a person the number of commits since this version (17). The commit SHA (2167aa34) is there uniquely referencing the
+a person, the number of commits since this version (17). The commit SHA (2167aa34) uniquely references the
 source code ripme was built from. If it is not built from the main branch, the branch name (feature/auto-release) is
 given.
 
