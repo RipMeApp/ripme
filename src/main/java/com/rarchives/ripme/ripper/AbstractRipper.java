@@ -395,10 +395,17 @@ public abstract class AbstractRipper
     }
 
     public static String getFileName(URL url, String fileName, String extension) {
+        // retrieve filename from URL if not passed
         if (fileName == null || fileName.trim().isEmpty()) {
             fileName = url.toExternalForm();
             fileName = fileName.substring(fileName.lastIndexOf('/')+1);
         }
+        if (fileName.indexOf('?') >= 0) { fileName = fileName.substring(0, fileName.indexOf('?')); }
+        if (fileName.indexOf('#') >= 0) { fileName = fileName.substring(0, fileName.indexOf('#')); }
+        if (fileName.indexOf('&') >= 0) { fileName = fileName.substring(0, fileName.indexOf('&')); }
+        if (fileName.indexOf(':') >= 0) { fileName = fileName.substring(0, fileName.indexOf(':')); }
+
+        // retrieve extension from URL if not passed, no extension if nothing found
         if (extension == null || extension.trim().isEmpty()) {
             // Get the extension of the file
             String[] lastBitOfURL = url.toExternalForm().split("/");
@@ -408,14 +415,11 @@ public abstract class AbstractRipper
                 extension = lastBit[lastBit.length - 1];
             }
         }
-
-        if (fileName.indexOf('?') >= 0) { fileName = fileName.substring(0, fileName.indexOf('?')); }
-        if (fileName.indexOf('#') >= 0) { fileName = fileName.substring(0, fileName.indexOf('#')); }
-        if (fileName.indexOf('&') >= 0) { fileName = fileName.substring(0, fileName.indexOf('&')); }
-        if (fileName.indexOf(':') >= 0) { fileName = fileName.substring(0, fileName.indexOf(':')); }
+        // if extension is passed or found, add it
         if (extension != null) {
             fileName = fileName + "." + extension;
         }
+        // make sure filename is not too long and has no unsupported chars
         return Utils.sanitizeSaveAs(fileName);
     }
 
