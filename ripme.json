@@ -1,8 +1,9 @@
 {
-    "latestVersion": "2.0.4-13-03e32cb7",
-    "currentHash": "2d2437911a63f1bc75ed4b761a4cb464bd14f84dea5dab19b122bb35905381b2",
+    "latestVersion": "2.1.1-3-536339dd",
+    "currentHash": "34fef6b75740421912098d2e703f7bd5c7b602250270ceaacbb02ee5af8c0655",
     "changeList": [
-        "2.0.4-13-03e32cb7.: fix vsco, add danbooru.",
+        "2.1.1-3-536339dd: java-11+ necessary to run, work around non existing working directory.",
+        "2.0.4-13-03e32cb7: fix vsco, add danbooru.",
         "2.0.3: Check new version against ripme2app.",
         "2.0.2: Add greek translation, fixed reddit, redgif.",
         "2.0.1: Fixed reddit, tujigu, xhamster, imagebam, erome; marked some tests as flaky.",
