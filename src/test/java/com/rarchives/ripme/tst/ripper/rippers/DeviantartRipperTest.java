@@ -37,6 +37,7 @@ public class DeviantartRipperTest extends RippersTest {
     }
 
     @Test
+    @Disabled("Broken ripper")
     public void testGetGalleryIDAndUsername() throws IOException {
         URL url = new URL("https://www.deviantart.com/airgee/gallery/");
         DeviantartRipper ripper = new DeviantartRipper(url);
