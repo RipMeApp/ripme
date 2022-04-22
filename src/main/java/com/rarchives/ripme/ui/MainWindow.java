@@ -1178,7 +1178,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
     }
 
     private void loadHistory() throws IOException {
-        File historyFile = new File(Utils.getConfigDir() + File.separator + "history.json");
+        File historyFile = new File(Utils.getConfigDir() + "/history.json");
         HISTORY.clear();
         if (historyFile.exists()) {
             try {
@@ -1214,7 +1214,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
     }
 
     private void saveHistory() {
-        Path historyFile = Paths.get(Utils.getConfigDir() + File.separator + "history.json");
+        Path historyFile = Paths.get(Utils.getConfigDir() + "/history.json");
         try {
             if (!Files.exists(historyFile)) {
                 Files.createDirectories(historyFile.getParent());
