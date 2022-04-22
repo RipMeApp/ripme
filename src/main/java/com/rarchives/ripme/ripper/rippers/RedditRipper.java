@@ -6,7 +6,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Date;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -287,9 +286,9 @@ public class RedditRipper extends AlbumRipper {
         ).renderFormatted();
 
         try {
-            saveFileAs = Paths.get(workingDir
+            saveFileAs = Utils.getPath(workingDir
                     + "/"
-                    + id + "_" + title.replaceAll("[\\\\/:*?\"<>|]", "")
+                    + id + "_" + title
                     + ".html");
             OutputStream out = Files.newOutputStream(saveFileAs);
             out.write(html.getBytes());
@@ -406,7 +405,7 @@ public class RedditRipper extends AlbumRipper {
                 // It's from reddituploads. Assume .jpg extension.
                 String savePath = this.workingDir + "/";
                 savePath += id + "-" + m.group(1) + title + ".jpg";
-                addURLToDownload(urls.get(0), Paths.get(savePath));
+                addURLToDownload(urls.get(0), Utils.getPath(savePath));
             }
             if (url.contains("v.redd.it")) {
                 String savePath = this.workingDir + "/";
@@ -414,7 +413,7 @@ public class RedditRipper extends AlbumRipper {
                 URL urlToDownload = parseRedditVideoMPD(urls.get(0).toExternalForm());
                 if (urlToDownload != null) {
                     LOGGER.info("url: " + urlToDownload + " file: " + savePath);
-                    addURLToDownload(urlToDownload, Paths.get(savePath));
+                    addURLToDownload(urlToDownload, Utils.getPath(savePath));
                 }
             }
             else {

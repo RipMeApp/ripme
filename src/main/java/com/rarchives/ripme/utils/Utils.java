@@ -830,8 +830,12 @@ public class Utils {
         return Files.exists(folder.resolve(filename));
     }
 
+    public static Path getPath(String pathToSanitize) {
+        return Paths.get(sanitizeSaveAs(pathToSanitize));
+    }
+
     public static String sanitizeSaveAs(String fileNameToSan) {
-        return fileNameToSan.replaceAll("[\\\\/:*?\"<>|]", "_");
+        return fileNameToSan.replaceAll("[\\\\:*?\"<>|]", "_");
     }
 
     public static Path shortenSaveAsWindows(String ripsDirPath, String fileName) throws FileNotFoundException {
