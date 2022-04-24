@@ -112,14 +112,18 @@ public class RedditRipper extends AlbumRipper {
             }
             children = data.getJSONArray("children");
             for (int j = 0; j < children.length(); j++) {
-                parseJsonChild(children.getJSONObject(j));
+                try {
+                    parseJsonChild(children.getJSONObject(j));
 
-                if (children.getJSONObject(j).getString("kind").equals("t3") &&
-                        children.getJSONObject(j).getJSONObject("data").getBoolean("is_self")
-                ) {
-                    URL selfPostURL = new URL(children.getJSONObject(j).getJSONObject("data").getString("url"));
-                    System.out.println(selfPostURL.toExternalForm());
-                    saveText(getJsonArrayFromURL(getJsonURL(selfPostURL)));
+                    if (children.getJSONObject(j).getString("kind").equals("t3") &&
+                            children.getJSONObject(j).getJSONObject("data").getBoolean("is_self")
+                    ) {
+                        URL selfPostURL = new URL(children.getJSONObject(j).getJSONObject("data").getString("url"));
+                        System.out.println(selfPostURL.toExternalForm());
+                        saveText(getJsonArrayFromURL(getJsonURL(selfPostURL)));
+                    }
+                } catch (Exception e) {
+                    LOGGER.debug("at index " + i + ", for this data: "  + data.toString() + e);
                 }
             }
             if (data.has("after") && !data.isNull("after")) {
@@ -316,15 +320,18 @@ public class RedditRipper extends AlbumRipper {
         for (int i = 0; i < comments.length(); i++) {
             JSONObject data = comments.getJSONObject(i).getJSONObject("data");
 
-            ContainerTag<DivTag> commentDiv =
+            try {
+                ContainerTag<DivTag>  commentDiv =
                     div(
                             span(data.getString("author")).withClasses("author", iff(data.getString("author").equals(author), "op")),
                             a(new Date((long) data.getInt("created") * 1000).toString()).withHref("#" + data.getString("name"))
                     ).withClass("thing comment").withId(data.getString("name"))
                             .with(rawHtml(Jsoup.parse(data.getString("body_html")).text()));
-
-            getNestedComments(data, commentDiv, author);
-            commentsDiv.with(commentDiv);
+                getNestedComments(data, commentDiv, author);
+                commentsDiv.with(commentDiv);
+            } catch (Exception e) {
+                LOGGER.debug("at index " + i + ", for this data: "  + data.toString() + e);
+            }
         }
         return commentsDiv;
     }
