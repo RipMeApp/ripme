@@ -48,6 +48,7 @@ public class RedditRipperTest extends RippersTest {
     }
 
     @Test
+    @Tag("flaky")
     public void testSelfPostRip() throws IOException {
         RedditRipper ripper = new RedditRipper(
                 new URL("https://www.reddit.com/r/gonewildstories/comments/oz7d97/f_18_finally_having_a_normal_sex_life/")
