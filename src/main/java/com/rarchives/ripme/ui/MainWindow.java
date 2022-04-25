@@ -847,9 +847,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
                 frame.setSize(405, 70);
                 frame.setVisible(true);
                 frame.setLocationRelativeTo(null);
-                noButton.addActionListener(e -> {
-                    frame.setVisible(false);
-                });
+                noButton.addActionListener(e -> frame.setVisible(false));
                 yesButton.addActionListener(ed -> {
                     frame.setVisible(false);
                     Utils.clearURLHistory();
@@ -898,7 +896,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
             t.start();
         });
         configLogLevelCombobox.addActionListener(arg0 -> {
-            String level = ((JComboBox) arg0.getSource()).getSelectedItem().toString();
+            String level = ((JComboBox<?>) arg0.getSource()).getSelectedItem().toString();
             setLogLevel(level);
         });
         configSelectLangComboBox.addActionListener(arg0 -> {
@@ -909,7 +907,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         configSaveDirLabel.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                Path file = null;
+                Path file;
                 try {
                     file = Utils.getWorkingDirectory();
                     Desktop desktop = Desktop.getDesktop();
@@ -1239,7 +1237,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
     private void ripNextAlbum() {
         isRipping = true;
         // Save current state of queue to configuration.
-        Utils.setConfigList("queue", (Enumeration<Object>) queueListModel.elements());
+        Utils.setConfigList("queue", queueListModel.elements());
 
         if (queueListModel.isEmpty()) {
             // End of queue
