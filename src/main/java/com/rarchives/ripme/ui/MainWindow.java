@@ -85,7 +85,6 @@ public final class MainWindow implements Runnable, RipStatusHandler {
     public static JButton optionQueue;
     private static JPanel queuePanel;
     private static DefaultListModel<Object> queueListModel;
-    private static QueueMenuMouseListener queueMenuMouseListener;
 
     // Configuration
     private static JButton optionConfiguration;
@@ -472,6 +471,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         queueListModel = new DefaultListModel();
         JList queueList = new JList(queueListModel);
         queueList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+        QueueMenuMouseListener queueMenuMouseListener;
         queueList.addMouseListener(
                 queueMenuMouseListener = new QueueMenuMouseListener(d -> updateQueue(queueListModel)));
         JScrollPane queueListScroll = new JScrollPane(queueList, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
@@ -902,7 +902,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
             setLogLevel(level);
         });
         configSelectLangComboBox.addActionListener(arg0 -> {
-            String level = ((JComboBox) arg0.getSource()).getSelectedItem().toString();
+            String level = ((JComboBox<?>) arg0.getSource()).getSelectedItem().toString();
             Utils.setLanguage(level);
             changeLocale();
         });
@@ -1561,10 +1561,6 @@ public final class MainWindow implements Runnable, RipStatusHandler {
 
     public static void enableWindowPositioning() {
         Utils.setConfigBoolean("window.position", true);
-    }
-
-    public static void disableWindowPositioning() {
-        Utils.setConfigBoolean("window.position", false);
     }
 
     private static boolean hasWindowPositionBug() {
