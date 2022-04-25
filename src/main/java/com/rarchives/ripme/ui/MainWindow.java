@@ -131,7 +131,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
             model = queueListModel;
 
         if (model.size() > 0) {
-            Utils.setConfigList("queue", (Enumeration<Object>) model.elements());
+            Utils.setConfigList("queue", model.elements());
             Utils.saveConfig();
         }
 
@@ -258,6 +258,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         try {
             setupTrayIcon();
         } catch (Exception e) {
+            LOGGER.warn(e.getMessage());
         }
 
         EmptyBorder emptyBorder = new EmptyBorder(5, 5, 5, 5);
@@ -347,6 +348,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
             icon = ImageIO.read(getClass().getClassLoader().getResource("gear.png"));
             optionConfiguration.setIcon(new ImageIcon(icon));
         } catch (Exception e) {
+            LOGGER.warn(e.getMessage());
         }
         gbc.gridx = 0;
         optionsPanel.add(optionLog, gbc);
@@ -539,6 +541,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
             configSaveDirLabel.setForeground(Color.BLUE);
             configSaveDirLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
         } catch (Exception e) {
+            LOGGER.error(e);
         }
         configSaveDirLabel.setToolTipText(configSaveDirLabel.getText());
         configSaveDirLabel.setHorizontalAlignment(JLabel.RIGHT);
@@ -614,6 +617,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
                         Utils.setConfigInteger(key, newValue);
                     }
                 } catch (final Exception e) {
+                    LOGGER.warn(e.getMessage());
                 }
             }
         });
@@ -821,6 +825,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
             try {
                 historyTableModel.fireTableDataChanged();
             } catch (Exception e) {
+                LOGGER.warn(e.getMessage());
             }
             saveHistory();
         });
@@ -852,6 +857,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
                     try {
                         historyTableModel.fireTableDataChanged();
                     } catch (Exception e) {
+                        LOGGER.warn(e.getMessage());
                     }
                     saveHistory();
                 });
@@ -861,6 +867,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
                 try {
                     historyTableModel.fireTableDataChanged();
                 } catch (Exception e) {
+                    LOGGER.warn(e.getMessage());
                 }
                 saveHistory();
             }
@@ -908,6 +915,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
                     Desktop desktop = Desktop.getDesktop();
                     desktop.open(file.toFile());
                 } catch (IOException ex) {
+                    LOGGER.warn(ex.getMessage());
                 }
             }
         });
@@ -998,6 +1006,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
     }
 
     private void setLogLevel(String level) {
+        // default level is error, set in case something else is given.
         Level newLevel = Level.ERROR;
         level = level.substring(level.lastIndexOf(' ') + 1);
         switch (level) {
@@ -1009,10 +1018,6 @@ public final class MainWindow implements Runnable, RipStatusHandler {
             break;
         case "Warn":
             newLevel = Level.WARN;
-            break;
-        case "Error":
-            newLevel = Level.ERROR;
-            break;
         }
         LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
         Configuration config = ctx.getConfiguration();
@@ -1066,6 +1071,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
                 }
                 about.append("</ul>");
             } catch (Exception e) {
+                LOGGER.warn(e.getMessage());
             }
             about.append("<br>And download videos from video sites:");
             try {
@@ -1082,6 +1088,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
                 }
                 about.append("</ul>");
             } catch (Exception e) {
+                LOGGER.warn(e.getMessage());
             }
 
             about.append("Do you want to visit the project homepage on Github?");
@@ -1130,7 +1137,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         } catch (IOException | AWTException e) {
             // TODO implement proper stack trace handling this is really just intented as a
             // placeholder until you implement proper error handling
-            e.printStackTrace();
+            LOGGER.warn(e.getMessage());
         }
     }
 
@@ -1161,6 +1168,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
                 sd.insertString(sd.getLength(), text + "\n", sas);
             }
         } catch (BadLocationException e) {
+            LOGGER.warn(e.getMessage());
         }
 
         logText.setCaretPosition(sd.getLength());
@@ -1451,6 +1459,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
                 try {
                     entry.title = ripper.getAlbumTitle(ripper.getURL());
                 } catch (MalformedURLException e) {
+                    LOGGER.warn(e.getMessage());
                 }
                 HISTORY.add(entry);
                 historyTableModel.fireTableDataChanged();
@@ -1471,6 +1480,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
                 Image folderIcon = ImageIO.read(getClass().getClassLoader().getResource("folder.png"));
                 openButton.setIcon(new ImageIcon(folderIcon));
             } catch (Exception e) {
+                LOGGER.warn(e.getMessage());
             }
             /*
              * content key %path% the path to the album folder %url% is the album url
