@@ -817,7 +817,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
                 checkChoise.add(noButton);
                 JFrame.setDefaultLookAndFeelDecorated(true);
                 JFrame frame = new JFrame("Are you sure?");
-                frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
                 frame.add(checkChoise);
                 frame.setSize(405, 70);
                 frame.setVisible(true);
