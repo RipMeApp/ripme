@@ -926,7 +926,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
                 return;
             }
             File chosenFile = jfc.getSelectedFile();
-            String chosenPath = null;
+            String chosenPath;
             try {
                 chosenPath = chosenFile.getCanonicalPath();
             } catch (Exception e) {
@@ -945,7 +945,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
                 return;
             }
             File chosenFile = jfc.getSelectedFile();
-            String chosenPath = null;
+            String chosenPath;
             try {
                 chosenPath = chosenFile.getCanonicalPath();
             } catch (Exception e) {
@@ -1273,7 +1273,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         if (!urlString.startsWith("http")) {
             urlString = "http://" + urlString;
         }
-        URL url = null;
+        URL url;
         try {
             url = new URL(urlString);
         } catch (MalformedURLException e) {
@@ -1555,10 +1555,6 @@ public final class MainWindow implements Runnable, RipStatusHandler {
     public static void ripAlbumStatic(String url) {
         ripTextfield.setText(url.trim());
         ripButton.doClick();
-    }
-
-    public static void enableWindowPositioning() {
-        Utils.setConfigBoolean("window.position", true);
     }
 
     private static boolean hasWindowPositionBug() {
