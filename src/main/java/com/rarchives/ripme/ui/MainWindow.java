@@ -536,7 +536,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         setLogLevel(configLogLevelCombobox.getSelectedItem().toString());
         configSaveDirLabel = new JLabel();
         try {
-            String workingDir = (Utils.shortenPath(Utils.getWorkingDirectory().toString()));
+            String workingDir = (Utils.shortenPath(Utils.getWorkingDirectory()));
             configSaveDirLabel.setText(workingDir);
             configSaveDirLabel.setForeground(Color.BLUE);
             configSaveDirLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
@@ -920,21 +920,21 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         configSaveDirButton.addActionListener(arg0 -> {
             UIManager.put("FileChooser.useSystemExtensionHiding", false);
             JFileChooser jfc =  new JFileChooser(Utils.getWorkingDirectory().toString());
+            LOGGER.debug("select save directory, current is:" + Utils.getWorkingDirectory());
             jfc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
             int returnVal = jfc.showDialog(null, "select directory");
             if (returnVal != JFileChooser.APPROVE_OPTION) {
                 return;
             }
-            File chosenFile = jfc.getSelectedFile();
-            String chosenPath;
+            Path chosenPath;
             try {
-                chosenPath = chosenFile.getCanonicalPath();
+                chosenPath = jfc.getSelectedFile().toPath();
             } catch (Exception e) {
                 LOGGER.error("Error while getting selected path: ", e);
                 return;
             }
             configSaveDirLabel.setText(Utils.shortenPath(chosenPath));
-            Utils.setConfigString("rips.directory", chosenPath);
+            Utils.setConfigString("rips.directory", chosenPath.toString());
         });
         configUrlFileChooserButton.addActionListener(arg0 -> {
             UIManager.put("FileChooser.useSystemExtensionHiding", false);
@@ -1471,7 +1471,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
             statusProgress.setVisible(false);
             openButton.setVisible(true);
             Path f = rsc.dir;
-            String prettyFile = Utils.shortenPath(f.toFile());
+            String prettyFile = Utils.shortenPath(f);
             openButton.setText(Utils.getLocalizedString("open") + prettyFile);
             mainFrame.setTitle("RipMe v" + UpdateUtils.getThisJarVersion());
             try {

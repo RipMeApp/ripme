@@ -168,11 +168,10 @@ public class UpdateUtils {
                 logger.error("Error while updating: ", e);
             }
         } else {
-            logger.debug("This version (" + UpdateUtils.getThisJarVersion()
-                    + ") is the same or newer than the website's version (" + latestVersion + ")");
+            logger.info("Running version (" + UpdateUtils.getThisJarVersion()
+                    + ") is not older than release (" + latestVersion + ")");
             configUpdateLabel.setText("<html><font color=\"green\">v" + UpdateUtils.getThisJarVersion()
                     + " is the latest version</font></html>");
-            logger.debug("Running latest version: " + UpdateUtils.getThisJarVersion());
         }
     }
 

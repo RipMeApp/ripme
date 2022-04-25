@@ -438,21 +438,23 @@ public class Utils {
      * @return The simplified path to the file.
      */
     public static String shortenPath(String path) {
-        return shortenPath(new File(path));
+        return shortenPath(path);
     }
 
     /**
      * Shortens the path to a file
      *
-     * @param file File object that you want the shortened path of.
+     * @param path File object that you want the shortened path of.
      * @return The simplified path to the file.
      */
-    public static String shortenPath(File file) {
-        String path = removeCWD(file.toPath());
-        if (path.length() < SHORTENED_PATH_LENGTH * 2) {
-            return path;
+    public static String shortenPath(Path path) {
+        Path prettyPath = path.normalize();
+        if (prettyPath.toString().length() < SHORTENED_PATH_LENGTH * 2) {
+            return prettyPath.toString();
         }
-        return path.substring(0, SHORTENED_PATH_LENGTH) + "..." + path.substring(path.length() - SHORTENED_PATH_LENGTH);
+        return prettyPath.toString().substring(0, SHORTENED_PATH_LENGTH)
+                + "..."
+                + prettyPath.toString().substring(prettyPath.toString().length() - SHORTENED_PATH_LENGTH);
     }
 
     /**
