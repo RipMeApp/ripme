@@ -61,7 +61,7 @@ public class HentaifoxRipper extends AbstractHTMLRipper {
     @Override
     public String getAlbumTitle(URL url) throws MalformedURLException {
         try {
-            Document doc = getFirstPage();
+            Document doc = getCachedFirstPage();
             String title = doc.select("div.info > h1").first().text();
             return getHost() + "_" + title + "_" + getGID(url);
         } catch (Exception e) {

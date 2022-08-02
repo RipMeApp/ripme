@@ -19,9 +19,6 @@ import org.jsoup.select.Elements;
 
 public class ImagebamRipper extends AbstractHTMLRipper {
 
-    // Current HTML document
-    private Document albumDoc = null;
-
     // Thread pool for finding direct image links from "image" pages (html)
     private DownloadThreadPool imagebamThreadPool = new DownloadThreadPool("imagebam");
     @Override
@@ -61,10 +58,7 @@ public class ImagebamRipper extends AbstractHTMLRipper {
 
     @Override
     public Document getFirstPage() throws IOException {
-        if (albumDoc == null) {
-            albumDoc = Http.url(url).get();
-        }
-        return albumDoc;
+        return Http.url(url).get();
     }
 
     @Override
@@ -99,7 +93,7 @@ public class ImagebamRipper extends AbstractHTMLRipper {
     public String getAlbumTitle(URL url) throws MalformedURLException {
         try {
             // Attempt to use album title as GID
-            Elements elems = getFirstPage().select("[id=gallery-name]");
+            Elements elems = getCachedFirstPage().select("[id=gallery-name]");
             String title = elems.first().text();
             LOGGER.info("Title text: '" + title + "'");
             if (StringUtils.isNotBlank(title)) {

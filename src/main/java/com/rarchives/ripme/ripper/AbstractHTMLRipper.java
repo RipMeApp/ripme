@@ -32,6 +32,7 @@ public abstract class AbstractHTMLRipper extends AbstractRipper {
     private final Map<URL, File> itemsPending = Collections.synchronizedMap(new HashMap<>());
     private final Map<URL, Path> itemsCompleted = Collections.synchronizedMap(new HashMap<>());
     private final Map<URL, String> itemsErrored = Collections.synchronizedMap(new HashMap<>());
+    Document cachedFirstPage;
 
     protected AbstractHTMLRipper(URL url) throws IOException {
         super(url);
@@ -41,6 +42,14 @@ public abstract class AbstractHTMLRipper extends AbstractRipper {
     public abstract String getHost();
 
     protected abstract Document getFirstPage() throws IOException;
+
+    protected Document getCachedFirstPage() throws IOException {
+        if (cachedFirstPage == null) {
+            cachedFirstPage = getFirstPage();
+        }
+        return cachedFirstPage;
+    }
+
     public Document getNextPage(Document doc) throws IOException {
         return null;
     }
@@ -98,7 +107,7 @@ public abstract class AbstractHTMLRipper extends AbstractRipper {
         int textindex = 0;
         LOGGER.info("Retrieving " + this.url);
         sendUpdate(STATUS.LOADING_RESOURCE, this.url.toExternalForm());
-        Document doc = getFirstPage();
+        var doc = getCachedFirstPage();
 
         if (hasQueueSupport() && pageContainsAlbums(this.url)) {
             List<String> urls = getAlbumsToQueue(doc);

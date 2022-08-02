@@ -17,7 +17,6 @@ import com.rarchives.ripme.utils.Http;
 
 public class ImagefapRipper extends AbstractHTMLRipper {
 
-    private Document albumDoc = null;
     private boolean isNewAlbumType = false;
 
     private int callsMade = 0;
@@ -109,10 +108,7 @@ public class ImagefapRipper extends AbstractHTMLRipper {
 
     @Override
     public Document getFirstPage() throws IOException {
-        if (albumDoc == null) {
-            albumDoc = getPageWithRetries(url);
-        }
-        return albumDoc;
+        return getPageWithRetries(url);
     }
 
     @Override
@@ -162,7 +158,7 @@ public class ImagefapRipper extends AbstractHTMLRipper {
     public String getAlbumTitle(URL url) throws MalformedURLException {
         try {
             // Attempt to use album title as GID
-            String title = getFirstPage().title();
+            String title = getCachedFirstPage().title();
             title = title.replace("Porn Pics & Porn GIFs", "");
             title = title.replace(" ", "_");
             String toReturn = getHost() + "_" + title + "_" + getGID(url);

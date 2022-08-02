@@ -220,7 +220,7 @@ public class XhamsterRipper extends AbstractHTMLRipper {
     public String getAlbumTitle(URL url) throws MalformedURLException {
         try {
             // Attempt to use album title and username as GID
-            Document doc = getFirstPage();
+            Document doc = getCachedFirstPage();
             Element user = doc.select("a.author").first();
             String username = user.text();
             String path = url.getPath();

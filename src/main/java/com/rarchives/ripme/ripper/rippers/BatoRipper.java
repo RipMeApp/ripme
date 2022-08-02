@@ -73,7 +73,7 @@ public class BatoRipper extends AbstractHTMLRipper {
     public String getAlbumTitle(URL url) throws MalformedURLException {
         try {
             // Attempt to use album title as GID
-            return getHost() + "_" + getGID(url) + "_" + getFirstPage().select("title").first().text().replaceAll(" ", "_");
+            return getHost() + "_" + getGID(url) + "_" + getCachedFirstPage().select("title").first().text().replaceAll(" ", "_");
         } catch (IOException e) {
             // Fall back to default album naming convention
             LOGGER.info("Unable to find title at " + url);

@@ -19,7 +19,6 @@ import com.rarchives.ripme.utils.Http;
 
 public class ZizkiRipper extends AbstractHTMLRipper {
 
-    private Document albumDoc = null;
     private Map<String,String> cookies = new HashMap<>();
 
     public ZizkiRipper(URL url) throws IOException {
@@ -49,10 +48,10 @@ public class ZizkiRipper extends AbstractHTMLRipper {
     public String getAlbumTitle(URL url) throws MalformedURLException {
         try {
             // Attempt to use album title as GID
-            Element titleElement = getFirstPage().select("h1.title").first();
+            Element titleElement = getCachedFirstPage().select("h1.title").first();
             String title = titleElement.text();
 
-            Element authorSpan = getFirstPage().select("span[class=creator]").first();
+            Element authorSpan = getCachedFirstPage().select("span[class=creator]").first();
             String author = authorSpan.select("a").first().text();
             LOGGER.debug("Author: " + author);
             return getHost() + "_" + author + "_" + title.trim();
@@ -65,12 +64,9 @@ public class ZizkiRipper extends AbstractHTMLRipper {
 
     @Override
     public Document getFirstPage() throws IOException {
-        if (albumDoc == null) {
-            Response resp = Http.url(url).response();
-            cookies.putAll(resp.cookies());
-            albumDoc = resp.parse();
-        }
-        return albumDoc;
+        Response resp = Http.url(url).response();
+        cookies.putAll(resp.cookies());
+        return resp.parse();
     }
 
     @Override

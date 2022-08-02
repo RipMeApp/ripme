@@ -34,7 +34,7 @@ public class ViewcomicRipper extends AbstractHTMLRipper {
         public String getAlbumTitle(URL url) throws MalformedURLException {
             try {
                 // Attempt to use album title as GID
-                String titleText = getFirstPage().select("title").first().text();
+                String titleText = getCachedFirstPage().select("title").first().text();
                 String title = titleText.replace("Viewcomic reading comics online for free", "");
                 title = title.replace("_", "");
                 title = title.replace("|", "");

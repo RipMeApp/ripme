@@ -104,7 +104,7 @@ public class ChanRipper extends AbstractHTMLRipper {
     public String getAlbumTitle(URL url) throws MalformedURLException {
         try {
             // Attempt to use album title as GID
-            Document doc = getFirstPage();
+            Document doc = getCachedFirstPage();
             try {
                 String subject = doc.select(".post.op > .postinfo > .subject").first().text();
                 return getHost() + "_" + getGID(url) + "_" + subject;

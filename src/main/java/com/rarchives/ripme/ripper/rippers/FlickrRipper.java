@@ -20,7 +20,6 @@ import org.jsoup.nodes.Element;
 
 public class FlickrRipper extends AbstractHTMLRipper {
 
-    private Document albumDoc = null;
     private final DownloadThreadPool flickrThreadPool;
 
     private enum UrlType {
@@ -178,7 +177,7 @@ public class FlickrRipper extends AbstractHTMLRipper {
         }
         try {   
             // Attempt to use album title as GID
-            Document doc = getFirstPage();
+            Document doc = getCachedFirstPage();
             String user = url.toExternalForm();
             user = user.substring(user.indexOf("/photos/") + "/photos/".length());
             user = user.substring(0, user.indexOf("/"));
@@ -230,10 +229,7 @@ public class FlickrRipper extends AbstractHTMLRipper {
 
     @Override
     public Document getFirstPage() throws IOException {
-        if (albumDoc == null) {
-            albumDoc = Http.url(url).get();
-        }
-        return albumDoc;
+        return Http.url(url).get();
     }
 
     @Override

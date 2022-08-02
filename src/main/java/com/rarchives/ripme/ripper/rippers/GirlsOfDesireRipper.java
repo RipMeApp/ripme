@@ -16,8 +16,6 @@ import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 import com.rarchives.ripme.utils.Http;
 
 public class GirlsOfDesireRipper extends AbstractHTMLRipper {
-    // Current HTML document
-    private Document albumDoc = null;
 
     public GirlsOfDesireRipper(URL url) throws IOException {
         super(url);
@@ -35,7 +33,7 @@ public class GirlsOfDesireRipper extends AbstractHTMLRipper {
     public String getAlbumTitle(URL url) throws MalformedURLException {
         try {
             // Attempt to use album title as GID
-            Document doc = getFirstPage();
+            Document doc = getCachedFirstPage();
             Elements elems = doc.select(".albumName");
             return getHost() + "_" + elems.first().text();
         } catch (Exception e) {
@@ -64,10 +62,7 @@ public class GirlsOfDesireRipper extends AbstractHTMLRipper {
 
     @Override
     public Document getFirstPage() throws IOException {
-        if (albumDoc == null) {
-            albumDoc = Http.url(url).get();
-        }
-        return albumDoc;
+        return Http.url(url).get();
     }
 
     @Override

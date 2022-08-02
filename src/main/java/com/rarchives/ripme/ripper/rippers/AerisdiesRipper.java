@@ -49,7 +49,7 @@ public class AerisdiesRipper extends AbstractHTMLRipper {
     @Override
     public String getAlbumTitle(URL url) throws MalformedURLException {
         try {
-            Element el = getFirstPage().select(".headtext").first();
+            Element el = getCachedFirstPage().select(".headtext").first();
             if (el == null) {
                 throw new IOException("Unable to get album title");
             }
