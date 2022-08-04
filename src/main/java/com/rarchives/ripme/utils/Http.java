@@ -218,12 +218,8 @@ public class Http {
                 }
 
                 if (retrySleep > 0 && retries >= 0) {
-                    try {
-                        logger.warn("Error while loading " + url + " waiting "+ retrySleep + " ms before retrying.", e);
-                        Thread.sleep(retrySleep);
-                    } catch (final InterruptedException e1) {
-                        e1.printStackTrace();
-                    }
+                    logger.warn("Error while loading " + url + " waiting "+ retrySleep + " ms before retrying.", e);
+                    Utils.sleep(retrySleep);
                 } else {
                     logger.warn("Error while loading " + url, e);
                 }

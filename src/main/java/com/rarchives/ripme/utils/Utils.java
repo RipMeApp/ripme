@@ -866,4 +866,11 @@ public class Utils {
         return Paths.get(fullPath);
     }
 
+    public static void sleep(long time) {
+        try {
+            Thread.sleep(time);
+        } catch (final InterruptedException e1) {
+            e1.printStackTrace();
+        }
+    }
 }

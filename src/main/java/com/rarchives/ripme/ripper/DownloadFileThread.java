@@ -39,6 +39,7 @@ class DownloadFileThread extends Thread {
 
     private final int TIMEOUT;
 
+    private final int retrySleep;
     public DownloadFileThread(URL url, File saveAs, AbstractRipper observer, Boolean getFileExtFromMIME) {
         super();
         this.url = url;
@@ -47,6 +48,7 @@ class DownloadFileThread extends Thread {
         this.observer = observer;
         this.retries = Utils.getConfigInteger("download.retries", 1);
         this.TIMEOUT = Utils.getConfigInteger("download.timeout", 60000);
+        this.retrySleep = Utils.getConfigInteger("download.retry.sleep", 0);
         this.getFileExtFromMIME = getFileExtFromMIME;
     }
 
@@ -62,6 +64,7 @@ class DownloadFileThread extends Thread {
      * Attempts to download the file. Retries as needed. Notifies observers upon
      * completion/error/warn.
      */
+    @Override
     public void run() {
         // First thing we make sure the file name doesn't have any illegal chars in it
         saveAs = new File(
@@ -300,13 +303,8 @@ class DownloadFileThread extends Thread {
                         Utils.getLocalizedString("failed.to.download") + " " + url.toExternalForm());
                 return;
             } else {
-                final var retrySleep = Utils.getConfigInteger("download.retry.sleep", 0);
                 if (retrySleep > 0) {
-                    try {
-                        sleep(retrySleep);
-                    } catch (final InterruptedException e) {
-                        e.printStackTrace();
-                    }
+                    Utils.sleep(retrySleep);
                 }
             }
         } while (true);
