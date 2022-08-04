@@ -24,7 +24,7 @@ import com.rarchives.ripme.utils.Utils;
  * Thread for downloading files. Includes retry logic, observer notifications,
  * and other goodies.
  */
-class DownloadFileThread extends Thread {
+class DownloadFileThread implements Runnable {
     private static final Logger logger = LogManager.getLogger(DownloadFileThread.class);
 
     private String referrer = "";

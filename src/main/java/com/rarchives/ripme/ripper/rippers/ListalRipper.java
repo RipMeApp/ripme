@@ -182,10 +182,10 @@ public class ListalRipper extends AbstractHTMLRipper {
         throw new MalformedURLException("Unable to fetch the gid for given url.");
     }
 
-    private class ListalImageDownloadThread extends Thread {
+    private class ListalImageDownloadThread implements Runnable {
 
-        private URL url;
-        private int index;
+        private final URL url;
+        private final int index;
 
         public ListalImageDownloadThread(URL url, int index) {
             super();

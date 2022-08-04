@@ -84,7 +84,7 @@ public class HentaidudeRipper extends AbstractSingleFileRipper {
         return hentaidudeThreadPool;
     }
 
-    private class HentaidudeDownloadThread extends Thread {
+    private class HentaidudeDownloadThread implements Runnable {
 
         private URL url;
 

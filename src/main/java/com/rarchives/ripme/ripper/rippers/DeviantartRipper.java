@@ -518,8 +518,8 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 	 * @author MrPlaygon
 	 *
 	 */
-	private class DeviantartImageThread extends Thread {
-		private URL url;
+	private class DeviantartImageThread implements Runnable {
+		private final URL url;
 
 		public DeviantartImageThread(URL url) {
 			this.url = url;

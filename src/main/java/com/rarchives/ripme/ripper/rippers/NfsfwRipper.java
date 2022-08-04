@@ -196,10 +196,10 @@ public class NfsfwRipper extends AbstractHTMLRipper {
     /**
      * Helper class to find and download images found on "image" pages
      */
-    private class NfsfwImageThread extends Thread {
-        private URL url;
-        private String subdir;
-        private int index;
+    private class NfsfwImageThread implements Runnable {
+        private final URL url;
+        private final String subdir;
+        private final int index;
 
         NfsfwImageThread(URL url, String subdir, int index) {
             super();

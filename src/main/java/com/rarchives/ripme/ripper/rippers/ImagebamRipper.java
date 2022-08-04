@@ -117,9 +117,9 @@ public class ImagebamRipper extends AbstractHTMLRipper {
      *
      * Handles case when site has IP-banned the user.
      */
-    private class ImagebamImageThread extends Thread {
-        private URL url; //link to "image page"
-        private int index; //index in album
+    private class ImagebamImageThread implements Runnable {
+        private final URL url; //link to "image page"
+        private final int index; //index in album
 
         ImagebamImageThread(URL url, int index) {
             super();

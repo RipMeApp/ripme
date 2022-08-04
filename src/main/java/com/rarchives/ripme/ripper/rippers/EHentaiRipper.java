@@ -206,7 +206,7 @@ public class EHentaiRipper extends AbstractHTMLRipper {
      * <p>
      * Handles case when site has IP-banned the user.
      */
-    private class EHentaiImageThread extends Thread {
+    private class EHentaiImageThread implements Runnable {
         private final URL url;
         private final int index;
         private final Path workingDir;

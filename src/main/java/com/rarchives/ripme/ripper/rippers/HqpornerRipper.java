@@ -130,7 +130,7 @@ public class HqpornerRipper extends AbstractHTMLRipper {
 		return true;
 	}
 
-	private class HqpornerDownloadThread extends Thread {
+	private class HqpornerDownloadThread implements Runnable {
 
 		private URL hqpornerVideoPageUrl;
 		//private int index;

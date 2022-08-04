@@ -35,10 +35,10 @@ public class DownloadThreadPool {
     }
     /**
      * For adding threads to execution pool.
-     * @param t 
+     * @param t
      *      Thread to be added.
      */
-    public void addThread(Thread t) {
+    public void addThread(Runnable t) {
         threadPool.execute(t);
     }
 

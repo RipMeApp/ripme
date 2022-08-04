@@ -193,10 +193,10 @@ public class E621Ripper extends AbstractHTMLRipper {
         return url;
     }
 
-    public class E621FileThread extends Thread {
+    public class E621FileThread implements Runnable {
 
-        private URL url;
-        private String index;
+        private final URL url;
+        private final String index;
 
         public E621FileThread(URL url, String index) {
             this.url = url;

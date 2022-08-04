@@ -126,9 +126,9 @@ public class PornhubRipper extends AbstractHTMLRipper {
      *
      * Handles case when site has IP-banned the user.
      */
-    private class PornhubImageThread extends Thread {
-        private URL url;
-        private int index;
+    private class PornhubImageThread implements Runnable {
+        private final URL url;
+        private final int index;
 
         PornhubImageThread(URL url, int index, Path workingDir) {
             super();

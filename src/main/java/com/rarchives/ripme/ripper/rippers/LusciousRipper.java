@@ -120,7 +120,7 @@ public class LusciousRipper extends AbstractHTMLRipper {
         }
     }
 
-    public class LusciousDownloadThread extends Thread {
+    public class LusciousDownloadThread implements Runnable {
         private final URL url;
         private final int index;
 

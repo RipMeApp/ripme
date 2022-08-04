@@ -20,15 +20,15 @@ import org.apache.logging.log4j.Logger;
  * Thread for downloading files.
  * Includes retry logic, observer notifications, and other goodies.
  */
-class DownloadVideoThread extends Thread {
+class DownloadVideoThread implements Runnable {
 
     private static final Logger logger = LogManager.getLogger(DownloadVideoThread.class);
 
-    private URL url;
-    private Path saveAs;
-    private String prettySaveAs;
-    private AbstractRipper observer;
-    private int retries;
+    private final URL url;
+    private final Path saveAs;
+    private final String prettySaveAs;
+    private final AbstractRipper observer;
+    private final int retries;
 
     public DownloadVideoThread(URL url, Path saveAs, AbstractRipper observer) {
         super();
@@ -43,6 +43,7 @@ class DownloadVideoThread extends Thread {
      * Attempts to download the file. Retries as needed.
      * Notifies observers upon completion/error/warn.
      */
+    @Override
     public void run() {
         try {
             observer.stopCheck();
