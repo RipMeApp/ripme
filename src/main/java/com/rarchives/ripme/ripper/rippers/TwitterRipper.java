@@ -28,6 +28,7 @@ public class TwitterRipper extends AbstractJSONRipper {
 
     private static final int MAX_REQUESTS = Utils.getConfigInteger("twitter.max_requests", 10);
     private static final boolean RIP_RETWEETS = Utils.getConfigBoolean("twitter.rip_retweets", true);
+    private static final boolean EXCLUDE_REPLIES = Utils.getConfigBoolean("twitter.exclude_replies", true);
     private static final int MAX_ITEMS_REQUEST = Utils.getConfigInteger("twitter.max_items_request", 200);
     private static final int WAIT_TIME = 2000;
 
@@ -125,7 +126,7 @@ public class TwitterRipper extends AbstractJSONRipper {
         case ACCOUNT:
             req.append("https://api.twitter.com/1.1/statuses/user_timeline.json")
                     .append("?screen_name=" + this.accountName).append("&include_entities=true")
-                    .append("&exclude_replies=false").append("&trim_user=true").append("&count=" + MAX_ITEMS_REQUEST)
+                    .append("&exclude_replies=" + EXCLUDE_REPLIES).append("&trim_user=true").append("&count=" + MAX_ITEMS_REQUEST)
                     .append("&tweet_mode=extended");
             break;
         case SEARCH:// Only get tweets from last week
