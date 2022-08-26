@@ -95,7 +95,7 @@ as well.
 
 # Running Tests
 
-Tests can be marked as beeing slow, or flaky. Default is to run all but the flaky tests. Slow tests can be excluded to
+Tests can be marked as being slow, or flaky. Default is to run all but the flaky tests. Slow tests can be excluded to
 run. slow and flaky tests can be run on its own. After building you can run tests, quoting might be necessary depending
 on your shell:
 
