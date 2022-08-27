@@ -101,13 +101,10 @@ public class VscoRipper extends AbstractHTMLRipper {
     }
 
     private String getUserTkn(String username) {
-        String userinfoPage = "https://vsco.co/content/Static/userinfo";
-        String referer = "https://vsco.co/" + username + "/gallery";
-        Map<String,String> cookies = new HashMap<>();
+        String userTokenPage = "https://vsco.co/content/Static";
         Map<String,String> responseCookies = new HashMap<>();
-        cookies.put("vs_anonymous_id", UUID.randomUUID().toString());
         try {
-            Response resp = Http.url(userinfoPage).cookies(cookies).referrer(referer).ignoreContentType().response();
+            Response resp = Http.url(userTokenPage).ignoreContentType().response();
             responseCookies = resp.cookies();
             return responseCookies.get("vs");
         } catch (IOException e) {
