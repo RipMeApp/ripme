@@ -2,6 +2,7 @@ package com.rarchives.ripme.ripper.rippers;
 
 import com.rarchives.ripme.ripper.AbstractJSONRipper;
 import com.rarchives.ripme.utils.Http;
+import org.apache.commons.lang.StringEscapeUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -105,7 +106,20 @@ public class NsfwXxxRipper extends AbstractJSONRipper {
         List<ApiEntry> data = IntStream
                 .range(0, items.length())
                 .mapToObj(items::getJSONObject)
-                .map(o -> new ApiEntry(o.getString("src"), o.getString("author"), o.getString("title")))
+                .map(o -> {
+                    String srcUrl;
+                    if(o.has("src")) {
+                        srcUrl = o.getString("src");
+                    } else {
+                        // video source
+                        Pattern videoHtmlSrcPattern = Pattern.compile("src=\"([^\"]+)\"");
+                        Matcher matches = videoHtmlSrcPattern.matcher(o.getString("html"));
+                        matches.find();
+                        srcUrl = StringEscapeUtils.unescapeHtml(matches.group(1));
+                    }
+
+                    return new ApiEntry(srcUrl, o.getString("author"), o.getString("title"));
+                })
                 .collect(Collectors.toList());
 
         data.forEach(e -> descriptions.add(e.title));
@@ -114,11 +128,6 @@ public class NsfwXxxRipper extends AbstractJSONRipper {
 
     @Override
     protected void downloadURL(URL url, int index) {
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
         addURLToDownload(url, getPrefix(index) + descriptions.get(index - 1) + "_" , "", "", null);
     }
 }
