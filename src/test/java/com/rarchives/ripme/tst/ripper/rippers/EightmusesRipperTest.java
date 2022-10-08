@@ -5,10 +5,12 @@ import java.net.URL;
 
 import com.rarchives.ripme.ripper.rippers.EightmusesRipper;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 public class EightmusesRipperTest extends RippersTest {
     @Test
+    @Tag("flaky")
     public void testEightmusesAlbum() throws IOException {
         // A simple image album
         EightmusesRipper ripper = new EightmusesRipper(new URL("https://www.8muses.com/comix/album/Affect3D-Comics/TheDude3DX/Lust-Unleashed-The-Urge-To-Explore"));

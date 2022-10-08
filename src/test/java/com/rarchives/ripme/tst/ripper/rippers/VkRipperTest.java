@@ -6,6 +6,7 @@ import java.net.URL;
 import com.rarchives.ripme.ripper.rippers.VkRipper;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 public class VkRipperTest extends RippersTest {
@@ -18,17 +19,20 @@ public class VkRipperTest extends RippersTest {
     // EXAMPLE: https://vk.com/album45506334_00?rev=1 (a single album - wall pictures)
     // EXAMPLE: https://vk.com/album45506334_101886701 (a single album - custom)
     @Test
+    @Tag("flaky")
     public void testVkAlbumHttpRip() throws IOException {
         VkRipper ripper = new VkRipper(new URL("https://vk.com/album45506334_0"));
         testRipper(ripper);
     }
     @Test
+    @Tag("flaky")
     public void testVkPhotosRip() throws IOException {
         VkRipper ripper = new VkRipper(new URL("https://vk.com/photos45506334"));
         testRipper(ripper);
     }
     
     @Test
+    @Tag("flaky")
     public void testFindJSONObjectContainingPhotoID() throws IOException {
         VkRipper ripper = new VkRipper(new URL("http://vk.com/album45506334_0"));
         String json =

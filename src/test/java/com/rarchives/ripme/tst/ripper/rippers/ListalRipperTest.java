@@ -9,7 +9,6 @@ public class ListalRipperTest extends RippersTest {
 
     /**
      * Test for list type url.
-     * @throws IOException
      */
     @Test
     public void testPictures() throws IOException {
@@ -20,7 +19,6 @@ public class ListalRipperTest extends RippersTest {
 
     /**
      * Test for list type url.
-     * @throws IOException
      */
     @Test
     public void testRipListType() throws IOException {
@@ -31,7 +29,6 @@ public class ListalRipperTest extends RippersTest {
 
     /**
      * Test for folder type url.
-     * @throws IOException
      */
     @Test
     public void testRipFolderType() throws IOException {

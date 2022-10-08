@@ -6,10 +6,12 @@ import java.net.URL;
 import com.rarchives.ripme.ripper.rippers.WebtoonsRipper;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 public class WebtoonsRipperTest extends RippersTest {
     @Test
+    @Tag("flaky")
     public void testWebtoonsAlbum() throws IOException {
         WebtoonsRipper ripper = new WebtoonsRipper(new URL("https://www.webtoons.com/en/super-hero/unordinary/episode-103/viewer?title_no=679&episode_no=109"));
         testRipper(ripper);

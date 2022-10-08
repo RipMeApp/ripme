@@ -12,7 +12,6 @@ public class RedgifsRipperTest extends RippersTest {
 
     /**
      * Rips correctly formatted URL directly from Redgifs
-     * @throws IOException
      */
     @Test
     @Disabled("test or ripper broken")
@@ -23,7 +22,6 @@ public class RedgifsRipperTest extends RippersTest {
 
     /**
      * Rips gifdeliverynetwork URL's by redirecting them to proper redgifs url
-     * @throws IOException
      */
     @Test
     @Tag("flaky")
@@ -34,7 +32,6 @@ public class RedgifsRipperTest extends RippersTest {
 
     /**
      * Rips a Redifs profile
-     * @throws IOException
      */
     @Test
     @Tag("flaky")
@@ -60,6 +57,7 @@ public class RedgifsRipperTest extends RippersTest {
     }
 
     @Test
+    @Tag("flaky")
     public void testRedditRedgifs() throws IOException {
         RedditRipper ripper = new RedditRipper(new URL("https://www.reddit.com/r/nsfwhardcore/comments/ouz5bw/me_cumming_on_his_face/"));
         testRipper(ripper);
