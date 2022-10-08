@@ -17,6 +17,7 @@ public class WebtoonsRipperTest extends RippersTest {
         testRipper(ripper);
     }
     @Test
+    @Tag("flaky")
     public void testWedramabtoonsType() throws IOException {
     	WebtoonsRipper ripper = new WebtoonsRipper(new URL("http://www.webtoons.com/en/drama/lookism/ep-145/viewer?title_no=1049&episode_no=145"));
     	testRipper(ripper);
