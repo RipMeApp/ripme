@@ -46,12 +46,6 @@ public class HypnohubRipper extends AbstractHTMLRipper {
                 "hypnohub.net/pool/show/ID - got " + url + " instead");
     }
 
-    @Override
-    public Document getFirstPage() throws IOException {
-        // "url" is an instance field of the superclass
-        return Http.url(url).get();
-    }
-
     private String ripPost(String url) throws IOException {
         LOGGER.info(url);
         Document doc = Http.url(url).get();

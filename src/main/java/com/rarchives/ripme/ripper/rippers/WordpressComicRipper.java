@@ -421,10 +421,4 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
 
 
     }
-
-    @Override
-    public Document getFirstPage() throws IOException {
-        // "url" is an instance field of the superclass
-        return Http.url(url).get();
-    }
 }

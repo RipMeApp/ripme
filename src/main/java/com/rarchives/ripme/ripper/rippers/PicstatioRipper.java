@@ -52,12 +52,6 @@ public class PicstatioRipper extends AbstractHTMLRipper {
     }
 
     @Override
-    public Document getFirstPage() throws IOException {
-        // "url" is an instance field of the superclass
-        return Http.url(url).get();
-    }
-
-    @Override
     public Document getNextPage(Document doc) throws IOException {
         if (doc.select("a.next_page") != null) {
             return Http.url("https://www.picstatio.com" + doc.select("a.next_page").attr("href")).get();

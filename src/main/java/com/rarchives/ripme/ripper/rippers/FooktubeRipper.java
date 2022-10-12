@@ -34,10 +34,6 @@ public class FooktubeRipper extends AbstractSingleFileRipper {
         return "mulemax.com";
     }
 
-    @Override
-    public Document getFirstPage() throws IOException {
-        return Http.url(url).get();
-    }
 
     @Override
     public boolean canRip(URL url) {

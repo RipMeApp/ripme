@@ -13,7 +13,6 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
 import com.rarchives.ripme.ripper.AbstractHTMLRipper;
-import com.rarchives.ripme.utils.Http;
 
 public class BatoRipper extends AbstractHTMLRipper {
 
@@ -94,11 +93,6 @@ public class BatoRipper extends AbstractHTMLRipper {
         return m.matches();
     }
 
-    @Override
-    public Document getFirstPage() throws IOException {
-        // "url" is an instance field of the superclass
-        return Http.url(url).get();
-    }
 
     @Override
     public List<String> getURLsFromPage(Document doc) {

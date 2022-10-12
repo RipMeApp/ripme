@@ -49,11 +49,6 @@ public class ErofusRipper extends AbstractHTMLRipper {
     }
 
     @Override
-    public Document getFirstPage() throws IOException {
-        return Http.url(url).get();
-    }
-
-    @Override
     public List<String> getURLsFromPage(Document page) {
         LOGGER.info(page);
         List<String> imageURLs = new ArrayList<>();

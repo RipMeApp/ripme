@@ -23,6 +23,7 @@ import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
 import com.rarchives.ripme.utils.Utils;
 import com.rarchives.ripme.ui.MainWindow;
 import com.rarchives.ripme.ui.RipStatusMessage;
+import com.rarchives.ripme.utils.Http;
 
 /**
  * Simplified ripper, designed for ripping from sites by parsing HTML.
@@ -41,7 +42,9 @@ public abstract class AbstractHTMLRipper extends AbstractRipper {
     protected abstract String getDomain();
     public abstract String getHost();
 
-    protected abstract Document getFirstPage() throws IOException;
+    protected Document getFirstPage() throws IOException {
+        return Http.url(url).get();
+    }
 
     protected Document getCachedFirstPage() throws IOException {
         if (cachedFirstPage == null) {

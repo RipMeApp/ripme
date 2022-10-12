@@ -216,11 +216,6 @@ public class VscoRipper extends AbstractHTMLRipper {
     }
 
     @Override
-    public Document getFirstPage() throws IOException {
-        return Http.url(url).get();
-    }
-
-    @Override
     public void downloadURL(URL url, int index) {
         addURLToDownload(url, getPrefix(index));
     }

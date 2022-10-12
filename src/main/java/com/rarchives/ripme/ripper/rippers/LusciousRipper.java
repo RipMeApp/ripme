@@ -37,10 +37,7 @@ public class LusciousRipper extends AbstractHTMLRipper {
 
     @Override
     public Document getFirstPage() throws IOException {
-        // "url" is an instance field of the superclass
-        Document page = Http.url(url).get();
-        LOGGER.info("First page is " + url);
-        return page;
+        return super.getFirstPage();
     }
 
     @Override

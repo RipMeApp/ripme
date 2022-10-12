@@ -25,11 +25,6 @@ public class XvideosRipper extends AbstractSingleFileRipper {
     }
 
     @Override
-    public Document getFirstPage() throws IOException {
-        return Http.url(this.url).get();
-    }
-
-    @Override
     public String getHost() {
         return HOST;
     }

@@ -24,11 +24,6 @@ public class CyberdropRipper extends AbstractHTMLRipper {
     }
 
     @Override
-    protected Document getFirstPage() throws IOException {
-        return Http.url(url).get();
-    }
-
-    @Override
     public String getDomain() {
         return "cyberdrop.me";
     }

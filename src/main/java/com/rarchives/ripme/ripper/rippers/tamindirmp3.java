@@ -41,12 +41,6 @@ public class tamindirmp3 extends AbstractHTMLRipper {
     }
 
     @Override
-    public Document getFirstPage() throws IOException {
-        return Http.url(url).get();
-
-    }
-
-    @Override
     public List<String> getURLsFromPage(Document doc) {
         List<String> music = new ArrayList<>();
         for (Element el : doc.select("mp3")) {

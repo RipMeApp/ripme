@@ -56,12 +56,6 @@ public class JabArchivesRipper extends AbstractHTMLRipper {
     }
 
     @Override
-    public Document getFirstPage() throws IOException {
-        // "url" is an instance field of the superclass
-        return Http.url(url).get();
-    }
-
-    @Override
     public Document getNextPage(Document doc) throws IOException {
         // Find next page
         Elements hrefs = doc.select("a[title=\"Next page\"]");

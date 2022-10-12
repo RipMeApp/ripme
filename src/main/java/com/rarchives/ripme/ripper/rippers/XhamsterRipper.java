@@ -106,13 +106,6 @@ public class XhamsterRipper extends AbstractHTMLRipper {
         return m.matches();
     }
 
-
-    @Override
-    public Document getFirstPage() throws IOException {
-        // "url" is an instance field of the superclass
-        return Http.url(url).get();
-    }
-
     @Override
     public boolean canRip(URL url) {
         Pattern p = Pattern.compile("^https?://([\\w\\w]*\\.)?xhamster([^<]*)\\.(com|one|desi)/photos/gallery/.*?(\\d+)$");
@@ -150,6 +143,11 @@ public class XhamsterRipper extends AbstractHTMLRipper {
         }
         throw new IOException("No more pages");
 
+    }
+
+    @Override
+    public Document getFirstPage() throws IOException {
+        return super.getFirstPage();
     }
 
     @Override

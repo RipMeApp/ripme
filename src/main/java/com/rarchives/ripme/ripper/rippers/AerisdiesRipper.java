@@ -63,11 +63,6 @@ public class AerisdiesRipper extends AbstractHTMLRipper {
     }
 
     @Override
-    public Document getFirstPage() throws IOException {
-        return Http.url(url).get();
-    }
-
-    @Override
     public List<String> getURLsFromPage(Document page) {
         List<String> imageURLs = new ArrayList<>();
         Elements albumElements = page.select("div.imgbox > a > img");

@@ -46,11 +46,6 @@ public class VidbleRipper extends AbstractHTMLRipper {
     }
 
     @Override
-    public Document getFirstPage() throws IOException {
-        return Http.url(url).get();
-    }
-
-    @Override
     public List<String> getURLsFromPage(Document doc) {
         return getURLsFromPageStatic(doc);
     }

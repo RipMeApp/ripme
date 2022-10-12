@@ -2,7 +2,7 @@ package com.rarchives.ripme.ripper.rippers;
 
 import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 import com.rarchives.ripme.ripper.rippers.ripperhelpers.ChanSite;
-import com.rarchives.ripme.utils.Http;
+import com.rarchives.ripme.utils.Utils;
 import com.rarchives.ripme.utils.RipUtils;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.rarchives.ripme.utils.Utils;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
@@ -195,11 +194,9 @@ public class ChanRipper extends AbstractHTMLRipper {
         return this.url.getHost();
     }
 
-    @Override
     public Document getFirstPage() throws IOException {
-        return Http.url(this.url).get();
+        return super.getFirstPage();
     }
-
     private boolean isURLBlacklisted(String url) {
         for (String blacklist_item : url_piece_blacklist) {
             if (url.contains(blacklist_item)) {

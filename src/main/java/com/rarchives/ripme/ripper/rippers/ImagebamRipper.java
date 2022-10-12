@@ -57,11 +57,6 @@ public class ImagebamRipper extends AbstractHTMLRipper {
     }
 
     @Override
-    public Document getFirstPage() throws IOException {
-        return Http.url(url).get();
-    }
-
-    @Override
     public Document getNextPage(Document doc) throws IOException {
         // Find next page
         Elements hrefs = doc.select("a.pagination_current + a.pagination_link");
