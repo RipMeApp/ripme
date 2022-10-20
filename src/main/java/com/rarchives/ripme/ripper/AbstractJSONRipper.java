@@ -165,7 +165,7 @@ public abstract class AbstractJSONRipper extends AbstractRipper {
             Path urlFile = Paths.get(this.workingDir + "/urls.txt");
             String text = url.toExternalForm() + System.lineSeparator();
             try {
-                Files.write(urlFile, text.getBytes(StandardCharsets.UTF_8), StandardOpenOption.APPEND);
+                Files.write(urlFile, text.getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
                 itemsCompleted.put(url, urlFile);
             } catch (IOException e) {
                 LOGGER.error("Error while writing to " + urlFile, e);
