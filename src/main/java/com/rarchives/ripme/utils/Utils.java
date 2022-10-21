@@ -323,7 +323,7 @@ public class Utils {
      */
     public static String removeCWD(Path saveAs) {
         try {
-            return saveAs.relativize(Paths.get(".").toAbsolutePath()).toString();
+            return Paths.get(".").toAbsolutePath().relativize(saveAs).toString();
         }
         catch (IllegalArgumentException e) {
             return saveAs.toString();
