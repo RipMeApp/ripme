@@ -210,7 +210,7 @@ public class ImgurRipper extends AlbumRipper {
             if (Utils.getConfigBoolean("download.save_order", true)) {
                 saveAs.resolve(String.format("%03d_", index));
             }
-            saveAs.resolve(imgurImage.getSaveAs().replaceAll("\\?\\d", ""));
+            saveAs = saveAs.resolve(imgurImage.getSaveAs().replaceAll("\\?\\d", ""));
             addURLToDownload(imgurImage.url, saveAs);
         }
     }
