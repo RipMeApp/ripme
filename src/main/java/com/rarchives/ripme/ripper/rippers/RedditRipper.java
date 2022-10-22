@@ -292,7 +292,7 @@ public class RedditRipper extends AlbumRipper {
         try {
             saveFileAs = Utils.getPath(workingDir
                     + "/"
-                    + id + "_" + title
+                    + id + "_" + Utils.filesystemSafe(title)
                     + ".html");
             OutputStream out = Files.newOutputStream(saveFileAs);
             out.write(html.getBytes());
@@ -411,12 +411,12 @@ public class RedditRipper extends AlbumRipper {
             if (m.matches()) {
                 // It's from reddituploads. Assume .jpg extension.
                 String savePath = this.workingDir + "/";
-                savePath += id + "-" + m.group(1) + title + ".jpg";
+                savePath += id + "-" + m.group(1) + Utils.filesystemSafe(title) + ".jpg";
                 addURLToDownload(urls.get(0), Utils.getPath(savePath));
             }
             if (url.contains("v.redd.it")) {
                 String savePath = this.workingDir + "/";
-                savePath += id + "-" + url.split("/")[3] + title + ".mp4";
+                savePath += id + "-" + url.split("/")[3] + Utils.filesystemSafe(title) + ".mp4";
                 URL urlToDownload = parseRedditVideoMPD(urls.get(0).toExternalForm());
                 if (urlToDownload != null) {
                     LOGGER.info("url: " + urlToDownload + " file: " + savePath);
@@ -424,7 +424,7 @@ public class RedditRipper extends AlbumRipper {
                 }
             }
             else {
-                addURLToDownload(urls.get(0), id + title, "", theUrl, null);
+                addURLToDownload(urls.get(0), Utils.filesystemSafe(id + title), "", theUrl, null);
             }
         } else if (urls.size() > 1) {
             for (int i = 0; i < urls.size(); i++) {
