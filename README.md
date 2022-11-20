@@ -111,6 +111,6 @@ mvn test '-Dgroups=!slow'
 ./gradlew test '-DincludeTags=!slow'
 ```
 
-Please note that some tests may fail as sites change and our rippers become out of date.
+Please note that some tests may fail as the sites change and our rippers become out of date.
 Start by building and testing a released version of RipMe
-and then ensure that any changes you make do not cause more tests to break.
+and then ensure that any changes you make do not cause  any more tests to break.
