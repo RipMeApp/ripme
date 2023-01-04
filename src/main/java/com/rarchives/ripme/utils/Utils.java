@@ -17,6 +17,7 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.KeyStore;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -34,6 +35,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.TrustManagerFactory;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
 import javax.sound.sampled.Line;
@@ -884,6 +888,20 @@ public class Utils {
         LOGGER.info(fullPath);
         LOGGER.info(fullPath.length());
         return new File(fullPath);
+    }
+
+    public static void setTrustStore(String trustStore) throws Exception {
+    	LOGGER.info ("Loading trust store " + trustStore);
+        TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance("X509");
+        KeyStore keystore = KeyStore.getInstance(KeyStore.getDefaultType());
+        InputStream keystoreStream = Utils.class.getResourceAsStream(trustStore);
+        if (keystoreStream == null) throw new IllegalArgumentException ("trustStore " + trustStore + " not found");
+        keystore.load(keystoreStream, null);
+        trustManagerFactory.init(keystore);
+        TrustManager[] trustManagers = trustManagerFactory.getTrustManagers();
+        SSLContext sc = SSLContext.getInstance("SSL");
+        sc.init(null, trustManagers, null);
+        SSLContext.setDefault(sc);
     }
 
 }
