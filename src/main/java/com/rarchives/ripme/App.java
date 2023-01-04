@@ -68,6 +68,16 @@ public class App {
             Proxy.setSocks(Utils.getConfigString("proxy.socks", null));
         }
 
+        // Attempt to load keystore to enable use of custom certificate authorities
+        try
+		{
+			Utils.setTrustStore ("/custom-certificate-store");
+		}
+		catch (Exception e)
+		{
+			logger.warn ("Failed to load custom certificate store", e);
+		}
+        
         // This has to be here instead of handleArgs because handleArgs isn't parsed until after a item is ripper
         if (cl.hasOption("a")) {
             logger.info(cl.getOptionValue("a"));
