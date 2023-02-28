@@ -17,12 +17,11 @@ import com.rarchives.ripme.utils.Http;
 
 public class ImagefapRipper extends AbstractHTMLRipper {
 
-    private boolean isNewAlbumType = false;
-
     private int callsMade = 0;
     private long startTime = System.nanoTime();
 
     private static final int RETRY_LIMIT = 10;
+    private static final int HTTP_RETRY_LIMIT = 3;
     private static final int RATE_LIMIT_HOUR = 1000;
 
     // All sleep times are in milliseconds
@@ -50,11 +49,7 @@ public class ImagefapRipper extends AbstractHTMLRipper {
     @Override
     public URL sanitizeURL(URL url) throws MalformedURLException {
         String gid = getGID(url);
-        String newURL = "https://www.imagefap.com/gallery.php?";
-        if (isNewAlbumType) {
-            newURL += "p";
-        }
-        newURL += "gid=" + gid + "&view=2";
+        String newURL = "https://www.imagefap.com/pictures/" + gid + "/random-string";
         LOGGER.debug("Changed URL from " + url + " to " + newURL);
         return new URL(newURL);
     }
@@ -63,39 +58,29 @@ public class ImagefapRipper extends AbstractHTMLRipper {
     public String getGID(URL url) throws MalformedURLException {
         Pattern p; Matcher m;
 
+        // Old format (I suspect no longer supported)
         p = Pattern.compile("^.*imagefap.com/gallery.php\\?pgid=([a-f0-9]+).*$");
         m = p.matcher(url.toExternalForm());
         if (m.matches()) {
-            isNewAlbumType = true;
             return m.group(1);
         }
+
         p = Pattern.compile("^.*imagefap.com/gallery.php\\?gid=([0-9]+).*$");
         m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             return m.group(1);
         }
 
-        p = Pattern.compile("^.*imagefap.com/pictures/([0-9]+).*$");
-        m = p.matcher(url.toExternalForm());
-        if (m.matches()) {
-            return m.group(1);
-        }
-        p = Pattern.compile("^.*imagefap.com/pictures/([a-f0-9]+).*$");
-        m = p.matcher(url.toExternalForm());
-        if (m.matches()) {
-            isNewAlbumType = true;
-            return m.group(1);
-        }
-
-        p = Pattern.compile("^.*imagefap.com/gallery/([0-9]+).*$");
-        m = p.matcher(url.toExternalForm());
-        if (m.matches()) {
-            return m.group(1);
-        }
         p = Pattern.compile("^.*imagefap.com/gallery/([a-f0-9]+).*$");
         m = p.matcher(url.toExternalForm());
         if (m.matches()) {
-            isNewAlbumType = true;
+            return m.group(1);
+        }
+
+        // most recent format
+        p = Pattern.compile("^.*imagefap.com/pictures/([a-f0-9]+).*$");
+        m = p.matcher(url.toExternalForm());
+        if (m.matches()) {
             return m.group(1);
         }
 
@@ -108,7 +93,12 @@ public class ImagefapRipper extends AbstractHTMLRipper {
 
     @Override
     public Document getFirstPage() throws IOException {
-        return getPageWithRetries(url);
+
+        Document firstPage = getPageWithRetries(url);
+
+        sendUpdate(STATUS.LOADING_RESOURCE, "Loading first page...");
+
+        return firstPage;
     }
 
     @Override
@@ -116,7 +106,7 @@ public class ImagefapRipper extends AbstractHTMLRipper {
         String nextURL = null;
         for (Element a : doc.select("a.link3")) {
             if (a.text().contains("next")) {
-                nextURL = "https://imagefap.com/gallery.php" + a.attr("href");
+                nextURL = this.sanitizeURL(this.url) + a.attr("href");
                 break;
             }
         }
@@ -125,6 +115,9 @@ public class ImagefapRipper extends AbstractHTMLRipper {
         }
         // Sleep before fetching next page.
         sleep(PAGE_SLEEP_TIME);
+        
+        sendUpdate(STATUS.LOADING_RESOURCE, "Loading next page URL: " + nextURL);
+        LOGGER.info("Attempting to load next page URL: " + nextURL);
 
         // Load next page
         Document nextPage = getPageWithRetries(new URL(nextURL));
@@ -134,17 +127,27 @@ public class ImagefapRipper extends AbstractHTMLRipper {
 
     @Override
     public List<String> getURLsFromPage(Document doc) {
+
         List<String> imageURLs = new ArrayList<>();
+
+        LOGGER.debug("Trying to get URLs from document... ");
+
         for (Element thumb : doc.select("#gallery img")) {
             if (!thumb.hasAttr("src") || !thumb.hasAttr("width")) {
                 continue;
             }
             String image = getFullSizedImage("https://www.imagefap.com" + thumb.parent().attr("href"));
+
+            if(image == null)
+                throw new RuntimeException("Unable to extract image URL from single image page! Unable to continue");
+
             imageURLs.add(image);
             if (isThisATest()) {
                 break;
             }
         }
+        LOGGER.debug("Adding " + imageURLs.size() + " URLs to download");
+
         return imageURLs;
     }
 
@@ -176,6 +179,7 @@ public class ImagefapRipper extends AbstractHTMLRipper {
             Document doc = getPageWithRetries(new URL(pageURL));
             return doc.select("img#mainPhoto").attr("src");
         } catch (IOException e) {
+            LOGGER.debug("Unable to get full size image URL from page URL " + pageURL + " because: " +  e.getMessage());
             return null;
         }
     }
@@ -187,9 +191,10 @@ public class ImagefapRipper extends AbstractHTMLRipper {
      * @throws IOException If page loading errors, or if retries are exhausted
      */
     private Document getPageWithRetries(URL url) throws IOException {
-        Document doc;
+        Document doc = null;
         int retries = RETRY_LIMIT;
         while (true) {
+
             sendUpdate(STATUS.LOADING_RESOURCE, url.toExternalForm());
 
             // For debugging rate limit checker. Useful to track wheter the timeout should be altered or not.
@@ -197,15 +202,42 @@ public class ImagefapRipper extends AbstractHTMLRipper {
             checkRateLimit();
 
             LOGGER.info("Retrieving " + url);
-            doc = Http.url(url)
-                      .get();
+            
+            boolean httpCallThrottled = false;
+            int httpAttempts = 0;
 
+            // we attempt the http call, knowing it can fail for network reasons
+            while(true) {
+                httpAttempts++;
+                try {
+                    doc = Http.url(url).get();
+                } catch(IOException e) {
 
-            if (doc.toString().contains("Your IP made too many requests to our servers and we need to check that you are a real human being")) {
+                    LOGGER.info("Retrieving " + url + " error: " + e.getMessage());
+
+                    if(e.getMessage().contains("404"))
+                        throw new IOException("Gallery/Page not found!");
+                    
+                    if(httpAttempts < HTTP_RETRY_LIMIT) {
+                        sendUpdate(STATUS.DOWNLOAD_WARN, "HTTP call failed: " + e.getMessage() + " retrying " + httpAttempts + " / " + HTTP_RETRY_LIMIT);
+                        
+                        // we sleep for a few seconds
+                        sleep(PAGE_SLEEP_TIME);
+                        continue;
+                    } else {
+                        sendUpdate(STATUS.DOWNLOAD_WARN, "HTTP call failed too many times: " + e.getMessage() + " treating this as a throttle");
+                        httpCallThrottled = true;
+                    }                    
+                }
+                // no errors, we exit
+                break;
+            }
+            
+            if (httpCallThrottled || (doc != null && doc.toString().contains("Your IP made too many requests to our servers and we need to check that you are a real human being"))) {
                 if (retries == 0) {
                     throw new IOException("Hit rate limit and maximum number of retries, giving up");
                 }
-                String message = "Hit rate limit while loading " + url + ", sleeping for " + IP_BLOCK_SLEEP_TIME + "ms, " + retries + " retries remaining";
+                String message = "Probably hit rate limit while loading " + url + ", sleeping for " + IP_BLOCK_SLEEP_TIME + "ms, " + retries + " retries remaining";
                 LOGGER.warn(message);
                 sendUpdate(STATUS.DOWNLOAD_WARN, message);
                 retries--;
@@ -214,8 +246,7 @@ public class ImagefapRipper extends AbstractHTMLRipper {
                 } catch (InterruptedException e) {
                     throw new IOException("Interrupted while waiting for rate limit to subside");
                 }
-            }
-            else {
+            } else {
                 return doc;
             }
         }
@@ -244,5 +275,6 @@ public class ImagefapRipper extends AbstractHTMLRipper {
 
         return duration;
     }
+
 
 }

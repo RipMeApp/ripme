@@ -124,10 +124,16 @@ public abstract class AbstractHTMLRipper extends AbstractRipper {
         }
 
         List<String> doclocation = new ArrayList<>();
+
+        LOGGER.info("Got doc location " + doc.location());
+        
         while (doc != null) {
+
+            LOGGER.info("Processing a doc...");
 
             // catch if we saw a doc location already, save the ones seen in a list
             if (doclocation.contains(doc.location())) {
+                LOGGER.info("Already processed location " + doc.location() + " breaking");
                 break;
             }
             doclocation.add(doc.location());
@@ -136,6 +142,9 @@ public abstract class AbstractHTMLRipper extends AbstractRipper {
                 sendUpdate(STATUS.DOWNLOAD_COMPLETE_HISTORY, "Already seen the last " + alreadyDownloadedUrls + " images ending rip");
                 break;
             }
+
+            LOGGER.info("retrieving urls from doc");
+
             List<String> imageURLs = getURLsFromPage(doc);
             // If hasASAPRipping() returns true then the ripper will handle downloading the files
             // if not it's done in the following block of code
