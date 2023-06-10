@@ -22,7 +22,7 @@ RipMe is an album ripper for various websites. It is a cross-platform tool that 
 
 ## Downloads
 
-Download `ripme.jar` from the [latest release](/releases). For information about running the `.jar` file, see 
+Download `ripme.jar` from the [latest release](https://github.com/ripmeapp2/ripme/releases). For information about running the `.jar` file, see 
 [the How To Run wiki](https://github.com/ripmeapp/ripme/wiki/How-To-Run-RipMe).
 
 The version number like ripme-1.7.94-17-2167aa34-feature_auto_release.jar contains a release number (1.7.94), given by
