@@ -5,13 +5,14 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
-import java.net.URL;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 public class AllporncomicRipperTest extends RippersTest {
     @Test
     @Tag("flaky")
-    public void testAlbum() throws IOException {
-        AllporncomicRipper ripper = new AllporncomicRipper(new URL("https://allporncomic.com/porncomic/dnd-pvp-dungeons-dragons-fred-perry/1-dnd-pvp"));
+    public void testAlbum() throws IOException, URISyntaxException {
+        AllporncomicRipper ripper = new AllporncomicRipper(new URI("https://allporncomic.com/porncomic/dnd-pvp-dungeons-dragons-fred-perry/1-dnd-pvp").toURL());
         testRipper(ripper);
     }
 

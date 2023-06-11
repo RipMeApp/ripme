@@ -8,6 +8,8 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -16,11 +18,11 @@ import java.util.Map;
 
 public class CyberdropRipperTest extends RippersTest {
     @Test
-    public void testScrolllerGID() throws IOException {
+    public void testScrolllerGID() throws IOException, URISyntaxException {
         Map<URL, String> testURLs = new HashMap<>();
 
-        testURLs.put(new URL("https://cyberdrop.me/a/n4umdBjw"), "n4umdBjw");
-        testURLs.put(new URL("https://cyberdrop.me/a/iLtp4BjW"), "iLtp4BjW");
+        testURLs.put(new URI("https://cyberdrop.me/a/n4umdBjw").toURL(), "n4umdBjw");
+        testURLs.put(new URI("https://cyberdrop.me/a/iLtp4BjW").toURL(), "iLtp4BjW");
         for (URL url : testURLs.keySet()) {
             CyberdropRipper ripper = new CyberdropRipper(url);
             ripper.setup();
@@ -31,11 +33,11 @@ public class CyberdropRipperTest extends RippersTest {
 
     @Test
     @Tag("flaky")
-    public void testCyberdropNumberOfFiles() throws IOException {
+    public void testCyberdropNumberOfFiles() throws IOException, URISyntaxException {
         List<URL> testURLs = new ArrayList<URL>();
 
-        testURLs.add(new URL("https://cyberdrop.me/a/n4umdBjw"));
-        testURLs.add(new URL("https://cyberdrop.me/a/iLtp4BjW"));
+        testURLs.add(new URI("https://cyberdrop.me/a/n4umdBjw").toURL());
+        testURLs.add(new URI("https://cyberdrop.me/a/iLtp4BjW").toURL());
         for (URL url : testURLs) {
             Assertions.assertTrue(willDownloadAllFiles(url));
         }

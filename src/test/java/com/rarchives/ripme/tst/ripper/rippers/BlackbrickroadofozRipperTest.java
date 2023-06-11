@@ -6,14 +6,15 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
-import java.net.URL;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 public class BlackbrickroadofozRipperTest extends RippersTest {
     @Test
     @Disabled("Commented out on 02/04/2019 because the serve has been down for a while")
-    public void testRip() throws IOException {
+    public void testRip() throws IOException, URISyntaxException {
         BlackbrickroadofozRipper ripper = new BlackbrickroadofozRipper(
-                new URL("http://www.blackbrickroadofoz.com/comic/beginning"));
+                new URI("http://www.blackbrickroadofoz.com/comic/beginning").toURL());
         testRipper(ripper);
     }
 }
