@@ -188,7 +188,7 @@ public class UpdateUtils {
 
         for (int i = 0; i < oldVersions.length; i++) {
             if (newVersions[i] > oldVersions[i]) {
-                logger.debug("oldVersion " + getThisJarVersion() + " < latestVersion" + latestVersion);
+                logger.debug("oldVersion " + getThisJarVersion() + " < latestVersion " + latestVersion);
                 return true;
             } else if (newVersions[i] < oldVersions[i]) {
                 logger.debug("oldVersion " + getThisJarVersion() + " > latestVersion " + latestVersion);
