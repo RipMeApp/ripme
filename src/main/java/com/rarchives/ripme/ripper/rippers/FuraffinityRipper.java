@@ -20,7 +20,7 @@ import org.jsoup.Connection.Response;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
-import org.jsoup.safety.Whitelist;
+import org.jsoup.safety.Safelist;
 import org.jsoup.select.Elements;
 
 import com.rarchives.ripme.ripper.AbstractHTMLRipper;
@@ -167,7 +167,7 @@ public class FuraffinityRipper extends AbstractHTMLRipper {
             ele.select("br").append("\\n");
             ele.select("p").prepend("\\n\\n");
             LOGGER.debug("Returning description at " + page);
-            String tempPage = Jsoup.clean(ele.html().replaceAll("\\\\n", System.getProperty("line.separator")), "", Whitelist.none(), new Document.OutputSettings().prettyPrint(false));
+            String tempPage = Jsoup.clean(ele.html().replaceAll("\\\\n", System.getProperty("line.separator")), "", Safelist.none(), new Document.OutputSettings().prettyPrint(false));
             return documentz.select("meta[property=og:title]").attr("content") + "\n" + tempPage; // Overridden saveText takes first line and makes it the file name.
         } catch (IOException ioe) {
             LOGGER.info("Failed to get description " + page + " : '" + ioe.getMessage() + "'");

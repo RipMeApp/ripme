@@ -16,7 +16,7 @@ import org.json.JSONObject;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
-import org.jsoup.safety.Whitelist;
+import org.jsoup.safety.Safelist;
 import org.jsoup.select.Elements;
 
 import com.rarchives.ripme.ripper.AlbumRipper;
@@ -256,10 +256,10 @@ public class ImgurRipper extends AlbumRipper {
         LOGGER.info("    Retrieving " + strUrl);
         Document doc = getAlbumData("https://api.imgur.com/3/album/" + strUrl.split("/a/")[1]);
         // Try to use embedded JSON to retrieve images
-        LOGGER.info(Jsoup.clean(doc.body().toString(), Whitelist.none()));
+        LOGGER.info(Jsoup.clean(doc.body().toString(), Safelist.none()));
 
             try {
-                JSONObject json = new JSONObject(Jsoup.clean(doc.body().toString(), Whitelist.none()));
+                JSONObject json = new JSONObject(Jsoup.clean(doc.body().toString(), Safelist.none()));
                 JSONArray jsonImages = json.getJSONObject("data").getJSONArray("images");
                 return createImgurAlbumFromJsonArray(url, jsonImages);
             } catch (JSONException e) {

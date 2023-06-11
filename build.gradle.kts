@@ -17,25 +17,29 @@ repositories {
 
 dependencies {
   implementation("com.lmax:disruptor:3.4.4")
-  implementation("org.java-websocket:Java-WebSocket:1.5.2")
-  implementation("org.jsoup:jsoup:1.14.3")
+  implementation("org.java-websocket:Java-WebSocket:1.5.3")
+  implementation("org.jsoup:jsoup:1.16.1")
   implementation("org.json:json:20211205")
-  implementation("com.j2html:j2html:1.5.0")
+  implementation("com.j2html:j2html:1.6.0")
   implementation("commons-configuration:commons-configuration:1.10")
   implementation("commons-cli:commons-cli:1.5.0")
-  implementation("commons-io:commons-io:2.11.0")
-  implementation("org.apache.httpcomponents:httpclient:4.5.13")
-  implementation("org.apache.httpcomponents:httpmime:4.5.13")
-  implementation("org.apache.logging.log4j:log4j-api:2.17.1")
-  implementation("org.apache.logging.log4j:log4j-core:2.17.1")
-  implementation("org.graalvm.js:js:22.0.0.2")
-  testImplementation(enforcedPlatform("org.junit:junit-bom:5.8.2"))
+  implementation("commons-io:commons-io:2.13.0")
+  implementation("org.apache.httpcomponents:httpclient:4.5.14")
+  implementation("org.apache.httpcomponents:httpmime:4.5.14")
+  implementation("org.apache.logging.log4j:log4j-api:2.20.0")
+  implementation("org.apache.logging.log4j:log4j-core:2.20.0")
+  implementation("org.graalvm.js:js:22.3.2")
+  testImplementation(enforcedPlatform("org.junit:junit-bom:5.9.3"))
   testImplementation("org.junit.jupiter:junit-jupiter")
 }
 
 group = "com.rarchives.ripme"
 version = "1.7.94"
 description = "ripme"
+
+jacoco {
+  toolVersion = "0.8.10"
+}
 
 jgitver {
   gitCommitIDLength = 8
