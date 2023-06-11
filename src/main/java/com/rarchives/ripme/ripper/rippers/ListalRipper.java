@@ -2,6 +2,8 @@ package com.rarchives.ripme.ripper.rippers;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -204,12 +206,12 @@ public class ListalRipper extends AbstractHTMLRipper {
 
                 String imageUrl = doc.getElementsByClass("pure-img").attr("src");
                 if (imageUrl != "") {
-                    addURLToDownload(new URL(imageUrl), getPrefix(index), "", null, null,
+                    addURLToDownload(new URI(imageUrl).toURL(), getPrefix(index), "", null, null,
                             getImageName());
                 } else {
                     LOGGER.error("Couldnt find image from url: " + url);
                 }
-            } catch (IOException e) {
+            } catch (IOException | URISyntaxException e) {
                 LOGGER.error("[!] Exception while downloading image: " + url, e);
             }
         }
