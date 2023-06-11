@@ -13,7 +13,6 @@ import com.rarchives.ripme.utils.Utils;
 import org.jsoup.Connection.Response;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
 
 import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 import com.rarchives.ripme.utils.Http;
@@ -92,7 +91,6 @@ public class EromeRipper extends AbstractHTMLRipper {
 
     @Override
     public List<String> getURLsFromPage(Document doc) {
-        List<String> URLs = new ArrayList<>();
         return getMediaFromPage(doc);
     }
 

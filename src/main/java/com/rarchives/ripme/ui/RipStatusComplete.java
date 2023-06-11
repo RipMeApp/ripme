@@ -1,6 +1,5 @@
 package com.rarchives.ripme.ui;
 
-import java.io.IOException;
 import java.nio.file.Path;
 
 public class RipStatusComplete {

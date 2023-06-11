@@ -8,8 +8,9 @@ import com.rarchives.ripme.ui.UpdateUtils;
 import com.rarchives.ripme.utils.Proxy;
 import com.rarchives.ripme.utils.RipUtils;
 import com.rarchives.ripme.utils.Utils;
-import org.apache.commons.cli.BasicParser;
+
 import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
@@ -285,7 +286,7 @@ public class App {
     /**
      * Attempt to rip targetURL.
      * @param targetURL URL to rip
-     * @param saveConfig Whether or not you want to save the config (?)
+     * @param saveConfig Whether you want to save the config (?)
      */
     private static void ripURL(String targetURL, boolean saveConfig) {
         try {
@@ -334,7 +335,7 @@ public class App {
      * @return CommandLine object containing arguments.
      */
     private static CommandLine getArgs(String[] args) {
-        BasicParser parser = new BasicParser();
+        var parser = new DefaultParser();
         try {
             return parser.parse(getOptions(), args, false);
         } catch (ParseException e) {

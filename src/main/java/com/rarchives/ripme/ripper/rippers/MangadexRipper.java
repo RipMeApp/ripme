@@ -126,9 +126,8 @@ public class MangadexRipper extends AbstractJSONRipper {
         String server;
         JSONObject chapterJSON = null;
         TreeMap<Double, String> treeMap = new TreeMap<>(chapterIDs);
-        Iterator it = treeMap.keySet().iterator();
-        while (it.hasNext()) {
-            double key = (double) it.next();
+        for (Double aDouble : treeMap.keySet()) {
+            double key = (double) aDouble;
             try {
                 chapterJSON = Http.url(new URL(chapterApiEndPoint + treeMap.get(key))).getJSON();
             } catch (IOException e) {

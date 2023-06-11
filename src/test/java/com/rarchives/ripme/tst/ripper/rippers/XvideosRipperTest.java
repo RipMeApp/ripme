@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.net.URL;
 
 import com.rarchives.ripme.ripper.rippers.XvideosRipper;
-import com.rarchives.ripme.tst.ripper.rippers.RippersTest;
 import org.junit.jupiter.api.Test;
 
 public class XvideosRipperTest extends RippersTest {

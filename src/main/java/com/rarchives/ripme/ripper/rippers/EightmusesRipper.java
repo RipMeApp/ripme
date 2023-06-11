@@ -24,11 +24,6 @@ import com.rarchives.ripme.utils.Http;
 public class EightmusesRipper extends AbstractHTMLRipper {
 
     private Map<String,String> cookies = new HashMap<>();
-    // TODO put up a wiki page on using maps to store titles
-    // the map for storing the title of each album when downloading sub albums
-    private Map<URL,String> urlTitles = new HashMap<>();
-
-    private Boolean rippingSubalbums = false;
 
     public EightmusesRipper(URL url) throws IOException {
         super(url);

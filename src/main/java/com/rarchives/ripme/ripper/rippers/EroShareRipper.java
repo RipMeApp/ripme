@@ -119,7 +119,6 @@ public class EroShareRipper extends AbstractHTMLRipper {
         for (Element img : imgs) {
             if (img.hasClass("album-image")) {
                 String imageURL = img.attr("src");
-                imageURL = imageURL;
                 URLs.add(imageURL);
             }
         }

@@ -7,11 +7,10 @@ public class UpdateUtilsTest {
 
     @Test
     public void testIsNewerVersion() {
-        UpdateUtils updateUtils = new UpdateUtils();
-        Assertions.assertFalse(updateUtils.isNewerVersion("1.7.94"));
-        Assertions.assertFalse(updateUtils.isNewerVersion("1.7.94-9-asdf"));
-        Assertions.assertTrue(updateUtils.isNewerVersion("1.7.94-11-asdf"));
-        Assertions.assertTrue(updateUtils.isNewerVersion("1.7.95"));
+        Assertions.assertFalse(UpdateUtils.isNewerVersion("1.7.94"));
+        Assertions.assertFalse(UpdateUtils.isNewerVersion("1.7.94-9-asdf"));
+        Assertions.assertTrue(UpdateUtils.isNewerVersion("1.7.94-11-asdf"));
+        Assertions.assertTrue(UpdateUtils.isNewerVersion("1.7.95"));
     }
 
 }
