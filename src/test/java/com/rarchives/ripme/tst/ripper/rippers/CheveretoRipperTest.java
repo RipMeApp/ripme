@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 
 public class CheveretoRipperTest extends RippersTest {
     @Test
+    @Tag("flaky")
     public void testTagFox() throws IOException {
         CheveretoRipper ripper = new CheveretoRipper(new URL("http://tag-fox.com/album/Thjb"));
         testRipper(ripper);

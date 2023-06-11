@@ -6,10 +6,12 @@ import java.net.URL;
 import com.rarchives.ripme.ripper.rippers.ArtstnRipper;
 
 import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 public class ArtstnRipperTest extends RippersTest {
 	@Test
+	@Tag("flaky")
 	public void testSingleProject() throws IOException {
 		URL url = new URL("https://artstn.co/p/JlE15Z");
 		testRipper(new ArtstnRipper(url));
