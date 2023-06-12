@@ -24,6 +24,7 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -183,7 +184,7 @@ public class App {
             }
             for (HistoryEntry entry : HISTORY.toList()) {
                 try {
-                    URL url = new URL(entry.url);
+                    URL url = new URI(entry.url).toURL();
                      rip(url);
                 } catch (Exception e) {
                     logger.error("[!] Failed to rip URL " + entry.url, e);
@@ -212,7 +213,7 @@ public class App {
                 if (entry.selected) {
                     added++;
                     try {
-                        URL url = new URL(entry.url);
+                        URL url = new URI(entry.url).toURL();
                         rip(url);
                     } catch (Exception e) {
                         logger.error("[!] Failed to rip URL " + entry.url, e);
@@ -290,7 +291,7 @@ public class App {
      */
     private static void ripURL(String targetURL, boolean saveConfig) {
         try {
-            URL url = new URL(targetURL);
+            URL url = new URI(targetURL).toURL();
             rip(url);
             saveHistory();
         } catch (MalformedURLException e) {

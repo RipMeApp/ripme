@@ -15,6 +15,8 @@ import org.jsoup.nodes.Document;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -73,7 +75,7 @@ public class Http {
 
         String cookieDomain = "";
         try {
-            URL parsed = new URL(u);
+            URL parsed = new URI(u).toURL();
             String cookieStr = "";
 
             String[] parts = parsed.getHost().split("\\.");
@@ -97,7 +99,7 @@ public class Http {
             if (!cookieStr.equals("")) {
                 cookiesParsed = RipUtils.getCookiesFromString(cookieStr.trim());
             }
-        } catch (MalformedURLException e) {
+        } catch (MalformedURLException | URISyntaxException e) {
             logger.warn("Parsing url " + u + " while getting cookies", e);
         }
 
