@@ -37,13 +37,13 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.Date;
-import java.util.Enumeration;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -738,7 +738,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
                     if (!urlText.startsWith("http")) {
                         urlText = "http://" + urlText;
                     }
-                    URL url = new URL(urlText);
+                    URL url = new URI(urlText).toURL();
                     AbstractRipper ripper = AbstractRipper.getRipper(url);
                     statusWithColor(ripper.getHost() + " album detected", Color.GREEN);
                 } catch (Exception e) {
@@ -1282,8 +1282,8 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         }
         URL url;
         try {
-            url = new URL(urlString);
-        } catch (MalformedURLException e) {
+            url = new URI(urlString).toURL();
+        } catch (MalformedURLException | URISyntaxException e) {
             LOGGER.error("[!] Could not generate URL for '" + urlString + "'", e);
             error("Given URL is not valid, expecting http://website.com/page/...");
             return null;
@@ -1340,7 +1340,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
             if (!urlText.startsWith("http")) {
                 urlText = "http://" + urlText;
             }
-            URL url = new URL(urlText);
+            URL url = new URI(urlText).toURL();
             // Ripper is needed here to throw/not throw an Exception
             AbstractRipper ripper = AbstractRipper.getRipper(url);
             return true;
