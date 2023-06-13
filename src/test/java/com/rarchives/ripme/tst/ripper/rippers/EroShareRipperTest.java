@@ -3,7 +3,6 @@ package com.rarchives.ripme.tst.ripper.rippers;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
 
 import com.rarchives.ripme.ripper.rippers.EroShareRipper;
 import com.rarchives.ripme.ripper.rippers.RedditRipper;
