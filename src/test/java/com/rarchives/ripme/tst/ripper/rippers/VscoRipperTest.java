@@ -7,6 +7,8 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 
 public class VscoRipperTest extends RippersTest {
@@ -18,8 +20,8 @@ public class VscoRipperTest extends RippersTest {
      */
     @Test
     @Tag("flaky")
-    public void testSingleImageRip() throws IOException {
-        VscoRipper ripper = new VscoRipper(new URL("https://vsco.co/jonathangodoy/media/5d1aec76bb669a128035e98a"));
+    public void testSingleImageRip() throws IOException, URISyntaxException {
+        VscoRipper ripper = new VscoRipper(new URI("https://vsco.co/jonathangodoy/media/5d1aec76bb669a128035e98a").toURL());
         testRipper(ripper);
     }
 
@@ -30,8 +32,8 @@ public class VscoRipperTest extends RippersTest {
      * @throws IOException
      */
     @Test
-    public void testHyphenatedRip() throws IOException {
-        VscoRipper ripper = new VscoRipper(new URL("https://vsco.co/jolly-roger/gallery"));
+    public void testHyphenatedRip() throws IOException, URISyntaxException {
+        VscoRipper ripper = new VscoRipper(new URI("https://vsco.co/jolly-roger/gallery").toURL());
         testRipper(ripper);
     }
 
@@ -41,8 +43,8 @@ public class VscoRipperTest extends RippersTest {
      * @throws IOException
      */
     @Test
-    public void testGetGID() throws IOException {
-        URL url = new URL("https://vsco.co/jolly-roger/media/590359c4ade3041f2658f407");
+    public void testGetGID() throws IOException, URISyntaxException {
+        URL url = new URI("https://vsco.co/jolly-roger/media/590359c4ade3041f2658f407").toURL();
 
         VscoRipper ripper = new VscoRipper(url);
 

@@ -1,6 +1,8 @@
 package com.rarchives.ripme.tst.ripper.rippers;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 
 import com.rarchives.ripme.ripper.rippers.NfsfwRipper;
@@ -13,21 +15,21 @@ public class NfsfwRipperTest extends RippersTest {
 
     @Test
     @Disabled("https://github.com/RipMeApp/ripme/issues/291 -- nfsfw 'account suspended' error; disabled flaky test in CI")
-    public void testNfsfwRip() throws IOException {
-        NfsfwRipper ripper = new NfsfwRipper(new URL("http://nfsfw.com/gallery/v/Kitten/"));
+    public void testNfsfwRip() throws IOException, URISyntaxException {
+        NfsfwRipper ripper = new NfsfwRipper(new URI("http://nfsfw.com/gallery/v/Kitten/").toURL());
         testRipper(ripper);
     }
 
     @Test
-    public void testGetGID() throws IOException {
-        URL url = new URL("http://nfsfw.com/gallery/v/Kitten/");
+    public void testGetGID() throws IOException, URISyntaxException {
+        URL url = new URI("http://nfsfw.com/gallery/v/Kitten/").toURL();
         NfsfwRipper ripper = new NfsfwRipper(url);
         Assertions.assertEquals("Kitten", ripper.getGID(url));
-        url = new URL("http://nfsfw.com/gallery/v/Kitten");
+        url = new URI("http://nfsfw.com/gallery/v/Kitten").toURL();
         Assertions.assertEquals("Kitten", ripper.getGID(url));
-        url = new URL("http://nfsfw.com/gallery/v/Kitten/gif_001/");
+        url = new URI("http://nfsfw.com/gallery/v/Kitten/gif_001/").toURL();
         Assertions.assertEquals("Kitten__gif_001", ripper.getGID(url));
-        url = new URL("http://nfsfw.com/gallery/v/Kitten/gif_001/");
+        url = new URI("http://nfsfw.com/gallery/v/Kitten/gif_001/").toURL();
         Assertions.assertEquals("Kitten__gif_001", ripper.getGID(url));
     }
 }
