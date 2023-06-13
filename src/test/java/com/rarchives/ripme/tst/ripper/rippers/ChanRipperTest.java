@@ -52,17 +52,17 @@ public class ChanRipperTest extends RippersTest {
     @Test
     public void testChanRipper() throws IOException, URISyntaxException {
         List<URL> contentURLs = new ArrayList<>();
-        contentURLs.add(new URI(getRandomThreadDesuarchive()).toURL());
+        contentURLs.add(getRandomThreadDesuarchive());
         for (URL url : contentURLs) {
             ChanRipper ripper = new ChanRipper(url);
             testChanRipper(ripper);
         }
     }
 
-    public String getRandomThreadDesuarchive() throws URISyntaxException {
+    public URL getRandomThreadDesuarchive() throws URISyntaxException {
         try {
             Document doc = Http.url(new URI("https://desuarchive.org/wsg/").toURL()).get();
-            return doc.select("div.post_data > a").first().attr("href");
+            return new URI(doc.select("div.post_data > a").first().attr("href")).toURL();
         } catch (IOException e) {
             e.printStackTrace();
         }

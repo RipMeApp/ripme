@@ -1,6 +1,8 @@
 package com.rarchives.ripme.tst.ripper.rippers;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -40,9 +42,9 @@ public class VideoRippersTest extends RippersTest {
 
     @Test
     @Disabled("Test disbaled. See https://github.com/RipMeApp/ripme/issues/574")
-    public void testTwitchVideoRipper() throws IOException {
+    public void testTwitchVideoRipper() throws IOException, URISyntaxException {
         List<URL> contentURLs = new ArrayList<>();
-        contentURLs.add(new URL("https://clips.twitch.tv/FaithfulIncredulousPotTBCheesePull"));
+        contentURLs.add(new URI("https://clips.twitch.tv/FaithfulIncredulousPotTBCheesePull").toURL());
         for (URL url : contentURLs) {
             // TwitchVideoRipper ripper = new TwitchVideoRipper(url);
             // videoTestHelper(ripper);
@@ -51,18 +53,18 @@ public class VideoRippersTest extends RippersTest {
 
     @Test
     @Disabled("Test disabled see https://github.com/RipMeApp/ripme/issues/1095")
-    public void testPornhubRipper() throws IOException {
+    public void testPornhubRipper() throws IOException, URISyntaxException {
         List<URL> contentURLs = new ArrayList<>();
-        contentURLs.add(new URL("https://www.pornhub.com/view_video.php?viewkey=ph5a329fa707269"));
+        contentURLs.add(new URI("https://www.pornhub.com/view_video.php?viewkey=ph5a329fa707269").toURL());
         for (URL url : contentURLs) {
             PornhubRipper ripper = new PornhubRipper(url);
             videoTestHelper(ripper);
         }
     }
 
-    public void testYuvutuRipper() throws IOException {
+    public void testYuvutuRipper() throws IOException, URISyntaxException {
         List<URL> contentURLs = new ArrayList<>();
-        contentURLs.add(new URL("http://www.yuvutu.com/video/828499/female-reader-armpit-job/"));
+        contentURLs.add(new URI("http://www.yuvutu.com/video/828499/female-reader-armpit-job/").toURL());
         for (URL url : contentURLs) {
             YuvutuRipper ripper = new YuvutuRipper(url);
             videoTestHelper(ripper);

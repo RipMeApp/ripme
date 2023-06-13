@@ -30,6 +30,8 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 
 /**
@@ -45,17 +47,17 @@ public class ThechiveRipperTest extends RippersTest {
      */
     @Test
     @Tag("flaky")
-    public void testTheChiveRip() throws IOException {
-        ThechiveRipper ripper = new ThechiveRipper(new URL(
-                "https://thechive.com/2019/03/16/beautiful-badasses-lookin-good-in-and-out-of-uniform-35-photos/"));
+    public void testTheChiveRip() throws IOException, URISyntaxException {
+        ThechiveRipper ripper = new ThechiveRipper(new URI(
+                "https://thechive.com/2019/03/16/beautiful-badasses-lookin-good-in-and-out-of-uniform-35-photos/").toURL());
         testRipper(ripper);
     }
 
     @Test
     @Tag("flaky")
-    public void testTheChiveGif() throws IOException {
+    public void testTheChiveGif() throws IOException, URISyntaxException {
         ThechiveRipper ripper = new ThechiveRipper(
-                new URL("https://thechive.com/2019/03/14/dont-tease-me-just-squeeze-me-20-gifs/"));
+                new URI("https://thechive.com/2019/03/14/dont-tease-me-just-squeeze-me-20-gifs/").toURL());
         testRipper(ripper);
     }
 
@@ -64,8 +66,8 @@ public class ThechiveRipperTest extends RippersTest {
      */
     @Test
     @Tag("flaky")
-    public void testIDotThechive() throws IOException {
-        ThechiveRipper ripper = new ThechiveRipper(new URL("https://i.thechive.com/witcheva"));
+    public void testIDotThechive() throws IOException, URISyntaxException {
+        ThechiveRipper ripper = new ThechiveRipper(new URI("https://i.thechive.com/witcheva").toURL());
         testRipper(ripper);
     }
 
