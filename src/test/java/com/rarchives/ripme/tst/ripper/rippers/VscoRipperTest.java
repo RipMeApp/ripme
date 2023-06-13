@@ -19,9 +19,8 @@ public class VscoRipperTest extends RippersTest {
      * @throws IOException
      */
     @Test
-    @Tag("flaky")
     public void testSingleImageRip() throws IOException, URISyntaxException {
-        VscoRipper ripper = new VscoRipper(new URI("https://vsco.co/jonathangodoy/media/5d1aec76bb669a128035e98a").toURL());
+        VscoRipper ripper = new VscoRipper(new URI("https://vsco.co/jolly-roger/media/597ce449846079297b3f7cf3").toURL());
         testRipper(ripper);
     }
 
