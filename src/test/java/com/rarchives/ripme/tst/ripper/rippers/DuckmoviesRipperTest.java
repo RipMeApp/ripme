@@ -6,14 +6,15 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
-import java.net.URL;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 public class DuckmoviesRipperTest extends RippersTest {
     @Test
     @Disabled("Broken ripper")
-    public void testRip() throws IOException {
+    public void testRip() throws IOException, URISyntaxException {
         DuckmoviesRipper ripper = new DuckmoviesRipper(
-                new URL("https://palapaja.com/spyfam-stepbro-gives-in-to-stepsis-asian-persuasion/"));
+                new URI("https://palapaja.com/spyfam-stepbro-gives-in-to-stepsis-asian-persuasion/").toURL());
         testRipper(ripper);
     }
 
