@@ -1,6 +1,8 @@
 package com.rarchives.ripme.tst.ripper.rippers;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -17,12 +19,12 @@ public class HentainexusRipperTest extends RippersTest {
     @Test
     @Tag("flaky")
     @Disabled("20/05/2021 This test was disabled as the site has experienced notable downtime")
-    public void testHentaiNexusJson() throws IOException {
+    public void testHentaiNexusJson() throws IOException, URISyntaxException {
         List<URL> testURLs = new ArrayList<>();
-        testURLs.add(new URL("https://hentainexus.com/view/9202"));
-        testURLs.add(new URL("https://hentainexus.com/read/9202"));
-        testURLs.add(new URL("https://hentainexus.com/view/9202#001"));
-        testURLs.add(new URL("https://hentainexus.com/read/9202#001"));
+        testURLs.add(new URI("https://hentainexus.com/view/9202").toURL());
+        testURLs.add(new URI("https://hentainexus.com/read/9202").toURL());
+        testURLs.add(new URI("https://hentainexus.com/view/9202#001").toURL());
+        testURLs.add(new URI("https://hentainexus.com/read/9202#001").toURL());
 
         for (URL url : testURLs) {
 

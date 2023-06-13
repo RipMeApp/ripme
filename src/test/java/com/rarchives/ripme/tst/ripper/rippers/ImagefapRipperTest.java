@@ -1,6 +1,8 @@
 package com.rarchives.ripme.tst.ripper.rippers;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -13,15 +15,15 @@ import org.junit.jupiter.api.Test;
 public class ImagefapRipperTest extends RippersTest {
     @Test
     @Tag("flaky")
-    public void testImagefapAlbums() throws IOException {
+    public void testImagefapAlbums() throws IOException, URISyntaxException {
         Map<URL, String> testURLs = new HashMap<>();
 
         // Album with specific title
-        testURLs.put(new URL("http://www.imagefap.com/pictures/4649440/Frozen-%28Elsa-and-Anna%29?view=2"),
+        testURLs.put(new URI("http://www.imagefap.com/pictures/4649440/Frozen-%28Elsa-and-Anna%29?view=2").toURL(),
                              "Frozen (Elsa and Anna)");
 
         // New URL format
-        testURLs.put(new URL("http://www.imagefap.com/gallery.php?pgid=fffd68f659befa5535cf78f014e348f1"),
+        testURLs.put(new URI("http://www.imagefap.com/gallery.php?pgid=fffd68f659befa5535cf78f014e348f1").toURL(),
                              "imagefap_fffd68f659befa5535cf78f014e348f1");
 
         for (URL url : testURLs.keySet()) {
@@ -31,8 +33,8 @@ public class ImagefapRipperTest extends RippersTest {
     }
     @Test
     @Tag("flaky")
-    public void testImagefapGetAlbumTitle() throws IOException {
-        URL url = new URL("https://www.imagefap.com/gallery.php?gid=7789753");
+    public void testImagefapGetAlbumTitle() throws IOException, URISyntaxException {
+        URL url = new URI("https://www.imagefap.com/gallery.php?gid=7789753").toURL();
         ImagefapRipper ripper = new ImagefapRipper(url);
         Assertions.assertEquals("imagefap_Red.Heels.Lover.In.Love_7789753", ripper.getAlbumTitle(url));
     }
