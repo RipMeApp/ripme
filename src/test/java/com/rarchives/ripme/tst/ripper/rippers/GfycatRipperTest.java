@@ -4,35 +4,33 @@ import com.rarchives.ripme.ripper.rippers.GfycatRipper;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
-import java.net.URL;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 
 public class GfycatRipperTest extends RippersTest {
     
     /**
      * Rips correctly formatted URL directly from Gfycat
-     * @throws IOException 
      */
     @Test
-    public void testGfycatGoodURL() throws IOException{
-        GfycatRipper ripper = new GfycatRipper(new URL("https://gfycat.com/TemptingExcellentIchthyosaurs"));
+    public void testGfycatGoodURL() throws IOException, URISyntaxException {
+        GfycatRipper ripper = new GfycatRipper(new URI("https://gfycat.com/TemptingExcellentIchthyosaurs").toURL());
         testRipper(ripper);
     }
     /**
      * Rips badly formatted URL directly from Gfycat
-     * @throws IOException 
      */
-    public void testGfycatBadURL() throws IOException {
-        GfycatRipper ripper  = new GfycatRipper(new URL("https://gfycat.com/gifs/detail/limitedtestyamericancrow"));
+    public void testGfycatBadURL() throws IOException, URISyntaxException {
+        GfycatRipper ripper  = new GfycatRipper(new URI("https://gfycat.com/gifs/detail/limitedtestyamericancrow").toURL());
         testRipper(ripper);
     }
 
     /**
      * Rips a Gfycat profile
-     * @throws IOException 
      */
-    public void testGfycatProfile() throws IOException {
-        GfycatRipper ripper  = new GfycatRipper(new URL("https://gfycat.com/@golbanstorage"));
+    public void testGfycatProfile() throws IOException, URISyntaxException {
+        GfycatRipper ripper  = new GfycatRipper(new URI("https://gfycat.com/@golbanstorage").toURL());
         testRipper(ripper);
     }
     
@@ -40,17 +38,16 @@ public class GfycatRipperTest extends RippersTest {
      * Rips a Gfycat amp link 
      * @throws IOException 
      */
-    public void testGfycatAmp() throws IOException {
-        GfycatRipper ripper = new GfycatRipper(new URL("https://gfycat.com/amp/TemptingExcellentIchthyosaurs"));
+    public void testGfycatAmp() throws IOException, URISyntaxException {
+        GfycatRipper ripper = new GfycatRipper(new URI("https://gfycat.com/amp/TemptingExcellentIchthyosaurs").toURL());
         testRipper(ripper);
     }
 
     /**
      * Rips a Gfycat profile with special characters in username
-     * @throws IOException
      */
-    public void testGfycatSpecialChar() throws IOException {
-        GfycatRipper ripper = new GfycatRipper(new URL("https://gfycat.com/@rsss.kr"));
+    public void testGfycatSpecialChar() throws IOException, URISyntaxException {
+        GfycatRipper ripper = new GfycatRipper(new URI("https://gfycat.com/@rsss.kr").toURL());
         testRipper(ripper);
     }
 }
