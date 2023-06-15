@@ -42,7 +42,7 @@ public class RipUtils {
                     logger.debug("Got imgur image: " + imgurImage.url);
                     result.add(imgurImage.url);
                 }
-            } catch (IOException e) {
+            } catch (IOException | URISyntaxException e) {
                 logger.error("[!] Exception while loading album " + url, e);
             }
             return result;

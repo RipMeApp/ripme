@@ -7,6 +7,7 @@ import com.rarchives.ripme.utils.Utils;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -33,7 +34,7 @@ public abstract class AlbumRipper extends AbstractRipper {
     }
 
     public abstract boolean canRip(URL url);
-    public abstract URL sanitizeURL(URL url) throws MalformedURLException;
+    public abstract URL sanitizeURL(URL url) throws MalformedURLException, URISyntaxException;
     public abstract void rip() throws IOException;
     public abstract String getHost();
     public abstract String getGID(URL url) throws MalformedURLException;
