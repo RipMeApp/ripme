@@ -3,6 +3,8 @@ package com.rarchives.ripme.ripper.rippers;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -56,19 +58,19 @@ public class RedditRipper extends AlbumRipper {
     }
 
     @Override
-    public URL sanitizeURL(URL url) throws MalformedURLException {
+    public URL sanitizeURL(URL url) throws MalformedURLException, URISyntaxException {
         String u = url.toExternalForm();
         // Strip '/u/' from URL
         u = u.replaceAll("reddit\\.com/u/", "reddit.com/user/");
-        return new URL(u);
+        return new URI(u).toURL();
     }
 
-    private URL getJsonURL(URL url) throws MalformedURLException {
+    private URL getJsonURL(URL url) throws MalformedURLException, URISyntaxException {
         // Convert gallery to post link and append ".json"
         Pattern p = Pattern.compile("^https?://[a-zA-Z0-9.]{0,4}reddit\\.com/gallery/([a-zA-Z0-9]+).*$");
         Matcher m = p.matcher(url.toExternalForm());
         if (m.matches()) {
-            return new URL("https://reddit.com/" +m.group(m.groupCount())+ ".json");
+            return new URI("https://reddit.com/" +m.group(m.groupCount())+ ".json").toURL();
         }
 
         // Append ".json" to URL in appropriate location.
@@ -76,28 +78,32 @@ public class RedditRipper extends AlbumRipper {
         if (url.getQuery() != null) {
             result += "?" + url.getQuery();
         }
-        return new URL(result);
+        return new URI(result).toURL();
     }
 
     @Override
     public void rip() throws IOException {
-        URL jsonURL = getJsonURL(this.url);
-        while (true) {
-            if (shouldAddURL()) {
-                sendUpdate(RipStatusMessage.STATUS.DOWNLOAD_COMPLETE_HISTORY, "Already seen the last " + alreadyDownloadedUrls + " images ending rip");
-                break;
+        try {
+            URL jsonURL = getJsonURL(this.url);
+            while (true) {
+                if (shouldAddURL()) {
+                    sendUpdate(RipStatusMessage.STATUS.DOWNLOAD_COMPLETE_HISTORY, "Already seen the last " + alreadyDownloadedUrls + " images ending rip");
+                    break;
+                }
+                jsonURL = getAndParseAndReturnNext(jsonURL);
+                if (jsonURL == null || isThisATest() || isStopped()) {
+                    break;
+                }
             }
-            jsonURL = getAndParseAndReturnNext(jsonURL);
-            if (jsonURL == null || isThisATest() || isStopped()) {
-                break;
-            }
+        } catch (URISyntaxException e) {
+            new IOException(e.getMessage());
         }
         waitForThreads();
     }
 
 
 
-    private URL getAndParseAndReturnNext(URL url) throws IOException {
+    private URL getAndParseAndReturnNext(URL url) throws IOException, URISyntaxException {
         JSONArray jsonArray = getJsonArrayFromURL(url), children;
         JSONObject json, data;
         URL nextURL = null;
@@ -118,7 +124,7 @@ public class RedditRipper extends AlbumRipper {
                     if (children.getJSONObject(j).getString("kind").equals("t3") &&
                             children.getJSONObject(j).getJSONObject("data").getBoolean("is_self")
                     ) {
-                        URL selfPostURL = new URL(children.getJSONObject(j).getJSONObject("data").getString("url"));
+                        URL selfPostURL = new URI(children.getJSONObject(j).getJSONObject("data").getString("url")).toURL();
                         System.out.println(selfPostURL.toExternalForm());
                         saveText(getJsonArrayFromURL(getJsonURL(selfPostURL)));
                     }
@@ -134,7 +140,7 @@ public class RedditRipper extends AlbumRipper {
                 else {
                     nextURLString = nextURLString.concat("?after=" + data.getString("after"));
                 }
-                nextURL = new URL(nextURLString);
+                nextURL = new URI(nextURLString).toURL();
             }
         }
 
@@ -378,8 +384,8 @@ public class RedditRipper extends AlbumRipper {
                     baseURL = doc.select("MPD > Period > AdaptationSet > Representation[height=" + height + "]").select("BaseURL").text();
                 }
             }
-            return new URL(vidURL + "/" + baseURL);
-        } catch (IOException e) {
+            return new URI(vidURL + "/" + baseURL).toURL();
+        } catch (IOException | URISyntaxException e) {
             e.printStackTrace();
         }
         return null;
@@ -389,8 +395,8 @@ public class RedditRipper extends AlbumRipper {
     private void handleURL(String theUrl, String id, String title) {
         URL originalURL;
         try {
-            originalURL = new URL(theUrl);
-        } catch (MalformedURLException e) {
+            originalURL = new URI(theUrl).toURL();
+        } catch (MalformedURLException | URISyntaxException e) {
             return;
         }
         String subdirectory = "";
@@ -455,12 +461,12 @@ public class RedditRipper extends AlbumRipper {
             try {
                 URL mediaURL;
             	if (!media.getJSONObject("s").isNull("gif")) {
-            		mediaURL = new URL(media.getJSONObject("s").getString("gif").replaceAll("&amp;", "&"));
+            		mediaURL = new URI(media.getJSONObject("s").getString("gif").replaceAll("&amp;", "&")).toURL();
             	} else {
-            		mediaURL = new URL(media.getJSONObject("s").getString("u").replaceAll("&amp;", "&"));
+            		mediaURL = new URI(media.getJSONObject("s").getString("u").replaceAll("&amp;", "&")).toURL();
             	}
                 addURLToDownload(mediaURL, prefix, subdirectory);
-            } catch (MalformedURLException | JSONException e) {
+            } catch (MalformedURLException | JSONException | URISyntaxException e) {
                 LOGGER.error("[!] Unable to parse gallery JSON:\ngallery_data:\n" + data +"\nmedia_metadata:\n" + metadata);
             }
         }
