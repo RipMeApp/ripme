@@ -9,6 +9,7 @@ import org.jsoup.select.Elements;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -84,7 +85,7 @@ public class LusciousRipper extends AbstractHTMLRipper {
     }
 
     @Override
-    public URL sanitizeURL(URL url) throws MalformedURLException {
+    public URL sanitizeURL(URL url) throws MalformedURLException, URISyntaxException {
         // Sanitizes the url removing GET parameters and convert to legacy api url.
         // "https://legacy.luscious.net/albums/albumname"
         try {

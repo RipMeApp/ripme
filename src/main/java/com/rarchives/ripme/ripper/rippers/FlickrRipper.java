@@ -2,6 +2,8 @@ package com.rarchives.ripme.ripper.rippers;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -62,7 +64,7 @@ public class FlickrRipper extends AbstractHTMLRipper {
     }
 
     @Override
-    public URL sanitizeURL(URL url) throws MalformedURLException {
+    public URL sanitizeURL(URL url) throws MalformedURLException, URISyntaxException {
         String sUrl = url.toExternalForm();
         // Strip out https
         sUrl = sUrl.replace("https://secure.flickr.com", "http://www.flickr.com");
@@ -73,7 +75,7 @@ public class FlickrRipper extends AbstractHTMLRipper {
             }
             sUrl += "pool";
         }
-        return new URL(sUrl);
+        return new URI(sUrl).toURL();
     }
     // FLickr is one of those sites what includes a api key in sites javascript
     // TODO let the user provide their own api key

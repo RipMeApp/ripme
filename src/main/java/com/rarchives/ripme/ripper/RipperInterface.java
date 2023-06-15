@@ -14,7 +14,7 @@ import java.net.URL;
 interface RipperInterface {
     void rip() throws IOException, URISyntaxException;
     boolean canRip(URL url);
-    URL sanitizeURL(URL url) throws MalformedURLException;
+    URL sanitizeURL(URL url) throws MalformedURLException, URISyntaxException;
     void setWorkingDir(URL url) throws IOException;
     String getHost();
     String getGID(URL url) throws MalformedURLException;

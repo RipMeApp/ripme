@@ -73,7 +73,7 @@ public abstract class AbstractHTMLRipper extends AbstractRipper {
     }
 
     @Override
-    public URL sanitizeURL(URL url) throws MalformedURLException {
+    public URL sanitizeURL(URL url) throws MalformedURLException, URISyntaxException {
         return url;
     }
     protected boolean hasDescriptionSupport() {

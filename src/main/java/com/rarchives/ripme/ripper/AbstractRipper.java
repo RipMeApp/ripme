@@ -172,7 +172,11 @@ public abstract class AbstractRipper
         if (!canRip(url)) {
             throw new MalformedURLException("Unable to rip url: " + url);
         }
-        this.url = sanitizeURL(url);
+        try {
+            this.url = sanitizeURL(url);
+        } catch (URISyntaxException e) {
+            throw new MalformedURLException(e.getMessage());
+        }
     }
 
     /**
