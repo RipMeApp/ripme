@@ -3,8 +3,7 @@ package com.rarchives.ripme.ripper;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
+import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -104,7 +103,7 @@ public abstract class AbstractHTMLRipper extends AbstractRipper {
     }
 
     @Override
-    public void rip() throws IOException {
+    public void rip() throws IOException, URISyntaxException {
         int index = 0;
         int textindex = 0;
         LOGGER.info("Retrieving " + this.url);

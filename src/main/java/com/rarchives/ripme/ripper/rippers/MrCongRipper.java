@@ -5,6 +5,7 @@ import com.rarchives.ripme.utils.Http;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -214,7 +215,7 @@ public class MrCongRipper extends AbstractHTMLRipper {
                     mcr.rip();
                 }
 
-            } catch (IOException e) {
+            } catch (IOException | URISyntaxException e) {
                 e.printStackTrace();
             }
         }
