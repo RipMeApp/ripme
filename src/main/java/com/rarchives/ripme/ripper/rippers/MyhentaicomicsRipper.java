@@ -13,8 +13,6 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
 public class MyhentaicomicsRipper extends AbstractHTMLRipper {
-    private static boolean isTag;
-
     public MyhentaicomicsRipper(URL url) throws IOException {
     super(url);
     }
@@ -69,7 +67,6 @@ public class MyhentaicomicsRipper extends AbstractHTMLRipper {
         Pattern pat = Pattern.compile("^https?://myhentaicomics.com/index.php/tag/([0-9]*)/?([a-zA-Z%0-9+?=:]*)?$");
         Matcher mat = pat.matcher(url.toExternalForm());
         if (mat.matches()) {
-            isTag = true;
             return true;
         }
         return false;
