@@ -96,7 +96,7 @@ public class ListalRipper extends AbstractHTMLRipper {
     }
 
     @Override
-    public Document getNextPage(Document page) throws IOException {
+    public Document getNextPage(Document page) throws IOException, URISyntaxException {
         Document nextPage = super.getNextPage(page);
         switch (urlType) {
             case LIST:

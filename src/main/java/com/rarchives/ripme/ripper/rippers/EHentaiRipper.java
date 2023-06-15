@@ -13,6 +13,8 @@ import org.jsoup.select.Elements;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -154,7 +156,7 @@ public class EHentaiRipper extends AbstractHTMLRipper {
     }
 
     @Override
-    public Document getNextPage(Document doc) throws IOException {
+    public Document getNextPage(Document doc) throws IOException, URISyntaxException {
         // Check if we've stopped
         if (isStopped()) {
             throw new IOException("Ripping interrupted");
@@ -174,7 +176,7 @@ public class EHentaiRipper extends AbstractHTMLRipper {
         // Sleep before loading next page
         sleep(PAGE_SLEEP_TIME);
         // Load next page
-        Document nextPage = getPageWithRetries(new URL(nextURL));
+        Document nextPage = getPageWithRetries(new URI(nextURL).toURL());
         this.lastURL = nextURL;
         return nextPage;
     }

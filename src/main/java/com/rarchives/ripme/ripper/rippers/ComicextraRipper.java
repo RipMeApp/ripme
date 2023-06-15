@@ -2,6 +2,7 @@ package com.rarchives.ripme.ripper.rippers;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -96,7 +97,7 @@ public class ComicextraRipper extends AbstractHTMLRipper {
     }
 
     @Override
-    public Document getNextPage(Document doc) throws IOException {
+    public Document getNextPage(Document doc) throws IOException, URISyntaxException {
         if (urlType == UrlType.COMIC) {
             ++chapterIndex;
             imageIndex = 0; // Resetting the imagesIndex so that images prefix within each chapter starts from '001_'.

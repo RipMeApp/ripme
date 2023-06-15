@@ -51,7 +51,7 @@ public abstract class AbstractHTMLRipper extends AbstractRipper {
         return cachedFirstPage;
     }
 
-    public Document getNextPage(Document doc) throws IOException {
+    public Document getNextPage(Document doc) throws IOException, URISyntaxException {
         return null;
     }
     protected abstract List<String> getURLsFromPage(Document page);
