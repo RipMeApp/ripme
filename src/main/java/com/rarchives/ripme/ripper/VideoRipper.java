@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Path;
 import java.util.Map;
@@ -22,7 +23,7 @@ public abstract class VideoRipper extends AbstractRipper {
         super(url);
     }
 
-    public abstract void rip() throws IOException;
+    public abstract void rip() throws IOException, URISyntaxException;
 
     public abstract String getHost();
 

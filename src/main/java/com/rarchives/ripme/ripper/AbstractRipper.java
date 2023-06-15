@@ -8,6 +8,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -48,7 +49,7 @@ public abstract class AbstractRipper
 
     private boolean completed = true;
 
-    public abstract void rip() throws IOException;
+    public abstract void rip() throws IOException, URISyntaxException;
     public abstract String getHost();
     public abstract String getGID(URL url) throws MalformedURLException;
     public boolean hasASAPRipping() { return false; }
