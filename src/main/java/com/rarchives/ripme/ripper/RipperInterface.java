@@ -17,5 +17,5 @@ interface RipperInterface {
     URL sanitizeURL(URL url) throws MalformedURLException, URISyntaxException;
     void setWorkingDir(URL url) throws IOException;
     String getHost();
-    String getGID(URL url) throws MalformedURLException;
+    String getGID(URL url) throws MalformedURLException, URISyntaxException;
 }

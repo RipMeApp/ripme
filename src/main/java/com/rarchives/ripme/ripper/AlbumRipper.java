@@ -37,7 +37,7 @@ public abstract class AlbumRipper extends AbstractRipper {
     public abstract URL sanitizeURL(URL url) throws MalformedURLException, URISyntaxException;
     public abstract void rip() throws IOException;
     public abstract String getHost();
-    public abstract String getGID(URL url) throws MalformedURLException;
+    public abstract String getGID(URL url) throws MalformedURLException, URISyntaxException;
 
     protected boolean allowDuplicates() {
         return false;

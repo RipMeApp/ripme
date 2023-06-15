@@ -86,7 +86,12 @@ public class ImgurRipper extends AlbumRipper {
     }
 
     public String getAlbumTitle(URL url) throws MalformedURLException {
-        String gid = getGID(url);
+        String gid = null;
+        try {
+            gid = getGID(url);
+        } catch (URISyntaxException e) {
+            throw new MalformedURLException(e.getMessage());
+        }
         if (this.albumType == ALBUM_TYPE.ALBUM) {
             try {
                 // Attempt to use album title as GID
@@ -459,7 +464,7 @@ public class ImgurRipper extends AlbumRipper {
     }
 
     @Override
-    public String getGID(URL url) throws MalformedURLException {
+    public String getGID(URL url) throws MalformedURLException, URISyntaxException {
         Pattern p;
         Matcher m;
 
@@ -469,7 +474,7 @@ public class ImgurRipper extends AlbumRipper {
             // Imgur album or gallery
             albumType = ALBUM_TYPE.ALBUM;
             String gid = m.group(m.groupCount());
-            this.url = new URL("http://imgur.com/a/" + gid);
+            this.url = new URI("http://imgur.com/a/" + gid).toURL();
             return gid;
         }
         p = Pattern.compile("^https?://(www\\.|m\\.)?imgur\\.com/(a|gallery|t)/[a-zA-Z0-9]*/([a-zA-Z0-9]{5,}).*$");
@@ -478,7 +483,7 @@ public class ImgurRipper extends AlbumRipper {
             // Imgur album or gallery
             albumType = ALBUM_TYPE.ALBUM;
             String gid = m.group(m.groupCount());
-            this.url = new URL("http://imgur.com/a/" + gid);
+            this.url = new URI("http://imgur.com/a/" + gid).toURL();
             return gid;
         }
         p = Pattern.compile("^https?://([a-zA-Z0-9\\-]{3,})\\.imgur\\.com/?$");
@@ -526,7 +531,7 @@ public class ImgurRipper extends AlbumRipper {
             albumType = ALBUM_TYPE.ALBUM;
             String subreddit = m.group(m.groupCount() - 1);
             String gid = m.group(m.groupCount());
-            this.url = new URL("http://imgur.com/r/" + subreddit + "/" + gid);
+            this.url = new URI("http://imgur.com/r/" + subreddit + "/" + gid).toURL();
             return "r_" + subreddit + "_" + gid;
         }
         p = Pattern.compile("^https?://(i\\.|www\\.|m\\.)?imgur\\.com/([a-zA-Z0-9]{5,})$");

@@ -51,7 +51,7 @@ public abstract class AbstractRipper
 
     public abstract void rip() throws IOException, URISyntaxException;
     public abstract String getHost();
-    public abstract String getGID(URL url) throws MalformedURLException;
+    public abstract String getGID(URL url) throws MalformedURLException, URISyntaxException;
     public boolean hasASAPRipping() { return false; }
     // Everytime addUrlToDownload skips a already downloaded url this increases by 1
     public int alreadyDownloadedUrls = 0;
@@ -551,7 +551,11 @@ public abstract class AbstractRipper
      *      If any of those damned URLs gets malformed.
      */
     public String getAlbumTitle(URL url) throws MalformedURLException {
-        return getHost() + "_" + getGID(url);
+        try {
+            return getHost() + "_" + getGID(url);
+        } catch (URISyntaxException e) {
+            throw new MalformedURLException(e.getMessage());
+        }
     }
 
     /**
