@@ -1,8 +1,11 @@
 package com.rarchives.ripme.ripper.rippers;
 
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -10,6 +13,7 @@ import java.util.regex.Pattern;
 
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
 import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
@@ -141,6 +145,8 @@ public class ImagefapRipper extends AbstractHTMLRipper {
             if(image == null)
                 throw new RuntimeException("Unable to extract image URL from single image page! Unable to continue");
 
+            LOGGER.debug("Adding imageURL: '" + image + "'");
+
             imageURLs.add(image);
             if (isThisATest()) {
                 break;
@@ -177,9 +183,29 @@ public class ImagefapRipper extends AbstractHTMLRipper {
             sleep(IMAGE_SLEEP_TIME);
 
             Document doc = getPageWithRetries(new URL(pageURL));
-            return doc.select("img#mainPhoto").attr("src");
+
+            String framedPhotoUrl = doc.select("img#mainPhoto").attr("data-src");
+
+            // we use a no query param version of the URL to reduce failure rate because of some query params that change between the li elements and the mainPhotoURL
+            String noQueryPhotoUrl = framedPhotoUrl.split("\\?")[0];
+
+            LOGGER.debug("noQueryPhotoUrl: " + noQueryPhotoUrl);
+            
+            // we look for a li > a element who's framed attribute starts with the noQueryPhotoUrl (only reference in the page to the full URL)
+            Elements selectedItem = doc.select("ul.thumbs > li > a[framed^='"+noQueryPhotoUrl+"']");
+            
+            // the fullsize URL is in the href attribute
+            String fullSizedUrl = selectedItem.attr("href");
+            
+            if("".equals(fullSizedUrl))
+                throw new IOException("JSoup full URL extraction failed from '" + selectedItem.html() + "'");
+            
+            LOGGER.debug("fullSizedUrl: " + fullSizedUrl);
+
+            return fullSizedUrl;
+
         } catch (IOException e) {
-            LOGGER.debug("Unable to get full size image URL from page URL " + pageURL + " because: " +  e.getMessage());
+            LOGGER.debug("Unable to get full size image URL from page: " + pageURL + " because: " +  e.getMessage());
             return null;
         }
     }

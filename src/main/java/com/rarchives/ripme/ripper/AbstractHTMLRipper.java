@@ -160,7 +160,7 @@ public abstract class AbstractHTMLRipper extends AbstractRipper {
 
                 for (String imageURL : imageURLs) {
                     index += 1;
-                    LOGGER.debug("Found image url #" + index + ": " + imageURL);
+                    LOGGER.debug("Found image url #" + index + ": '" + imageURL + "'");
                     downloadURL(new URL(imageURL), index);
                     if (isStopped() || isThisATest()) {
                         break;
