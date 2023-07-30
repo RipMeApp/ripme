@@ -1,7 +1,8 @@
 {
-    "latestVersion": "2.1.3-15-1b83dc68",
-    "currentHash": "1b83dc68aea66bce3627a05b2fa2ab568044e847",
+    "latestVersion": "2.1.4-38-836a7494",
+    "currentHash": "a82ad80fe406a01adf37b3de403245ad78e0669aa96b91d6befe29aaf88200d2",
     "changeList": [
+        "2.1.4-38-836a7494: fixed imagefap ripper.",
         "2.1.3-15-1b83dc68: relative path now from working dir to subfolder, allowing images to be put in subfolder with same filename, sanatize reddit titles saved as files, additional logging in AbstractHTMLRipper.",
         "2.1.2-23-e5438e85: caching of first page, retry sleep time, nhentai fixed",
         "2.1.2-3-ea90b172: better sanitize filenames for windows, save config on update value. reddit, print exceptions in loops and continue.",
