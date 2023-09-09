@@ -73,6 +73,7 @@ public class XossipfapRipper extends AbstractHTMLRipper {
 
             }
             URL nextURL = new URL(this.url, nxtPageURL);
+            LOGGER.info("Downloading xosspipurl " + nextURL);
             return Http.url(nextURL).get();
         }
     }
@@ -85,6 +86,53 @@ public class XossipfapRipper extends AbstractHTMLRipper {
         for (Element el : doc.select("img.mycode_img")) {
             String url =  el.attr("src");
             url = url.replace("/th/","/i/");
+            url = url.replace("_t.",".");
+            if(url.contains("http://iceimg.net")) {
+                url = url.replace("http://iceimg.net", "https://prcf.imgbig.xyz");
+                url = url.replace("/small/","/big/");
+                url = url.replace("small_","");
+            }
+            if(url.contains("http://imgfrost.net")) {
+                url = url.replace("http://imgfrost.net", "https://prcf.imgbig.xyz");
+                url = url.replace("/small/","/big/");
+                url = url.replace("small_","");
+            }
+            if(url.contains("imgadult.com")) {
+                url = url.replace("/small/","/big/");
+                url = url.replace("/small-medium/","/big/");
+            }
+            if(url.contains("t38.pixhost.to")) {
+                url = url.replace("https://t38.pixhost.to/thumbs/", "https://img38.pixhost.to/images/");
+            }
+            if(url.contains("t36.pixhost.to")) {
+                url = url.replace("https://t36.pixhost.to/thumbs/", "https://img36.pixhost.to/images/");
+            }
+            if(url.contains("t44.pixhost.to")) {
+                url = url.replace("https://t44.pixhost.to/thumbs/", "https://img44.pixhost.to/images/");
+            }
+            if(url.contains("t37.pixhost.to")) {
+                url = url.replace("https://t37.pixhost.to/thumbs/", "https://img37.pixhost.to/images/");
+            }
+            if(url.contains("t41.pixhost.to")) {
+                url = url.replace("https://t41.pixhost.to/thumbs/", "https://img41.pixhost.to/images/");
+            }
+            if(url.contains("t40.pixhost.to")) {
+                url = url.replace("https://t40.pixhost.to/thumbs/", "https://img40.pixhost.to/images/");
+            }
+            if(url.contains("t33.pixhost.to")) {
+                url = url.replace("https://t33.pixhost.to/thumbs/", "https://img33.pixhost.to/images/");
+            }
+            if(url.contains("t39.pixhost.to")) {
+                url = url.replace("https://t39.pixhost.to/thumbs/", "https://img39.pixhost.to/images/");
+            }
+            if(url.contains("t34.pixhost.to")) {
+                url = url.replace("https://t34.pixhost.to/thumbs/", "https://img34.pixhost.to/images/");
+            }
+            if(url.contains("imgbox.com")) {
+                url = url.replace("thumbs", "images");
+                url = url.replace(".jpg", "_o.jpg");
+            }
+
             result.add(url);
         }
         return result;
