@@ -15,9 +15,9 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class ImxtoImageRipper extends AbstractHTMLRipper {
+public class ImxtoRipper extends AbstractHTMLRipper {
 
-    public ImxtoImageRipper(URL url) throws IOException {
+    public ImxtoRipper(URL url) throws IOException {
         super(url);
     }
 
@@ -33,40 +33,48 @@ public class ImxtoImageRipper extends AbstractHTMLRipper {
 
     @Override
     public String getGID(URL url) throws MalformedURLException {
-        Pattern p = Pattern.compile("^https?://imx\\.to/i/(.+)$");
+        // Try and match both single image and gallery links
+        Pattern p = Pattern.compile("^https?://imx\\.to/[i,g]/(.+)$");
         Matcher m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             return m.group(1);
         }
-        throw new MalformedURLException("Expected porncoven.com URL format: " + "imx.to/i/id - got" + url + " instead.");
+        throw new MalformedURLException("Expected porncoven.com URL format: " + "imx.to/i/### or imx.to/g/### - got" + url + " instead.");
     }
 
     @Override
     protected Document getFirstPage() throws IOException {
         // Fetch the initial 'landing' page containing a 'Continue to image' button.
         String userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:65.0) Gecko/20100101 Firefox/65.0";
-        Document initialPage = Http.url(url).userAgent(userAgent).get();
+        Document page = Http.url(url).userAgent(userAgent).get();
 
         // Fetch the 'real' page containing the image
         // Check if the button container exists
-        Element btnContainer = initialPage.body().getElementById("continuetoimage");
-        Element menuContainer = initialPage.body().select(".menuimxto .submenuimxto").first();
+        Element btnContainer = page.body().getElementById("continuetoimage");
+        Element menuContainer = page.body().select(".menuimxto .submenuimxto").first();
 
         if(btnContainer != null || menuContainer != null) {
             Map<String, String> formData = new HashMap<>();
             formData.put("imgContinue", "Continue+to+your+image...");
             return Http.url(url).userAgent(userAgent).data(formData).post();
+        } else {
+            // This is gallery.
+            return page;
         }
-
-        throw new RuntimeException("The initial page appears to be missing!");
     }
 
     @Override
     protected List<String> getURLsFromPage(Document page) {
         List<String> imageUrls = new ArrayList<>();
-        for (Element img : page.body().select("img")) {
-            if (img.hasClass("centred")) {
-                imageUrls.add(img.attr("src"));
+        // Page with a single image
+        Element singleImage = page.body().select("img.centred").first();
+        if (singleImage != null) {
+            imageUrls.add(singleImage.attr("src"));
+        } else {
+            // Page with a gallery
+            for (Element element : page.body().select("div#content div.tooltip a img")) {
+                String aLink = element.attr("src").replace("/t/", "/i/");
+                imageUrls.add(aLink);
             }
         }
         return imageUrls;
