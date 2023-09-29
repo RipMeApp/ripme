@@ -15,7 +15,6 @@ import com.rarchives.ripme.ripper.rippers.EromeRipper;
 import com.rarchives.ripme.ripper.rippers.ImgurRipper;
 import com.rarchives.ripme.ripper.rippers.RedgifsRipper;
 import com.rarchives.ripme.ripper.rippers.VidbleRipper;
-import com.rarchives.ripme.ripper.rippers.GfycatRipper;
 import com.rarchives.ripme.ripper.rippers.SoundgasmRipper;
 import org.apache.commons.lang.math.NumberUtils;
 import org.apache.logging.log4j.LogManager;
@@ -68,18 +67,6 @@ public class RipUtils {
             }
             return result;
 
-        }
-        else if (url.getHost().endsWith("gfycat.com")) {
-            try {
-                logger.debug("Fetching gfycat page " + url);
-                String videoURL = GfycatRipper.getVideoURL(url);
-                logger.debug("Got gfycat URL: " + videoURL);
-                result.add(new URI(videoURL).toURL());
-            } catch (IOException | URISyntaxException e) {
-                // Do nothing
-                logger.warn("Exception while retrieving gfycat page:", e);
-            }
-            return result;
         }
         else if (url.getHost().endsWith("redgifs.com") || url.getHost().endsWith("gifdeliverynetwork.com")) {
             try {
