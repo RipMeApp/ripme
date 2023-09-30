@@ -19,7 +19,6 @@ jobs:
         include: # test old java on one os only, upload from ubuntu java-17
           - os: ubuntu-latest
             java: 17
-          - os: ubuntu-latest
             upload: true
 
     steps:
