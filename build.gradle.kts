@@ -79,6 +79,8 @@ publishing {
 
 tasks.withType<JavaCompile> {
   options.encoding = "UTF-8"
+  val compilerArgs = options.compilerArgs
+  compilerArgs.addAll(listOf("-Xlint:deprecation"))
 }
 
 tasks.test {
