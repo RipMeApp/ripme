@@ -126,17 +126,16 @@ public class EromeRipper extends AbstractHTMLRipper {
     private List<String> getMediaFromPage(Document doc) {
         List<String> results = new ArrayList<>();
         for (Element el : doc.select("img.img-front")) {
-            if (el.hasAttr("src")) {
+            if (el.hasAttr("data-src")) {
+                //to add images that are not loaded( as all images are lasyloaded as we scroll).
+                results.add(el.attr("data-src"));
+            } else if (el.hasAttr("src")) {
                 if (el.attr("src").startsWith("https:")) {
                     results.add(el.attr("src"));
                 } else {
                     results.add("https:" + el.attr("src"));
                 }
-            } else if (el.hasAttr("data-src")) {
-                //to add images that are not loaded( as all images are lasyloaded as we scroll).
-                results.add(el.attr("data-src"));
             }
-
         }
         for (Element el : doc.select("source[label=HD]")) {
             if (el.attr("src").startsWith("https:")) {
