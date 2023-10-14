@@ -121,7 +121,7 @@ public class TwitterRipper extends AbstractJSONRipper {
         case ACCOUNT:
             req.append("https://api.twitter.com/1.1/statuses/user_timeline.json")
                     .append("?screen_name=" + this.accountName).append("&include_entities=true")
-                    .append("&exclude_replies=true").append("&trim_user=true").append("&count=" + MAX_ITEMS_REQUEST)
+                    .append("&exclude_replies=false").append("&trim_user=true").append("&count=" + MAX_ITEMS_REQUEST)
                     .append("&tweet_mode=extended");
             break;
         case SEARCH:// Only get tweets from last week
