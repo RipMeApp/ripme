@@ -1,6 +1,9 @@
-//    permits to start the build setting the javac release parameter, no parameter means build for java8:
-// gradle clean build -PjavacRelease=8
-// gradle clean build -PjavacRelease=17
+//    the build derives a version with the jgitver plugin out of a tag in the git history. when there is no
+// git repo, the jgitver default would be 0.0.0. one can override this version with a parameter. also, permit
+// to start the build setting the javac release parameter, no parameter means build for java-17:
+// gradle clean build -PjavacRelease=21
+// gradle clean build -PcustomVersion=1.0.0-10-asdf
+val customVersion = (project.findProperty("customVersion") ?: "") as String
 val javacRelease = (project.findProperty("javacRelease") ?: "17") as String
 
 plugins {
@@ -46,6 +49,12 @@ jgitver {
   gitCommitIDLength = 8
   nonQualifierBranches = "main,master"
   useGitCommitID = true
+}
+
+afterEvaluate {
+  if (customVersion != "") {
+    project.version = customVersion
+  }
 }
 
 tasks.compileJava {
