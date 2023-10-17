@@ -33,7 +33,7 @@ public class MultpornRipper extends AbstractHTMLRipper {
 
     @Override
     public String getGID(URL url) throws MalformedURLException, URISyntaxException {
-        Pattern p = Pattern.compile("^https?://multporn\\.net/node/(\\d+).*$");
+        Pattern p = Pattern.compile("^https?://multporn\\.net/node/(\\d+)/.*$");
         Matcher m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             return m.group(1);
