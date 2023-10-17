@@ -41,7 +41,6 @@ public class MultpornRipper extends AbstractHTMLRipper {
 
         try {
             String nodeHref = Http.url(url).get().select(".simple-mode-switcher").attr("href");
-            System.out.println(nodeHref);
             p = Pattern.compile("/node/(\\d+)/.*");
             m = p.matcher(nodeHref);
             if (m.matches()) {
