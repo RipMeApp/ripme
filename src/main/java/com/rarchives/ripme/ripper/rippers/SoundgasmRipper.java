@@ -1,13 +1,14 @@
 package com.rarchives.ripme.ripper.rippers;
 
 import com.rarchives.ripme.ripper.AbstractHTMLRipper;
-import com.rarchives.ripme.utils.Http;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -18,8 +19,8 @@ public class SoundgasmRipper extends AbstractHTMLRipper {
 
     private static final String HOST = "soundgasm.net";
 
-    public SoundgasmRipper(URL url) throws IOException {
-        super(new URL(url.toExternalForm()));
+    public SoundgasmRipper(URL url) throws IOException, URISyntaxException {
+        super(new URI(url.toExternalForm()).toURL());
     }
 
     @Override
