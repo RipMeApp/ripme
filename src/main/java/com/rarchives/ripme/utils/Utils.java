@@ -735,15 +735,14 @@ public class Utils {
     public static ResourceBundle getResourceBundle(String langSelect) {
         if (langSelect == null) {
             if (!getConfigString("lang", "").equals("")) {
-                String[] langCode = getConfigString("lang", "").split("_");
                 LOGGER.info("Setting locale to " + getConfigString("lang", ""));
-                return ResourceBundle.getBundle("LabelsBundle", new Locale(langCode[0], langCode[1]),
+                return ResourceBundle.getBundle("LabelsBundle", Locale.forLanguageTag(getConfigString("lang", "")),
                         new UTF8Control());
             }
         } else {
             String[] langCode = langSelect.split("_");
             LOGGER.info("Setting locale to " + langSelect);
-            return ResourceBundle.getBundle("LabelsBundle", new Locale(langCode[0], langCode[1]), new UTF8Control());
+            return ResourceBundle.getBundle("LabelsBundle", Locale.forLanguageTag(langSelect), new UTF8Control());
         }
         try {
             LOGGER.info("Setting locale to default");
