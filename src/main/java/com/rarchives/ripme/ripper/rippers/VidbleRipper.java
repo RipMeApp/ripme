@@ -2,6 +2,8 @@ package com.rarchives.ripme.ripper.rippers;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -70,11 +72,11 @@ public class VidbleRipper extends AbstractHTMLRipper {
         addURLToDownload(url, getPrefix(index));
     }
 
-    public static List<URL> getURLsFromPage(URL url) throws IOException {
+    public static List<URL> getURLsFromPage(URL url) throws IOException, URISyntaxException {
         List<URL> urls = new ArrayList<>();
         Document doc = Http.url(url).get();
         for (String stringURL : getURLsFromPageStatic(doc)) {
-            urls.add(new URL(stringURL));
+            urls.add(new URI(stringURL).toURL());
         }
         return urls;
     }

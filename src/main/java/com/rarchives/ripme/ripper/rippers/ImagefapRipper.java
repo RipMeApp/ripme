@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -51,11 +53,11 @@ public class ImagefapRipper extends AbstractHTMLRipper {
      * Reformat given URL into the desired format (all images on single page)
      */
     @Override
-    public URL sanitizeURL(URL url) throws MalformedURLException {
+    public URL sanitizeURL(URL url) throws MalformedURLException, URISyntaxException {
         String gid = getGID(url);
         String newURL = "https://www.imagefap.com/pictures/" + gid + "/random-string";
         LOGGER.debug("Changed URL from " + url + " to " + newURL);
-        return new URL(newURL);
+        return new URI(newURL).toURL();
     }
 
     @Override
@@ -106,7 +108,7 @@ public class ImagefapRipper extends AbstractHTMLRipper {
     }
 
     @Override
-    public Document getNextPage(Document doc) throws IOException {
+    public Document getNextPage(Document doc) throws IOException, URISyntaxException {
         String nextURL = null;
         for (Element a : doc.select("a.link3")) {
             if (a.text().contains("next")) {
@@ -124,7 +126,7 @@ public class ImagefapRipper extends AbstractHTMLRipper {
         LOGGER.info("Attempting to load next page URL: " + nextURL);
 
         // Load next page
-        Document nextPage = getPageWithRetries(new URL(nextURL));
+        Document nextPage = getPageWithRetries(new URI(nextURL).toURL());
 
         return nextPage;
     }
@@ -182,7 +184,7 @@ public class ImagefapRipper extends AbstractHTMLRipper {
             // Sleep before fetching image.
             sleep(IMAGE_SLEEP_TIME);
 
-            Document doc = getPageWithRetries(new URL(pageURL));
+            Document doc = getPageWithRetries(new URI(pageURL).toURL());
 
             String framedPhotoUrl = doc.select("img#mainPhoto").attr("data-src");
 
@@ -204,7 +206,7 @@ public class ImagefapRipper extends AbstractHTMLRipper {
 
             return fullSizedUrl;
 
-        } catch (IOException e) {
+        } catch (IOException | URISyntaxException e) {
             LOGGER.debug("Unable to get full size image URL from page: " + pageURL + " because: " +  e.getMessage());
             return null;
         }

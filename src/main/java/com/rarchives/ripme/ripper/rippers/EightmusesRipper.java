@@ -2,6 +2,8 @@ package com.rarchives.ripme.ripper.rippers;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -114,7 +116,7 @@ public class EightmusesRipper extends AbstractHTMLRipper {
                     try {
                         for (int i = 0; i != json.getJSONArray("pictures").length(); i++) {
                             image = "https://www.8muses.com/image/fl/" + json.getJSONArray("pictures").getJSONObject(i).getString("publicUri");
-                            URL imageUrl = new URL(image);
+                            URL imageUrl = new URI(image).toURL();
                             addURLToDownload(imageUrl, getSubdir(page.select("title").text()), this.url.toExternalForm(), cookies, getPrefixShort(x), "", null, true);
                             // X is our page index
                             x++;
@@ -123,7 +125,7 @@ public class EightmusesRipper extends AbstractHTMLRipper {
                             }
                         }
                         return imageURLs;
-                    } catch (MalformedURLException e) {
+                    } catch (MalformedURLException | URISyntaxException e) {
                         LOGGER.error("\"" + image + "\" is malformed");
                     }
                 }

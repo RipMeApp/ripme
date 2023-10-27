@@ -8,6 +8,7 @@ import org.jsoup.select.Elements;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -44,7 +45,7 @@ public class MultpornRipper extends AbstractHTMLRipper {
             p = Pattern.compile("/node/(\\d+)/.*");
             m = p.matcher(nodeHref);
             if (m.matches()) {
-                this.url = new URL("https://multporn.net" + nodeHref);
+                this.url = new URI("https://multporn.net" + nodeHref).toURL();
                 return m.group(1);
             }
         }catch (Exception ignored){};

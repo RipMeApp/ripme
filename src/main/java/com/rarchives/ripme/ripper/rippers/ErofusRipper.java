@@ -9,6 +9,8 @@ import org.jsoup.select.Elements;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -89,8 +91,8 @@ public class ErofusRipper extends AbstractHTMLRipper {
                 Map<String,String> opts = new HashMap<String, String>();
                 opts.put("subdirectory", page.title().replaceAll(" \\| Erofus - Sex and Porn Comics", "").replaceAll(" ", "_"));
                 opts.put("prefix", getPrefix(x));
-                addURLToDownload(new URL(image), opts);
-            } catch (MalformedURLException e) {
+                addURLToDownload(new URI(image).toURL(), opts);
+            } catch (MalformedURLException | URISyntaxException e) {
                 LOGGER.info(e.getMessage());
             }
             x++;

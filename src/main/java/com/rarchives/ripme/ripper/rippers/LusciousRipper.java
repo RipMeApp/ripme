@@ -9,6 +9,7 @@ import org.jsoup.select.Elements;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -95,7 +96,7 @@ public class LusciousRipper extends AbstractHTMLRipper {
                 sanitizedUrl = sanitizedUrl.replaceFirst(
                         "^https?://(?:members\\.|legacy\\.|www\\.)?luscious.net",
                         "https://legacy.luscious.net");
-                return new URL(sanitizedUrl);
+                return new URI(sanitizedUrl).toURL();
             }
 
             throw new Exception("ERROR: Unable to sanitize url.");
@@ -142,9 +143,9 @@ public class LusciousRipper extends AbstractHTMLRipper {
                 }
 
                 //If a valid download url was found.
-                addURLToDownload(new URL(downloadUrl), getPrefix(index));
+                addURLToDownload(new URI(downloadUrl).toURL(), getPrefix(index));
 
-            } catch (IOException e) {
+            } catch (IOException | URISyntaxException e) {
                 LOGGER.error("Error downloadiong url " + url, e);
             }
         }

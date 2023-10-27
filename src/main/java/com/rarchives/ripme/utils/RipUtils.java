@@ -84,7 +84,7 @@ public class RipUtils {
             try {
                 logger.info("Getting vidble album " + url);
                 result.addAll(VidbleRipper.getURLsFromPage(url));
-            } catch (IOException e) {
+            } catch (IOException | URISyntaxException e) {
                 // Do nothing
                 logger.warn("Exception while retrieving vidble page:", e);
             }
@@ -94,7 +94,7 @@ public class RipUtils {
             try {
                 logger.info("Getting eroshare album " + url);
                 result.addAll(EroShareRipper.getURLs(url));
-            } catch (IOException e) {
+            } catch (IOException | URISyntaxException e) {
                 // Do nothing
                 logger.warn("Exception while retrieving eroshare page:", e);
             }

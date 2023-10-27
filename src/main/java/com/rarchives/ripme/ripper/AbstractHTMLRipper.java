@@ -3,6 +3,7 @@ package com.rarchives.ripme.ripper;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -54,7 +55,7 @@ public abstract class AbstractHTMLRipper extends AbstractRipper {
     public Document getNextPage(Document doc) throws IOException, URISyntaxException {
         return null;
     }
-    protected abstract List<String> getURLsFromPage(Document page);
+    protected abstract List<String> getURLsFromPage(Document page) throws UnsupportedEncodingException;
     protected List<String> getDescriptionsFromPage(Document doc) throws IOException {
         throw new IOException("getDescriptionsFromPage not implemented"); // Do I do this or make an abstract function?
     }

@@ -1,10 +1,7 @@
 package com.rarchives.ripme.ripper;
 
 import java.io.*;
-import java.net.HttpURLConnection;
-import java.net.SocketTimeoutException;
-import java.net.URL;
-import java.net.URLConnection;
+import java.net.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -152,7 +149,7 @@ class DownloadFileThread implements Runnable {
                         redirected = true;
                     }
                     String location = huc.getHeaderField("Location");
-                    urlToDownload = new URL(location);
+                    urlToDownload = new URI(location).toURL();
                     // Throw exception so download can be retried
                     throw new IOException("Redirect status code " + statusCode + " - redirect to " + location);
                 }
@@ -284,7 +281,7 @@ class DownloadFileThread implements Runnable {
                             "HTTP status code " + hse.getStatusCode() + " while downloading " + url.toExternalForm());
                     return;
                 }
-            } catch (IOException e) {
+            } catch (IOException | URISyntaxException e) {
                 logger.debug("IOException", e);
                 logger.error("[!] " + Utils.getLocalizedString("exception.while.downloading.file") + ": " + url + " - "
                         + e.getMessage());
