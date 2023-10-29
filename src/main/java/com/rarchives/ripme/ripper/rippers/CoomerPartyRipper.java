@@ -36,7 +36,10 @@ public class CoomerPartyRipper extends AbstractJSONRipper {
     private static final String KEY_PATH = "path";
     private static final String KEY_ATTACHMENTS = "attachments";
 
+    // One of "onlyfans" or "fansly", but might have others in future?
     private final String service;
+
+    // Username of the page to be ripped
     private final String user;
 
     public CoomerPartyRipper(URL url) throws IOException {
