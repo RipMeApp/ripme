@@ -111,6 +111,11 @@ $RECYCLE.BIN/
 .vscode
 .idea
 .project
+local.properties
+
+### Build files
+.gradle/
+build/
 
 ### Ripme ###
 ripme.log
