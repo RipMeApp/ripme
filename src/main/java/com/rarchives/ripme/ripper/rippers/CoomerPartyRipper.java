@@ -135,7 +135,7 @@ public class CoomerPartyRipper extends AbstractJSONRipper {
         try {
             JSONArray attachments = post.getJSONArray(KEY_ATTACHMENTS);
             for (int i = 0; i < attachments.length(); i++) {
-                JSONObject attachment = attachments.getJSONObject(0);
+                JSONObject attachment = attachments.getJSONObject(i);
                 pullFileUrl(attachment, results);
             }
         } catch (JSONException e) {
