@@ -699,4 +699,18 @@ public abstract class AbstractRipper
     protected boolean useByteProgessBar() { return false;}
     // If true ripme will try to resume a broken download for this ripper
     protected boolean tryResumeDownload() { return false;}
+
+    protected boolean shouldIgnoreURL(URL url) {
+        final String[] ignoredExtensions = Utils.getConfigStringArray("download.ignore_extensions");
+        if (ignoredExtensions == null || ignoredExtensions.length == 0) return false; // nothing ignored
+        String[] pathElements = url.getPath().split("\\.");
+        if (pathElements.length == 0) return false; // no extension, can't filter
+        String extension = pathElements[pathElements.length - 1];
+        for (String ignoredExtension : ignoredExtensions) {
+            if (ignoredExtension.equalsIgnoreCase(extension)) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

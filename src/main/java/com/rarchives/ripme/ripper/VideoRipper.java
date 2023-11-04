@@ -68,6 +68,9 @@ public abstract class VideoRipper extends AbstractRipper {
                 this.url = url;
                 return true;
             }
+            if (shouldIgnoreURL(url)) {
+                return false;
+            }
             threadPool.addThread(new DownloadVideoThread(url, saveAs, this));
         }
         return true;
