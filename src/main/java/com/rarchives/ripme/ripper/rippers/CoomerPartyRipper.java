@@ -4,7 +4,8 @@ import com.rarchives.ripme.ripper.AbstractJSONRipper;
 import com.rarchives.ripme.utils.Http;
 import com.rarchives.ripme.utils.Utils;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -23,7 +24,7 @@ import java.util.stream.Collectors;
  * <a href="https://coomer.su/api/schema">See this link for the API schema</a>.
  */
 public class CoomerPartyRipper extends AbstractJSONRipper {
-    private static final Logger LOGGER = Logger.getLogger(CoomerPartyRipper.class);
+    private static final Logger LOGGER = LogManager.getLogger(CoomerPartyRipper.class);
     private static final String IMG_URL_BASE = "https://c3.coomer.su/data";
     private static final String VID_URL_BASE = "https://c1.coomer.su/data";
     private static final Pattern IMG_PATTERN = Pattern.compile("^.*\\.(jpg|jpeg|png|gif|apng|webp|tif|tiff)$", Pattern.CASE_INSENSITIVE);
