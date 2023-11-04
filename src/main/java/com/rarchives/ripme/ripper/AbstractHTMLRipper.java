@@ -343,6 +343,7 @@ public abstract class AbstractHTMLRipper extends AbstractRipper {
             return false;
         }
         if (shouldIgnoreURL(url)) {
+            sendUpdate(STATUS.DOWNLOAD_SKIP, "Skipping " + url.toExternalForm() + " - ignored extension");
             return false;
         }
         if (Utils.getConfigBoolean("urls_only.save", false)) {
