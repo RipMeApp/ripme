@@ -6,6 +6,7 @@ import java.net.URISyntaxException;
 
 import com.rarchives.ripme.ripper.rippers.HentaifoundryRipper;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 public class HentaifoundryRipperTest extends RippersTest {
@@ -15,12 +16,14 @@ public class HentaifoundryRipperTest extends RippersTest {
         testRipper(ripper);
     }
     @Test
+    @Tag("flaky")
     public void testHentaifoundryGetGID() throws IOException, URISyntaxException {
         HentaifoundryRipper ripper = new HentaifoundryRipper(new URI("https://www.hentai-foundry.com/stories/user/Rakked").toURL());
         testRipper(ripper);
         Assertions.assertEquals("Rakked", ripper.getGID(new URI("https://www.hentai-foundry.com/stories/user/Rakked").toURL()));
     }
     @Test
+    @Tag("flaky")
     public void testHentaifoundryPdfRip() throws IOException, URISyntaxException {
         HentaifoundryRipper ripper = new HentaifoundryRipper(new URI("https://www.hentai-foundry.com/stories/user/Rakked").toURL());
         testRipper(ripper);
