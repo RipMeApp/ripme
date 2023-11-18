@@ -470,7 +470,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         queuePanel.setBorder(emptyBorder);
         queuePanel.setVisible(false);
         queuePanel.setPreferredSize(new Dimension(300, 250));
-        queueListModel = new DefaultListModel();
+        queueListModel = new DefaultListModel<>();
         JList queueList = new JList(queueListModel);
         queueList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         QueueMenuMouseListener queueMenuMouseListener;
@@ -732,7 +732,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
             private void update() {
                 try {
                     String urlText = ripTextfield.getText().trim();
-                    if (urlText.equals("")) {
+                    if (urlText.isEmpty()) {
                         return;
                     }
                     if (!urlText.startsWith("http")) {
@@ -1499,12 +1499,13 @@ public final class MainWindow implements Runnable, RipStatusHandler {
              */
             if (Utils.getConfigBoolean("enable.finish.command", false)) {
                 try {
-                    String commandToRun = Utils.getConfigString("finish.command", "ls");
-                    commandToRun = commandToRun.replaceAll("%url%", url);
-                    commandToRun = commandToRun.replaceAll("%path%", f.toAbsolutePath().toString());
+                    String cmdStr = Utils.getConfigString("finish.command", "ls");
+                    cmdStr = cmdStr.replaceAll("%url%", url);
+                    cmdStr = cmdStr.replaceAll("%path%", f.toAbsolutePath().toString());
+                    // java dropped the exec string executor, as the string is only split very trivial.
+                    // do the same at the moment, and split, to get rid of java-21 deprecation warning.
+                    String[] commandToRun = cmdStr.split(" ");
                     LOGGER.info("RUnning command " + commandToRun);
-                    // code from:
-                    // https://stackoverflow.com/questions/5711084/java-runtime-getruntime-getting-output-from-executing-a-command-line-program
                     Process proc = Runtime.getRuntime().exec(commandToRun);
                     BufferedReader stdInput = new BufferedReader(new InputStreamReader(proc.getInputStream()));
 

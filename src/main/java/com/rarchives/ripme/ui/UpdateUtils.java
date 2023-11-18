@@ -222,13 +222,14 @@ public class UpdateUtils {
     public static String createSha256(Path file) {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            InputStream fis = Files.newInputStream(file);
-            int n = 0;
-            byte[] buffer = new byte[8192];
-            while (n != -1) {
-                n = fis.read(buffer);
-                if (n > 0) {
-                    digest.update(buffer, 0, n);
+            try (InputStream fis = Files.newInputStream(file)) {
+                int n = 0;
+                byte[] buffer = new byte[8192];
+                while (n != -1) {
+                    n = fis.read(buffer);
+                    if (n > 0) {
+                        digest.update(buffer, 0, n);
+                    }
                 }
             }
             byte[] hash = digest.digest();
@@ -313,7 +314,7 @@ public class UpdateUtils {
             if (shouldLaunch) {
                 // No need to do it during shutdown: the file used will indeed be the new one
                 logger.info("Executing: " + mainFile);
-                Runtime.getRuntime().exec("java -jar " + mainFile);
+                Runtime.getRuntime().exec(new String[]{"java", "-jar", mainFile.toString()});
             }
             logger.info("Update installed, newer version should be executed upon relaunch");
             System.exit(0);
