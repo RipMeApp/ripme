@@ -2,6 +2,8 @@ package com.rarchives.ripme.ripper.rippers;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -82,7 +84,7 @@ public class PhotobucketRipper extends AbstractHTMLRipper {
     }
 
     @Override
-    public URL sanitizeURL(URL url) throws MalformedURLException {
+    public URL sanitizeURL(URL url) throws MalformedURLException, URISyntaxException {
         LOGGER.info(url);
         String u = url.toExternalForm();
         if (u.contains("?")) {
@@ -93,11 +95,11 @@ public class PhotobucketRipper extends AbstractHTMLRipper {
             // append trailing slash
             u = u + "/";
         }
-        return new URL(u);
+        return new URI(u).toURL();
     }
 
     @Override
-    public String getGID(URL url) throws MalformedURLException {
+    public String getGID(URL url) throws MalformedURLException, URISyntaxException {
         Matcher m;
 
         URL sanitized = sanitizeURL(url);
