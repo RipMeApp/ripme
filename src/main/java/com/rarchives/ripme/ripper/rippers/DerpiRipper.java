@@ -101,10 +101,10 @@ public class DerpiRipper extends AbstractJSONRipper {
     }
 
     @Override
-    public JSONObject getNextPage(JSONObject doc) throws IOException {
+    public JSONObject getNextPage(JSONObject doc) throws IOException, URISyntaxException {
         currPage++;
         String u = currUrl.toExternalForm() + "&page=" + Integer.toString(currPage);
-        JSONObject json = Http.url(new URL(u)).getJSON();
+        JSONObject json = Http.url(new URI(u).toURL()).getJSON();
         JSONArray arr;
         if (json.has("images")) {
             arr = json.getJSONArray("images");
