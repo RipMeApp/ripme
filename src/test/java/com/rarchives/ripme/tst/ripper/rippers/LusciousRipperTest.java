@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Test;
 public class LusciousRipperTest extends RippersTest {
     @Test
     @Disabled("test or ripper broken")
-    public void testPahealRipper() throws IOException, URISyntaxException {
+    public void testLusciousRipper() throws IOException, URISyntaxException {
         // a photo set
         LusciousRipper ripper = new LusciousRipper(
                 new URI("https://luscious.net/albums/h-na-alice-wa-suki-desu-ka-do-you-like-alice-when_321609/").toURL());
