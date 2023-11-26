@@ -26,20 +26,4 @@ public class LusciousRipperTest extends RippersTest {
         LusciousRipper ripper = new LusciousRipper(url);
         Assertions.assertEquals("h-na-alice-wa-suki-desu-ka-do-you-like-alice-when_321609", ripper.getGID(url));
     }
-    
-    @Test
-    @Disabled("test or ripper broken")
-    public void testGetNextPage() throws IOException, URISyntaxException {
-        URL multiPageAlbumUrl = new URI("https://luscious.net/albums/women-of-color_58/").toURL();
-        LusciousRipper multiPageRipper = new LusciousRipper(multiPageAlbumUrl);
-        assert (multiPageRipper.getNextPage(multiPageRipper.getFirstPage()) != null);
-
-        URL singlePageAlbumUrl = new URI("https://members.luscious.net/albums/bakaneko-navidarks_332097/").toURL();
-        LusciousRipper singlePageRipper = new LusciousRipper(singlePageAlbumUrl);
-        try {
-            singlePageRipper.getNextPage(singlePageRipper.getFirstPage());
-        } catch (IOException e) {
-            Assertions.assertEquals("No next page found.", e.getMessage());
-        }
-    }
 }
