@@ -1,7 +1,8 @@
 {
-    "latestVersion": "2.1.6-1-68189f27",
-    "currentHash": "adffec078cc6e1da42699f874176744622a00a1dace000f2ef0c7dad28957faa",
+    "latestVersion": "2.1.7-29-b080faae",
+    "currentHash": "a2bedd4d524efd98884dad38c888059ea5bbc113924eefa73f5893189beab075",
     "changeList": [
+        "2.1.7-29-b080faae: luciousripper fix, java-21 adjustments.",
         "2.1.6-1-68189f27: erome fix.",
         "2.1.5-8-ba51d7b: ripme running with java-17.",
         "2.1.4-38-836a7494: fixed imagefap ripper.",
