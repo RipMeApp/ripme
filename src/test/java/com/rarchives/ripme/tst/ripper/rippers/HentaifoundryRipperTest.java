@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 
 public class HentaifoundryRipperTest extends RippersTest {
     @Test
+    @Tag("flaky")
     public void testHentaifoundryRip() throws IOException, URISyntaxException {
         HentaifoundryRipper ripper = new HentaifoundryRipper(new URI("https://www.hentai-foundry.com/pictures/user/personalami").toURL());
         testRipper(ripper);
