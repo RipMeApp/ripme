@@ -2,6 +2,7 @@ package com.rarchives.ripme.ui;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import javax.swing.*;
@@ -14,6 +15,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.junit.jupiter.api.Assertions.fail;
 
+// these tests do not run on a server, as it is headless
+@Tag("flaky")
 public class UIContextMenuTests {
 
     private JFrame frame;
