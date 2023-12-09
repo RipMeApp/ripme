@@ -2,6 +2,8 @@ package com.rarchives.ripme.ripper.rippers;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -55,10 +57,10 @@ public class StaRipper extends AbstractHTMLRipper {
             Document thumbPage = null;
             if (checkURL(thumbPageURL)) {
                 try {
-                    Connection.Response resp = Http.url(new URL(thumbPageURL)).response();
+                    Connection.Response resp = Http.url(new URI(thumbPageURL).toURL()).response();
                     cookies.putAll(resp.cookies());
                     thumbPage = resp.parse();
-                } catch (MalformedURLException e) {
+                } catch (MalformedURLException | URISyntaxException e) {
                     LOGGER.info(thumbPageURL + " is a malformed URL");
                 } catch (IOException e) {
                     LOGGER.info(e.getMessage());
@@ -75,9 +77,9 @@ public class StaRipper extends AbstractHTMLRipper {
 
     private boolean checkURL(String url) {
         try {
-            new URL(url);
+            new URI(url).toURL();
             return true;
-        } catch (MalformedURLException e) {
+        } catch (MalformedURLException | URISyntaxException e) {
             return false;
         }
     }

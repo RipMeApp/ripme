@@ -2,6 +2,8 @@ package com.rarchives.ripme.ripper.rippers;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -47,12 +49,12 @@ public class PornhubRipper extends AbstractHTMLRipper {
     }
 
     @Override
-    public Document getNextPage(Document page) throws IOException {
+    public Document getNextPage(Document page) throws IOException, URISyntaxException {
         Elements nextPageLink = page.select("li.page_next > a");
         if (nextPageLink.isEmpty()){
             throw new IOException("No more pages");
         } else {
-            URL nextURL = new URL(this.url, nextPageLink.first().attr("href"));
+            URL nextURL = this.url.toURI().resolve(nextPageLink.first().attr("href")).toURL();
             return Http.url(nextURL).get();
         }
     }
@@ -83,13 +85,13 @@ public class PornhubRipper extends AbstractHTMLRipper {
         }
     }
 
-    public URL sanitizeURL(URL url) throws MalformedURLException {
+    public URL sanitizeURL(URL url) throws MalformedURLException, URISyntaxException {
         // always start on the first page of an album
         // (strip the options after the '?')
         String u = url.toExternalForm();
         if (u.contains("?")) {
             u = u.substring(0, u.indexOf("?"));
-            return new URL(u);
+            return new URI(u).toURL();
         } else {
             return url;
         }
@@ -159,10 +161,10 @@ public class PornhubRipper extends AbstractHTMLRipper {
                     prefix = String.format("%03d_", index);
                 }
 
-                URL imgurl = new URL(url, imgsrc);
+                URL imgurl = url.toURI().resolve(imgsrc).toURL();
                 addURLToDownload(imgurl, prefix);
 
-            } catch (IOException e) {
+            } catch (IOException | URISyntaxException e) {
                 LOGGER.error("[!] Exception while loading/parsing " + this.url, e);
             }
         }
