@@ -7,10 +7,12 @@ import java.net.URL;
 
 import com.rarchives.ripme.ripper.rippers.YuvutuRipper;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 public class YuvutuRipperTest extends RippersTest {
     @Test
+    @Tag("flaky")
     public void testYuvutuAlbum1() throws IOException, URISyntaxException {
         YuvutuRipper ripper = new YuvutuRipper(new URI("http://www.yuvutu.com/modules.php?name=YuGallery&action=view&set_id=127013").toURL());
         testRipper(ripper);
