@@ -172,7 +172,7 @@ public class DanbooruRipper extends AbstractJSONRipper {
     }
 
     private String getTag(URL url) throws MalformedURLException {
-        gidPattern = Pattern.compile("https?://danbooru.donmai.us/(posts)?.*([?&]tags=([a-zA-Z0-9$_.+!*'(),%-]+))(&|(#.*)?$)");
+        gidPattern = Pattern.compile("https?://danbooru.donmai.us/(posts)?.*([?&]tags=([^&]*)(?:&z=([0-9]+))?$)");
         Matcher m = gidPattern.matcher(url.toExternalForm());
 
         if (m.matches()) {
