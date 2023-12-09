@@ -3,18 +3,29 @@ package com.rarchives.ripme.ripper.rippers;
 import com.rarchives.ripme.ripper.AbstractJSONRipper;
 import com.rarchives.ripme.utils.Http;
 import com.rarchives.ripme.utils.Utils;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.jsoup.Connection;
 
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.zip.GZIPInputStream;
 
 public class DanbooruRipper extends AbstractJSONRipper {
     private static final String DOMAIN = "danbooru.donmai.us",
@@ -42,29 +53,107 @@ public class DanbooruRipper extends AbstractJSONRipper {
         return "https://" + getDomain() + "/posts.json?page=" + num + "&tags=" + getTag(url);
     }
 
-    @Override
-    protected JSONObject getFirstPage() throws IOException {
-        String newCompatibleJSON = "{ resources:" + Http.url(getPage(1)).getJSONArray() + " }";
+    private static final Map<String, String> SESSION_COOKIE;
+    static {
+        SESSION_COOKIE = new TreeMap<String, String>();
+        SESSION_COOKIE.put("_danbooru2_session", "9V8N6tN5EW9gMFt%2BCrX4urKQD7VDwyLDcTqaTouqs%2FaOCasOJvCEWxNpm87RrDeK7Q51BVHjaS%2BDJQxDbmQNY%2BftVereWltgkFCOqcIweYRdKIIRwBSBJuFzhwz8raelfHZeDT9XHjUqZ6ShnWc0HVmB6FImIhxKqvU9c0pywoiY%2Fv6tSOmb9kCXLGVbP6ltOJOUR7fUyXNSz56YOZ7ycCtbTrOLK1abSuUFg1nLREh2pDqbZnHskEvYPdAmfejsgpmqnABzJH%2B1mt8j53y0%2BIC0F%2BE1n8ho1o77pKsOJuLiHTspxZho2PJ3JM%2Fa1eeA0ydlgJ5DKeHly0VwRZeNPDOPg%2F9c2VTEoaqSSnAyYWuAtilkMO52VGqcytqSlGtf6tlCMg%3D%3D--m98PPTXsgxn8A0dm--cPRKozLSLkwE4sJvirVU1g%3D%3D");
+    }
 
-        return new JSONObject(newCompatibleJSON);
+    private final String userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:65.0) Gecko/20100101 Firefox/65.0";
+    @Override
+    protected JSONObject getFirstPage() throws MalformedURLException {
+
+        OkHttpClient client = new OkHttpClient.Builder()
+                .readTimeout(60, TimeUnit.SECONDS)
+                .writeTimeout(60, TimeUnit.SECONDS)
+                .build();
+
+        Request request = new Request.Builder()
+                .url(getPage(1)) // make sure to implement getPage method
+                .header("User-Agent", "Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.0 Mobile/15E148 Safari/604.1")
+                .header("Accept", "application/json,text/javascript,*/*;q=0.01")
+                .header("Accept-Language", "en-US,en;q=0.9")
+                .header("Sec-Fetch-Dest", "empty")
+                .header("Sec-Fetch-Mode", "cors")
+                .header("Sec-Fetch-Site", "same-origin")
+                .header("Referer", "https://danbooru.donmai.us/")
+                .header("X-Requested-With", "XMLHttpRequest")
+                .header("Connection", "keep-alive")
+                .build();
+
+        Response response = null;
+        try {
+            response = client.newCall(request).execute();
+            if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
+
+            // Response body is automatically decompressed
+            String responseData = response.body().string();
+            // Parsing the responseData to a JSONArray
+            JSONArray jsonArray = new JSONArray(responseData);
+            System.out.println(jsonArray.toString());
+
+            String newCompatibleJSON = "{ \"resources\":" + jsonArray.toString() + " }";
+            return new JSONObject(newCompatibleJSON);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            if(response !=null) {
+                response.body().close();
+            }
+        }
+        return null; // Return null or a default value in case of error
     }
 
     @Override
     protected JSONObject getNextPage(JSONObject doc) throws IOException {
         currentPageNum++;
 
-        JSONArray resourcesJSONArray = Http.url(getPage(currentPageNum)).getJSONArray();
+        OkHttpClient client = new OkHttpClient.Builder()
+                .readTimeout(60, TimeUnit.SECONDS)
+                .writeTimeout(60, TimeUnit.SECONDS)
+                .build();
 
-        int resourcesJSONArrayLength = resourcesJSONArray.length();
+        Request request = new Request.Builder()
+                .url(getPage(currentPageNum)) // make sure to implement getPage method
+                .header("User-Agent", "Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.0 Mobile/15E148 Safari/604.1")
+                .header("Accept", "application/json,text/javascript,*/*;q=0.01")
+                .header("Accept-Language", "en-US,en;q=0.9")
+                .header("Sec-Fetch-Dest", "empty")
+                .header("Sec-Fetch-Mode", "cors")
+                .header("Sec-Fetch-Site", "same-origin")
+                .header("Referer", "https://danbooru.donmai.us/")
+                .header("X-Requested-With", "XMLHttpRequest")
+                .header("Connection", "keep-alive")
+                .build();
 
-        if (resourcesJSONArrayLength == 0) {
-            currentPageNum = 0;
-            throw new IOException("No more images in the next page");
+        Response response = null;
+        try {
+            response = client.newCall(request).execute();
+            if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
+
+            // Response body is automatically decompressed
+            String responseData = response.body().string();
+            // Parsing the responseData to a JSONArray
+
+            JSONArray jsonArray = new JSONArray(responseData);
+            if(!jsonArray.isEmpty()){
+                System.out.println(jsonArray);
+
+                String newCompatibleJSON = "{ \"resources\":" + jsonArray + " }";
+                return new JSONObject(newCompatibleJSON);
+            }
+
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            if(response !=null) {
+                response.body().close();
+            }
         }
+        return null; // Return null or a default value in case of error
 
-        String newCompatibleJSON = "{ resources:" + resourcesJSONArray + " }";
-
-        return new JSONObject(newCompatibleJSON);
     }
 
     @Override
