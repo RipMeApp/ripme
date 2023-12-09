@@ -2,6 +2,8 @@ package com.rarchives.ripme.ripper.rippers;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -108,8 +110,8 @@ public class ImagevenueRipper extends AbstractHTMLRipper {
                 if (Utils.getConfigBoolean("download.save_order", true)) {
                     prefix = String.format("%03d_", index);
                 }
-                addURLToDownload(new URL(imgsrc), prefix);
-            } catch (IOException e) {
+                addURLToDownload(new URI(imgsrc).toURL(), prefix);
+            } catch (IOException | URISyntaxException e) {
                 LOGGER.error("[!] Exception while loading/parsing " + this.url, e);
             }
         }
