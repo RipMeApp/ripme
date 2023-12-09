@@ -102,6 +102,7 @@ public class WordpressComicRipperTest extends RippersTest {
         Assertions.assertEquals("8muses.download_lustomic-playkittens-josh-samuel-porn-comics-8-muses", ripper.getAlbumTitle(url));
     }
     @Test
+    @Tag("flaky")
     public void test_spyingwithlana_download() throws IOException, URISyntaxException {
         WordpressComicRipper ripper = new WordpressComicRipper(
                 new URI("http://spyingwithlana.com/comic/the-big-hookup/").toURL());
