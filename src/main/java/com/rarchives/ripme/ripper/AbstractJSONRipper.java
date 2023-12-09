@@ -37,7 +37,7 @@ public abstract class AbstractJSONRipper extends AbstractRipper {
     @Override
     public abstract String getHost();
 
-    protected abstract JSONObject getFirstPage() throws IOException;
+    protected abstract JSONObject getFirstPage() throws IOException, URISyntaxException;
     protected JSONObject getNextPage(JSONObject doc) throws IOException, URISyntaxException {
         throw new IOException("getNextPage not implemented");
     }
@@ -62,7 +62,7 @@ public abstract class AbstractJSONRipper extends AbstractRipper {
     }
 
     @Override
-    public void rip() throws IOException {
+    public void rip() throws IOException, URISyntaxException {
         int index = 0;
         LOGGER.info("Retrieving " + this.url);
         sendUpdate(STATUS.LOADING_RESOURCE, this.url.toExternalForm());

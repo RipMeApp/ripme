@@ -8,6 +8,8 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -79,14 +81,14 @@ public class MangadexRipper extends AbstractJSONRipper {
 
 
     @Override
-    public JSONObject getFirstPage() throws IOException {
+    public JSONObject getFirstPage() throws IOException, URISyntaxException {
         // Get the chapter ID
         String chapterID = getChapterID(url.toExternalForm());
         String mangaID = getMangaID(url.toExternalForm());
         if (mangaID != null) {
-            return Http.url(new URL(mangaApiEndPoint + mangaID)).getJSON();
+            return Http.url(new URI(mangaApiEndPoint + mangaID).toURL()).getJSON();
         } else
-            return Http.url(new URL(chapterApiEndPoint + chapterID)).getJSON();
+            return Http.url(new URI(chapterApiEndPoint + chapterID).toURL()).getJSON();
     }
 
     @Override
@@ -129,8 +131,8 @@ public class MangadexRipper extends AbstractJSONRipper {
         for (Double aDouble : treeMap.keySet()) {
             double key = (double) aDouble;
             try {
-                chapterJSON = Http.url(new URL(chapterApiEndPoint + treeMap.get(key))).getJSON();
-            } catch (IOException e) {
+                chapterJSON = Http.url(new URI(chapterApiEndPoint + treeMap.get(key)).toURL()).getJSON();
+            } catch (IOException | URISyntaxException e) {
                 e.printStackTrace();
             }
             sendUpdate(RipStatusMessage.STATUS.LOADING_RESOURCE, "chapter " + key);
