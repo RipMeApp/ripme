@@ -30,6 +30,7 @@ import java.util.zip.GZIPInputStream;
 public class DanbooruRipper extends AbstractJSONRipper {
     private static final String DOMAIN = "danbooru.donmai.us",
             HOST = "danbooru";
+    private final OkHttpClient client;
 
     private Pattern gidPattern = null;
 
@@ -37,6 +38,10 @@ public class DanbooruRipper extends AbstractJSONRipper {
 
     public DanbooruRipper(URL url) throws IOException {
         super(url);
+        this.client = new OkHttpClient.Builder()
+                .readTimeout(60, TimeUnit.SECONDS)
+                .writeTimeout(60, TimeUnit.SECONDS)
+                .build();
     }
 
     @Override
@@ -51,12 +56,6 @@ public class DanbooruRipper extends AbstractJSONRipper {
 
     private String getPage(int num) throws MalformedURLException {
         return "https://" + getDomain() + "/posts.json?page=" + num + "&tags=" + getTag(url);
-    }
-
-    private static final Map<String, String> SESSION_COOKIE;
-    static {
-        SESSION_COOKIE = new TreeMap<String, String>();
-        SESSION_COOKIE.put("_danbooru2_session", "9V8N6tN5EW9gMFt%2BCrX4urKQD7VDwyLDcTqaTouqs%2FaOCasOJvCEWxNpm87RrDeK7Q51BVHjaS%2BDJQxDbmQNY%2BftVereWltgkFCOqcIweYRdKIIRwBSBJuFzhwz8raelfHZeDT9XHjUqZ6ShnWc0HVmB6FImIhxKqvU9c0pywoiY%2Fv6tSOmb9kCXLGVbP6ltOJOUR7fUyXNSz56YOZ7ycCtbTrOLK1abSuUFg1nLREh2pDqbZnHskEvYPdAmfejsgpmqnABzJH%2B1mt8j53y0%2BIC0F%2BE1n8ho1o77pKsOJuLiHTspxZho2PJ3JM%2Fa1eeA0ydlgJ5DKeHly0VwRZeNPDOPg%2F9c2VTEoaqSSnAyYWuAtilkMO52VGqcytqSlGtf6tlCMg%3D%3D--m98PPTXsgxn8A0dm--cPRKozLSLkwE4sJvirVU1g%3D%3D");
     }
 
     private final String userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:65.0) Gecko/20100101 Firefox/65.0";
@@ -109,10 +108,7 @@ public class DanbooruRipper extends AbstractJSONRipper {
     protected JSONObject getNextPage(JSONObject doc) throws IOException {
         currentPageNum++;
 
-        OkHttpClient client = new OkHttpClient.Builder()
-                .readTimeout(60, TimeUnit.SECONDS)
-                .writeTimeout(60, TimeUnit.SECONDS)
-                .build();
+
 
         Request request = new Request.Builder()
                 .url(getPage(currentPageNum)) // make sure to implement getPage method
@@ -126,25 +122,17 @@ public class DanbooruRipper extends AbstractJSONRipper {
                 .header("X-Requested-With", "XMLHttpRequest")
                 .header("Connection", "keep-alive")
                 .build();
-
         Response response = null;
         try {
             response = client.newCall(request).execute();
             if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
 
-            // Response body is automatically decompressed
             String responseData = response.body().string();
-            // Parsing the responseData to a JSONArray
-
             JSONArray jsonArray = new JSONArray(responseData);
             if(!jsonArray.isEmpty()){
-                System.out.println(jsonArray);
-
                 String newCompatibleJSON = "{ \"resources\":" + jsonArray + " }";
                 return new JSONObject(newCompatibleJSON);
             }
-
-
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
@@ -152,8 +140,7 @@ public class DanbooruRipper extends AbstractJSONRipper {
                 response.body().close();
             }
         }
-        return null; // Return null or a default value in case of error
-
+        return null;
     }
 
     @Override
