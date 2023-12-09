@@ -6,6 +6,7 @@ import com.rarchives.ripme.utils.Utils;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+import org.jetbrains.annotations.Nullable;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.jsoup.Connection;
@@ -61,57 +62,18 @@ public class DanbooruRipper extends AbstractJSONRipper {
     private final String userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:65.0) Gecko/20100101 Firefox/65.0";
     @Override
     protected JSONObject getFirstPage() throws MalformedURLException {
-
-        OkHttpClient client = new OkHttpClient.Builder()
-                .readTimeout(60, TimeUnit.SECONDS)
-                .writeTimeout(60, TimeUnit.SECONDS)
-                .build();
-
-        Request request = new Request.Builder()
-                .url(getPage(1)) // make sure to implement getPage method
-                .header("User-Agent", "Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.0 Mobile/15E148 Safari/604.1")
-                .header("Accept", "application/json,text/javascript,*/*;q=0.01")
-                .header("Accept-Language", "en-US,en;q=0.9")
-                .header("Sec-Fetch-Dest", "empty")
-                .header("Sec-Fetch-Mode", "cors")
-                .header("Sec-Fetch-Site", "same-origin")
-                .header("Referer", "https://danbooru.donmai.us/")
-                .header("X-Requested-With", "XMLHttpRequest")
-                .header("Connection", "keep-alive")
-                .build();
-
-        Response response = null;
-        try {
-            response = client.newCall(request).execute();
-            if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
-
-            // Response body is automatically decompressed
-            String responseData = response.body().string();
-            // Parsing the responseData to a JSONArray
-            JSONArray jsonArray = new JSONArray(responseData);
-            System.out.println(jsonArray.toString());
-
-            String newCompatibleJSON = "{ \"resources\":" + jsonArray.toString() + " }";
-            return new JSONObject(newCompatibleJSON);
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            if(response !=null) {
-                response.body().close();
-            }
-        }
-        return null; // Return null or a default value in case of error
+        return getCurrentPage();
     }
 
     @Override
     protected JSONObject getNextPage(JSONObject doc) throws IOException {
-        currentPageNum++;
+        return getCurrentPage();
+    }
 
-
-
+    @Nullable
+    private JSONObject getCurrentPage() throws MalformedURLException {
         Request request = new Request.Builder()
-                .url(getPage(currentPageNum)) // make sure to implement getPage method
+                .url(getPage(currentPageNum))
                 .header("User-Agent", "Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.0 Mobile/15E148 Safari/604.1")
                 .header("Accept", "application/json,text/javascript,*/*;q=0.01")
                 .header("Accept-Language", "en-US,en;q=0.9")
@@ -123,6 +85,7 @@ public class DanbooruRipper extends AbstractJSONRipper {
                 .header("Connection", "keep-alive")
                 .build();
         Response response = null;
+        currentPageNum++;
         try {
             response = client.newCall(request).execute();
             if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
