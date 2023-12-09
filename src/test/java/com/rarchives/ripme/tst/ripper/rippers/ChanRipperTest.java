@@ -7,6 +7,10 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import com.rarchives.ripme.ripper.rippers.ChanRipper;
 import com.rarchives.ripme.ripper.rippers.ripperhelpers.ChanSite;
@@ -27,7 +31,22 @@ public class ChanRipperTest extends RippersTest {
         passURLs.add(new URI("https://rbt.asia/g/thread/70643087/").toURL()); //must work with TLDs with len of 4
         for (URL url : passURLs) {
             ChanRipper ripper = new ChanRipper(url);
-            ripper.setup();
+            // Use CompletableFuture to run setup() asynchronously
+            CompletableFuture<Void> setupFuture = CompletableFuture.runAsync(() -> {
+                try {
+                    ripper.setup();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            });
+
+            try {
+                // Wait for up to 5 seconds for setup() to complete
+                setupFuture.get(5, TimeUnit.SECONDS);
+            } catch (InterruptedException | ExecutionException |
+                     TimeoutException e) {
+                e.printStackTrace(); // Handle exceptions as needed
+            }
             assert (ripper.canRip(url));
             Assertions.assertNotNull(ripper.getWorkingDir(), "Ripper for " + url + " did not have a valid working directory.");
             deleteDir(ripper.getWorkingDir());

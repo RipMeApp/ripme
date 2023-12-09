@@ -135,12 +135,14 @@ tasks.withType<AbstractArchiveTask>().configureEach {
   isReproducibleFileOrder = true
 }
 
+println("Build directory: ${file(layout.buildDirectory)}")
+
 tasks.jacocoTestReport {
   dependsOn(tasks.test) // tests are required to run before generating the report
   reports {
     xml.required.set(false)
     csv.required.set(false)
-    html.outputLocation.set(file("${layout.buildDirectory}/jacocoHtml"))
+    html.outputLocation.set(file("${file(layout.buildDirectory)}/jacocoHtml"))
   }
 }
 

@@ -1,6 +1,7 @@
 package com.rarchives.ripme.ui;
 
 import com.rarchives.ripme.ripper.AbstractRipper;
+import com.rarchives.ripme.uiUtils.ContextActionProtections;
 import com.rarchives.ripme.utils.RipUtils;
 import com.rarchives.ripme.utils.Utils;
 import org.apache.logging.log4j.Level;
@@ -18,18 +19,10 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 import javax.swing.table.AbstractTableModel;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.SimpleAttributeSet;
-import javax.swing.text.StyleConstants;
-import javax.swing.text.StyledDocument;
+import javax.swing.text.*;
 import java.awt.*;
 import java.awt.TrayIcon.MessageType;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
+import java.awt.event.*;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -57,6 +50,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
     private boolean isRipping = false; // Flag to indicate if we're ripping something
 
     private static JFrame mainFrame;
+
     private static JTextField ripTextfield;
     private static JButton ripButton, stopButton;
 
@@ -281,7 +275,47 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         }
 
         ripTextfield = new JTextField("", 20);
-        ripTextfield.addMouseListener(new ContextMenuMouseListener());
+        ripTextfield.addMouseListener(new ContextMenuMouseListener(ripTextfield));
+
+        //Add keyboard protection of cntl + v for pasting.
+        ripTextfield.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyTyped(KeyEvent e) {
+                if (e.getKeyChar() == 22) { // ASCII code for Ctrl+V
+                    ContextActionProtections.pasteFromClipboard(ripTextfield);
+                }
+            }
+        });
+
+        /*
+        Alternatively, just set this, and use
+        ((AbstractDocument) ripTextfield.getDocument()).setDocumentFilter(new LengthLimitDocumentFilter(256));
+            private static class LengthLimitDocumentFilter extends DocumentFilter {
+                private final int maxLength;
+
+                public LengthLimitDocumentFilter(int maxLength) {
+                    this.maxLength = maxLength;
+                }
+
+                @Override
+                public void insertString(FilterBypass fb, int offset, String string, AttributeSet attr) throws BadLocationException {
+        //            if ((fb.getDocument().getLength() + string.length()) <= maxLength) {
+                        super.insertString(fb, offset, string.substring(0, maxLength), attr);
+        //            }
+                }
+
+                @Override
+                public void replace(FilterBypass fb, int offset, int length, String text, AttributeSet attrs) throws BadLocationException {
+                    int currentLength = fb.getDocument().getLength();
+                    int newLength = currentLength - length + text.length();
+
+        //            if (newLength <= maxLength) {
+                    super.replace(fb, offset, length, text.substring(0, maxLength), attrs);
+        //            }
+                }
+            }
+         */
+
         ImageIcon ripIcon = new ImageIcon(mainIcon);
         ripButton = new JButton("<html><font size=\"5\"><b>Rip</b></font></html>", ripIcon);
         stopButton = new JButton("<html><font size=\"5\"><b>Stop</b></font></html>");
