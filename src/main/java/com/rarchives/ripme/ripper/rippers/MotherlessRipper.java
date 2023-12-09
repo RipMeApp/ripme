@@ -2,6 +2,8 @@ package com.rarchives.ripme.ripper.rippers;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -66,13 +68,13 @@ public class MotherlessRipper extends AbstractHTMLRipper {
     }
 
     @Override
-    public Document getNextPage(Document doc) throws IOException {
+    public Document getNextPage(Document doc) throws IOException, URISyntaxException {
         Elements nextPageLink = doc.head().select("link[rel=next]");
         if (nextPageLink.isEmpty()) {
             throw new IOException("Last page reached");
         } else {
             String referrerLink = doc.head().select("link[rel=canonical]").first().attr("href");
-            URL nextURL = new URL(this.url, nextPageLink.first().attr("href"));
+            URL nextURL = this.url.toURI().resolve(nextPageLink.first().attr("href")).toURL();
             return Http.url(nextURL).referrer(referrerLink).get();
         }
     }
@@ -180,11 +182,11 @@ public class MotherlessRipper extends AbstractHTMLRipper {
                     if (Utils.getConfigBoolean("download.save_order", true)) {
                         prefix = String.format("%03d_", index);
                     }
-                    addURLToDownload(new URL(file), prefix);
+                    addURLToDownload(new URI(file).toURL(), prefix);
                 } else {
                     LOGGER.warn("[!] could not find '__fileurl' at " + url);
                 }
-            } catch (IOException e) {
+            } catch (IOException | URISyntaxException e) {
                 LOGGER.error("[!] Exception while loading/parsing " + this.url, e);
             }
         }
