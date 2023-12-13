@@ -7,6 +7,7 @@ import org.jsoup.nodes.Element;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -37,6 +38,14 @@ public class Jpg3Ripper extends AbstractHTMLRipper {
         }
 
         return urls;
+    }
+
+    @Override
+    public URL sanitizeURL(URL url) throws MalformedURLException {
+        String u = url.toExternalForm();
+        u = u.replaceAll("https?://jpg3.su/a/([^/]+)/?.*", "https://jpg3.su/a/$1");
+        LOGGER.debug("Changed URL from " + url + " to " + u);
+        return new URL(u);
     }
 
     @Override
