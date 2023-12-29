@@ -62,7 +62,7 @@ public class EHentaiRipper extends AbstractHTMLRipper {
         return "e-hentai.org";
     }
 
-    public String getAlbumTitle(URL url) throws MalformedURLException {
+    public String getAlbumTitle(URL url) throws MalformedURLException, URISyntaxException {
         try {
             // Attempt to use album title as GID
             if (albumDoc == null) {

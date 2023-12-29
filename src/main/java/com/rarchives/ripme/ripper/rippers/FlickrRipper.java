@@ -173,7 +173,7 @@ public class FlickrRipper extends AbstractHTMLRipper {
     }
 
     @Override
-    public String getAlbumTitle(URL url) throws MalformedURLException {
+    public String getAlbumTitle(URL url) throws MalformedURLException, URISyntaxException {
         if (!url.toExternalForm().contains("/sets/")) {
             return super.getAlbumTitle(url);
         }

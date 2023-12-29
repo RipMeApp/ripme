@@ -87,7 +87,7 @@ public class ImagebamRipper extends AbstractHTMLRipper {
     }
 
     @Override
-    public String getAlbumTitle(URL url) throws MalformedURLException {
+    public String getAlbumTitle(URL url) throws MalformedURLException, URISyntaxException {
         try {
             // Attempt to use album title as GID
             Elements elems = getCachedFirstPage().select("[id=gallery-name]");

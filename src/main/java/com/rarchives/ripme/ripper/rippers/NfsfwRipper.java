@@ -155,7 +155,7 @@ public class NfsfwRipper extends AbstractHTMLRipper {
             List<String> imageURLs = getImagePageURLs(fstPage);
             List<String> subalbumURLs = getSubalbumURLs(fstPage);
             return imageURLs.isEmpty() && !subalbumURLs.isEmpty();
-        } catch (IOException e) {
+        } catch (IOException | URISyntaxException e) {
             LOGGER.error("Unable to load " + url, e);
             return false;
         }

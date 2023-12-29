@@ -43,7 +43,7 @@ public class SoundgasmRipper extends AbstractHTMLRipper {
     }
 
     @Override
-    public Document getFirstPage() throws IOException {
+    public Document getFirstPage() throws IOException, URISyntaxException {
         return super.getFirstPage();
     }
 

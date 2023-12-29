@@ -6,6 +6,7 @@ import com.rarchives.ripme.utils.Utils;
 import com.rarchives.ripme.utils.RipUtils;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -194,7 +195,7 @@ public class ChanRipper extends AbstractHTMLRipper {
         return this.url.getHost();
     }
 
-    public Document getFirstPage() throws IOException {
+    public Document getFirstPage() throws IOException, URISyntaxException {
         return super.getFirstPage();
     }
     private boolean isURLBlacklisted(String url) {

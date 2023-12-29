@@ -283,7 +283,7 @@ public abstract class AbstractJSONRipper extends AbstractRipper {
      *      IOException
      */
     @Override
-    public void setWorkingDir(URL url) throws IOException {
+    public void setWorkingDir(URL url) throws IOException, URISyntaxException {
         Path wd = Utils.getWorkingDirectory();
         String title;
         if (Utils.getConfigBoolean("album_titles.save", true)) {

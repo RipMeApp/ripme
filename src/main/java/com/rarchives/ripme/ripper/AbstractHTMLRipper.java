@@ -41,11 +41,11 @@ public abstract class AbstractHTMLRipper extends AbstractRipper {
     protected abstract String getDomain();
     public abstract String getHost();
 
-    protected Document getFirstPage() throws IOException {
+    protected Document getFirstPage() throws IOException, URISyntaxException {
         return Http.url(url).get();
     }
 
-    protected Document getCachedFirstPage() throws IOException {
+    protected Document getCachedFirstPage() throws IOException, URISyntaxException {
         if (cachedFirstPage == null) {
             cachedFirstPage = getFirstPage();
         }
@@ -462,7 +462,7 @@ public abstract class AbstractHTMLRipper extends AbstractRipper {
      *      URL to define how the working directory should be saved.
      */
     @Override
-    public void setWorkingDir(URL url) throws IOException {
+    public void setWorkingDir(URL url) throws IOException, URISyntaxException {
         Path wd = Utils.getWorkingDirectory();
         // TODO - change to nio
         String path = wd.toAbsolutePath().toString();

@@ -192,7 +192,7 @@ public abstract class AlbumRipper extends AbstractRipper {
      *      IOException
      */
     @Override
-    public void setWorkingDir(URL url) throws IOException {
+    public void setWorkingDir(URL url) throws IOException, URISyntaxException {
         Path wd = Utils.getWorkingDirectory();
         // TODO - change to nio
         String path = wd.toAbsolutePath().toString();

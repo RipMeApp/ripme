@@ -23,7 +23,7 @@ import org.junit.jupiter.api.Test;
 public class ChanRipperTest extends RippersTest {
     @Test
     @Tag("flaky")
-    public void testChanURLPasses() throws IOException, URISyntaxException {
+    public void testChanURLPasses() throws IOException, URISyntaxException  {
         List<URL> passURLs = new ArrayList<>();
         // URLs that should work
         passURLs.add(new URI("http://desuchan.net/v/res/7034.html").toURL());
@@ -37,7 +37,7 @@ public class ChanRipperTest extends RippersTest {
             CompletableFuture<Void> setupFuture = CompletableFuture.runAsync(() -> {
                 try {
                     ripper.setup();
-                } catch (IOException e) {
+                } catch (IOException | URISyntaxException e) {
                     throw new RuntimeException(e);
                 }
             });

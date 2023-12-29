@@ -11,6 +11,7 @@ import org.jsoup.select.Elements;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -63,7 +64,7 @@ public class HqpornerRipper extends AbstractHTMLRipper {
 	}
 
 	@Override
-	public Document getFirstPage() throws IOException {
+	public Document getFirstPage() throws IOException, URISyntaxException {
 		return super.getFirstPage();
 	}
 

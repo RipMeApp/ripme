@@ -95,7 +95,7 @@ public class EroShareRipper extends AbstractHTMLRipper {
         }
 
     @Override
-    public String getAlbumTitle(URL url) throws MalformedURLException {
+    public String getAlbumTitle(URL url) throws MalformedURLException, URISyntaxException {
         if (!is_profile(url)) {
             try {
                 // Attempt to use album title as GID

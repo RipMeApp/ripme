@@ -15,7 +15,7 @@ interface RipperInterface {
     void rip() throws IOException, URISyntaxException;
     boolean canRip(URL url);
     URL sanitizeURL(URL url) throws MalformedURLException, URISyntaxException;
-    void setWorkingDir(URL url) throws IOException;
+    void setWorkingDir(URL url) throws IOException, URISyntaxException;
     String getHost();
     String getGID(URL url) throws MalformedURLException, URISyntaxException;
 }

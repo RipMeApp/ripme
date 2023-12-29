@@ -188,7 +188,7 @@ public abstract class AbstractRipper
      * @throws IOException 
      *      Always be prepared.
      */
-    public void setup() throws IOException {
+    public void setup() throws IOException, URISyntaxException {
         setWorkingDir(this.url);
         // we do not care if the rollingfileappender is active, just change the logfile in case
         // TODO this does not work - not even with
@@ -537,7 +537,7 @@ public abstract class AbstractRipper
     }
 
     @Override
-    public abstract void setWorkingDir(URL url) throws IOException;
+    public abstract void setWorkingDir(URL url) throws IOException, URISyntaxException;
 
     /**
      * 
@@ -550,7 +550,7 @@ public abstract class AbstractRipper
      * @throws MalformedURLException 
      *      If any of those damned URLs gets malformed.
      */
-    public String getAlbumTitle(URL url) throws MalformedURLException {
+    public String getAlbumTitle(URL url) throws MalformedURLException, URISyntaxException {
         try {
             return getHost() + "_" + getGID(url);
         } catch (URISyntaxException e) {

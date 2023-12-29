@@ -4,6 +4,7 @@ import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 import com.rarchives.ripme.utils.Http;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -82,7 +83,7 @@ public class MyhentaicomicsRipper extends AbstractHTMLRipper {
     }
 
     @Override
-    public Document getFirstPage() throws IOException {
+    public Document getFirstPage() throws IOException, URISyntaxException {
         return super.getFirstPage();
     }
 

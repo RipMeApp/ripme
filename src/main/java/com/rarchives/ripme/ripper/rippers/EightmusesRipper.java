@@ -57,7 +57,7 @@ public class EightmusesRipper extends AbstractHTMLRipper {
     }
 
     @Override
-    public String getAlbumTitle(URL url) throws MalformedURLException {
+    public String getAlbumTitle(URL url) throws MalformedURLException, URISyntaxException {
         try {
             // Attempt to use album title as GID
             Element titleElement = getCachedFirstPage().select("meta[name=description]").first();
