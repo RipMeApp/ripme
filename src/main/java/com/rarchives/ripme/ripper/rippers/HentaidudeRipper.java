@@ -10,6 +10,7 @@ import org.jsoup.nodes.Document;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -91,7 +92,7 @@ public class HentaidudeRipper extends AbstractSingleFileRipper {
         public void run() {
             try {
                 Document doc = Http.url(url).get();
-                URL videoSourceUrl = new URL(getVideoUrl(doc));
+                URL videoSourceUrl = new URI(getVideoUrl(doc)).toURL();
                 addURLToDownload(videoSourceUrl, "", "", "", null, getVideoName(), "mp4");
             } catch (Exception e) {
                 LOGGER.error("Could not get video url for " + getVideoName(), e);
