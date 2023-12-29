@@ -1,7 +1,8 @@
 {
-    "latestVersion": "2.1.7-29-b080faae",
-    "currentHash": "a2bedd4d524efd98884dad38c888059ea5bbc113924eefa73f5893189beab075",
+    "latestVersion": "2.1.8-1-f5153de8",
+    "currentHash": "a23964a55dfaac7108552d27d964d52ee2b8404c18c6e0904c681c679951ba24",
     "changeList": [
+        "2.1.8-1-f5153de8: jpg3 add, java-21 adjustments.",
         "2.1.7-29-b080faae: luciousripper fix, java-21 adjustments.",
         "2.1.6-1-68189f27: erome fix.",
         "2.1.5-8-ba51d7b: ripme running with java-17.",
