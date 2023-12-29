@@ -262,7 +262,7 @@ public class FlickrRipper extends AbstractHTMLRipper {
                     JSONObject data = (JSONObject) pictures.get(i);
                     try {
                         addURLToDownload(getLargestImageURL(data.getString("id"), apiKey));
-                    } catch (MalformedURLException e) {
+                    } catch (MalformedURLException | URISyntaxException e) {
                         LOGGER.error("Flickr MalformedURLException: " + e.getMessage());
                     }
 
@@ -285,11 +285,11 @@ public class FlickrRipper extends AbstractHTMLRipper {
         addURLToDownload(url, getPrefix(index));
     }
 
-    private URL getLargestImageURL(String imageID, String apiKey) throws MalformedURLException {
+    private URL getLargestImageURL(String imageID, String apiKey) throws MalformedURLException, URISyntaxException {
         TreeMap<Integer, String> imageURLMap = new TreeMap<>();
 
         try {
-            URL imageAPIURL = new URL("https://www.flickr.com/services/rest/?method=flickr.photos.getSizes&api_key=" + apiKey + "&photo_id=" + imageID + "&format=json&nojsoncallback=1");
+            URL imageAPIURL = new URI("https://www.flickr.com/services/rest/?method=flickr.photos.getSizes&api_key=" + apiKey + "&photo_id=" + imageID + "&format=json&nojsoncallback=1").toURL();
             JSONArray imageSizes = new JSONObject(Http.url(imageAPIURL).ignoreContentType().get().text()).getJSONObject("sizes").getJSONArray("size");
             for (int i = 0; i < imageSizes.length(); i++) {
                 JSONObject imageInfo = imageSizes.getJSONObject(i);
@@ -304,6 +304,6 @@ public class FlickrRipper extends AbstractHTMLRipper {
             LOGGER.error("IOException while looking at image sizes: " + e.getMessage());
         }
 
-        return new URL(imageURLMap.lastEntry().getValue());
+        return new URI(imageURLMap.lastEntry().getValue()).toURL();
     }
 }
