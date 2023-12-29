@@ -10,6 +10,8 @@ import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -181,14 +183,14 @@ public class E621Ripper extends AbstractHTMLRipper {
     }
 
     @Override
-    public URL sanitizeURL(URL url) throws MalformedURLException {
+    public URL sanitizeURL(URL url) throws MalformedURLException, URISyntaxException {
         if (gidPattern2 == null)
             gidPattern2 = Pattern.compile(
                     "^https?://(www\\.)?e621\\.net/post/search\\?tags=([a-zA-Z0-9$_.+!*'():,%-]+)(/.*)?(#.*)?$");
 
         Matcher m = gidPattern2.matcher(url.toExternalForm());
         if (m.matches())
-            return new URL("https://e621.net/post/index/1/" + m.group(2).replace("+", "%20"));
+            return new URI("https://e621.net/post/index/1/" + m.group(2).replace("+", "%20")).toURL();
 
         return url;
     }
@@ -208,9 +210,9 @@ public class E621Ripper extends AbstractHTMLRipper {
             try {
                 String fullSizedImage = getFullSizedImage(url);
                 if (fullSizedImage != null && !fullSizedImage.equals("")) {
-                    addURLToDownload(new URL(fullSizedImage), index);
+                    addURLToDownload(new URI(fullSizedImage).toURL(), index);
                 }
-            } catch (IOException e) {
+            } catch (IOException | URISyntaxException e) {
                 logger.error("Unable to get full sized image from " + url);
             }
         }
