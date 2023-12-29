@@ -130,8 +130,8 @@ public class FlickrRipper extends AbstractHTMLRipper {
         String apiURL = null;
         try {
             apiURL = apiURLBuilder(getAlbum(url.toExternalForm()), page, apiKey);
-            pageURL = new URL(apiURL);
-        }  catch (MalformedURLException e) {
+            pageURL = new URI(apiURL).toURL();
+        }  catch (MalformedURLException | URISyntaxException e) {
             LOGGER.error("Unable to get api link " + apiURL + " is malformed");
         }
         try {
