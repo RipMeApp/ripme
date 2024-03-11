@@ -62,7 +62,16 @@ class HistoryMenuMouseListener extends MouseAdapter {
     }
 
     @Override
-    public void mouseClicked(MouseEvent e) {
+    public void mousePressed(MouseEvent e) {
+        checkPopupTrigger(e);
+    }
+
+    @Override
+    public void mouseReleased(MouseEvent e) {
+        checkPopupTrigger(e);
+    }
+
+    private void checkPopupTrigger(MouseEvent e) {
         if (e.getModifiersEx() == InputEvent.BUTTON3_DOWN_MASK) {
             if (!(e.getSource() instanceof JTable)) {
                 return;
