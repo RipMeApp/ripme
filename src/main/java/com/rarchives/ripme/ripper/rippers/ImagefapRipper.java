@@ -144,8 +144,17 @@ public class ImagefapRipper extends AbstractHTMLRipper {
             }
             String image = getFullSizedImage("https://www.imagefap.com" + thumb.parent().attr("href"));
 
-            if(image == null)
-                throw new RuntimeException("Unable to extract image URL from single image page! Unable to continue");
+            if (image == null) {
+                for (int i = 0; i < HTTP_RETRY_LIMIT; i++) {
+                    image = getFullSizedImage("https://www.imagefap.com" + thumb.parent().attr("href"));
+                    if (image != null) {
+                        break;
+                    }
+                    sleep(PAGE_SLEEP_TIME);
+                }
+                if (image == null)
+                    throw new RuntimeException("Unable to extract image URL from single image page! Unable to continue");
+            }
 
             LOGGER.debug("Adding imageURL: '" + image + "'");
 
