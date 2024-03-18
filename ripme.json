@@ -1,8 +1,8 @@
 {
-    "latestVersion": "2.1.9-6-ad86ae11",
-    "currentHash": "6ed316f7cdf979cd6dc563b02b5668feae2ba6a6d12c8b8991e6911eb3289afd",
+    "latestVersion": "2.1.9-7-22e915df",
+    "currentHash": "782ffec29bd14cfde6d714fa6f76980b3fd7cf96723b1121976134a6a5057e68",
     "changeList": [
-        "2.1.9-6-ad86ae11, HistoryMenuMouseListener right click menu, Imagefap retry logic for getFullSizedImage(), EightmusesRipper fixed",
+        "2.1.9-7-22e915df, HistoryMenuMouseListener right click menu, Imagefap retry logic for getFullSizedImage(), EightmusesRipper fixed",
         "2.1.8-1-f5153de8: jpg3 add, java-21 adjustments.",
         "2.1.7-29-b080faae: luciousripper fix, java-21 adjustments.",
         "2.1.6-1-68189f27: erome fix.",
