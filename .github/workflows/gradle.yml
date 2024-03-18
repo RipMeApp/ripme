@@ -15,10 +15,10 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macOS-latest]
-        java: [21]
+        java: [22]
         include: # test old java on one os only, upload from ubuntu java-17
           - os: ubuntu-latest
-            java: 17
+            java: 21
             upload: true
 
     steps:
@@ -30,7 +30,7 @@ jobs:
       uses: FranzDiebold/github-env-vars-action@v2
 
     - name: Set up java
-      uses: actions/setup-java@v3.13.0
+      uses: actions/setup-java@v4.2.1
       with:
         java-version: ${{ matrix.java }}
         distribution: zulu

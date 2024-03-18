@@ -4,7 +4,7 @@
 // gradle clean build -PjavacRelease=21
 // gradle clean build -PcustomVersion=1.0.0-10-asdf
 val customVersion = (project.findProperty("customVersion") ?: "") as String
-val javacRelease = (project.findProperty("javacRelease") ?: "17") as String
+val javacRelease = (project.findProperty("javacRelease") ?: "21") as String
 
 plugins {
   id("fr.brouillard.oss.gradle.jgitver") version "0.9.1"
