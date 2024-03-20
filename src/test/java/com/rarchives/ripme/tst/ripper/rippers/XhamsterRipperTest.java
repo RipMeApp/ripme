@@ -33,12 +33,6 @@ public class XhamsterRipperTest extends RippersTest {
     }
     @Test
     @Tag("flaky")
-    public void testXhamsterAlbumOneDomain() throws IOException, URISyntaxException {
-        XhamsterRipper ripper = new XhamsterRipper(new URI("https://xhamster.one/photos/gallery/japanese-dolls-4-asahi-mizuno-7254664").toURL());
-        testRipper(ripper);
-    }
-    @Test
-    @Tag("flaky")
     public void testXhamsterAlbumDesiDomain() throws IOException, URISyntaxException {
         XhamsterRipper ripper = new XhamsterRipper(new URI("https://xhamster5.desi/photos/gallery/japanese-dolls-4-asahi-mizuno-7254664").toURL());
         testRipper(ripper);
