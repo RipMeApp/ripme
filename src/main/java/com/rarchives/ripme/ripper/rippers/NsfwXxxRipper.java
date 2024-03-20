@@ -8,6 +8,8 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,7 +36,7 @@ public class NsfwXxxRipper extends AbstractJSONRipper {
 
 
     @Override
-    public URL sanitizeURL(URL url) throws MalformedURLException {
+    public URL sanitizeURL(URL url) throws MalformedURLException, URISyntaxException {
         String u = url.toExternalForm();
         // https://nsfw.xxx/user/kelly-kat/foo -> https://nsfw.xxx/user/kelly-kat
         // https://nsfw.xxx/user/kelly-kat -> https://nsfw.xxx/user/kelly-kat
@@ -44,15 +46,15 @@ public class NsfwXxxRipper extends AbstractJSONRipper {
             throw new MalformedURLException("Invalid URL: " + url);
         }
 
-        return new URL(u);
+        return new URI(u).toURL();
     }
 
     String getUser() throws MalformedURLException {
         return getGID(url);
     }
 
-    URL getPage(int page) throws MalformedURLException {
-        return new URL("https://nsfw.xxx/slide-page/" + page + "?nsfw%5B%5D=0&types%5B%5D=image&types%5B%5D=video&types%5B%5D=gallery&slider=1&jsload=1&user=" + getUser());
+    URL getPage(int page) throws MalformedURLException, URISyntaxException {
+        return new URI("https://nsfw.xxx/slide-page/" + page + "?nsfw%5B%5D=0&types%5B%5D=image&types%5B%5D=video&types%5B%5D=gallery&slider=1&jsload=1&user=" + getUser()).toURL();
     }
 
 
@@ -71,18 +73,18 @@ public class NsfwXxxRipper extends AbstractJSONRipper {
     int currentPage = 1;
 
     @Override
-    protected JSONObject getFirstPage() throws IOException {
+    protected JSONObject getFirstPage() throws IOException, URISyntaxException {
         return Http.url(getPage(1)).getJSON();
     }
 
     List<String> descriptions = new ArrayList<>();
 
     @Override
-    protected JSONObject getNextPage(JSONObject doc) throws IOException {
+    protected JSONObject getNextPage(JSONObject doc) throws IOException, URISyntaxException {
         currentPage++;
         JSONObject nextPage = Http.url(getPage(doc.getInt("page") + 1)).getJSON();
         JSONArray items = nextPage.getJSONArray("items");
-        if (items.length() == 0) {
+        if (items.isEmpty()) {
             throw new IOException("No more pages");
         }
         return nextPage;
@@ -120,7 +122,7 @@ public class NsfwXxxRipper extends AbstractJSONRipper {
 
                     return new ApiEntry(srcUrl, o.getString("author"), o.getString("title"));
                 })
-                .collect(Collectors.toList());
+                .toList();
 
         data.forEach(e -> descriptions.add(e.title));
         return data.stream().map(e -> e.srcUrl).collect(Collectors.toList());

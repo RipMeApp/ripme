@@ -2,6 +2,8 @@ package com.rarchives.ripme.ripper.rippers;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -40,7 +42,7 @@ public class FuskatorRipper extends AbstractHTMLRipper {
     }
 
     @Override
-    public URL sanitizeURL(URL url) throws MalformedURLException {
+    public URL sanitizeURL(URL url) throws MalformedURLException, URISyntaxException {
         String u = url.toExternalForm();
         if (u.contains("/thumbs/")) {
             u = u.replace("/thumbs/", "/full/");
@@ -48,7 +50,7 @@ public class FuskatorRipper extends AbstractHTMLRipper {
         if (u.contains("/expanded/")) {
             u = u.replaceAll("/expanded/", "/full/");
         }
-        return new URL(u);
+        return new URI(u).toURL();
     }
 
     @Override

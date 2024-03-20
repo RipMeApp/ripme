@@ -2,6 +2,7 @@ package com.rarchives.ripme.ripper.rippers;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -44,13 +45,13 @@ public class XhamsterRipper extends AbstractHTMLRipper {
     }
 
     @Override
-    public URL sanitizeURL(URL url) throws MalformedURLException {
+    public URL sanitizeURL(URL url) throws MalformedURLException, URISyntaxException {
         if (isVideoUrl(url)) {
             return url;
         }
         String URLToReturn = url.toExternalForm();
         URLToReturn = URLToReturn.replaceAll("https?://\\w?\\w?\\.?xhamster([^<]*)\\.", "https://m.xhamster$1.");
-        URL san_url = new URL(URLToReturn);
+        URL san_url = new URI(URLToReturn).toURL();
         LOGGER.info("sanitized URL is " + san_url.toExternalForm());
         return san_url;
     }
@@ -168,10 +169,10 @@ public class XhamsterRipper extends AbstractHTMLRipper {
                         // This works around some redirect fuckery xhamster likes to do where visiting m.xhamster.com sends to
                         // the page chamster.com but displays the mobile site from m.xhamster.com
                         pageWithImageUrl = pageWithImageUrl.replaceAll("://xhamster([^<]*)\\.", "://m.xhamster$1.");
-                        String image = Http.url(new URL(pageWithImageUrl)).get().select("a > img#photoCurr").attr("src");
+                        String image = Http.url(new URI(pageWithImageUrl).toURL()).get().select("a > img#photoCurr").attr("src");
                         result.add(image);
                         downloadFile(image);
-                    } catch (IOException e) {
+                    } catch (IOException | URISyntaxException e) {
                         LOGGER.error("Was unable to load page " + pageWithImageUrl);
               }
               if (isStopped() || isThisATest()) {

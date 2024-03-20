@@ -2,6 +2,7 @@ package com.rarchives.ripme.ripper.rippers;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -85,8 +86,8 @@ public class EromeRipper extends AbstractHTMLRipper {
     }
 
     @Override
-    public URL sanitizeURL(URL url) throws MalformedURLException {
-        return new URL(url.toExternalForm().replaceAll("https?://erome.com", "https://www.erome.com"));
+    public URL sanitizeURL(URL url) throws MalformedURLException, URISyntaxException {
+        return new URI(url.toExternalForm().replaceAll("https?://erome.com", "https://www.erome.com")).toURL();
     }
 
 

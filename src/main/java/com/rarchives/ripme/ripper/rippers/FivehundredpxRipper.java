@@ -1,9 +1,7 @@
 package com.rarchives.ripme.ripper.rippers;
 
 import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
+import java.net.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -164,8 +162,8 @@ public class FivehundredpxRipper extends AbstractJSONRipper {
     }
 
     @Override
-    public JSONObject getFirstPage() throws IOException {
-        URL apiURL = new URL(baseURL + "&consumer_key=" + CONSUMER_KEY);
+    public JSONObject getFirstPage() throws IOException, URISyntaxException {
+        URL apiURL = new URI(baseURL + "&consumer_key=" + CONSUMER_KEY).toURL();
         LOGGER.debug("apiURL: " + apiURL);
         JSONObject json = Http.url(apiURL).getJSON();
 
@@ -232,7 +230,7 @@ public class FivehundredpxRipper extends AbstractJSONRipper {
     }
 
     @Override
-    public JSONObject getNextPage(JSONObject json) throws IOException {
+    public JSONObject getNextPage(JSONObject json) throws IOException, URISyntaxException {
         if (isThisATest()) {
             return null;
         }
@@ -249,9 +247,9 @@ public class FivehundredpxRipper extends AbstractJSONRipper {
 
         sleep(500);
         ++page;
-        URL apiURL = new URL(baseURL
+        URL apiURL = new URI(baseURL
                              + "&page=" + page
-                             + "&consumer_key=" + CONSUMER_KEY);
+                             + "&consumer_key=" + CONSUMER_KEY).toURL();
         return Http.url(apiURL).getJSON();
     }
 
@@ -296,14 +294,9 @@ public class FivehundredpxRipper extends AbstractJSONRipper {
                     }
                 }
             }
-            if (imageURL == null) {
-                LOGGER.error("Failed to find image for photo " + photo.toString());
-            }
-            else {
-                imageURLs.add(imageURL);
-                if (isThisATest()) {
-                    break;
-                }
+            imageURLs.add(imageURL);
+            if (isThisATest()) {
+                break;
             }
         }
         return imageURLs;
@@ -311,13 +304,13 @@ public class FivehundredpxRipper extends AbstractJSONRipper {
 
     private boolean urlExists(String url) {
         try {
-            HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
+            HttpURLConnection connection = (HttpURLConnection) new URI(url).toURL().openConnection();
             connection.setRequestMethod("HEAD");
             if (connection.getResponseCode() != 200) {
                 throw new IOException("Couldn't find full-size image at " + url);
             }
             return true;
-        } catch (IOException e) {
+        } catch (IOException | URISyntaxException e) {
             return false;
         }
     }

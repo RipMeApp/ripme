@@ -2,6 +2,7 @@ package com.rarchives.ripme.ripper.rippers;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -14,7 +15,6 @@ import org.jsoup.nodes.Document;
 
 import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 import com.rarchives.ripme.utils.Http;
-import org.jsoup.nodes.Element;
 
 public class HitomiRipper extends AbstractHTMLRipper {
 
@@ -47,9 +47,9 @@ public class HitomiRipper extends AbstractHTMLRipper {
     }
 
     @Override
-    public Document getFirstPage() throws IOException {
+    public Document getFirstPage() throws IOException, URISyntaxException {
         // if we go to /GALLERYID.js we get a nice json array of all images in the gallery
-        return Http.url(new URL(url.toExternalForm().replaceAll("hitomi", "ltn.hitomi").replaceAll(".html", ".js"))).ignoreContentType().get();
+        return Http.url(new URI(url.toExternalForm().replaceAll("hitomi", "ltn.hitomi").replaceAll(".html", ".js")).toURL()).ignoreContentType().get();
     }
 
 

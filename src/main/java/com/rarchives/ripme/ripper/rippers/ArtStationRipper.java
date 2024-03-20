@@ -2,6 +2,8 @@ package com.rarchives.ripme.ripper.rippers;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -50,7 +52,7 @@ public class ArtStationRipper extends AbstractJSONRipper {
             try {
                 // groupData = Http.url(albumURL.getLocation()).getJSON();
                 groupData = getJson(albumURL.getLocation());
-            } catch (IOException e) {
+            } catch (IOException | URISyntaxException e) {
                 throw new MalformedURLException("Couldn't load JSON from " + albumURL.getLocation());
             }
             return groupData.getString("title");
@@ -62,7 +64,7 @@ public class ArtStationRipper extends AbstractJSONRipper {
             try {
 //                 groupData = Http.url(userInfoURL).getJSON();
                 groupData = getJson(userInfoURL);
-            } catch (IOException e) {
+            } catch (IOException | URISyntaxException e) {
                 throw new MalformedURLException("Couldn't load JSON from " + userInfoURL);
             }
             return groupData.getString("full_name");
@@ -74,7 +76,7 @@ public class ArtStationRipper extends AbstractJSONRipper {
     }
 
     @Override
-    protected JSONObject getFirstPage() throws IOException {
+    protected JSONObject getFirstPage() throws IOException, URISyntaxException {
         if (albumURL.getType() == URL_TYPE.SINGLE_PROJECT) {
             // URL points to JSON of a single project, just return it
             // return Http.url(albumURL.getLocation()).getJSON();
@@ -90,7 +92,7 @@ public class ArtStationRipper extends AbstractJSONRipper {
             if (albumContent.getInt("total_count") > 0) {
                 // Get JSON of the first project and return it
                 JSONObject projectInfo = albumContent.getJSONArray("data").getJSONObject(0);
-                ParsedURL projectURL = parseURL(new URL(projectInfo.getString("permalink")));
+                ParsedURL projectURL = parseURL(new URI(projectInfo.getString("permalink")).toURL());
                 // return Http.url(projectURL.getLocation()).getJSON();
                 return getJson(projectURL.getLocation());
             }
@@ -100,7 +102,7 @@ public class ArtStationRipper extends AbstractJSONRipper {
     }
 
     @Override
-    protected JSONObject getNextPage(JSONObject doc) throws IOException {
+    protected JSONObject getNextPage(JSONObject doc) throws IOException, URISyntaxException {
         if (albumURL.getType() == URL_TYPE.USER_PORTFOLIO) {
             // Initialize the page number if it hasn't been initialized already
             if (projectPageNumber == null) {
@@ -117,7 +119,7 @@ public class ArtStationRipper extends AbstractJSONRipper {
                 projectIndex = 0;
             }
 
-            Integer currentProject = ((projectPageNumber - 1) * 50) + (projectIndex + 1);
+            int currentProject = ((projectPageNumber - 1) * 50) + (projectIndex + 1);
             // JSONObject albumContent = Http.url(albumURL.getLocation() + "?page=" +
             // projectPageNumber).getJSON();
             JSONObject albumContent = getJson(albumURL.getLocation() + "?page=" + projectPageNumber);
@@ -125,7 +127,7 @@ public class ArtStationRipper extends AbstractJSONRipper {
             if (albumContent.getInt("total_count") > currentProject) {
                 // Get JSON of the next project and return it
                 JSONObject projectInfo = albumContent.getJSONArray("data").getJSONObject(projectIndex);
-                ParsedURL projectURL = parseURL(new URL(projectInfo.getString("permalink")));
+                ParsedURL projectURL = parseURL(new URI(projectInfo.getString("permalink")).toURL());
                 projectIndex++;
                 // return Http.url(projectURL.getLocation()).getJSON();
                 return getJson(projectURL.getLocation());
@@ -320,8 +322,8 @@ public class ArtStationRipper extends AbstractJSONRipper {
         throw new IOException("Error fetching json. Status code:" + status);
     }
 
-    private JSONObject getJson(String url) throws IOException {
-        return getJson(new URL(url));
+    private JSONObject getJson(String url) throws IOException, URISyntaxException {
+        return getJson(new URI(url).toURL());
     }
 
 }

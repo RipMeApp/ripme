@@ -94,13 +94,6 @@ public class EHentaiRipper extends AbstractHTMLRipper {
                         + " Got: " + url);
     }
 
-    /**
-     * Attempts to get page, checks for IP ban, waits.
-     *
-     * @param url
-     * @return Page document
-     * @throws IOException If page loading errors, or if retries are exhausted
-     */
     private Document getPageWithRetries(URL url) throws IOException {
         Document doc;
         int retries = 3;
@@ -251,16 +244,16 @@ public class EHentaiRipper extends AbstractHTMLRipper {
                         savePath += String.format("%03d_", index);
                     }
                     savePath += m.group(1);
-                    addURLToDownload(new URL(imgsrc), Paths.get(savePath));
+                    addURLToDownload(new URI(imgsrc).toURL(), Paths.get(savePath));
                 } else {
                     // Provide prefix and let the AbstractRipper "guess" the filename
                     String prefix = "";
                     if (Utils.getConfigBoolean("download.save_order", true)) {
                         prefix = String.format("%03d_", index);
                     }
-                    addURLToDownload(new URL(imgsrc), prefix);
+                    addURLToDownload(new URI(imgsrc).toURL(), prefix);
                 }
-            } catch (IOException e) {
+            } catch (IOException | URISyntaxException e) {
                 LOGGER.error("[!] Exception while loading/parsing " + this.url, e);
             }
         }

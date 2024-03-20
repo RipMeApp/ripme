@@ -72,7 +72,7 @@ public class ChanRipper extends AbstractHTMLRipper {
         );
 
     private ChanSite chanSite;
-    private Boolean generalChanSite = true;
+    private boolean generalChanSite = true;
 
     public ChanRipper(URL url) throws IOException {
         super(url);
