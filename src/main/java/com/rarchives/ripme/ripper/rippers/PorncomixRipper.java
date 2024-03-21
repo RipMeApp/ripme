@@ -42,12 +42,6 @@ public class PorncomixRipper extends AbstractHTMLRipper {
         }
 
         @Override
-        public Document getFirstPage() throws IOException {
-            // "url" is an instance field of the superclass
-            return Http.url(url).get();
-        }
-
-        @Override
         public List<String> getURLsFromPage(Document doc) {
             List<String> result = new ArrayList<>();
                 for (Element el : doc.select("div.single-post > div.gallery > dl > dt > a > img")) {

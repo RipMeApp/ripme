@@ -1,9 +1,11 @@
 package com.rarchives.ripme.ripper.rippers;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -110,11 +112,11 @@ public class TsuminoRipper extends AbstractHTMLRipper {
     }
 
     @Override
-    public List<String> getURLsFromPage(Document doc) {
+    public List<String> getURLsFromPage(Document doc) throws UnsupportedEncodingException {
         JSONArray imageIds = getPageUrls();
         List<String> result = new ArrayList<>();
         for (int i = 0; i < imageIds.length(); i++) {
-            result.add("http://www.tsumino.com/Image/Object?name=" + URLEncoder.encode(imageIds.getString(i)));
+            result.add("http://www.tsumino.com/Image/Object?name=" + URLEncoder.encode(imageIds.getString(i), StandardCharsets.UTF_8.name()));
         }
 
         return result;
@@ -127,6 +129,6 @@ public class TsuminoRipper extends AbstractHTMLRipper {
         There is no way to tell if an image returned from tsumino.com is a png to jpg. The content-type header is always
         "image/jpeg" even when the image is a png. The file ext is not included in the url.
          */
-        addURLToDownload(url, getPrefix(index), "", null, null, null, null, true);
+        addURLToDownload(url, "", null, null, getPrefix(index), null, null, true);
     }
 }

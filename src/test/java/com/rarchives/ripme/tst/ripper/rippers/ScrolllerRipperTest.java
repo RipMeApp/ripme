@@ -5,19 +5,21 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
 public class ScrolllerRipperTest extends RippersTest {
     @Test
-    public void testScrolllerGID() throws IOException {
+    public void testScrolllerGID() throws IOException, URISyntaxException {
         Map<URL, String> testURLs = new HashMap<>();
 
-        testURLs.put(new URL("https://scrolller.com/r/CatsStandingUp"), "CatsStandingUp");
-        testURLs.put(new URL("https://scrolller.com/r/CatsStandingUp?filter=pictures"), "CatsStandingUp");
-        testURLs.put(new URL("https://scrolller.com/r/CatsStandingUp?sort=top&filter=pictures"), "CatsStandingUp");
-        testURLs.put(new URL("https://scrolller.com/r/CatsStandingUp?filter=pictures&sort=top"), "CatsStandingUp");
+        testURLs.put(new URI("https://scrolller.com/r/CatsStandingUp").toURL(), "CatsStandingUp");
+        testURLs.put(new URI("https://scrolller.com/r/CatsStandingUp?filter=pictures").toURL(), "CatsStandingUp");
+        testURLs.put(new URI("https://scrolller.com/r/CatsStandingUp?sort=top&filter=pictures").toURL(), "CatsStandingUp");
+        testURLs.put(new URI("https://scrolller.com/r/CatsStandingUp?filter=pictures&sort=top").toURL(), "CatsStandingUp");
         for (URL url : testURLs.keySet()) {
             ScrolllerRipper ripper = new ScrolllerRipper(url);
             ripper.setup();
@@ -27,19 +29,19 @@ public class ScrolllerRipperTest extends RippersTest {
     }
 
     @Test
-    public void testScrolllerFilterRegex() throws IOException {
+    public void testScrolllerFilterRegex() throws IOException, URISyntaxException {
         Map<URL, String> testURLs = new HashMap<>();
 
-        testURLs.put(new URL("https://scrolller.com/r/CatsStandingUp"), "NOFILTER");
-        testURLs.put(new URL("https://scrolller.com/r/CatsStandingUp?filter=pictures"), "PICTURE");
-        testURLs.put(new URL("https://scrolller.com/r/CatsStandingUp?filter=videos"), "VIDEO");
-        testURLs.put(new URL("https://scrolller.com/r/CatsStandingUp?filter=albums"), "ALBUM");
-        testURLs.put(new URL("https://scrolller.com/r/CatsStandingUp?sort=top&filter=pictures"), "PICTURE");
-        testURLs.put(new URL("https://scrolller.com/r/CatsStandingUp?sort=top&filter=videos"), "VIDEO");
-        testURLs.put(new URL("https://scrolller.com/r/CatsStandingUp?sort=top&filter=albums"), "ALBUM");
-        testURLs.put(new URL("https://scrolller.com/r/CatsStandingUp?filter=pictures&sort=top"), "PICTURE");
-        testURLs.put(new URL("https://scrolller.com/r/CatsStandingUp?filter=videos&sort=top"), "VIDEO");
-        testURLs.put(new URL("https://scrolller.com/r/CatsStandingUp?filter=albums&sort=top"), "ALBUM");
+        testURLs.put(new URI("https://scrolller.com/r/CatsStandingUp").toURL(), "NOFILTER");
+        testURLs.put(new URI("https://scrolller.com/r/CatsStandingUp?filter=pictures").toURL(), "PICTURE");
+        testURLs.put(new URI("https://scrolller.com/r/CatsStandingUp?filter=videos").toURL(), "VIDEO");
+        testURLs.put(new URI("https://scrolller.com/r/CatsStandingUp?filter=albums").toURL(), "ALBUM");
+        testURLs.put(new URI("https://scrolller.com/r/CatsStandingUp?sort=top&filter=pictures").toURL(), "PICTURE");
+        testURLs.put(new URI("https://scrolller.com/r/CatsStandingUp?sort=top&filter=videos").toURL(), "VIDEO");
+        testURLs.put(new URI("https://scrolller.com/r/CatsStandingUp?sort=top&filter=albums").toURL(), "ALBUM");
+        testURLs.put(new URI("https://scrolller.com/r/CatsStandingUp?filter=pictures&sort=top").toURL(), "PICTURE");
+        testURLs.put(new URI("https://scrolller.com/r/CatsStandingUp?filter=videos&sort=top").toURL(), "VIDEO");
+        testURLs.put(new URI("https://scrolller.com/r/CatsStandingUp?filter=albums&sort=top").toURL(), "ALBUM");
         for (URL url : testURLs.keySet()) {
             ScrolllerRipper ripper = new ScrolllerRipper(url);
             ripper.setup();

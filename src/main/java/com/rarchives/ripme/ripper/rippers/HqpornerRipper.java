@@ -11,6 +11,8 @@ import org.jsoup.select.Elements;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -63,9 +65,8 @@ public class HqpornerRipper extends AbstractHTMLRipper {
 	}
 
 	@Override
-	public Document getFirstPage() throws IOException {
-		// "url" is an instance field of the superclass
-		return Http.url(url).get();
+	public Document getFirstPage() throws IOException, URISyntaxException {
+		return super.getFirstPage();
 	}
 
 	@Override
@@ -130,7 +131,7 @@ public class HqpornerRipper extends AbstractHTMLRipper {
 		return true;
 	}
 
-	private class HqpornerDownloadThread extends Thread {
+	private class HqpornerDownloadThread implements Runnable {
 
 		private URL hqpornerVideoPageUrl;
 		//private int index;
@@ -164,10 +165,10 @@ public class HqpornerRipper extends AbstractHTMLRipper {
 				}
 
 				if (downloadUrl != null) {
-					addURLToDownload(new URL(downloadUrl), "", subdirectory, "", null, getVideoName(), "mp4");
+					addURLToDownload(new URI(downloadUrl).toURL(), "", subdirectory, "", null, getVideoName(), "mp4");
 				}
 
-			} catch (IOException e) {
+			} catch (IOException | URISyntaxException e) {
 				LOGGER.error("[!] Exception while downloading video.", e);
 			}
 		}
@@ -215,7 +216,7 @@ public class HqpornerRipper extends AbstractHTMLRipper {
 
 			try {
 				logger.info("Trying to download from unknown video host " + videoPageurl);
-				URL url = new URL(videoPageurl);
+				URL url = new URI(videoPageurl).toURL();
 				Response response = Http.url(url).referrer(hqpornerVideoPageUrl).response();
 				Document doc = response.parse();
 
@@ -245,7 +246,7 @@ public class HqpornerRipper extends AbstractHTMLRipper {
 					}
 				}
 
-			} catch (IOException e) {
+			} catch (IOException | URISyntaxException e) {
 				logger.error("Unable to get video url using generic methods.");
 			}
 

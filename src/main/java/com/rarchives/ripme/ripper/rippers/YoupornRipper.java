@@ -41,11 +41,6 @@ public class YoupornRipper extends AbstractSingleFileRipper {
     }
 
     @Override
-    public Document getFirstPage() throws IOException {
-        return Http.url(this.url).get();
-    }
-
-    @Override
     public List<String> getURLsFromPage(Document doc) {
         List<String> results = new ArrayList<>();
         Elements videos = doc.select("video");

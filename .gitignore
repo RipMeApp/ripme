@@ -80,6 +80,12 @@ buildNumber.properties
 # Avoid ignoring Maven wrapper jar file (.jar files are usually ignored)
 !/.mvn/wrapper/maven-wrapper.jar
 
+### gradle ###
+/.gradle
+/build
+# Avoid ignoring gradle wrapper jar file (.jar files are usually ignored)
+!/gradle/wrapper/gradle-wrapper.jar
+
 ### Windows ###
 # Windows thumbnail cache files
 Thumbs.db
@@ -105,6 +111,11 @@ $RECYCLE.BIN/
 .vscode
 .idea
 .project
+local.properties
+
+### Build files
+.gradle/
+build/
 
 ### Ripme ###
 ripme.log
@@ -112,7 +123,6 @@ rips/
 .history
 ripme.jar.update
 *.swp
-*.properties
 !LabelsBundle*.properties
 history.json
 *.iml

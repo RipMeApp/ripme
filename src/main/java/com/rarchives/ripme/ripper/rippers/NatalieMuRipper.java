@@ -80,11 +80,6 @@ public class NatalieMuRipper extends AbstractHTMLRipper {
     }
 
     @Override
-    public Document getFirstPage() throws IOException {
-        return Http.url(this.url).get();
-    }
-
-    @Override
     public List<String> getURLsFromPage(Document page) {
         List<String> imageURLs = new ArrayList<>();
         Pattern p; Matcher m;

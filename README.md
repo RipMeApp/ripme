@@ -1,11 +1,11 @@
-# RipMe [![Licensed under the MIT License](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/RipMeApp/ripme/blob/master/LICENSE.txt) [![Join the chat at https://gitter.im/RipMeApp/Lobby](https://badges.gitter.im/RipMeApp/Lobby.svg)](https://gitter.im/RipMeApp/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) [![Subreddit](https://img.shields.io/badge/discuss-on%20reddit-blue.svg)](https://www.reddit.com/r/ripme/)
-
-[![Build Status](https://travis-ci.org/RipMeApp/ripme.svg?branch=master)](https://travis-ci.org/RipMeApp/ripme)
+# RipMe 
+[![Licensed under the MIT License](https://img.shields.io/badge/License-MIT-blue.svg)](/LICENSE.txt)
+[![Join the chat at https://gitter.im/RipMeApp/Lobby](https://badges.gitter.im/RipMeApp/Lobby.svg)](https://gitter.im/RipMeApp/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Subreddit](https://img.shields.io/badge/discuss-on%20reddit-blue.svg)](https://www.reddit.com/r/ripme/)
+![alt Badge Status](https://github.com/ripmeapp2/ripme/actions/workflows/gradle.yml/badge.svg)
 [![Coverage Status](https://coveralls.io/repos/github/RipMeApp/ripme/badge.svg?branch=master)](https://coveralls.io/github/RipMeApp/ripme?branch=master)
 
-# Contribute
-
-RipMe is maintained with ♥️ and in our limited free time by **[@MetaPrime](https://github.com/metaprime)**, **[@cyian-1756](https://github.com/cyian-1756)** and **[@kevin51jiang](https://github.com/kevin51jiang)**. If you'd like to contribute but aren't good with code, help keep us happy with a small contribution!
+RipMe is maintained with ♥️ and in our limited free time by **[@MetaPrime](https://github.com/metaprime)**, **[@cyian-1756](https://github.com/cyian-1756)** and **[@kevin51jiang](https://github.com/kevin51jiang)**. If you'd like to contribute but aren't good with code, help keep us happy with a small contribution! Chat on [gitter](https://gitter.im/RipMeApp/Lobby).
 
 [![Tip with PayPal](https://img.shields.io/badge/PayPal-Buy_us...-lightgrey.svg)](https://www.paypal.me/ripmeapp)
 [![Tip with PayPal](https://img.shields.io/badge/coffee-%245-green.svg)](https://www.paypal.com/paypalme/ripmeapp/send?amount=5.00&currencyCode=USD&locale.x=en_US&country.x=US)
@@ -16,17 +16,20 @@ RipMe is maintained with ♥️ and in our limited free time by **[@MetaPrime](h
 
 # About
 
-RipMe is an album ripper for various websites. It is a cross-platform tool that runs on your computer, and requires Java 8. RipMe has been tested and confirmed working on Windows, Linux and MacOS. 
+RipMe is an album ripper for various websites. It is a cross-platform tool that runs on your computer, and
+requires Java 17. RipMe has been tested and confirmed working on Windows, Linux and MacOS.
 
 ![Screenshot](https://i.imgur.com/UCQNjeg.png)
 
 ## Downloads
 
-Download `ripme.jar` from the [latest release](https://github.com/ripmeapp/ripme/releases).
+Download `ripme.jar` from the [latest release](https://github.com/ripmeapp2/ripme/releases). For information about running the `.jar` file, see 
+[the How To Run wiki](https://github.com/ripmeapp/ripme/wiki/How-To-Run-RipMe).
 
-**Note: If you're currently using version 1.2.x, 1.3.x or 1.7.49, you will not automatically get updates to the newest versions. We recommend downloading the latest version from the link above.**
-
-For information about running the `.jar` file, see [the How To Run wiki](https://github.com/ripmeapp/ripme/wiki/How-To-Run-RipMe).
+The version number like ripme-1.7.94-17-2167aa34-feature_auto_release.jar contains a release number (1.7.94), given by
+a person, the number of commits since this version (17). The commit SHA (2167aa34) uniquely references the
+source code ripme was built from. If it is not built from the main branch, the branch name (feature/auto-release) is
+given.
 
 ## Installation
 
@@ -37,7 +40,7 @@ brew install --cask ripme && xattr -d com.apple.quarantine /Applications/ripme.j
 
 ## Changelog
 
-[Changelog](https://github.com/ripmeapp/ripme/blob/master/ripme.json) **(ripme.json)**
+[Changelog](/ripme.json) **(ripme.json)**
 
 # Features
 
@@ -77,40 +80,49 @@ If you're a developer, you can add your own Ripper by following the wiki guide:
 
 # Compiling & Building
 
-The project uses [Gradle](https://gradle.org) or [Maven](http://maven.apache.org/).
-Therefor both commands are given. To build the .jar file, navigate to the root
-project directory and run:
+The project uses [Gradle](https://gradle.org). To build the .jar file,
+navigate to the root project directory and run at least the test you 
+change, e.g. Xhamster. test execution can also excluded completely:
 
 ```bash
-mvn clean compile assembly:single
-mvn -B package assembly:single -Dmaven.test.skip=true
-```
-```bash
-./gradlew clean build
+./gradlew clean build testAll --tests XhamsterRipperTest.testXhamster2Album
 ./gradlew clean build -x test --warning-mode all
 ```
 
-This will include all dependencies in the JAR. One can skip executing the tests
-as well.
+The generated JAR (java archive) in build/libs will include all
+dependencies.
 
 # Running Tests
 
-Tests can be marked as beeing slow, or flaky. Default is to run all but the flaky tests. Slow tests can be excluded to
-run. slow and flaky tests can be run on its own. After building you can run tests, quoting might be necessary depending
-on your shell:
+Tests can be tagged as beeing slow, or flaky. The gradle build reacts to
+the following combinations of tags:
 
-```bash
-mvn test
-mvn test -DexcludedGroups= -Dgroups=flaky,slow
-mvn test '-Dgroups=!slow'
-```
+- default is to run all tests without tag.
+- testAll runs all tests.
+- testFlaky runs tests with tag "flaky".
+- testSlow runs tests with tag "slow".
+- tests can be run by test class, or single test. Use "testAll" so it does
+  not matter if a test is tagged or not.
 
 ```bash
 ./gradlew test
-./gradlew test -DexcludeTags= -DincludeTags=flaky,slow
-./gradlew test '-DincludeTags=!slow'
+./gradlew testAll
+./gradlew testFlaky
+./gradlew testSlow
+./gradlew testAll --tests XhamsterRipperTest
+./gradlew testAll --tests XhamsterRipperTest.testXhamster2Album
 ```
 
-Please note that some tests may fail as sites change and our rippers become out of date.
-Start by building and testing a released version of RipMe
-and then ensure that any changes you make do not cause more tests to break.
+Please note that some tests may fail as sites change and our rippers
+become out of date. Start by building and testing a released version
+of RipMe and then ensure that any changes you make do not cause more
+tests to break.
+
+# New GUI - compose-jb
+As Java Swing will go away in future, a new GUI technology should be used. One of the
+candidates is [Jetpack Compose for Desktop](https://github.com/JetBrains/compose-jb/).
+
+The library leverages the compose library for android and provides it for android, 
+desktop and web. The navigation library is not available for desktop, so Arkadii Ivanov
+implemented 
+[decompose](https://proandroiddev.com/a-comprehensive-hundred-line-navigation-for-jetpack-desktop-compose-5b723c4f256e).

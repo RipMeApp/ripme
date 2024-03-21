@@ -2,6 +2,8 @@ package com.rarchives.ripme.ripper.rippers.video;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -35,11 +37,6 @@ public class TwitchVideoRipper extends VideoRipper {
     }
 
     @Override
-    public URL sanitizeURL(URL url) throws MalformedURLException {
-        return url;
-    }
-
-    @Override
     public String getGID(URL url) throws MalformedURLException {
         Pattern p = Pattern.compile("^https://clips\\.twitch\\.tv/(.*)$");
         Matcher m = p.matcher(url.toExternalForm());
@@ -54,7 +51,7 @@ public class TwitchVideoRipper extends VideoRipper {
     }
 
     @Override
-    public void rip() throws IOException {
+    public void rip() throws IOException, URISyntaxException {
         LOGGER.info("Retrieving " + this.url);
         Document doc = Http.url(url).get();
         
@@ -72,7 +69,7 @@ public class TwitchVideoRipper extends VideoRipper {
             Matcher m = p.matcher(element.data());
             if (m.find()){
                 String vidUrl = m.group(1);
-                addURLToDownload(new URL(vidUrl), HOST + "_" + title);
+                addURLToDownload(new URI(vidUrl).toURL(), HOST + "_" + title);
             }
         }
         waitForThreads();

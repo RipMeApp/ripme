@@ -10,6 +10,8 @@ import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -17,7 +19,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.apache.log4j.Logger;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -25,7 +29,7 @@ import org.jsoup.select.Elements;
 
 
 public class E621Ripper extends AbstractHTMLRipper {
-    private static final Logger logger = Logger.getLogger(E621Ripper.class);
+    private static final Logger logger = LogManager.getLogger(E621Ripper.class);
 
     private static Pattern gidPattern = null;
     private static Pattern gidPattern2 = null;
@@ -179,22 +183,22 @@ public class E621Ripper extends AbstractHTMLRipper {
     }
 
     @Override
-    public URL sanitizeURL(URL url) throws MalformedURLException {
+    public URL sanitizeURL(URL url) throws MalformedURLException, URISyntaxException {
         if (gidPattern2 == null)
             gidPattern2 = Pattern.compile(
                     "^https?://(www\\.)?e621\\.net/post/search\\?tags=([a-zA-Z0-9$_.+!*'():,%-]+)(/.*)?(#.*)?$");
 
         Matcher m = gidPattern2.matcher(url.toExternalForm());
         if (m.matches())
-            return new URL("https://e621.net/post/index/1/" + m.group(2).replace("+", "%20"));
+            return new URI("https://e621.net/post/index/1/" + m.group(2).replace("+", "%20")).toURL();
 
         return url;
     }
 
-    public class E621FileThread extends Thread {
+    public class E621FileThread implements Runnable {
 
-        private URL url;
-        private String index;
+        private final URL url;
+        private final String index;
 
         public E621FileThread(URL url, String index) {
             this.url = url;
@@ -206,9 +210,9 @@ public class E621Ripper extends AbstractHTMLRipper {
             try {
                 String fullSizedImage = getFullSizedImage(url);
                 if (fullSizedImage != null && !fullSizedImage.equals("")) {
-                    addURLToDownload(new URL(fullSizedImage), index);
+                    addURLToDownload(new URI(fullSizedImage).toURL(), index);
                 }
-            } catch (IOException e) {
+            } catch (IOException | URISyntaxException e) {
                 logger.error("Unable to get full sized image from " + url);
             }
         }

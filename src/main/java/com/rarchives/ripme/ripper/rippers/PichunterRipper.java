@@ -64,12 +64,6 @@ public class PichunterRipper extends AbstractHTMLRipper {
     }
 
     @Override
-    public Document getFirstPage() throws IOException {
-        // "url" is an instance field of the superclass
-        return Http.url(url).get();
-    }
-
-    @Override
     public Document getNextPage(Document doc) throws IOException {
         // We use comic-nav-next to the find the next page
         Element elem = doc.select("div.paperSpacings > ul > li.arrow").last();

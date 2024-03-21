@@ -2,6 +2,7 @@ package com.rarchives.ripme.ripper.rippers;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -13,11 +14,8 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import com.rarchives.ripme.ripper.AbstractHTMLRipper;
-import com.rarchives.ripme.utils.Http;
 
 public class GirlsOfDesireRipper extends AbstractHTMLRipper {
-    // Current HTML document
-    private Document albumDoc = null;
 
     public GirlsOfDesireRipper(URL url) throws IOException {
         super(url);
@@ -32,10 +30,10 @@ public class GirlsOfDesireRipper extends AbstractHTMLRipper {
         return "girlsofdesire.org";
     }
 
-    public String getAlbumTitle(URL url) throws MalformedURLException {
+    public String getAlbumTitle(URL url) throws MalformedURLException, URISyntaxException {
         try {
             // Attempt to use album title as GID
-            Document doc = getFirstPage();
+            Document doc = getCachedFirstPage();
             Elements elems = doc.select(".albumName");
             return getHost() + "_" + elems.first().text();
         } catch (Exception e) {
@@ -60,14 +58,6 @@ public class GirlsOfDesireRipper extends AbstractHTMLRipper {
                 "Expected girlsofdesire.org gallery format: "
                         + "http://www.girlsofdesire.org/galleries/<name>/"
                         + " Got: " + url);
-    }
-
-    @Override
-    public Document getFirstPage() throws IOException {
-        if (albumDoc == null) {
-            albumDoc = Http.url(url).get();
-        }
-        return albumDoc;
     }
 
     @Override

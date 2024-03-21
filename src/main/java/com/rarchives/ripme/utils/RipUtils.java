@@ -2,6 +2,8 @@ package com.rarchives.ripme.utils;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -13,16 +15,17 @@ import com.rarchives.ripme.ripper.rippers.EromeRipper;
 import com.rarchives.ripme.ripper.rippers.ImgurRipper;
 import com.rarchives.ripme.ripper.rippers.RedgifsRipper;
 import com.rarchives.ripme.ripper.rippers.VidbleRipper;
-import com.rarchives.ripme.ripper.rippers.GfycatRipper;
+import com.rarchives.ripme.ripper.rippers.SoundgasmRipper;
 import org.apache.commons.lang.math.NumberUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
 
 public class RipUtils {
-    private static final Logger logger = Logger.getLogger(RipUtils.class);
+    private static final Logger logger = LogManager.getLogger(RipUtils.class);
 
     public static List<URL> getFilesFromURL(URL url) {
         List<URL> result = new ArrayList<>();
@@ -38,7 +41,7 @@ public class RipUtils {
                     logger.debug("Got imgur image: " + imgurImage.url);
                     result.add(imgurImage.url);
                 }
-            } catch (IOException e) {
+            } catch (IOException | URISyntaxException e) {
                 logger.error("[!] Exception while loading album " + url, e);
             }
             return result;
@@ -58,32 +61,20 @@ public class RipUtils {
         }  else if (url.getHost().endsWith("i.imgur.com") && url.toExternalForm().contains("gifv")) {
             // links to imgur gifvs
             try {
-                result.add(new URL(url.toExternalForm().replaceAll(".gifv", ".mp4")));
-            } catch (IOException e) {
+                result.add(new URI(url.toExternalForm().replaceAll(".gifv", ".mp4")).toURL());
+            } catch (IOException | URISyntaxException e) {
                 logger.info("Couldn't get gifv from " + url);
             }
             return result;
 
-        }
-        else if (url.getHost().endsWith("gfycat.com")) {
-            try {
-                logger.debug("Fetching gfycat page " + url);
-                String videoURL = GfycatRipper.getVideoURL(url);
-                logger.debug("Got gfycat URL: " + videoURL);
-                result.add(new URL(videoURL));
-            } catch (IOException e) {
-                // Do nothing
-                logger.warn("Exception while retrieving gfycat page:", e);
-            }
-            return result;
         }
         else if (url.getHost().endsWith("redgifs.com") || url.getHost().endsWith("gifdeliverynetwork.com")) {
             try {
                 logger.debug("Fetching redgifs page " + url);
                 String videoURL = RedgifsRipper.getVideoURL(url);
                 logger.debug("Got redgifs URL: " + videoURL);
-                result.add(new URL(videoURL));
-            } catch (IOException e) {
+                result.add(new URI(videoURL).toURL());
+            } catch (IOException | URISyntaxException e) {
                 // Do nothing
                 logger.warn("Exception while retrieving redgifs page:", e);
             }
@@ -93,7 +84,7 @@ public class RipUtils {
             try {
                 logger.info("Getting vidble album " + url);
                 result.addAll(VidbleRipper.getURLsFromPage(url));
-            } catch (IOException e) {
+            } catch (IOException | URISyntaxException e) {
                 // Do nothing
                 logger.warn("Exception while retrieving vidble page:", e);
             }
@@ -103,7 +94,7 @@ public class RipUtils {
             try {
                 logger.info("Getting eroshare album " + url);
                 result.addAll(EroShareRipper.getURLs(url));
-            } catch (IOException e) {
+            } catch (IOException | URISyntaxException e) {
                 // Do nothing
                 logger.warn("Exception while retrieving eroshare page:", e);
             }
@@ -119,11 +110,25 @@ public class RipUtils {
                 EromeRipper r = new EromeRipper(url);
                 Document tempDoc = r.getFirstPage();
                 for (String u : r.getURLsFromPage(tempDoc)) {
-                    result.add(new URL(u));
+                    result.add(new URI(u).toURL());
                 }
-            } catch (IOException e) {
+            } catch (IOException | URISyntaxException e) {
                 // Do nothing
                 logger.warn("Exception while retrieving eroshare page:", e);
+            }
+            return result;
+        }
+        else if (url.toExternalForm().contains("soundgasm.net")) {
+            try {
+                logger.info("Getting soundgasm page " + url);
+                SoundgasmRipper r = new SoundgasmRipper(url);
+                Document tempDoc = r.getFirstPage();
+                for (String u : r.getURLsFromPage(tempDoc)) {
+                    result.add(new URI(u).toURL());
+                }
+            } catch (IOException | URISyntaxException e) {
+                // Do nothing
+                logger.warn("Exception while retrieving soundgasm page:", e);
             }
             return result;
         }
@@ -134,8 +139,8 @@ public class RipUtils {
             logger.info("URL: " + url.toExternalForm());
             String u = url.toExternalForm().replaceAll("&amp;", "&");
             try {
-                result.add(new URL(u));
-            } catch (MalformedURLException e) {
+                result.add(new URI(u).toURL());
+            } catch (MalformedURLException | URISyntaxException e) {
             }
             return result;
         }
@@ -145,11 +150,11 @@ public class RipUtils {
         m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             try {
-                URL singleURL = new URL(m.group(1));
+                URL singleURL = new URI(m.group(1)).toURL();
                 logger.debug("Found single URL: " + singleURL);
                 result.add(singleURL);
                 return result;
-            } catch (MalformedURLException e) {
+            } catch (MalformedURLException | URISyntaxException e) {
                 logger.error("[!] Not a valid URL: '" + url + "'", e);
             }
         }
@@ -163,19 +168,19 @@ public class RipUtils {
                         .get();
                 for (Element el : doc.select("meta")) {
                     if (el.attr("property").equals("og:video")) {
-                        result.add(new URL(el.attr("content")));
+                        result.add(new URI(el.attr("content")).toURL());
                         return result;
                     }
                     else if (el.attr("name").equals("twitter:image:src")) {
-                        result.add(new URL(el.attr("content")));
+                        result.add(new URI(el.attr("content")).toURL());
                         return result;
                     }
                     else if (el.attr("name").equals("twitter:image")) {
-                        result.add(new URL(el.attr("content")));
+                        result.add(new URI(el.attr("content")).toURL());
                         return result;
                     }
                 }
-            } catch (IOException ex) {
+            } catch (IOException | URISyntaxException ex) {
                 logger.error("[!] Error", ex);
             }
 

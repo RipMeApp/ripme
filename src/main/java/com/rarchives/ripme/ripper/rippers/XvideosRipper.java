@@ -2,6 +2,7 @@ package com.rarchives.ripme.ripper.rippers;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,11 +23,6 @@ public class XvideosRipper extends AbstractSingleFileRipper {
 
     public XvideosRipper(URL url) throws IOException {
         super(url);
-    }
-
-    @Override
-    public Document getFirstPage() throws IOException {
-        return Http.url(this.url).get();
     }
 
     @Override
@@ -109,7 +105,7 @@ public class XvideosRipper extends AbstractSingleFileRipper {
     }
 
     @Override
-    public String getAlbumTitle(URL url) throws MalformedURLException {
+    public String getAlbumTitle(URL url) throws MalformedURLException, URISyntaxException {
         Pattern p = Pattern.compile("^https?://[wm.]*xvideos\\.com/profiles/([a-zA-Z0-9_-]+)/photos/(\\d+)/([a-zA-Z0-9_-]+)$");
         Matcher m = p.matcher(url.toExternalForm());
         if (m.matches()) {

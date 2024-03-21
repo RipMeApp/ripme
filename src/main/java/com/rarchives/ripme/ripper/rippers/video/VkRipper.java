@@ -2,6 +2,8 @@ package com.rarchives.ripme.ripper.rippers.video;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -51,10 +53,10 @@ public class VkRipper extends VideoRipper {
     }
 
     @Override
-    public void rip() throws IOException {
+    public void rip() throws IOException, URISyntaxException {
         LOGGER.info("    Retrieving " + this.url);
         String videoURL = getVideoURLAtPage(this.url.toExternalForm());
-        addURLToDownload(new URL(videoURL), HOST + "_" + getGID(this.url));
+        addURLToDownload(new URI(videoURL).toURL(), HOST + "_" + getGID(this.url));
         waitForThreads();
     }
 

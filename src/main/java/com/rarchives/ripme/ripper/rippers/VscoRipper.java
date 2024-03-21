@@ -11,6 +11,7 @@ import java.util.regex.Pattern;
 import org.json.JSONObject;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.jsoup.Connection.Response;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
@@ -100,15 +101,12 @@ public class VscoRipper extends AbstractHTMLRipper {
     }
 
     private String getUserTkn(String username) {
-        String userinfoPage = "https://vsco.co/content/Static/userinfo";
-        String referer = "https://vsco.co/" + username + "/gallery";
-        Map<String,String> cookies = new HashMap<>();
-        cookies.put("vs_anonymous_id", UUID.randomUUID().toString());
+        String userTokenPage = "https://vsco.co/content/Static";
+        Map<String,String> responseCookies = new HashMap<>();
         try {
-            Element doc = Http.url(userinfoPage).cookies(cookies).referrer(referer).ignoreContentType().get().body();
-            String json = doc.text().replaceAll("define\\(", "");
-            json = json.replaceAll("\\)", "");
-            return new JSONObject(json).getString("tkn");
+            Response resp = Http.url(userTokenPage).ignoreContentType().response();
+            responseCookies = resp.cookies();
+            return responseCookies.get("vs");
         } catch (IOException e) {
             LOGGER.error("Could not get user tkn");
             return null;
@@ -215,11 +213,6 @@ public class VscoRipper extends AbstractHTMLRipper {
     @Override
     public String getDomain() {
         return DOMAIN;
-    }
-
-    @Override
-    public Document getFirstPage() throws IOException {
-        return Http.url(url).get();
     }
 
     @Override

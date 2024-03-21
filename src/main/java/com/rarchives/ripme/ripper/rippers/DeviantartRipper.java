@@ -13,12 +13,13 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -28,7 +29,6 @@ import org.jsoup.Connection;
 import org.jsoup.Connection.Method;
 import org.jsoup.Connection.Response;
 import org.jsoup.HttpStatusException;
-import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -383,11 +383,11 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 		try {
 			String url = cleanURL();
 			if (this.usingCatPath) {
-				return (new URL(url + "?catpath=/&offset=" + offset));
+				return (new URI(url + "?catpath=/&offset=" + offset)).toURL();
 			} else {
-				return (new URL(url + "?offset=" + offset));
+				return (new URI(url + "?offset=" + offset).toURL());
 			}
-		} catch (MalformedURLException e) {
+		} catch (MalformedURLException | URISyntaxException e) {
 			e.printStackTrace();
 		}
 		return null;
@@ -518,8 +518,8 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 	 * @author MrPlaygon
 	 *
 	 */
-	private class DeviantartImageThread extends Thread {
-		private URL url;
+	private class DeviantartImageThread implements Runnable {
+		private final URL url;
 
 		public DeviantartImageThread(URL url) {
 			this.url = url;
@@ -533,8 +533,6 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 		/**
 		 * Get URL to Artwork and return fullsize URL with file ending.
 		 * 
-		 * @param page Like
-		 *             https://www.deviantart.com/apofiss/art/warmest-of-the-days-455668450
 		 * @return URL like
 		 *         https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/intermediary/f/07f7a6bb-2d35-4630-93fc-be249af22b3e/d7jak0y-d20e5932-df72-4d13-b002-5e122037b373.jpg
 		 * 
@@ -630,11 +628,11 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 				}
 				String[] tmpParts = downloadString.split("\\."); //split to get file ending
 				
-				addURLToDownload(new URL(downloadString), "", "", "", new HashMap<String, String>(),
+				addURLToDownload(new URI(downloadString).toURL(), "", "", "", new HashMap<String, String>(),
 						title + "." + tmpParts[tmpParts.length - 1]);
 				return;
 
-			} catch (IOException e) {
+			} catch (IOException | URISyntaxException e) {
 				e.printStackTrace();
 			}
 

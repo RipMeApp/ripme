@@ -12,7 +12,6 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
 import com.rarchives.ripme.ripper.AbstractHTMLRipper;
-import com.rarchives.ripme.utils.Http;
 
 public class AllporncomicRipper extends AbstractHTMLRipper {
 
@@ -44,12 +43,6 @@ public class AllporncomicRipper extends AbstractHTMLRipper {
         }
         throw new MalformedURLException("Expected allporncomic URL format: " +
                 "allporncomic.com/TITLE/CHAPTER - got " + url + " instead");
-    }
-
-    @Override
-    public Document getFirstPage() throws IOException {
-        // "url" is an instance field of the superclass
-        return Http.url(url).get();
     }
 
     @Override

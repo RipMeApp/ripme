@@ -13,6 +13,7 @@ public class RipStatusMessage {
         DOWNLOAD_COMPLETE_HISTORY("Download Complete History"),
         RIP_COMPLETE("Rip Complete"),
         DOWNLOAD_WARN("Download problem"),
+        DOWNLOAD_SKIP("Download Skipped"),
         TOTAL_BYTES("Total bytes"),
         COMPLETED_BYTES("Completed bytes"),
         RIP_ERRORED("Rip Errored"),

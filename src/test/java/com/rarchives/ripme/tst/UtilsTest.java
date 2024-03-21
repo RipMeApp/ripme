@@ -1,15 +1,26 @@
 package com.rarchives.ripme.tst;
 
-import java.io.File;
 import java.io.FileNotFoundException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 
 import com.rarchives.ripme.utils.Utils;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 public class UtilsTest {
+
+    private final Logger LOGGER = LogManager.getLogger(UtilsTest.class);
+
+    @Test
+    public void testConfigureLogger() {
+        Utils.configureLogger();
+        LOGGER.warn("this is a warning messaage.");
+    }
 
     public void testGetEXTFromMagic()
     {
@@ -50,8 +61,8 @@ public class UtilsTest {
     public void testShortenFileNameWindows() throws FileNotFoundException {
         String filename = "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff.png";
         // Test filename shortening for windows
-        File f = Utils.shortenSaveAsWindows("D:/rips/test/reddit/deep", filename);
-        Assertions.assertEquals(new File(
+        Path f = Utils.shortenSaveAsWindows("D:/rips/test/reddit/deep", filename);
+        Assertions.assertEquals(Paths.get(
                 "D:/rips/test/reddit/deep/ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff.png"),
                 f);
     }

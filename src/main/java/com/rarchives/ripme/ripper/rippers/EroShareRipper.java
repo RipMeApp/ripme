@@ -7,6 +7,8 @@ package com.rarchives.ripme.ripper.rippers;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -93,11 +95,11 @@ public class EroShareRipper extends AbstractHTMLRipper {
         }
 
     @Override
-    public String getAlbumTitle(URL url) throws MalformedURLException {
+    public String getAlbumTitle(URL url) throws MalformedURLException, URISyntaxException {
         if (!is_profile(url)) {
             try {
                 // Attempt to use album title as GID
-                Element titleElement = getFirstPage().select("meta[property=og:title]").first();
+                Element titleElement = getCachedFirstPage().select("meta[property=og:title]").first();
                 String title = titleElement.attr("content");
                 title = title.substring(title.lastIndexOf('/') + 1);
                 return getHost() + "_" + getGID(url) + "_" + title.trim();
@@ -119,7 +121,6 @@ public class EroShareRipper extends AbstractHTMLRipper {
         for (Element img : imgs) {
             if (img.hasClass("album-image")) {
                 String imageURL = img.attr("src");
-                imageURL = imageURL;
                 URLs.add(imageURL);
             }
         }
@@ -195,7 +196,7 @@ public class EroShareRipper extends AbstractHTMLRipper {
         throw new MalformedURLException("eroshare album not found in " + url + ", expected https://eroshare.com/album or eroshae.com/album");
     }
 
-    public static List<URL> getURLs(URL url) throws IOException{
+    public static List<URL> getURLs(URL url) throws IOException, URISyntaxException {
 
         Response resp = Http.url(url)
                             .ignoreContentType()
@@ -209,7 +210,7 @@ public class EroShareRipper extends AbstractHTMLRipper {
         for (Element img : imgs) {
             if (img.hasClass("album-image")) {
                 String imageURL = img.attr("src");
-                URLs.add(new URL(imageURL));
+                URLs.add(new URI(imageURL).toURL());
             }
         }
         //Videos
@@ -218,7 +219,7 @@ public class EroShareRipper extends AbstractHTMLRipper {
             if (vid.hasClass("album-video")) {
                 Elements source = vid.getElementsByTag("source");
                 String videoURL = source.first().attr("src");
-                URLs.add(new URL(videoURL));
+                URLs.add(new URI(videoURL).toURL());
             }
         }
 

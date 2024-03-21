@@ -10,15 +10,8 @@ import java.util.regex.Pattern;
 
 import com.rarchives.ripme.ripper.AbstractSingleFileRipper;
 import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-
-import com.rarchives.ripme.ripper.VideoRipper;
-import com.rarchives.ripme.utils.Http;
 
 public class FooktubeRipper extends AbstractSingleFileRipper {
-
-    private static final String HOST = "mulemax";
 
     public FooktubeRipper(URL url) throws IOException {
         super(url);
@@ -34,10 +27,6 @@ public class FooktubeRipper extends AbstractSingleFileRipper {
         return "mulemax.com";
     }
 
-    @Override
-    public Document getFirstPage() throws IOException {
-        return Http.url(url).get();
-    }
 
     @Override
     public boolean canRip(URL url) {

@@ -2,6 +2,8 @@ package com.rarchives.ripme.ripper.rippers;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Base64;
@@ -80,16 +82,15 @@ public class HentaiNexusRipper extends AbstractJSONRipper {
     }
 
     @Override
-    protected JSONObject getFirstPage() throws IOException {
+    protected JSONObject getFirstPage() throws IOException, URISyntaxException {
         String jsonEncodedString = getJsonEncodedStringFromPage();
         String jsonDecodedString = decodeJsonString(jsonEncodedString);
         return new JSONObject(jsonDecodedString);
     }
 
-    public String getJsonEncodedStringFromPage() throws MalformedURLException, IOException
-    {
+    public String getJsonEncodedStringFromPage() throws MalformedURLException, IOException, URISyntaxException {
         // Image data only appears on the /read/ page and not on the /view/ one.
-        URL readUrl = new URL(String.format("http://hentainexus.com/read/%s",getGID(url)));
+        URL readUrl = new URI(String.format("http://hentainexus.com/read/%s",getGID(url))).toURL();
         Document document = Http.url(readUrl).response().parse();
 
         for (Element scripts : document.getElementsByTag("script")) {
@@ -143,7 +144,7 @@ public class HentaiNexusRipper extends AbstractJSONRipper {
         }
 
         magicByte = (byte) (magicByte & 0x7);
-        ArrayList<Integer> newArray = new ArrayList();
+        ArrayList<Integer> newArray = new ArrayList<>();
 
         for (int i = 0x0; i < 0x100; i++) {
             newArray.add(i);

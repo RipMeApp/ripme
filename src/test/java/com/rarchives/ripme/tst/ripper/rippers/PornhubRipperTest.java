@@ -1,6 +1,8 @@
 package com.rarchives.ripme.tst.ripper.rippers;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 
 import com.rarchives.ripme.ripper.rippers.PornhubRipper;
@@ -13,26 +15,26 @@ import org.junit.jupiter.api.Test;
 
 public class PornhubRipperTest extends RippersTest {
     @Test
-    public void testPornhubRip() throws IOException {
+    public void testPornhubRip() throws IOException, URISyntaxException {
         if (Utils.getConfigBoolean("test.run_flaky_tests", false)) {
-            PornhubRipper ripper = new PornhubRipper(new URL("https://www.pornhub.com/album/15680522"));
+            PornhubRipper ripper = new PornhubRipper(new URI("https://www.pornhub.com/album/15680522").toURL());
             testRipper(ripper);
         }
     }
 
-    public void testGetGID() throws IOException {
-        URL url = new URL("https://www.pornhub.com/album/15680522?page=2");
+    public void testGetGID() throws IOException, URISyntaxException {
+        URL url = new URI("https://www.pornhub.com/album/15680522?page=2").toURL();
         PornhubRipper ripper = new PornhubRipper(url);
         Assertions.assertEquals("15680522", ripper.getGID(url));
-        url = new URL("https://www.pornhub.com/album/15680522");
+        url = new URI("https://www.pornhub.com/album/15680522").toURL();
         Assertions.assertEquals("15680522", ripper.getGID(url));
     }
 
     @Test
     @Tag("flaky")
-    public void testGetNextPage() throws IOException {
+    public void testGetNextPage() throws IOException, URISyntaxException {
         String baseURL = "https://www.pornhub.com/album/30687901";
-        PornhubRipper ripper = new PornhubRipper(new URL(baseURL));
+        PornhubRipper ripper = new PornhubRipper(new URI(baseURL).toURL());
         Document page = Http.url(baseURL).get();
         int numPagesRemaining = 1;
         for (int idx = 0; idx < numPagesRemaining; idx++){

@@ -2,6 +2,8 @@ package com.rarchives.ripme.ripper.rippers;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 
 import org.jsoup.Connection.Response;
@@ -34,7 +36,7 @@ public class ArtstnRipper extends ArtStationRipper {
 				if (artStationUrl == null) {
 					throw new IOException("Null url received.");
 				}
-			} catch (IOException e) {
+			} catch (IOException | URISyntaxException e) {
 				LOGGER.error("Couldnt resolve URL.", e);
 			}
 
@@ -42,7 +44,7 @@ public class ArtstnRipper extends ArtStationRipper {
 		return super.getGID(artStationUrl);
 	}
 
-	public URL getFinalUrl(URL url) throws IOException {
+	public URL getFinalUrl(URL url) throws IOException, URISyntaxException {
 		if (url.getHost().endsWith("artstation.com")) {
 			return url;
 		}
@@ -50,7 +52,7 @@ public class ArtstnRipper extends ArtStationRipper {
 		LOGGER.info("Checking url: " + url);
 		Response response = Http.url(url).connection().followRedirects(false).execute();
 		if (response.statusCode() / 100 == 3 && response.hasHeader("location")) {
-			return getFinalUrl(new URL(response.header("location")));
+			return getFinalUrl(new URI(response.header("location")).toURL());
 		} else {
 			return null;
 		}

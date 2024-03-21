@@ -13,7 +13,6 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import com.rarchives.ripme.ripper.AbstractHTMLRipper;
-import com.rarchives.ripme.utils.Http;
 
 public class FitnakedgirlsRipper extends AbstractHTMLRipper {
 
@@ -44,11 +43,6 @@ public class FitnakedgirlsRipper extends AbstractHTMLRipper {
 
         throw new MalformedURLException(
                 "Expected fitnakedgirls.com gallery format: " + "fitnakedgirls.com/gallery/####" + " Got: " + url);
-    }
-
-    @Override
-    public Document getFirstPage() throws IOException {
-        return Http.url(url).get();
     }
 
     @Override

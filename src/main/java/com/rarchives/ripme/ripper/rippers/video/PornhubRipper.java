@@ -2,6 +2,8 @@ package com.rarchives.ripme.ripper.rippers.video;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -56,7 +58,7 @@ public class PornhubRipper extends VideoRipper {
     }
 
     @Override
-    public void rip() throws IOException {
+    public void rip() throws IOException, URISyntaxException {
         String vidUrl = "";
         LOGGER.info("    Retrieving " + this.url.toExternalForm());
         Document doc = Http.url(this.url).get();
@@ -146,7 +148,7 @@ public class PornhubRipper extends VideoRipper {
         if (vidUrl.equals("")) {
             throw new IOException("Unable to find encrypted video URL at " + this.url);
         }
-        addURLToDownload(new URL(vidUrl), HOST + "_" + bestQuality + "p_" + getGID(this.url));
+        addURLToDownload(new URI(vidUrl).toURL(), HOST + "_" + bestQuality + "p_" + getGID(this.url));
 
         waitForThreads();
     }

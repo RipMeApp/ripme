@@ -1,6 +1,8 @@
 package com.rarchives.ripme.tst;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import com.rarchives.ripme.utils.Proxy;
 import com.rarchives.ripme.utils.Utils;
@@ -14,12 +16,12 @@ public class proxyTest  {
 
     // This test will only run on machines where the user has added a entry for proxy.socks
     @Test
-    public void testSocksProxy() throws IOException {
+    public void testSocksProxy() throws IOException, URISyntaxException {
         // Unset proxy before testing
         System.setProperty("http.proxyHost", "");
         System.setProperty("https.proxyHost", "");
         System.setProperty("socksProxyHost", "");
-        URL url = new URL("https://icanhazip.com");
+        URL url = new URI("https://icanhazip.com").toURL();
         String proxyConfig = Utils.getConfigString("proxy.socks", "");
         if (!proxyConfig.equals("")) {
             String ip1 = Http.url(url).ignoreContentType().get().text();
@@ -34,12 +36,12 @@ public class proxyTest  {
 
     // This test will only run on machines where the user has added a entry for proxy.http
     @Test
-    public void testHTTPProxy() throws IOException {
+    public void testHTTPProxy() throws IOException, URISyntaxException {
         // Unset proxy before testing
         System.setProperty("http.proxyHost", "");
         System.setProperty("https.proxyHost", "");
         System.setProperty("socksProxyHost", "");
-        URL url = new URL("https://icanhazip.com");
+        URL url = new URI("https://icanhazip.com").toURL();
         String proxyConfig = Utils.getConfigString("proxy.http", "");
         if (!proxyConfig.equals("")) {
             String ip1 = Http.url(url).ignoreContentType().get().text();

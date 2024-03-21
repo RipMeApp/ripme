@@ -2,6 +2,8 @@ package com.rarchives.ripme.ripper.rippers;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -51,13 +53,13 @@ public class Rule34Ripper extends AbstractHTMLRipper {
                 "rule34.xxx/index.php?page=post&s=list&tags=TAG - got " + url + " instead");
     }
 
-    public URL getAPIUrl() throws MalformedURLException {
-        URL urlToReturn = new URL("https://rule34.xxx/index.php?page=dapi&s=post&q=index&limit=100&tags=" + getGID(url));
+    public URL getAPIUrl() throws MalformedURLException, URISyntaxException {
+        URL urlToReturn = new URI("https://rule34.xxx/index.php?page=dapi&s=post&q=index&limit=100&tags=" + getGID(url)).toURL();
         return urlToReturn;
     }
 
     @Override
-    public Document getFirstPage() throws IOException {
+    public Document getFirstPage() throws IOException, URISyntaxException {
         apiUrl = getAPIUrl().toExternalForm();
         // "url" is an instance field of the superclass
         return Http.url(getAPIUrl()).get();

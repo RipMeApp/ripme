@@ -2,6 +2,8 @@ package com.rarchives.ripme.ripper.rippers;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -20,7 +22,6 @@ import org.jsoup.nodes.Element;
 
 public class FlickrRipper extends AbstractHTMLRipper {
 
-    private Document albumDoc = null;
     private final DownloadThreadPool flickrThreadPool;
 
     private enum UrlType {
@@ -63,7 +64,7 @@ public class FlickrRipper extends AbstractHTMLRipper {
     }
 
     @Override
-    public URL sanitizeURL(URL url) throws MalformedURLException {
+    public URL sanitizeURL(URL url) throws MalformedURLException, URISyntaxException {
         String sUrl = url.toExternalForm();
         // Strip out https
         sUrl = sUrl.replace("https://secure.flickr.com", "http://www.flickr.com");
@@ -74,7 +75,7 @@ public class FlickrRipper extends AbstractHTMLRipper {
             }
             sUrl += "pool";
         }
-        return new URL(sUrl);
+        return new URI(sUrl).toURL();
     }
     // FLickr is one of those sites what includes a api key in sites javascript
     // TODO let the user provide their own api key
@@ -129,8 +130,8 @@ public class FlickrRipper extends AbstractHTMLRipper {
         String apiURL = null;
         try {
             apiURL = apiURLBuilder(getAlbum(url.toExternalForm()), page, apiKey);
-            pageURL = new URL(apiURL);
-        }  catch (MalformedURLException e) {
+            pageURL = new URI(apiURL).toURL();
+        }  catch (MalformedURLException | URISyntaxException e) {
             LOGGER.error("Unable to get api link " + apiURL + " is malformed");
         }
         try {
@@ -172,13 +173,13 @@ public class FlickrRipper extends AbstractHTMLRipper {
     }
 
     @Override
-    public String getAlbumTitle(URL url) throws MalformedURLException {
+    public String getAlbumTitle(URL url) throws MalformedURLException, URISyntaxException {
         if (!url.toExternalForm().contains("/sets/")) {
             return super.getAlbumTitle(url);
         }
         try {   
             // Attempt to use album title as GID
-            Document doc = getFirstPage();
+            Document doc = getCachedFirstPage();
             String user = url.toExternalForm();
             user = user.substring(user.indexOf("/photos/") + "/photos/".length());
             user = user.substring(0, user.indexOf("/"));
@@ -228,13 +229,6 @@ public class FlickrRipper extends AbstractHTMLRipper {
                         + " Got: " + url);
     }
 
-    @Override
-    public Document getFirstPage() throws IOException {
-        if (albumDoc == null) {
-            albumDoc = Http.url(url).get();
-        }
-        return albumDoc;
-    }
 
     @Override
     public List<String> getURLsFromPage(Document doc) {
@@ -268,7 +262,7 @@ public class FlickrRipper extends AbstractHTMLRipper {
                     JSONObject data = (JSONObject) pictures.get(i);
                     try {
                         addURLToDownload(getLargestImageURL(data.getString("id"), apiKey));
-                    } catch (MalformedURLException e) {
+                    } catch (MalformedURLException | URISyntaxException e) {
                         LOGGER.error("Flickr MalformedURLException: " + e.getMessage());
                     }
 
@@ -291,11 +285,11 @@ public class FlickrRipper extends AbstractHTMLRipper {
         addURLToDownload(url, getPrefix(index));
     }
 
-    private URL getLargestImageURL(String imageID, String apiKey) throws MalformedURLException {
+    private URL getLargestImageURL(String imageID, String apiKey) throws MalformedURLException, URISyntaxException {
         TreeMap<Integer, String> imageURLMap = new TreeMap<>();
 
         try {
-            URL imageAPIURL = new URL("https://www.flickr.com/services/rest/?method=flickr.photos.getSizes&api_key=" + apiKey + "&photo_id=" + imageID + "&format=json&nojsoncallback=1");
+            URL imageAPIURL = new URI("https://www.flickr.com/services/rest/?method=flickr.photos.getSizes&api_key=" + apiKey + "&photo_id=" + imageID + "&format=json&nojsoncallback=1").toURL();
             JSONArray imageSizes = new JSONObject(Http.url(imageAPIURL).ignoreContentType().get().text()).getJSONObject("sizes").getJSONArray("size");
             for (int i = 0; i < imageSizes.length(); i++) {
                 JSONObject imageInfo = imageSizes.getJSONObject(i);
@@ -310,6 +304,6 @@ public class FlickrRipper extends AbstractHTMLRipper {
             LOGGER.error("IOException while looking at image sizes: " + e.getMessage());
         }
 
-        return new URL(imageURLMap.lastEntry().getValue());
+        return new URI(imageURLMap.lastEntry().getValue()).toURL();
     }
 }

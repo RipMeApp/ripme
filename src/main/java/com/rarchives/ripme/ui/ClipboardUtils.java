@@ -1,8 +1,8 @@
 package com.rarchives.ripme.ui;
 
-import java.awt.HeadlessException;
 import java.awt.Toolkit;
 import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.IOException;
 import java.util.HashSet;
@@ -30,16 +30,13 @@ class ClipboardUtils {
     }
 
     public static String getClipboardString() {
-        try {
-            return (String) Toolkit
-                    .getDefaultToolkit()
-                    .getSystemClipboard()
-                    .getData(DataFlavor.stringFlavor);
-        } catch (IllegalStateException e) {
-            e.printStackTrace();
-            logger.error("Caught and recovered from IllegalStateException: " + e.getMessage());
-        } catch (HeadlessException | IOException | UnsupportedFlavorException e) {
-            e.printStackTrace();
+        Transferable contents = Toolkit.getDefaultToolkit().getSystemClipboard().getContents(null);
+        if (contents.isDataFlavorSupported(DataFlavor.stringFlavor)) {
+            try {
+                return (String) contents.getTransferData(DataFlavor.stringFlavor);
+            } catch (UnsupportedFlavorException | IOException e) {
+                logger.debug("ignore this one" + e.getMessage());
+            }
         }
         return null;
     }
@@ -47,7 +44,7 @@ class ClipboardUtils {
 
 class AutoripThread extends Thread {
     volatile boolean isRunning = false;
-    private Set<String> rippedURLs = new HashSet<>();
+    private final Set<String> rippedURLs = new HashSet<>();
 
     public void run() {
         isRunning = true;

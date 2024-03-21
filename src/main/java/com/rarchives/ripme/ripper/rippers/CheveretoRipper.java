@@ -2,6 +2,7 @@ package com.rarchives.ripme.ripper.rippers;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -50,10 +51,10 @@ public class CheveretoRipper extends AbstractHTMLRipper {
     }
 
     @Override
-    public String getAlbumTitle(URL url) throws MalformedURLException {
+    public String getAlbumTitle(URL url) throws MalformedURLException, URISyntaxException {
         try {
             // Attempt to use album title as GID
-            Element titleElement = getFirstPage().select("meta[property=og:title]").first();
+            Element titleElement = getCachedFirstPage().select("meta[property=og:title]").first();
             String title = titleElement.attr("content");
             title = title.substring(title.lastIndexOf('/') + 1);
             return getHost() + "_" + title.trim();

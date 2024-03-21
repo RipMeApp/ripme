@@ -1,8 +1,7 @@
 package com.rarchives.ripme.ripper.rippers;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
+import java.net.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -10,8 +9,6 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.rarchives.ripme.utils.Utils;
-import org.json.JSONObject;
 import org.jsoup.Connection.Response;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -23,13 +20,7 @@ import com.rarchives.ripme.utils.Http;
 
 public class EightmusesRipper extends AbstractHTMLRipper {
 
-    private Document albumDoc = null;
-    private Map<String,String> cookies = new HashMap<>();
-    // TODO put up a wiki page on using maps to store titles
-    // the map for storing the title of each album when downloading sub albums
-    private Map<URL,String> urlTitles = new HashMap<>();
-
-    private Boolean rippingSubalbums = false;
+    private Map<String, String> cookies = new HashMap<>();
 
     public EightmusesRipper(URL url) throws IOException {
         super(url);
@@ -61,10 +52,10 @@ public class EightmusesRipper extends AbstractHTMLRipper {
     }
 
     @Override
-    public String getAlbumTitle(URL url) throws MalformedURLException {
+    public String getAlbumTitle(URL url) throws MalformedURLException, URISyntaxException {
         try {
             // Attempt to use album title as GID
-            Element titleElement = getFirstPage().select("meta[name=description]").first();
+            Element titleElement = getCachedFirstPage().select("meta[name=description]").first();
             String title = titleElement.attr("content");
             title = title.replace("A huge collection of free porn comics for adults. Read", "");
             title = title.replace("online for free at 8muses.com", "");
@@ -78,21 +69,18 @@ public class EightmusesRipper extends AbstractHTMLRipper {
 
     @Override
     public Document getFirstPage() throws IOException {
-        if (albumDoc == null) {
-            Response resp = Http.url(url).response();
-            cookies.putAll(resp.cookies());
-            albumDoc = resp.parse();
-        }
-        return albumDoc;
+        Response resp = Http.url(url).response();
+        cookies.putAll(resp.cookies());
+        return resp.parse();
     }
 
     @Override
     public List<String> getURLsFromPage(Document page) {
         List<String> imageURLs = new ArrayList<>();
-        int x = 1;
         // This contains the thumbnails of all images on the page
         Elements pageImages = page.getElementsByClass("c-tile");
-        for (Element thumb : pageImages) {
+        for (int i = 0; i < pageImages.size(); i++) {
+            Element thumb = pageImages.get(i);
             // If true this link is a sub album
             if (thumb.attr("href").contains("/comics/album/")) {
                 String subUrl = "https://www.8muses.com" + thumb.attr("href");
@@ -116,24 +104,14 @@ public class EightmusesRipper extends AbstractHTMLRipper {
                 if (thumb.hasAttr("data-cfsrc")) {
                     image = thumb.attr("data-cfsrc");
                 } else {
-                    // Deobfustace the json data
-                    String rawJson = deobfuscateJSON(page.select("script#ractive-public").html()
-                            .replaceAll("&gt;", ">").replaceAll("&lt;", "<").replace("&amp;", "&"));
-                    JSONObject json = new JSONObject(rawJson);
+                    Element imageElement = thumb.select("img").first();
+                    image = "https://comics.8muses.com" + imageElement.attr("data-src").replace("/th/", "/fl/");
                     try {
-                        for (int i = 0; i != json.getJSONArray("pictures").length(); i++) {
-                            image = "https://www.8muses.com/image/fl/" + json.getJSONArray("pictures").getJSONObject(i).getString("publicUri");
-                            URL imageUrl = new URL(image);
-                            addURLToDownload(imageUrl, getPrefixShort(x), getSubdir(page.select("title").text()), this.url.toExternalForm(), cookies, "", null, true);
-                            // X is our page index
-                            x++;
-                            if (isThisATest()) {
-                                break;
-                            }
-                        }
-                        return imageURLs;
-                    } catch (MalformedURLException e) {
+                        URL imageUrl = new URI(image).toURL();
+                        addURLToDownload(imageUrl, getSubdir(page.select("title").text()), this.url.toExternalForm(), cookies, getPrefixShort(i), "", null, true);
+                    } catch (MalformedURLException | URISyntaxException e) {
                         LOGGER.error("\"" + image + "\" is malformed");
+                        LOGGER.error(e.getMessage());
                     }
                 }
                 if (!image.contains("8muses.com")) {
@@ -172,26 +150,5 @@ public class EightmusesRipper extends AbstractHTMLRipper {
 
     public String getPrefixShort(int index) {
         return String.format("%03d", index);
-    }
-
-    private String deobfuscateJSON(String obfuscatedString) {
-        StringBuilder deobfuscatedString = new StringBuilder();
-        // The first char in one of 8muses obfuscated strings is always ! so we replace it
-        for (char ch : obfuscatedString.replaceFirst("!", "").toCharArray()){
-            deobfuscatedString.append(deobfuscateChar(ch));
-        }
-        return deobfuscatedString.toString();
-    }
-
-    private String deobfuscateChar(char c) {
-        if ((int) c == 32) {
-            return fromCharCode(32);
-        }
-        return fromCharCode(33 + (c + 14) % 94);
-
-    }
-
-    private static String fromCharCode(int... codePoints) {
-        return new String(codePoints, 0, codePoints.length);
     }
 }

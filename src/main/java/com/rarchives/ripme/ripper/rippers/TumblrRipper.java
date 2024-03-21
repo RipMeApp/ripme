@@ -1,9 +1,7 @@
 package com.rarchives.ripme.ripper.rippers;
 
 import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
+import java.net.*;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
@@ -100,11 +98,11 @@ public class TumblrRipper extends AlbumRipper {
      * @throws MalformedURLException
      */
     @Override
-    public URL sanitizeURL(URL url) throws MalformedURLException {
+    public URL sanitizeURL(URL url) throws MalformedURLException, URISyntaxException {
         String u = url.toExternalForm();
         // Convert <FQDN>.tumblr.com/path to <FQDN>/path if needed
         if (StringUtils.countMatches(u, ".") > 2) {
-            url = new URL(u.replace(".tumblr.com", ""));
+            url = new URI(u.replace(".tumblr.com", "")).toURL();
             if (isTumblrURL(url)) {
                 LOGGER.info("Detected tumblr site: " + url);
             }
@@ -263,7 +261,7 @@ public class TumblrRipper extends AlbumRipper {
                         fileLocation = photo.getJSONObject("original_size").getString("url").replaceAll("http:", "https:");
                         qualM = qualP.matcher(fileLocation);
                         fileLocation = qualM.replaceFirst("_1280.$1");
-                        fileURL = new URL(fileLocation);
+                        fileURL = new URI(fileLocation).toURL();
 
                         m = p.matcher(fileURL.toString());
                         if (m.matches()) {
@@ -278,7 +276,7 @@ public class TumblrRipper extends AlbumRipper {
                 }
             } else if (post.has("video_url")) {
                 try {
-                    fileURL = new URL(post.getString("video_url").replaceAll("http:", "https:"));
+                    fileURL = new URI(post.getString("video_url").replaceAll("http:", "https:")).toURL();
                     downloadURL(fileURL, date);
                 } catch (Exception e) {
                     LOGGER.error("[!] Error while parsing video in " + post, e);
@@ -293,8 +291,8 @@ public class TumblrRipper extends AlbumRipper {
                         // If the image is any smaller, it will still get the largest available size
                         qualM = qualP.matcher(imgSrc);
                         imgSrc = qualM.replaceFirst("_1280.$1");
-                        downloadURL(new URL(imgSrc), date);
-                    } catch (MalformedURLException e) {
+                        downloadURL(new URI(imgSrc).toURL(), date);
+                    } catch (MalformedURLException | URISyntaxException e) {
                         LOGGER.error("[!] Error while getting embedded image at " + post, e);
                         return true;
                     }

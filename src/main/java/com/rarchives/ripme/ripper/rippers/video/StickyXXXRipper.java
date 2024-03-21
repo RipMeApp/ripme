@@ -2,6 +2,8 @@ package com.rarchives.ripme.ripper.rippers.video;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -33,11 +35,6 @@ public class StickyXXXRipper extends VideoRipper {
     }
 
     @Override
-    public URL sanitizeURL(URL url) throws MalformedURLException {
-        return url;
-    }
-
-    @Override
     public String getGID(URL url) throws MalformedURLException {
         Pattern p = Pattern.compile("^https?://.*stickyxxx\\.com(/)(.*)/$");
         Matcher m = p.matcher(url.toExternalForm());
@@ -52,7 +49,7 @@ public class StickyXXXRipper extends VideoRipper {
     }
 
     @Override
-    public void rip() throws IOException {
+    public void rip() throws IOException, URISyntaxException {
         LOGGER.info("Retrieving " + this.url);
         Document doc = Http.url(url).get();
         Elements videos = doc.select(".wp-video > video > source");
@@ -60,7 +57,7 @@ public class StickyXXXRipper extends VideoRipper {
             throw new IOException("Could not find Embed code at " + url);
         }
         String vidUrl = videos.attr("src");
-        addURLToDownload(new URL(vidUrl), HOST + "_" + getGID(this.url));
+        addURLToDownload(new URI(vidUrl).toURL(), HOST + "_" + getGID(this.url));
         waitForThreads();
     }
 }

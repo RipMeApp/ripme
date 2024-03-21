@@ -2,6 +2,8 @@ package com.rarchives.ripme.ripper.rippers.video;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -54,7 +56,7 @@ public class CliphunterRipper extends VideoRipper {
     }
 
     @Override
-    public void rip() throws IOException {
+    public void rip() throws IOException, URISyntaxException {
         LOGGER.info("Retrieving " + this.url);
         String html = Http.url(url).get().html();
         String jsonString = html.substring(html.indexOf("var flashVars = {d: '") + 21);
@@ -71,7 +73,7 @@ public class CliphunterRipper extends VideoRipper {
                 vidURL += c;
             }
         }
-        addURLToDownload(new URL(vidURL), HOST + "_" + getGID(this.url));
+        addURLToDownload(new URI(vidURL).toURL(), HOST + "_" + getGID(this.url));
         waitForThreads();
     }
 }

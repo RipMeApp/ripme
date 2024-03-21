@@ -2,6 +2,8 @@ package com.rarchives.ripme.ripper.rippers;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -56,11 +58,6 @@ public class ImagevenueRipper extends AbstractHTMLRipper {
                         + " Got: " + url);
     }
 
-    @Override
-    public Document getFirstPage() throws IOException {
-        return Http.url(url).get();
-    }
-
     public List<String> getURLsFromPage(Document doc) {
         List<String> imageURLs = new ArrayList<>();
         for (Element thumb : doc.select("a[target=_blank]")) {
@@ -79,9 +76,9 @@ public class ImagevenueRipper extends AbstractHTMLRipper {
      *
      * Handles case when site has IP-banned the user.
      */
-    private class ImagevenueImageThread extends Thread {
-        private URL url;
-        private int index;
+    private class ImagevenueImageThread implements Runnable {
+        private final URL url;
+        private final int index;
 
         ImagevenueImageThread(URL url, int index) {
             super();
@@ -113,8 +110,8 @@ public class ImagevenueRipper extends AbstractHTMLRipper {
                 if (Utils.getConfigBoolean("download.save_order", true)) {
                     prefix = String.format("%03d_", index);
                 }
-                addURLToDownload(new URL(imgsrc), prefix);
-            } catch (IOException e) {
+                addURLToDownload(new URI(imgsrc).toURL(), prefix);
+            } catch (IOException | URISyntaxException e) {
                 LOGGER.error("[!] Exception while loading/parsing " + this.url, e);
             }
         }

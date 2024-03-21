@@ -120,7 +120,7 @@ public class ScrolllerRipper extends AbstractJSONRipper {
         try {
             String url = "https://api.scrolller.com/api/v2/graphql";
 
-            URL obj = new URL(url);
+            URL obj = new URI(url).toURL();
             HttpURLConnection conn = (HttpURLConnection) obj.openConnection();
             conn.setReadTimeout(5000);
             conn.addRequestProperty("Accept-Language", "en-US,en;q=0.8");
