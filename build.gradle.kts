@@ -43,7 +43,7 @@ version = "1.7.94"
 description = "ripme"
 
 jacoco {
-  toolVersion = "0.8.10"
+  toolVersion = "0.8.11"
 }
 
 jgitver {
