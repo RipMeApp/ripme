@@ -8,6 +8,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
@@ -302,8 +303,8 @@ public abstract class AbstractRipper
         if (url.toExternalForm().contains(" ")) {
             // If for some reason the url with all spaces encoded as %20 is malformed print an error
             try {
-                url = new URL(url.toExternalForm().replaceAll(" ", "%20"));
-            } catch (MalformedURLException e) {
+                url = new URI(url.toExternalForm().replaceAll(" ", "%20")).toURL();
+            } catch (MalformedURLException | URISyntaxException e) {
                 LOGGER.error("Unable to remove spaces from url\nURL: " + url.toExternalForm());
                 e.printStackTrace();
             }
