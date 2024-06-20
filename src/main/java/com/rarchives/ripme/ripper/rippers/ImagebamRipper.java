@@ -10,11 +10,14 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringUtils;
+import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -128,7 +131,12 @@ public class ImagebamRipper extends AbstractHTMLRipper {
          */
         private void fetchImage() {
             try {
-                Document doc = Http.url(url).get();
+                Map<String, String> cookies = new HashMap<>();
+                cookies.put("nsfw_inter", "1");
+                Document doc = Jsoup.connect(url.toString())
+                        .cookies(cookies)
+                        .get();
+
                 // Find image
                 Elements metaTags = doc.getElementsByTag("meta");
                 
