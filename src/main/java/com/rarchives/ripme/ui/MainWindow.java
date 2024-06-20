@@ -535,7 +535,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         configUpdateButton = new JButton(Utils.getLocalizedString("check.for.updates"));
         configUpdateLabel = new JLabel(
                 Utils.getLocalizedString("current.version") + ": " + UpdateUtils.getThisJarVersion(), JLabel.RIGHT);
-        configThreadsLabel = new JLabel(Utils.getLocalizedString("max.download.threads") + ":", JLabel.RIGHT);
+        configThreadsLabel = new JLabel(Utils.getLocalizedString("max.download.threads"), JLabel.RIGHT);
         configTimeoutLabel = new JLabel(Utils.getLocalizedString("timeout.mill"), JLabel.RIGHT);
         configRetriesLabel = new JLabel(Utils.getLocalizedString("retry.download.count"), JLabel.RIGHT);
         configRetrySleepLabel = new JLabel(Utils.getLocalizedString("retry.sleep.mill"), JLabel.RIGHT);
