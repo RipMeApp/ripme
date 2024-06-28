@@ -56,7 +56,7 @@ public class Http {
     }
 
     private void defaultSettings() {
-        this.retries = Utils.getConfigInteger("download.retries", 1);
+        this.retries = Utils.getConfigInteger("download.retries", 3);
         this.retrySleep = Utils.getConfigInteger("download.retry.sleep", 5000);
         connection = Jsoup.connect(this.url);
         connection.userAgent(AbstractRipper.USER_AGENT);

@@ -5,6 +5,8 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -61,7 +63,7 @@ public class MotherlessRipper extends AbstractHTMLRipper {
         if (!notHome) {
             StringBuilder newPath = new StringBuilder(path);
             newPath.insert(2, "M");
-            firstURL = new URL(this.url, "https://" + DOMAIN + newPath);
+            firstURL = URI.create("https://" + DOMAIN + newPath).toURL();
             LOGGER.info("Changed URL to " + firstURL);
         }
         return Http.url(firstURL).referrer("https://motherless.com").get();
@@ -69,6 +71,9 @@ public class MotherlessRipper extends AbstractHTMLRipper {
 
     @Override
     public Document getNextPage(Document doc) throws IOException, URISyntaxException {
+
+        Files.write(Paths.get("doc-next-page.txt"), doc.outerHtml().getBytes());
+
         Elements nextPageLink = doc.head().select("link[rel=next]");
         if (nextPageLink.isEmpty()) {
             throw new IOException("Last page reached");
@@ -111,7 +116,7 @@ public class MotherlessRipper extends AbstractHTMLRipper {
     @Override
     protected void downloadURL(URL url, int index) {
         // Create thread for finding image at "url" page
-        MotherlessImageThread mit = new MotherlessImageThread(url, index);
+        MotherlessImageRunnable mit = new MotherlessImageRunnable(url, index);
         motherlessThreadPool.addThread(mit);
         try {
             Thread.sleep(IMAGE_SLEEP_TIME);
@@ -150,15 +155,19 @@ public class MotherlessRipper extends AbstractHTMLRipper {
         throw new MalformedURLException("Expected URL format: https://motherless.com/GIXXXXXXX, got: " + url);
     }
 
-
+    @Override
+    protected DownloadThreadPool getThreadPool() {
+        return motherlessThreadPool;
+    }
+    
     /**
      * Helper class to find and download images found on "image" pages
      */
-    private class MotherlessImageThread implements Runnable {
+    private class MotherlessImageRunnable implements Runnable {
         private final URL url;
         private final int index;
 
-        MotherlessImageThread(URL url, int index) {
+        MotherlessImageRunnable(URL url, int index) {
             super();
             this.url = url;
             this.index = index;
