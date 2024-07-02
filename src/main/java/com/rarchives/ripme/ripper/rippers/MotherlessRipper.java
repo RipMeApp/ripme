@@ -5,8 +5,6 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -17,7 +15,6 @@ import org.jsoup.nodes.Element;
 
 import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 import com.rarchives.ripme.ripper.DownloadThreadPool;
-import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
 import com.rarchives.ripme.utils.Http;
 import com.rarchives.ripme.utils.Utils;
 import org.jsoup.select.Elements;
@@ -71,8 +68,6 @@ public class MotherlessRipper extends AbstractHTMLRipper {
 
     @Override
     public Document getNextPage(Document doc) throws IOException, URISyntaxException {
-
-        Files.write(Paths.get("doc-next-page.txt"), doc.outerHtml().getBytes());
 
         Elements nextPageLink = doc.head().select("link[rel=next]");
         if (nextPageLink.isEmpty()) {
