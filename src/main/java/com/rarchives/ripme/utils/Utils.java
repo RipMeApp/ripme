@@ -53,8 +53,6 @@ import java.util.regex.Pattern;
  */
 public class Utils {
 
-    private static final Pattern pattern = Pattern.compile("LabelsBundle_(?<lang>[A-Za-z_]+).properties");
-    private static final String DEFAULT_LANG = "en_US";
     private static final String RIP_DIRECTORY = "rips";
     private static final String CONFIG_FILE = "rip.properties";
     private static final String OS = System.getProperty("os.name").toLowerCase();
@@ -740,8 +738,8 @@ public class Utils {
                         new UTF8Control());
             }
         } else {
-            String[] langCode = langSelect.split("_");
-            LOGGER.info("Setting locale to " + langSelect);
+            String[] langCode = langSelect.split("-");
+            LOGGER.info("set locale, langcoe: {}, selected langauge: {}, locale: {}", langCode, langSelect, Locale.forLanguageTag(langSelect));
             return ResourceBundle.getBundle("LabelsBundle", Locale.forLanguageTag(langSelect), new UTF8Control());
         }
         try {
@@ -755,6 +753,7 @@ public class Utils {
 
     public static void setLanguage(String langSelect) {
         resourceBundle = getResourceBundle(langSelect);
+        LOGGER.info("Selected resource bundle locale: {}, from {}", resourceBundle.getLocale().toString(), langSelect);
     }
 
     public static String getSelectedLanguage() {
@@ -763,6 +762,8 @@ public class Utils {
 
     // All the langs ripme has been translated into
     public static String[] getSupportedLanguages() {
+        final Pattern pattern = Pattern.compile("LabelsBundle_(?<lang>[A-Za-z_]+).properties");
+        final String DEFAULT_LANG = "en-US";
         ArrayList<Path> filesList = new ArrayList<>();
         try {
             URI uri = Objects.requireNonNull(Utils.class.getResource("/rip.properties")).toURI();
@@ -782,7 +783,7 @@ public class Utils {
             for (int i = 0; i < filesList.size(); i++) {
                 Matcher matcher = pattern.matcher(filesList.get(i).toString());
                 if (matcher.find())
-                    langs[i] = matcher.group("lang");
+                    langs[i] = matcher.group("lang").replace("_", "-");
             }
 
             return langs;
