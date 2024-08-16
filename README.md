@@ -3,7 +3,7 @@
 [![Build Status](https://travis-ci.org/RipMeApp/ripme.svg?branch=master)](https://travis-ci.org/RipMeApp/ripme)
 [![Coverage Status](https://coveralls.io/repos/github/RipMeApp/ripme/badge.svg?branch=master)](https://coveralls.io/github/RipMeApp/ripme?branch=master)
 
-# Contribute
+## Contribute
 
 RipMe is maintained with ♥️ and in our limited free time by **[@MetaPrime](https://github.com/metaprime)**, **[@cyian-1756](https://github.com/cyian-1756)** and **[@kevin51jiang](https://github.com/kevin51jiang)**. If you'd like to contribute but aren't good with code, help keep us happy with a small contribution!
 
@@ -14,7 +14,7 @@ RipMe is maintained with ♥️ and in our limited free time by **[@MetaPrime](h
 [![Tip with PayPal](https://img.shields.io/badge/dinner-%2450-red.svg)](https://www.paypal.com/paypalme/ripmeapp/send?amount=50.00&currencyCode=USD&locale.x=en_US&country.x=US)
 [![Tip with PayPal](https://img.shields.io/badge/custom_amount-...-lightgrey.svg)](https://www.paypal.me/ripmeapp)
 
-# About
+## About
 
 RipMe is an album ripper for various websites. It is a cross-platform tool that runs on your computer, and requires Java 8. RipMe has been tested and confirmed working on Windows, Linux and MacOS. 
 
@@ -45,8 +45,8 @@ brew install --cask ripme && xattr -d com.apple.quarantine /Applications/ripme.j
 * Easily re-rip albums to fetch new content
 * Built in updater
 * Skips already downloaded images by default
-* Can auto skip e-hentai and nhentai albums containing certain tags. [See here for how to enable](https://github.com/RipMeApp/ripme/wiki/Config-options#nhentaiblacklisttags)
-* Download a range of urls. [See here for how](https://github.com/RipMeApp/ripme/wiki/How-To-Run-RipMe#downloading-a-url-range)
+* Can auto-skip e-hentai and nhentai albums containing certain tags. [See here for how to enable](https://github.com/RipMeApp/ripme/wiki/Config-options#nhentaiblacklisttags)
+* Download a range of URLs. [See here for how](https://github.com/RipMeApp/ripme/wiki/How-To-Run-RipMe#downloading-a-url-range)
 
 ## List of Supported Sites
 
@@ -96,7 +96,7 @@ as well.
 # Running Tests
 
 Tests can be marked as beeing slow, or flaky. Default is to run all but the flaky tests. Slow tests can be excluded to
-run. slow and flaky tests can be run on its own. After building you can run tests, quoting might be necessary depending
+run. slow and flaky tests can be run on their own. After building you can run tests, quoting might be necessary depending
 on your shell:
 
 ```bash
