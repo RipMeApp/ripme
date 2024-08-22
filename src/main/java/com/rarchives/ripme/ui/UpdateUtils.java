@@ -3,6 +3,7 @@ package com.rarchives.ripme.ui;
 import java.awt.Dimension;
 import java.io.*;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
@@ -202,17 +203,15 @@ public class UpdateUtils {
         }
         return intVersions;
     }
-
+    
     // Code take from https://stackoverflow.com/a/30925550
     public static String createSha256(File file) {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            InputStream fis = new FileInputStream(file);
-            int n = 0;
-            byte[] buffer = new byte[8192];
-            while (n != -1) {
-                n = fis.read(buffer);
-                if (n > 0) {
+            try (InputStream fis = Files.newInputStream(file.toPath())) {
+                int n;
+                byte[] buffer = new byte[8192];
+                while ((n = fis.read(buffer)) != -1) {
                     digest.update(buffer, 0, n);
                 }
             }
@@ -222,17 +221,12 @@ public class UpdateUtils {
                 sb.append("0123456789ABCDEF".charAt((b & 0xF0) >> 4));
                 sb.append("0123456789ABCDEF".charAt((b & 0x0F)));
             }
-            // As patch.py writes the hash in lowercase this must return the has in
-            // lowercase
+            // As patch.py writes the hash in lowercase this must return the has in lowercase
             return sb.toString().toLowerCase();
-        } catch (NoSuchAlgorithmException e) {
+        } catch (NoSuchAlgorithmException | IOException e) {
             logger.error("Got error getting file hash " + e.getMessage());
-        } catch (FileNotFoundException e) {
-            logger.error("Could not find file: " + file.getName());
-        } catch (IOException e) {
-            logger.error("Got error getting file hash " + e.getMessage());
+            return null;
         }
-        return null;
     }
 
     private static void downloadJarAndLaunch(String updateJarURL, Boolean shouldLaunch) throws IOException {
