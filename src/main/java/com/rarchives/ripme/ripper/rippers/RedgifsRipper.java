@@ -2,11 +2,7 @@ package com.rarchives.ripme.ripper.rippers;
 
 import com.rarchives.ripme.utils.Http;
 
-import org.json.JSONArray;
 import org.json.JSONObject;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
 
 import static com.rarchives.ripme.App.logger;
 
@@ -40,18 +36,16 @@ public class RedgifsRipper extends AbstractJSONRipper {
     private static final String SEARCH_ENDPOINT = "https://api.redgifs.com/v2/search/%s";
     private static final String TAGS_ENDPOINT = "https://api.redgifs.com/v2/gifs/search";
     private static final String TEMPORARY_AUTH_ENDPOINT = "https://api.redgifs.com/v2/auth/temporary";
+    private static final Pattern PROFILE_PATTERN = Pattern.compile("^https?://[wm.]*redgifs\\.com/users/([a-zA-Z0-9_.-]+).*$");
+    private static final Pattern SEARCH_PATTERN = Pattern.compile("^https?:\\/\\/[wm.]*redgifs\\.com\\/search(?:\\/[a-zA-Z]+)?\\?.*?query=([a-zA-Z0-9-_+%]+).*$");
+    private static final Pattern TAGS_PATTERN = Pattern.compile("^https?:\\/\\/[wm.]*redgifs\\.com\\/gifs\\/([a-zA-Z0-9_.,-]+).*$");
+    private static final Pattern SINGLETON_PATTERN = Pattern.compile("^https?://[wm.]*redgifs\\.com/watch/([a-zA-Z0-9_-]+).*$");
+    
     String username = "";
     String authToken = "";
-    // TODO remove
-    String cursor = "";
     int count = 40;
     int currentPage = 1;
     int maxPages = 1;
-
-    // TODO remove with search
-    String searchText = "";
-    int searchCount = 150;
-    int searchStart = 0;
 
     public RedgifsRipper(URL url) throws IOException, URISyntaxException {
         super(new URI(url.toExternalForm().replace("thumbs.", "")).toURL());
@@ -80,30 +74,26 @@ public class RedgifsRipper extends AbstractJSONRipper {
     }
 
     public Matcher isProfile() {
-        Pattern p = Pattern.compile("^https?://[wm.]*redgifs\\.com/users/([a-zA-Z0-9_.-]+).*$");
-        return p.matcher(url.toExternalForm());
+        return PROFILE_PATTERN.matcher(url.toExternalForm());
     }
 
     public Matcher isSearch() {
-        Pattern p = Pattern.compile("^https?:\\/\\/[wm.]*redgifs\\.com\\/search(?:\\/[a-zA-Z]+)?\\?.*?query=([a-zA-Z0-9-_+%]+).*$");
-        return p.matcher(url.toExternalForm());
+        return SEARCH_PATTERN.matcher(url.toExternalForm());
     }
 
     public Matcher isTags() {
-        Pattern p = Pattern.compile("^https?:\\/\\/[wm.]*redgifs\\.com\\/gifs\\/([a-zA-Z0-9_.,-]+).*$");
-        return p.matcher(url.toExternalForm());
+        return TAGS_PATTERN.matcher(url.toExternalForm());
     }
 
     public Matcher isSingleton() {
-        Pattern p = Pattern.compile("^https?://[wm.]*redgifs\\.com/watch/([a-zA-Z0-9_-]+).*$");
-        return p.matcher(url.toExternalForm());
+        return SINGLETON_PATTERN.matcher(url.toExternalForm());
     }
 
     @Override
     public JSONObject getFirstPage() throws IOException {
         try {
-            if (authToken == null || authToken.equals("")){
-                fetchAuthToken();
+            if (authToken == null || authToken.equals("")) {
+                authToken = fetchAuthToken();
             }
 
             if (isSingleton().matches()) {
@@ -143,7 +133,7 @@ public class RedgifsRipper extends AbstractJSONRipper {
         m = isSearch();
         if (m.matches()) {
             var sText = m.group(1);
-            if (sText == null || sText.isBlank()){
+            if (sText == null || sText.isBlank()) {
                 throw new MalformedURLException(String.format("Expected redgifs.com/search?query=searchtext\n Got %s", url));
             }
             sText = URLDecoder.decode(sText, StandardCharsets.UTF_8);
@@ -153,7 +143,7 @@ public class RedgifsRipper extends AbstractJSONRipper {
         m = isTags();
         if (m.matches()) { 
             var sText = m.group(1);
-            if (sText == null || sText.isBlank()){
+            if (sText == null || sText.isBlank()) {
                 throw new MalformedURLException(String.format("Expected redgifs.com/gifs/searchtags\n Got %s", url));
             }
             sText = URLDecoder.decode(sText, StandardCharsets.UTF_8);
@@ -179,21 +169,9 @@ public class RedgifsRipper extends AbstractJSONRipper {
                         + " Got: " + url);
     }
 
-    // TODO remove
-    private String stripHTMLTags(String t) {
-        t = t.replaceAll("<html>\n" +
-                                 " <head></head>\n" +
-                                 " <body>", "");
-        t = t.replaceAll("</body>\n" +
-                                 "</html>", "");
-        t = t.replaceAll("\n", "");
-        t = t.replaceAll("=\"\"", "");
-        return t;
-    }
-
     @Override
     public JSONObject getNextPage(JSONObject doc) throws IOException, URISyntaxException {
-        if (currentPage == maxPages || isSingleton().matches()){
+        if (currentPage == maxPages || isSingleton().matches()) {
             return null;
         }
         currentPage++;
@@ -228,7 +206,7 @@ public class RedgifsRipper extends AbstractJSONRipper {
                 } else {
                     var galleryID = ((JSONObject)gif).getString("gallery");
                     var gifID = ((JSONObject)gif).getString("id");
-                    result.addAll(getURLsForGallery(galleryID, gifID));
+                    result.addAll(getURLsForGallery(galleryID, gifID, authToken));
                 }
             }
         } else {
@@ -239,7 +217,7 @@ public class RedgifsRipper extends AbstractJSONRipper {
             } else {
                 var galleryID = gif.getString("gallery");
                 var gifID = gif.getString("id");
-                result.addAll(getURLsForGallery(galleryID, gifID));
+                result.addAll(getURLsForGallery(galleryID, gifID, authToken));
             }
         }
         return result;
@@ -252,7 +230,7 @@ public class RedgifsRipper extends AbstractJSONRipper {
      * @param gifID gif id with multiple images for logging
      * @return List<String>
      */
-    private List<String> getURLsForGallery(String galleryID, String gifID) {
+    private static List<String> getURLsForGallery(String galleryID, String gifID, String authToken) {
         List<String> list = new ArrayList<>();
         if (galleryID == null || galleryID.isBlank()) {
             return  list;
@@ -268,59 +246,40 @@ public class RedgifsRipper extends AbstractJSONRipper {
         }
         return list;
     }
-
-    // TODO delete
     /**
-     * Helper method for retrieving URLs.
-     * @param doc Document of the URL page to look through
-     * @return List of URLs to download
-     */
-    public List<String> hasURLs(Document doc) {
-        List<String> result = new ArrayList<>();
-        JSONObject page = new JSONObject(stripHTMLTags(doc.html()));
-        JSONArray content = page.getJSONArray("gfycats");
-        for (int i = 0; i < content.length(); i++) {
-            result.add(content.getJSONObject(i).getString("mp4Url"));
-        }
-        cursor = page.get("cursor").toString();
-        return result;
-    }
-
-    // TODO delete
-    /**
-     * Helper method for retrieving video URLs.
-     * @param url URL to gfycat page
+     * Static helper method for retrieving video URLs for usage in RipUtils.
+     * Most of the code is lifted from getFirstPage and getURLsFromJSON
+     * @param url URL to redgif page
      * @return URL to video
      * @throws IOException
      */
     public static String getVideoURL(URL url) throws IOException, URISyntaxException {
         LOGGER.info("Retrieving " + url.toExternalForm());
-
-        //Sanitize the URL first
-        url = new URI(url.toExternalForm().replace("/gifs/detail", "")).toURL();
-
-        Document doc = Http.url(url).get();
-        Elements videos = doc.select("script");
-        for (Element el : videos) {
-            String json = el.html();
-            if (json.startsWith("{")) {
-                JSONObject page = new JSONObject(json);
-                String mobileUrl = page.getJSONObject("video").getString("contentUrl");
-                return mobileUrl.replace("-mobile", "");
-            }
+        var m = SINGLETON_PATTERN.matcher(url.toExternalForm());
+        if (!m.matches()){
+            throw  new IOException(String.format("Cannot fetch redgif url %s", url.toExternalForm()));
         }
-        throw new IOException();
+        var authToken = fetchAuthToken();
+        var gid = m.group(1).split("-")[0];
+        var gifDetailsURL = String.format(GIFS_DETAIL_ENDPOINT, gid);
+        var json = Http.url(gifDetailsURL).header("Authorization", "Bearer " + authToken).getJSON();
+        var gif = json.getJSONObject("gif");
+        if (!gif.isNull("gallery")){
+            // TODO check how to handle a image gallery 
+            throw new IOException(String.format("Multiple images found for url %s", url));
+        } 
+        return gif.getJSONObject("urls").getString("hd");
     }
 
-    
+
     /** 
      * Fetch a temorary auth token for the rip
      * @throws IOException
      */
-    private void fetchAuthToken() throws  IOException{
+    private static String fetchAuthToken() throws  IOException{
         var json = Http.url(TEMPORARY_AUTH_ENDPOINT).getJSON();
         var token = json.getString("token");
-        authToken = token;
+        return token;
     }
     
     /** 
@@ -351,7 +310,7 @@ public class RedgifsRipper extends AbstractJSONRipper {
                     break;
                 case "verified": 
                     if (value != null && value.equals("1")) {
-                        if (isTags().matches()){
+                        if (isTags().matches()) {
                             endpointQueryParams.put("verified", "y");
                         } else {
                             endpointQueryParams.put("verified", "yes");
