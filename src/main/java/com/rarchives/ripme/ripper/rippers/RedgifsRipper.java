@@ -39,8 +39,13 @@ public class RedgifsRipper extends AbstractJSONRipper {
     private static final Pattern TAGS_PATTERN = Pattern.compile("^https?:\\/\\/[a-zA-Z0-9.]*redgifs\\.com\\/gifs\\/([a-zA-Z0-9_.,-]+).*$");
     private static final Pattern SINGLETON_PATTERN = Pattern.compile("^https?://[a-zA-Z0-9.]*redgifs\\.com/watch/([a-zA-Z0-9_-]+).*$");
     
+    /**
+     * Keep a single auth token for the complete lifecycle of the app.
+     * This should prevent fetching of multiple tokens.
+     */
+    private static String authToken = "";
+
     String username = "";
-    String authToken = "";
     int count = 40;
     int currentPage = 1;
     int maxPages = 1;
@@ -90,8 +95,8 @@ public class RedgifsRipper extends AbstractJSONRipper {
     @Override
     public JSONObject getFirstPage() throws IOException {
         try {
-            if (authToken == null || authToken.equals("")) {
-                authToken = fetchAuthToken();
+            if (authToken == null || authToken.isBlank()) {
+                fetchAuthToken();
             }
 
             if (isSingleton().matches()) {
@@ -204,7 +209,7 @@ public class RedgifsRipper extends AbstractJSONRipper {
                 } else {
                     var galleryID = ((JSONObject)gif).getString("gallery");
                     var gifID = ((JSONObject)gif).getString("id");
-                    result.addAll(getURLsForGallery(galleryID, gifID, authToken));
+                    result.addAll(getURLsForGallery(galleryID, gifID));
                 }
             }
         } else {
@@ -215,7 +220,7 @@ public class RedgifsRipper extends AbstractJSONRipper {
             } else {
                 var galleryID = gif.getString("gallery");
                 var gifID = gif.getString("id");
-                result.addAll(getURLsForGallery(galleryID, gifID, authToken));
+                result.addAll(getURLsForGallery(galleryID, gifID));
             }
         }
         return result;
@@ -228,7 +233,7 @@ public class RedgifsRipper extends AbstractJSONRipper {
      * @param gifID gif id with multiple images for logging
      * @return List<String>
      */
-    private static List<String> getURLsForGallery(String galleryID, String gifID, String authToken) {
+    private static List<String> getURLsForGallery(String galleryID, String gifID) {
         List<String> list = new ArrayList<>();
         if (galleryID == null || galleryID.isBlank()) {
             return  list;
@@ -257,7 +262,9 @@ public class RedgifsRipper extends AbstractJSONRipper {
         if (!m.matches()){
             throw  new IOException(String.format("Cannot fetch redgif url %s", url.toExternalForm()));
         }
-        var authToken = fetchAuthToken();
+        if (authToken == null || authToken.isBlank()){
+            fetchAuthToken();
+        }
         var gid = m.group(1).split("-")[0];
         var gifDetailsURL = String.format(GIFS_DETAIL_ENDPOINT, gid);
         var json = Http.url(gifDetailsURL).header("Authorization", "Bearer " + authToken).getJSON();
@@ -274,10 +281,11 @@ public class RedgifsRipper extends AbstractJSONRipper {
      * Fetch a temorary auth token for the rip
      * @throws IOException
      */
-    private static String fetchAuthToken() throws  IOException{
+    private static void fetchAuthToken() throws IOException{
         var json = Http.url(TEMPORARY_AUTH_ENDPOINT).getJSON();
         var token = json.getString("token");
-        return token;
+        authToken = token;
+        LOGGER.info("Incase of redgif 401 errors, please restart the app to refresh the auth token");
     }
     
     /** 
