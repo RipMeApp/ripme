@@ -34,10 +34,10 @@ public class RedgifsRipper extends AbstractJSONRipper {
     private static final String SEARCH_ENDPOINT = "https://api.redgifs.com/v2/search/%s";
     private static final String TAGS_ENDPOINT = "https://api.redgifs.com/v2/gifs/search";
     private static final String TEMPORARY_AUTH_ENDPOINT = "https://api.redgifs.com/v2/auth/temporary";
-    private static final Pattern PROFILE_PATTERN = Pattern.compile("^https?://[wm.]*redgifs\\.com/users/([a-zA-Z0-9_.-]+).*$");
-    private static final Pattern SEARCH_PATTERN = Pattern.compile("^https?:\\/\\/[wm.]*redgifs\\.com\\/search(?:\\/[a-zA-Z]+)?\\?.*?query=([a-zA-Z0-9-_+%]+).*$");
-    private static final Pattern TAGS_PATTERN = Pattern.compile("^https?:\\/\\/[wm.]*redgifs\\.com\\/gifs\\/([a-zA-Z0-9_.,-]+).*$");
-    private static final Pattern SINGLETON_PATTERN = Pattern.compile("^https?://[wm.]*redgifs\\.com/watch/([a-zA-Z0-9_-]+).*$");
+    private static final Pattern PROFILE_PATTERN = Pattern.compile("^https?://[a-zA-Z0-9.]*redgifs\\.com/users/([a-zA-Z0-9_.-]+).*$");
+    private static final Pattern SEARCH_PATTERN = Pattern.compile("^https?:\\/\\/[a-zA-Z0-9.]*redgifs\\.com\\/search(?:\\/[a-zA-Z]+)?\\?.*?query=([a-zA-Z0-9-_+%]+).*$");
+    private static final Pattern TAGS_PATTERN = Pattern.compile("^https?:\\/\\/[a-zA-Z0-9.]*redgifs\\.com\\/gifs\\/([a-zA-Z0-9_.,-]+).*$");
+    private static final Pattern SINGLETON_PATTERN = Pattern.compile("^https?://[a-zA-Z0-9.]*redgifs\\.com/watch/([a-zA-Z0-9_-]+).*$");
     
     String username = "";
     String authToken = "";
