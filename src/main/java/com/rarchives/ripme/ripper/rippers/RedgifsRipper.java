@@ -1,10 +1,8 @@
 package com.rarchives.ripme.ripper.rippers;
 
-import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 import com.rarchives.ripme.utils.Http;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -19,14 +17,26 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class RedgifsRipper extends AbstractHTMLRipper {
+import org.apache.http.client.utils.URIBuilder;
+
+import com.rarchives.ripme.ripper.AbstractJSONRipper;
+
+public class RedgifsRipper extends AbstractJSONRipper {
 
     private static final String HOST = "redgifs.com";
     private static final String HOST_2 = "gifdeliverynetwork.com";
+    private static final String GIFS_DETAIL_ENDPOINT = "https://api.redgifs.com/v2/gifs/%s";
+    private static final String USERS_SEARCH_ENDPOINT = "https://api.redgifs.com/v2/users/%s/search";
+    private static final String TEMPORARY_AUTH_ENDPOINT = "https://api.redgifs.com/v2/auth/temporary";
     String username = "";
+    String authToken = "";
+    // TODO remove
     String cursor = "";
-    String count = "100";
+    int count = 40;
+    int currentPage = 1;
+    int maxPages = 1;
 
+    // TODO remove with search
     String searchText = "";
     int searchCount = 150;
     int searchStart = 0;
@@ -73,18 +83,29 @@ public class RedgifsRipper extends AbstractHTMLRipper {
     }
 
     @Override
-    public Document getFirstPage() throws IOException {
+    public JSONObject getFirstPage() throws IOException {
         try {
-            if (!isProfile().matches() && !isSearch().matches()) {
-                return Http.url(url).get();
+            if (authToken == null || authToken.equals("")){
+                fetchAuthToken();
+            }
+
+            if (isSingleton().matches()) {
+                maxPages = 1;
+                String gifDetailsURL = String.format(GIFS_DETAIL_ENDPOINT, getGID(url));
+                return Http.url(gifDetailsURL).header("Authorization", "Bearer " + authToken).getJSON();
             } else if (isSearch().matches()) {
-                searchText = getGID(url).replace("-", " ");
-                return Http.url(
-                        new URI("https://api.redgifs.com/v1/gfycats/search?search_text=" + searchText + "&count=" + searchCount + "&start=" + searchStart * searchCount).toURL()).ignoreContentType().get();
+                // TODO fix search
+                // TODO remove 
+                throw new IOException("TODO remove");
             } else {
                 username = getGID(url);
-                return Http.url(new URI("https://api.redgifs.com/v1/users/" + username + "/gfycats?count=" + count).toURL())
-                        .ignoreContentType().get();
+                var uri = new URIBuilder(String.format(USERS_SEARCH_ENDPOINT, username));
+                uri.addParameter("order", "new");
+                uri.addParameter("count", Integer.toString(count));
+                uri.addParameter("page", Integer.toString(currentPage));
+                var json = Http.url(uri.build().toURL()).header("Authorization", "Bearer " + authToken).getJSON();
+                maxPages = json.getInt("pages");
+                return json;
             }
         } catch (URISyntaxException e) {
             throw new IOException(e);
@@ -118,6 +139,7 @@ public class RedgifsRipper extends AbstractHTMLRipper {
                         + " Got: " + url);
     }
 
+    // TODO remove
     private String stripHTMLTags(String t) {
         t = t.replaceAll("<html>\n" +
                                  " <head></head>\n" +
@@ -130,42 +152,47 @@ public class RedgifsRipper extends AbstractHTMLRipper {
     }
 
     @Override
-    public Document getNextPage(Document doc) throws IOException, URISyntaxException {
+    public JSONObject getNextPage(JSONObject doc) throws IOException, URISyntaxException {
+        if (currentPage == maxPages || isSingleton().matches()){
+            return null;
+        }
+        currentPage++;
         if (isSearch().matches()) {
-            Document d = Http.url(
-                    new URI("https://api.redgifs.com/v1/gfycats/search?search_text=" + searchText
-                                    + "&count=" + searchCount + "&start=" + searchCount*++searchStart).toURL())
-                       .ignoreContentType().get();
-            return (hasURLs(d).isEmpty()) ? null : d;
+            // TODO search
+            // TODO remove
+            throw new IOException("// TODO remove");
+        } else if (isProfile().matches()) {
+                var uri = new URIBuilder(String.format(USERS_SEARCH_ENDPOINT, getGID(url)));
+                uri.addParameter("order", "new");
+                uri.addParameter("count", Integer.toString(count));
+                uri.addParameter("page", Integer.toString(currentPage));
+                var json = Http.url(uri.build().toURL()).header("Authorization", "Bearer " + authToken).getJSON();
+                // Handle rare maxPages change during a rip
+                maxPages = json.getInt("pages");
+                return json;
         } else {
-            if (cursor.equals("") || cursor.equals("null")) {
-                return null;
-            } else {
-                Document d =  Http.url(new URI("https://api.redgifs.com/v1/users/" +  username + "/gfycats?count=" + count + "&cursor=" + cursor).toURL()).ignoreContentType().get();
-                return (hasURLs(d).isEmpty()) ? null : d;
-            }
+            return null;
         }
     }
 
     @Override
-    public List<String> getURLsFromPage(Document doc) {
+    public List<String> getURLsFromJSON(JSONObject json) {
         List<String> result = new ArrayList<>();
         if (isProfile().matches() || isSearch().matches()) {
-            result = hasURLs(doc);
-        } else {
-            Elements videos = doc.select("script");
-            for (Element el : videos) {
-                String json = el.html();
-                if (json.startsWith("{")) {
-                    JSONObject page = new JSONObject(json);
-                    result.add(page.getJSONObject("video").getString("contentUrl")
-                            .replace("-mobile", ""));
-                }
+            // TODO check json keys for search
+            var gifs = json.getJSONArray("gifs");
+            for (var gif : gifs){
+                var hdURL = ((JSONObject)gif).getJSONObject("urls").getString("hd");
+                result.add(hdURL);
             }
+        } else {
+            String hdURL = json.getJSONObject("gif").getJSONObject("urls").getString("hd");
+            result.add(hdURL);
         }
         return result;
     }
 
+    // TODO delete
     /**
      * Helper method for retrieving URLs.
      * @param doc Document of the URL page to look through
@@ -182,6 +209,7 @@ public class RedgifsRipper extends AbstractHTMLRipper {
         return result;
     }
 
+    // TODO delete
     /**
      * Helper method for retrieving video URLs.
      * @param url URL to gfycat page
@@ -205,5 +233,16 @@ public class RedgifsRipper extends AbstractHTMLRipper {
             }
         }
         throw new IOException();
+    }
+
+    
+    /** 
+     * Fetch a temorary auth token for the rip
+     * @throws IOException
+     */
+    private void fetchAuthToken() throws  IOException{
+        var json = Http.url(TEMPORARY_AUTH_ENDPOINT).getJSON();
+        var token = json.getString("token");
+        authToken = token;
     }
 }
