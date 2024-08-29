@@ -4,8 +4,6 @@ import com.rarchives.ripme.utils.Http;
 
 import org.json.JSONObject;
 
-import static com.rarchives.ripme.App.logger;
-
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -149,7 +147,7 @@ public class RedgifsRipper extends AbstractJSONRipper {
             sText = URLDecoder.decode(sText, StandardCharsets.UTF_8);
             var list = Arrays.asList(sText.split(","));
             if (list.size() > 1) {
-            logger.warn("Url with multiple tags found. \nThey will be sorted alphabetically for folder name.");
+            LOGGER.warn("Url with multiple tags found. \nThey will be sorted alphabetically for folder name.");
             }
             Collections.sort(list);
             var gid = list.stream().reduce("", (acc, val) -> acc.concat("_" + val));
@@ -242,7 +240,7 @@ public class RedgifsRipper extends AbstractJSONRipper {
                 list.add(hdURL);
             }
         } catch (IOException e) {
-            logger.error(String.format("Error fetching gallery %s for gif %s", galleryID, gifID), e);
+            LOGGER.error(String.format("Error fetching gallery %s for gif %s", galleryID, gifID), e);
         }
         return list;
     }
@@ -305,7 +303,7 @@ public class RedgifsRipper extends AbstractJSONRipper {
                     switch (value) {
                         case "gifs" -> endpointQueryParams.put("type", "g");
                         case "images" -> endpointQueryParams.put("type", "i");
-                        default -> logger.warn(String.format("Unsupported tab for tags url %s", value));
+                        default -> LOGGER.warn(String.format("Unsupported tab for tags url %s", value));
                     }
                     break;
                 case "verified": 
@@ -323,7 +321,7 @@ public class RedgifsRipper extends AbstractJSONRipper {
                 case "viewMode":
                     break;
                 default:
-                    logger.warn(String.format("Unexpected query param %s for search url. Skipping.", name));
+                    LOGGER.warn(String.format("Unexpected query param %s for search url. Skipping.", name));
             }                
         }
 
@@ -337,7 +335,7 @@ public class RedgifsRipper extends AbstractJSONRipper {
             }
             // Check if it is the main tags page with all gifs, images, creator etc
             if (!endpointQueryParams.containsKey("type")) {
-                logger.warn("No tab selected, defaulting to gifs");
+                LOGGER.warn("No tab selected, defaulting to gifs");
                 endpointQueryParams.put("type", "g");
             }
             uri = new URIBuilder(TAGS_ENDPOINT);
@@ -348,8 +346,8 @@ public class RedgifsRipper extends AbstractJSONRipper {
                 switch (subpaths[subpaths.length-1]) {
                     case "gifs" -> tabType = "gifs";
                     case "images" -> tabType = "images";
-                    case "search" -> logger.warn("No tab selected, defaulting to gifs");
-                    default -> logger.warn(String.format("Unsupported search tab %s, defaulting to gifs", subpaths[subpaths.length-1]));
+                    case "search" -> LOGGER.warn("No tab selected, defaulting to gifs");
+                    default -> LOGGER.warn(String.format("Unsupported search tab %s, defaulting to gifs", subpaths[subpaths.length-1]));
                 }
             }
             uri = new URIBuilder(String.format(SEARCH_ENDPOINT, tabType));
