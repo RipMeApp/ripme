@@ -7,6 +7,8 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import static com.rarchives.ripme.App.logger;
+
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -27,6 +29,7 @@ public class RedgifsRipper extends AbstractJSONRipper {
     private static final String HOST_2 = "gifdeliverynetwork.com";
     private static final String GIFS_DETAIL_ENDPOINT = "https://api.redgifs.com/v2/gifs/%s";
     private static final String USERS_SEARCH_ENDPOINT = "https://api.redgifs.com/v2/users/%s/search";
+    private static final String GALLERY_ENDPOINT = "https://api.redgifs.com/v2/gallery/%s";
     private static final String TEMPORARY_AUTH_ENDPOINT = "https://api.redgifs.com/v2/auth/temporary";
     String username = "";
     String authToken = "";
@@ -181,15 +184,52 @@ public class RedgifsRipper extends AbstractJSONRipper {
         if (isProfile().matches() || isSearch().matches()) {
             // TODO check json keys for search
             var gifs = json.getJSONArray("gifs");
-            for (var gif : gifs){
+            for (var gif : gifs) {
+                if (((JSONObject)gif).isNull("gallery")) {
                 var hdURL = ((JSONObject)gif).getJSONObject("urls").getString("hd");
                 result.add(hdURL);
+                } else {
+                    var galleryID = ((JSONObject)gif).getString("gallery");
+                    var gifID = ((JSONObject)gif).getString("id");
+                    result.addAll(getURLsForGallery(galleryID, gifID));
+                }
             }
         } else {
-            String hdURL = json.getJSONObject("gif").getJSONObject("urls").getString("hd");
+            var gif = json.getJSONObject("gif");
+            if (gif.isNull("gallery")) {
+                String hdURL = gif.getJSONObject("urls").getString("hd");
             result.add(hdURL);
+            } else {
+                var galleryID = gif.getString("gallery");
+                var gifID = gif.getString("id");
+                result.addAll(getURLsForGallery(galleryID, gifID));
+            }
         }
         return result;
+    }
+
+    
+    /** 
+     * Get all images for a gif url with multiple images
+     * @param galleryID gallery id
+     * @param gifID gif id with multiple images for logging
+     * @return List<String>
+     */
+    private List<String> getURLsForGallery(String galleryID, String gifID) {
+        List<String> list = new ArrayList<>();
+        if (galleryID == null || galleryID.isBlank()) {
+            return  list;
+        }
+        try {
+            var json = Http.url(String.format(GALLERY_ENDPOINT, galleryID)).header("Authorization", "Bearer " + authToken).getJSON();
+            for (var gif : json.getJSONArray("gifs")) {
+                var hdURL = ((JSONObject)gif).getJSONObject("urls").getString("hd");
+                list.add(hdURL);
+            }
+        } catch (IOException e) {
+            logger.error(String.format("Error fetching gallery %s for gif %s", galleryID, gifID), e);
+        }
+        return list;
     }
 
     // TODO delete
