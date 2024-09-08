@@ -61,6 +61,7 @@ public class ImgurRipper extends AlbumRipper {
         return albumType == ALBUM_TYPE.USER;
     }
 
+    @Override
     public boolean canRip(URL url) {
         if (!url.getHost().endsWith(DOMAIN)) {
            return false;
@@ -74,6 +75,7 @@ public class ImgurRipper extends AlbumRipper {
         return true;
     }
 
+    @Override
     public URL sanitizeURL(URL url) throws MalformedURLException, URISyntaxException {
         String u = url.toExternalForm();
         if (u.indexOf('#') >= 0) {
@@ -85,6 +87,7 @@ public class ImgurRipper extends AlbumRipper {
         return new URI(u).toURL();
     }
 
+    @Override
     public String getAlbumTitle(URL url) throws MalformedURLException {
         String gid = null;
         try {
@@ -468,7 +471,7 @@ public class ImgurRipper extends AlbumRipper {
         Pattern p;
         Matcher m;
 
-        p = Pattern.compile("^https?://(www\\.|m\\.)?imgur\\.com/(a|gallery)/([a-zA-Z0-9]{5,}).*$");
+        p = Pattern.compile("^https?://(?:www\\.|m\\.)?imgur\\.com/gallery/(?:(?:[a-zA-Z0-9]*/)?.*-)?([a-zA-Z0-9]+)$");
         m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             // Imgur album or gallery
@@ -477,7 +480,7 @@ public class ImgurRipper extends AlbumRipper {
             this.url = new URI("http://imgur.com/a/" + gid).toURL();
             return gid;
         }
-        p = Pattern.compile("^https?://(www\\.|m\\.)?imgur\\.com/(a|gallery|t)/[a-zA-Z0-9]*/([a-zA-Z0-9]{5,}).*$");
+        p = Pattern.compile("^https?://(?:www\\.|m\\.)?imgur\\.com/(?:a|t)/(?:(?:[a-zA-Z0-9]*/)?.*-)?([a-zA-Z0-9]+).*$");
         m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             // Imgur album or gallery
