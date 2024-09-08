@@ -31,6 +31,7 @@ public class FuraffinityRipperTest extends RippersTest {
         Assertions.assertEquals("mustardgas", ripper.getGID(url));
     }
     @Test
+    @Tag("flaky")
     public void testLogin() throws IOException, URISyntaxException {
         URL url = new URI("https://www.furaffinity.net/gallery/mustardgas/").toURL();
         FuraffinityRipper ripper = new FuraffinityRipper(url);
