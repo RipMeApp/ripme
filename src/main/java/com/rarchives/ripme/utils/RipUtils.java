@@ -45,20 +45,8 @@ public class RipUtils {
                 logger.error("[!] Exception while loading album " + url, e);
             }
             return result;
-        }
-        else if (url.getHost().endsWith("imgur.com") && url.toExternalForm().contains(",")) {
-            // Imgur image series.
-            try {
-                logger.debug("Fetching imgur series at " + url);
-                ImgurRipper.ImgurAlbum imgurAlbum = ImgurRipper.getImgurSeries(url);
-                for (ImgurRipper.ImgurImage imgurImage : imgurAlbum.images) {
-                    logger.debug("Got imgur image: " + imgurImage.url);
-                    result.add(imgurImage.url);
-                }
-            } catch (IOException e) {
-                logger.error("[!] Exception while loading album " + url, e);
-            }
-        }  else if (url.getHost().endsWith("i.imgur.com") && url.toExternalForm().contains("gifv")) {
+        } 
+        else if (url.getHost().endsWith("i.imgur.com") && url.toExternalForm().contains("gifv")) {
             // links to imgur gifvs
             try {
                 result.add(new URI(url.toExternalForm().replaceAll(".gifv", ".mp4")).toURL());

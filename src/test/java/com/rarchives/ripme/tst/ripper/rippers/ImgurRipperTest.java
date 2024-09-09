@@ -27,6 +27,8 @@ public class ImgurRipperTest extends RippersTest {
         failURLs.add(new URI("http://i.imgur.com/").toURL());
         failURLs.add(new URI("http://imgur.com/image.jpg").toURL());
         failURLs.add(new URI("http://i.imgur.com/image.jpg").toURL());
+        // Imgur seems not to support URLs with lists of images anymore.
+        failURLs.add(new URI("http://imgur.com/758qD43,C6iVJex,bP7flAu,J3l85Ri,1U7fhu5,MbuAUCM,JF4vOXQ").toURL());
         for (URL url : failURLs) {
             try {
                 new ImgurRipper(url);

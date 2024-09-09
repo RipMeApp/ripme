@@ -42,7 +42,6 @@ public class ImgurRipper extends AbstractHTMLRipper {
         USER_ALBUM,
         USER_IMAGES,
         SINGLE_IMAGE,
-        SERIES_OF_IMAGES,
         SUBREDDIT
     }
 
@@ -182,10 +181,6 @@ public class ImgurRipper extends AbstractHTMLRipper {
                     // as it seems to cause the album to be downloaded to a subdir.
                     ripAlbum(this.url);
                     break;
-                case SERIES_OF_IMAGES:
-                    LOGGER.info("Album type is SERIES_OF_IMAGES");
-                    ripAlbum(this.url);
-                    break;
                 case SINGLE_IMAGE:
                     LOGGER.info("Album type is SINGLE_IMAGE");
                     ripSingleImage(this.url);
@@ -248,39 +243,6 @@ public class ImgurRipper extends AbstractHTMLRipper {
             saveAs = saveAs.resolve(imgurImage.getSaveAs().replaceAll("\\?\\d", ""));
             addURLToDownload(imgurImage.url, saveAs);
         }
-    }
-
-    public static ImgurAlbum getImgurSeries(URL url) throws IOException {
-        Pattern p = Pattern.compile("^.*imgur\\.com/([a-zA-Z0-9,]*).*$");
-        Matcher m = p.matcher(url.toExternalForm());
-        ImgurAlbum album = new ImgurAlbum(url);
-        if (m.matches()) {
-            String[] imageIds = m.group(1).split(",");
-            for (String imageId : imageIds) {
-                // TODO: Fetch image with ID imageId
-                LOGGER.debug("Fetching image info for ID " + imageId);
-                try {
-                    JSONObject json = Http.url("https://api.imgur.com/2/image/" + imageId + ".json").getJSON();
-                    if (!json.has("image")) {
-                        continue;
-                    }
-                    JSONObject image = json.getJSONObject("image");
-                    if (!image.has("links")) {
-                        continue;
-                    }
-                    JSONObject links = image.getJSONObject("links");
-                    if (!links.has("original")) {
-                        continue;
-                    }
-                    String original = links.getString("original");
-                    ImgurImage theImage = new ImgurImage(new URI(original).toURL());
-                    album.addImage(theImage);
-                } catch (Exception e) {
-                    LOGGER.error("Got exception while fetching imgur ID " + imageId, e);
-                }
-            }
-        }
-        return album;
     }
 
     public static ImgurAlbum getImgurAlbum(URL url) throws IOException, URISyntaxException {
@@ -562,17 +524,6 @@ public class ImgurRipper extends AbstractHTMLRipper {
             // Single imgur image
             albumType = ALBUM_TYPE.SINGLE_IMAGE;
             return  m.group(m.groupCount());
-        }
-        p = Pattern.compile("^https?://(i\\.|www\\.|m\\.)?imgur\\.com/([a-zA-Z0-9,]{5,}).*$");
-        m = p.matcher(url.toExternalForm());
-        if (m.matches()) {
-            // Series of imgur images
-            albumType = ALBUM_TYPE.SERIES_OF_IMAGES;
-            String gid = m.group(m.groupCount());
-            if (!gid.contains(",")) {
-                throw new MalformedURLException("Imgur image doesn't contain commas");
-            }
-            return gid.replaceAll(",", "-");
         }
         throw new MalformedURLException("Unsupported imgur URL format: " + url.toExternalForm());
     }
