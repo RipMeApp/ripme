@@ -22,6 +22,7 @@ import java.util.Map;
 
 /**'
  * For ripping delicious albums off the interwebz.
+ * @deprecated Use AbstractHTMLRipper instead.
  */
 public abstract class AlbumRipper extends AbstractRipper {
 
