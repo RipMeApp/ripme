@@ -8,6 +8,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -21,12 +22,12 @@ import org.jsoup.nodes.Element;
 import org.jsoup.safety.Safelist;
 import org.jsoup.select.Elements;
 
-import com.rarchives.ripme.ripper.AlbumRipper;
+import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
 import com.rarchives.ripme.utils.Http;
 import com.rarchives.ripme.utils.Utils;
 
-public class ImgurRipper extends AlbumRipper {
+public class ImgurRipper extends AbstractHTMLRipper {
 
     private static final String DOMAIN = "imgur.com",
                                 HOST   = "imgur";
@@ -73,6 +74,22 @@ public class ImgurRipper extends AlbumRipper {
             return false;
         }
         return true;
+    }
+
+    @Override
+    protected String getDomain() {
+        return DOMAIN;
+    }
+
+    @Override
+    protected void downloadURL(URL url, int index) {
+        // No-op as we override rip() method
+    }
+
+    @Override
+    protected List<String> getURLsFromPage(Document page) {
+        // No-op as we override rip() method
+        return Arrays.asList();
     }
 
     @Override
