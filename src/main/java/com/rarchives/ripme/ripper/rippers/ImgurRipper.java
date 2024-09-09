@@ -211,12 +211,16 @@ public class ImgurRipper extends AbstractHTMLRipper {
 
     private void ripSingleImage(URL url) throws IOException, URISyntaxException {
         String strUrl = url.toExternalForm();
-        Document document = getDocument(strUrl);
-        Matcher m = getEmbeddedJsonMatcher(document);
-        if (m.matches()) {
-            JSONObject json = new JSONObject(m.group(1)).getJSONObject("image");
-            addURLToDownload(extractImageUrlFromJson(json), "");
+        var gid = getGID(url);
+        var json = getSingleImageData(String.format("https://api.imgur.com/post/v1/media/%s?include=media,adconfig,account", gid));
+        var media = json.getJSONArray("media");
+        if (media.length()==0) {
+            throw new IOException(String.format("Failed to fetch image for url %s", strUrl));
+        } 
+        if (media.length()>1) {
+            LOGGER.warn(String.format("Got multiple images for url %s", strUrl));
         }
+        addURLToDownload(extractImageUrlFromJson((JSONObject)media.get(0)), "");
     }
 
     private void ripAlbum(URL url) throws IOException, URISyntaxException {
@@ -333,11 +337,6 @@ public class ImgurRipper extends AbstractHTMLRipper {
         return imgurAlbum;
     }
 
-    private static Matcher getEmbeddedJsonMatcher(Document doc) {
-        Pattern p = Pattern.compile("^.*widgetFactory.mergeConfig\\('gallery', (.*?)\\);.*$", Pattern.DOTALL);
-        return p.matcher(doc.body().html());
-    }
-
     private static ImgurAlbum createImgurAlbumFromJsonArray(URL url, JSONArray jsonImages) throws MalformedURLException, URISyntaxException {
         ImgurAlbum imgurAlbum = new ImgurAlbum(url);
         int imagesLength = jsonImages.length();
@@ -350,21 +349,24 @@ public class ImgurRipper extends AbstractHTMLRipper {
 
     private static URL extractImageUrlFromJson(JSONObject json) throws MalformedURLException, URISyntaxException {
         String ext = json.getString("ext");
+        if (!ext.startsWith(".")) {
+            ext = "." + ext;
+        }
         if (ext.equals(".gif") && Utils.getConfigBoolean("prefer.mp4", false)) {
             ext = ".mp4";
         }
         return  new URI(
-                "http://i.imgur.com/"
-                        + json.getString("hash")
+                "https://i.imgur.com/"
+                        + json.getString("id")
                         + ext).toURL();
     }
 
-    private static Document getDocument(String strUrl) throws IOException {
-        return Jsoup.connect(strUrl)
+    private static JSONObject getSingleImageData(String strUrl) throws IOException {
+        return Http.url(strUrl)
                                 .userAgent(USER_AGENT)
                                 .timeout(10 * 1000)
-                                .maxBodySize(0)
-                                .get();
+                                .header("Authorization", "Client-ID " + Utils.getConfigString("imgur.client_id", "546c25a59c58ad7"))
+                                .getJSON();
     }
 
     private static Document getAlbumData(String strUrl) throws IOException {
