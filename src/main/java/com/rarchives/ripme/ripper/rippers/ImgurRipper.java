@@ -231,16 +231,18 @@ public class ImgurRipper extends AbstractHTMLRipper {
             stopCheck();
             Path saveAs = workingDir.toPath();
             if (subdirectory != null && !subdirectory.equals("")) {
-                saveAs.resolve(subdirectory);
+                saveAs = saveAs.resolve(subdirectory);
             }
             if (!Files.exists(saveAs)) {
                 Files.createDirectory(saveAs);
             }
             index += 1;
+            var imgPath = imgurImage.getSaveAs().replaceAll("\\?\\d", "");
             if (Utils.getConfigBoolean("download.save_order", true)) {
-                saveAs.resolve(String.format("%03d_", index));
+                saveAs = saveAs.resolve(String.format("%03d_%s", index, imgPath));
+            } else {
+                saveAs = saveAs.resolve(imgPath);
             }
-            saveAs = saveAs.resolve(imgurImage.getSaveAs().replaceAll("\\?\\d", ""));
             addURLToDownload(imgurImage.url, saveAs);
         }
     }
