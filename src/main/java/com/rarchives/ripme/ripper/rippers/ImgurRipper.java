@@ -343,29 +343,66 @@ public class ImgurRipper extends AbstractHTMLRipper {
                 .get();
     }
 
+    private static JSONObject getUserData(String userUrl) throws IOException {
+        return Http.url(userUrl)
+            .userAgent(USER_AGENT)
+            .timeout(10 * 1000)
+            .header("Authorization", "Client-ID " + Utils.getConfigString("imgur.client_id", "546c25a59c58ad7"))
+            .getJSON();
+    }
+
 
     /**
      * Rips all albums in an imgur user's account.
      * @param url
-     *      URL to imgur user account (http://username.imgur.com)
+     *      URL to imgur user account (http://username.imgur.com | https://imgur.com/user/username)
      */
     private void ripUserAccount(URL url) throws IOException, URISyntaxException {
+        int cPage = -1, cImage = 0; 
+        String apiUrl = "https://api.imgur.com/3/account/%s/submissions/%d/newest?album_previews=1";
+        // Strip 'user_' from username
+        var username = getGID(url).replace("user_", "");
         LOGGER.info("Retrieving " + url);
         sendUpdate(STATUS.LOADING_RESOURCE, url.toExternalForm());
-        Document doc = Http.url(url).get();
-        for (Element album : doc.select("div.cover a")) {
-            stopCheck();
-            if (!album.hasAttr("href")
-                    || !album.attr("href").contains("imgur.com/a/")) {
-                continue;
+
+        while (true) { 
+            cPage += 1;
+            var pageUrl = String.format(apiUrl, username, cPage);
+            var json = getUserData(pageUrl);
+            var success = json.getBoolean("success");
+            var status = json.getInt("status");
+            if (!success || status!=200) {
+                throw new IOException(String.format("Unexpected status code %d for url %s and page %d", status, url, cPage));
             }
-            String albumID = album.attr("href").substring(album.attr("href").lastIndexOf('/') + 1);
-            URL albumURL = new URI("http:" + album.attr("href") + "/noscript").toURL();
-            try {
-                ripAlbum(albumURL, albumID);
-                Thread.sleep(SLEEP_BETWEEN_ALBUMS * 1000L);
-            } catch (Exception e) {
-                LOGGER.error("Error while ripping album: " + e.getMessage(), e);
+            var data = json.getJSONArray("data");
+            if (data.isEmpty()) {
+                // Data array is empty for pages beyond the last page
+                break;
+            }
+            for (int i = 0; i < data.length(); i++) {
+                cImage += 1;
+                String prefixOrSubdir = "";
+                if (Utils.getConfigBoolean("download.save_order", true)) {
+                    prefixOrSubdir = String.format("%03d_", cImage);
+                }
+                var d = (JSONObject)data.get(i);
+                var l = d.getString("link");
+                if (d.getBoolean("is_album")) {
+                    // For album links with multiple images create a prefixed folder with album id
+                    prefixOrSubdir += d.getString("id");
+                    ripAlbum(new URI(l).toURL(), prefixOrSubdir);
+                    try {
+                        Thread.sleep(SLEEP_BETWEEN_ALBUMS * 1000L);
+                    } catch (InterruptedException e) {
+                        LOGGER.error(String.format("Error! Interrupted ripping album %s for user account %s", l, username), e);
+                    }
+                } else {
+                    // For direct links 
+                    if (d.has("mp4") && Utils.getConfigBoolean("prefer.mp4", false)) {
+                        l =  d.getString("mp4");
+                    }
+                    addURLToDownload(new URI(l).toURL(), prefixOrSubdir);
+                }
             }
         }
     }
@@ -463,6 +500,7 @@ public class ImgurRipper extends AbstractHTMLRipper {
             this.url = new URI("http://imgur.com/a/" + gid).toURL();
             return gid;
         }
+        // Match urls with path /a
         p = Pattern.compile("^https?://(?:www\\.|m\\.)?imgur\\.com/(?:a|t)/(?:(?:[a-zA-Z0-9]*/)?.*-)?([a-zA-Z0-9]+).*$");
         m = p.matcher(url.toExternalForm());
         if (m.matches()) {
@@ -472,7 +510,7 @@ public class ImgurRipper extends AbstractHTMLRipper {
             this.url = new URI("http://imgur.com/a/" + gid).toURL();
             return gid;
         }
-        p = Pattern.compile("^https?://([a-zA-Z0-9\\-]{3,})\\.imgur\\.com/?$");
+        p = Pattern.compile("^https?://([a-zA-Z0-9\\-]{4,})\\.imgur\\.com/?$");
         m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             // Root imgur account
@@ -480,6 +518,14 @@ public class ImgurRipper extends AbstractHTMLRipper {
             if (gid.equals("www")) {
                 throw new MalformedURLException("Cannot rip the www.imgur.com homepage");
             }
+            albumType = ALBUM_TYPE.USER;
+            return "user_" + gid;
+        }
+        // Pattern for new imgur user url https://imgur.com/user/username
+        p = Pattern.compile("^https?://(?:www\\.|m\\.)?imgur\\.com/user/([a-zA-Z0-9]+).*$");
+        m = p.matcher(url.toExternalForm());
+        if (m.matches()) {
+            String gid = m.group(1);
             albumType = ALBUM_TYPE.USER;
             return "user_" + gid;
         }
