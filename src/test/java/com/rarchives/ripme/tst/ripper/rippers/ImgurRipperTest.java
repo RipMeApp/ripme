@@ -5,8 +5,6 @@ import com.rarchives.ripme.ripper.rippers.ImgurRipper.ImgurAlbum;
 import com.rarchives.ripme.utils.RipUtils;
 
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -40,23 +38,23 @@ public class ImgurRipperTest extends RippersTest {
     }
 
     @Test
-    @Tag("flaky")
     public void testImgurAlbums() throws IOException, URISyntaxException {
         List<URL> contentURLs = new ArrayList<>();
         // URLs that should return more than 1 image
-        //contentURLs.add(new URI("http://imgur.com/a/dS9OQ#0").toURL()); // Horizontal layout
-        //contentURLs.add(new URI("http://imgur.com/a/YpsW9#0").toURL()); // Grid layout
-        contentURLs.add(new URI("http://imgur.com/a/WxG6f/layout/vertical#0").toURL());
-        contentURLs.add(new URI("http://imgur.com/a/WxG6f/layout/horizontal#0").toURL());
-        contentURLs.add(new URI("http://imgur.com/a/WxG6f/layout/grid#0").toURL());
-        contentURLs.add(new URI("http://imgur.com/gallery/FmP2o").toURL()); // Gallery URL
-        // Imgur seems not to support URLs with lists of images anymore.
-        // contentURLs.add(new
-        // URL("http://imgur.com/758qD43,C6iVJex,bP7flAu,J3l85Ri,1U7fhu5,MbuAUCM,JF4vOXQ"));
+        contentURLs.add(new URI("http://imgur.com/gallery/FmP2o").toURL()); 
+        // URLs with /gallery path
+        contentURLs.add(new URI("http://imgur.com/gallery/nAl13J6").toURL()); 
+        contentURLs.add(new URI("https://imgur.com/gallery/another-brendan-fraser-reaction-from-bedazzled-intergalactic-quality-nAl13J6").toURL()); 
+        // URLs with /a path
+        contentURLs.add(new URI("http://imgur.com/a/G058j5F").toURL()); 
+        contentURLs.add(new URI("https://imgur.com/a/thanks-batman-G058j5F").toURL()); 
+        contentURLs.add(new URI("https://imgur.com/a/thanks-batman-G058j5F/layout/grid#0").toURL()); 
+        contentURLs.add(new URI("https://imgur.com/a/G058j5F/layout/grid#0").toURL()); 
+        contentURLs.add(new URI("https://imgur.com/a/G058j5F/layout/horizontal#0").toURL()); 
         // Sometimes hangs up
         // contentURLs.add(new URI("http://imgur.com/r/nsfw_oc/top/all").toURL());
-        // contentURLs.add(new URI("http://imgur.com/a/bXQpH").toURL()); // Album with
-        // titles/descriptions
+        // Album with titles/descriptions
+        contentURLs.add(new URI("http://imgur.com/a/bXQpH").toURL()); 
         for (URL url : contentURLs) {
             ImgurRipper ripper = new ImgurRipper(url);
             testRipper(ripper);
@@ -64,7 +62,21 @@ public class ImgurRipperTest extends RippersTest {
     }
 
     @Test
-    @Disabled("test or ripper broken")
+    public void testImgurUserAccount() throws IOException, URISyntaxException {
+        List<String> contentURLs = new ArrayList<>();
+        // URL with albums
+        contentURLs.add("https://RockStarBrew.imgur.com");
+        // New URL format
+        contentURLs.add("https://imgur.com/user/RockStarBrew/");
+        // And URL with images 
+        contentURLs.add("https://imgur.com/user/counter2strike");
+        for (var url : contentURLs) {
+            ImgurRipper ripper = new ImgurRipper(new URI(url).toURL());
+            testRipper(ripper);
+        }
+    }
+
+    @Test
     public void testImgurSingleImage() throws IOException, URISyntaxException {
         List<URL> contentURLs = new ArrayList<>();
         contentURLs.add(new URI("http://imgur.com/qbfcLyG").toURL()); // Single image URL
@@ -91,8 +103,8 @@ public class ImgurRipperTest extends RippersTest {
 
     @Test
     public void testImgurVideoFromGetFilesFromURL() throws Exception {
-        List<URL> urls = RipUtils.getFilesFromURL(new URI("https://i.imgur.com/4TtwxRN.gifv").toURL());
-        Assertions.assertEquals("https://i.imgur.com/4TtwxRN.mp4", urls.get(0).toExternalForm());
+        List<URL> urls = RipUtils.getFilesFromURL(new URI("https://i.imgur.com/7qoW0Mo.gifv").toURL());
+        Assertions.assertEquals("https://i.imgur.com/7qoW0Mo.mp4", urls.get(0).toExternalForm());
     }
 
     /*
