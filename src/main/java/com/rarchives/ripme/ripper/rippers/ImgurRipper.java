@@ -255,8 +255,6 @@ public class ImgurRipper extends AbstractHTMLRipper {
         LOGGER.info("    Retrieving " + strUrl);
         Document doc = getAlbumData("https://api.imgur.com/3/album/" + strUrl.split("/a/")[1]);
         // Try to use embedded JSON to retrieve images
-        LOGGER.info(Jsoup.clean(doc.body().toString(), Safelist.none()));
-
             try {
                 JSONObject json = new JSONObject(Jsoup.clean(doc.body().toString(), Safelist.none()));
                 JSONArray jsonImages = json.getJSONObject("data").getJSONArray("images");
@@ -427,7 +425,7 @@ public class ImgurRipper extends AbstractHTMLRipper {
                 for (int i = 0; i < images.length(); i++) {
                     imagesFound++;
                     JSONObject image = images.getJSONObject(i);
-                    String imageUrl = "http://i.imgur.com/" + image.getString("hash") + image.getString("ext");
+                    String imageUrl = "https://i.imgur.com/" + image.getString("hash") + image.getString("ext");
                     String prefix = "";
                     if (Utils.getConfigBoolean("download.save_order", true)) {
                         prefix = String.format("%03d_", imagesFound);
@@ -497,7 +495,7 @@ public class ImgurRipper extends AbstractHTMLRipper {
             // Imgur album or gallery
             albumType = ALBUM_TYPE.ALBUM;
             String gid = m.group(m.groupCount());
-            this.url = new URI("http://imgur.com/a/" + gid).toURL();
+            this.url = new URI("https://imgur.com/a/" + gid).toURL();
             return gid;
         }
         // Match urls with path /a
@@ -507,7 +505,7 @@ public class ImgurRipper extends AbstractHTMLRipper {
             // Imgur album or gallery
             albumType = ALBUM_TYPE.ALBUM;
             String gid = m.group(m.groupCount());
-            this.url = new URI("http://imgur.com/a/" + gid).toURL();
+            this.url = new URI("https://imgur.com/a/" + gid).toURL();
             return gid;
         }
         p = Pattern.compile("^https?://([a-zA-Z0-9\\-]{4,})\\.imgur\\.com/?$");
@@ -563,7 +561,7 @@ public class ImgurRipper extends AbstractHTMLRipper {
             albumType = ALBUM_TYPE.ALBUM;
             String subreddit = m.group(m.groupCount() - 1);
             String gid = m.group(m.groupCount());
-            this.url = new URI("http://imgur.com/r/" + subreddit + "/" + gid).toURL();
+            this.url = new URI("https://imgur.com/r/" + subreddit + "/" + gid).toURL();
             return "r_" + subreddit + "_" + gid;
         }
         p = Pattern.compile("^https?://(i\\.|www\\.|m\\.)?imgur\\.com/([a-zA-Z0-9]{5,})$");
