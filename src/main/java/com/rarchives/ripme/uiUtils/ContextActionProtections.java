@@ -17,10 +17,11 @@ public class ContextActionProtections {
         try {
             String clipboardContent = (String) transferable.getTransferData(DataFlavor.stringFlavor);
 
+            // TODO check if commenting this causes regression
             // Limit the pasted content to 96 characters
-            if (clipboardContent.length() > 96) {
-                clipboardContent = clipboardContent.substring(0, 96);
-            }
+            // if (clipboardContent.length() > 96) {
+            //     clipboardContent = clipboardContent.substring(0, 96);
+            // }
             // Set the text in the JTextField
             textComponent.setText(clipboardContent);
         } catch (UnsupportedFlavorException | IOException unable_to_modify_text_on_paste) {
