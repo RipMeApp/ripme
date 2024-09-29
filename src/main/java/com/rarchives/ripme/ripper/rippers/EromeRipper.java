@@ -73,7 +73,7 @@ public class EromeRipper extends AbstractHTMLRipper {
     }
 
     @Override
-    public String getAlbumTitle(URL url) throws MalformedURLException, URISyntaxException {
+    public String getAlbumTitle() throws MalformedURLException, URISyntaxException {
         try {
             // Attempt to use album title as GID
             Element titleElement = getCachedFirstPage().select("meta[property=og:title]").first();
@@ -86,7 +86,7 @@ public class EromeRipper extends AbstractHTMLRipper {
         } catch (NullPointerException e) {
             return getHost() + "_" + getGID(url);
         }
-        return super.getAlbumTitle(url);
+        return super.getAlbumTitle();
     }
 
     @Override

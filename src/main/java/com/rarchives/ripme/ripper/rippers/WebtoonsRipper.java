@@ -44,14 +44,14 @@ public class WebtoonsRipper extends AbstractHTMLRipper {
 
 
     @Override
-    public String getAlbumTitle(URL url) throws MalformedURLException, URISyntaxException {
+    public String getAlbumTitle() throws MalformedURLException, URISyntaxException {
         Pattern pat = Pattern.compile("https?://www.webtoons.com/[a-zA-Z-_]+/[a-zA-Z_-]+/([a-zA-Z0-9_-]*)/[a-zA-Z0-9_-]+/\\S*");
         Matcher mat = pat.matcher(url.toExternalForm());
         if (mat.matches()) {
             return getHost() + "_" + mat.group(1);
         }
 
-        return super.getAlbumTitle(url);
+        return super.getAlbumTitle();
     }
 
     @Override

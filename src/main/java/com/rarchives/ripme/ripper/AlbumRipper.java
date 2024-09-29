@@ -44,9 +44,9 @@ public abstract class AlbumRipper extends QueueingRipper {
         }
         String title;
         if (Utils.getConfigBoolean("album_titles.save", true)) {
-            title = getAlbumTitle(this.url);
+            title = getAlbumTitle();
         } else {
-            title = super.getAlbumTitle(this.url);
+            title = super.getAlbumTitle();
         }
         logger.debug("Using album title '" + title + "'");
 

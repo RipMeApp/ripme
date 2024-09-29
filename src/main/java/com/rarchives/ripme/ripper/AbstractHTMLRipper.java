@@ -327,7 +327,7 @@ public abstract class AbstractHTMLRipper extends QueueingRipper {
         if (!path.endsWith(File.separator)) {
             path += File.separator;
         }
-        String title = getAlbumTitle(this.url);
+        String title = getAlbumTitle();
         logger.debug("Using album title '" + title + "'");
 
         title = Utils.filesystemSafe(title);
