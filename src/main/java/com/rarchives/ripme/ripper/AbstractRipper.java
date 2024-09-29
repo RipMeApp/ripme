@@ -215,7 +215,13 @@ public abstract class AbstractRipper
         // ctx.reconfigure();
         // ctx.updateLoggers();
 
-        this.threadPool = new DownloadThreadPool();
+        initThreadPool();
+    }
+
+    public synchronized void initThreadPool() {
+        if (threadPool == null) {
+            this.threadPool = new DownloadThreadPool();
+        }
     }
 
     public void setObserver(RipStatusHandler obs) {
@@ -481,7 +487,9 @@ public abstract class AbstractRipper
     protected void waitForThreads() {
         logger.debug("Waiting for threads to finish");
         completed = false;
-        threadPool.waitForThreads();
+        if (threadPool != null) {
+            threadPool.waitForThreads();
+        }
         checkIfComplete();
     }
 
@@ -574,6 +582,10 @@ public abstract class AbstractRipper
      */
     public File getWorkingDir() {
         return workingDir;
+    }
+
+    public void setWorkingDir(File dir) {
+        this.workingDir = dir;
     }
 
     @Override
