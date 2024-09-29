@@ -1,6 +1,5 @@
 package com.rarchives.ripme.ripper;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -10,7 +9,9 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -23,8 +24,8 @@ public abstract class QueueingRipper extends AbstractRipper {
 
     protected final Logger logger = LogManager.getLogger(getClass());
 
-    private final Map<URL, File> itemsPending = Collections.synchronizedMap(new HashMap<>());
-    private final Map<URL, Path> itemsCompleted = Collections.synchronizedMap(new HashMap<>());
+    private final Set<URL> itemsPending = Collections.synchronizedSet(new HashSet<>());
+    private final Set<URL> itemsCompleted = Collections.synchronizedSet(new HashSet<>());
     private final Map<URL, String> itemsErrored = Collections.synchronizedMap(new HashMap<>());
 
     public QueueingRipper(URL url) throws IOException {
@@ -59,8 +60,8 @@ public abstract class QueueingRipper extends AbstractRipper {
             return false;
         }
         if (!allowDuplicates()
-                && ( itemsPending.containsKey(url)
-                        || itemsCompleted.containsKey(url)
+                && ( itemsPending.contains(url)
+                        || itemsCompleted.contains(url)
                         || itemsErrored.containsKey(url) )) {
             // Item is already downloaded/downloading, skip it.
             logger.info("[!] Skipping " + url + " -- already attempted: " + Utils.removeCWD(saveAs));
@@ -76,13 +77,13 @@ public abstract class QueueingRipper extends AbstractRipper {
             final var text = url.toExternalForm() + System.lineSeparator();
             try {
                 Files.write(urlFile, text.getBytes(StandardCharsets.UTF_8), StandardOpenOption.APPEND);
-                itemsCompleted.put(url, urlFile);
+                itemsCompleted.add(url);
             } catch (final IOException e) {
                 logger.error("Error while writing to " + urlFile, e);
             }
         }
         else {
-            itemsPending.put(url, saveAs.toFile());
+            addURLToPending(url);
             downloadInBackground(url, saveAs, referrer, cookies, getFileExtFromMIME);
         }
 
@@ -126,6 +127,13 @@ public abstract class QueueingRipper extends AbstractRipper {
         return addURLToDownload(url, "", "");
     }
 
+    protected void addURLToPending(URL url) {
+        if (observer == null) {
+            return;
+        }
+        itemsPending.add(url);
+        observer.update(this, new RipStatusMessage(STATUS.DOWNLOAD_PROGRESSED, url));
+    }
 
     @Override
     /*
@@ -139,7 +147,7 @@ public abstract class QueueingRipper extends AbstractRipper {
             final var path = Utils.removeCWD(saveAs);
             final var msg = new RipStatusMessage(STATUS.DOWNLOAD_COMPLETE, path);
             itemsPending.remove(url);
-            itemsCompleted.put(url, saveAs);
+            itemsCompleted.add(url);
             observer.update(this, msg);
 
             checkIfComplete();
@@ -174,7 +182,7 @@ public abstract class QueueingRipper extends AbstractRipper {
         }
 
         itemsPending.remove(url);
-        itemsCompleted.put(url, file);
+        itemsCompleted.add(url);
         observer.update(this, new RipStatusMessage(STATUS.DOWNLOAD_WARN, url + " already saved as " + file));
 
         checkIfComplete();
