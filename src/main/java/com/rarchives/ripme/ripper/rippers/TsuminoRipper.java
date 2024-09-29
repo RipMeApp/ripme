@@ -103,9 +103,7 @@ public class TsuminoRipper extends AbstractHTMLRipper {
 
     @Override
     public Document getFirstPage() throws IOException {
-        Connection.Response resp = Http.url(url).response();
-        cookies.putAll(resp.cookies());
-        Document doc =  resp.parse();
+        Document doc = Http.url(url).collectCookiesInto(cookies).get();
         String blacklistedTag = RipUtils.checkTags(Utils.getConfigStringArray("tsumino.blacklist.tags"), getTags(doc));
         if (blacklistedTag != null) {
             sendUpdate(RipStatusMessage.STATUS.DOWNLOAD_WARN, "Skipping " + url.toExternalForm() + " as it " +
