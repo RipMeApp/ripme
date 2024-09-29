@@ -58,7 +58,7 @@ public class BatoRipper extends AbstractHTMLRipper {
     }
 
     @Override
-    public boolean pageContainsAlbums(URL url) {
+    public boolean pageContainsAlbums() {
         Pattern p = Pattern.compile("https?://bato.to/series/([\\d]+)/?");
         Matcher m = p.matcher(url.toExternalForm());
         return m.matches();

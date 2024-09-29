@@ -189,7 +189,7 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
     }
 
     @Override
-    public boolean pageContainsAlbums(URL url) {
+    public boolean pageContainsAlbums() {
         Pattern pa = Pattern.compile("^https?://8muses.download/\\?s=([a-zA-Z0-9-]*)");
         Matcher ma = pa.matcher(url.toExternalForm());
         if (ma.matches()) {

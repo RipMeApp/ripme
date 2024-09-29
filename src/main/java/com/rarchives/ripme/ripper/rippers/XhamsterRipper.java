@@ -103,7 +103,7 @@ public class XhamsterRipper extends AbstractHTMLRipper {
     }
 
     @Override
-    public boolean pageContainsAlbums(URL url) {
+    public boolean pageContainsAlbums() {
         Pattern p = Pattern.compile("^https?://[\\w\\w.]*xhamster([^<]*)\\.(com|desi)/users/([a-zA-Z0-9_-]+)/(photos|videos)(/\\d+)?");
         Matcher m = p.matcher(url.toExternalForm());
         logger.info("Checking if page has albums");

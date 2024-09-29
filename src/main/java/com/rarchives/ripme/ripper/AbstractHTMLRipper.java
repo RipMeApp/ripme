@@ -115,7 +115,7 @@ public abstract class AbstractHTMLRipper extends AbstractRipper {
     }
 
     // Takes a url and checks if it is for a page of albums
-    protected boolean pageContainsAlbums(URL url) {
+    protected boolean pageContainsAlbums() {
         return false;
     }
 
@@ -127,7 +127,7 @@ public abstract class AbstractHTMLRipper extends AbstractRipper {
         sendUpdate(STATUS.LOADING_RESOURCE, this.url.toExternalForm());
         var doc = getCachedFirstPage();
 
-        if (hasQueueSupport() && pageContainsAlbums(this.url)) {
+        if (hasQueueSupport() && pageContainsAlbums()) {
             List<String> urls = getAlbumsToQueue(doc);
             for (String url : urls) {
                 MainWindow.addUrlToQueue(url);

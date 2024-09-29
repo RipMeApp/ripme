@@ -60,7 +60,7 @@ public class AllporncomicRipper extends AbstractHTMLRipper {
     }
 
     @Override
-    public boolean pageContainsAlbums(URL url) {
+    public boolean pageContainsAlbums() {
         Pattern pa = Pattern.compile("^https?://allporncomic.com/porncomic/([a-zA-Z0-9_\\-]+)/?$");
         Matcher ma = pa.matcher(url.toExternalForm());
         return ma.matches();
