@@ -76,9 +76,7 @@ public class EightmusesRipper extends AbstractHTMLRipper {
 
     @Override
     public Document getFirstPage() throws IOException {
-        Response resp = Http.url(url).response();
-        cookies.putAll(resp.cookies());
-        return resp.parse();
+        return Http.url(url).collectCookiesInto(cookies).get();
     }
 
     @Override

@@ -13,7 +13,6 @@ import java.util.regex.Pattern;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jsoup.Connection.Response;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
@@ -69,9 +68,7 @@ public class ZizkiRipper extends AbstractHTMLRipper {
 
     @Override
     public Document getFirstPage() throws IOException {
-        Response resp = Http.url(url).response();
-        cookies.putAll(resp.cookies());
-        return resp.parse();
+        return Http.url(url).collectCookiesInto(cookies).get();
     }
 
     @Override

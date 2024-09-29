@@ -152,19 +152,18 @@ public class FuraffinityRipper extends AbstractHTMLRipper {
     public String getDescription(String page) {
         try {
             // Fetch the image page
-            Response resp = Http.url(page)
+            Document documentz = Http.url(page)
                     .referrer(this.url)
-                    .response();
-            cookies.putAll(resp.cookies());
+                    .collectCookiesInto(cookies)
+                    .get();
 
             // Try to find the description
-            Elements els = resp.parse().select("td[class=alt1][width=\"70%\"]");
+            Elements els = documentz.select("td[class=alt1][width=\"70%\"]");
             if (els.isEmpty()) {
                 logger.debug("No description at " + page);
                 throw new IOException("No description found");
             }
             logger.debug("Description found!");
-            Document documentz = resp.parse();
             Element ele = documentz.select("td[class=alt1][width=\"70%\"]").get(0); // This is where the description is.
             // Would break completely if FurAffinity changed site layout.
             documentz.outputSettings(new Document.OutputSettings().prettyPrint(false));
