@@ -80,11 +80,7 @@ public class RipUtils {
         } else if (url.toExternalForm().contains("erome.com")) {
             try {
                 logger.info("Getting eroshare album " + url);
-                EromeRipper r = new EromeRipper(url);
-                Document tempDoc = r.getFirstPage();
-                for (String u : r.getURLsFromPage(tempDoc)) {
-                    result.add(new URI(u).toURL());
-                }
+                result.addAll(new EromeRipper(url).getURLsFromFirstPage());
             } catch (IOException | URISyntaxException e) {
                 // Do nothing
                 logger.warn("Exception while retrieving eroshare page:", e);
@@ -93,11 +89,7 @@ public class RipUtils {
         } else if (url.toExternalForm().contains("soundgasm.net")) {
             try {
                 logger.info("Getting soundgasm page " + url);
-                SoundgasmRipper r = new SoundgasmRipper(url);
-                Document tempDoc = r.getFirstPage();
-                for (String u : r.getURLsFromPage(tempDoc)) {
-                    result.add(new URI(u).toURL());
-                }
+                result.addAll(new SoundgasmRipper(url).getURLsFromFirstPage());
             } catch (IOException | URISyntaxException e) {
                 // Do nothing
                 logger.warn("Exception while retrieving soundgasm page:", e);
@@ -341,6 +333,18 @@ public class RipUtils {
         if (url != null) {
             urls.add(url);
         }
+    }
+
+    public static List<URL> toURLList(List<String> urlStrings) {
+        final var correctUrls = new ArrayList<URL>();
+        for (var url: urlStrings) {
+            try {
+                correctUrls.add(new URI(url).toURL());
+            } catch (MalformedURLException | URISyntaxException ex) {
+                logger.error("Malformed URL: " + url, ex);
+            }
+        }
+        return correctUrls;
     }
 
     public static List<URL> extractUrl(final Elements elements, String attributeName) {

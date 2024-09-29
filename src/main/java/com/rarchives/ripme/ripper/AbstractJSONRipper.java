@@ -9,6 +9,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.json.JSONObject;
 
@@ -108,6 +109,10 @@ public abstract class AbstractJSONRipper extends QueueingRipper {
             getThreadPool().waitForThreads();
         }
         waitForThreads();
+    }
+
+    public List<URL> getFirstPageURLs() throws IOException, URISyntaxException {
+        return RipUtils.toURLList(getURLsFromJSON(getFirstPage()));
     }
 
     protected String getPrefix(int index) {

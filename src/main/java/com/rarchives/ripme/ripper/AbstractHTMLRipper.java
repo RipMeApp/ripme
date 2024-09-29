@@ -18,6 +18,7 @@ import com.rarchives.ripme.ui.MainWindow;
 import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
 import com.rarchives.ripme.utils.Http;
 import com.rarchives.ripme.utils.Utils;
+import com.rarchives.ripme.utils.RipUtils;
 
 /**
  * Simplified ripper, designed for ripping from sites by parsing HTML.
@@ -51,6 +52,10 @@ public abstract class AbstractHTMLRipper extends QueueingRipper {
 
     public Document getNextPage(Document doc) throws IOException, URISyntaxException {
         return null;
+    }
+
+    public List<URL> getURLsFromFirstPage() throws UnsupportedEncodingException, IOException, URISyntaxException {
+        return RipUtils.toURLList(getURLsFromPage(getCachedFirstPage()));
     }
 
     protected abstract List<String> getURLsFromPage(Document page) throws UnsupportedEncodingException, URISyntaxException;
