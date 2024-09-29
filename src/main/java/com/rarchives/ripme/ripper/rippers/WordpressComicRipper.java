@@ -221,7 +221,7 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
     }
 
     @Override
-    public String getAlbumTitle(URL url) throws MalformedURLException, URISyntaxException {
+    public String getAlbumTitle() throws MalformedURLException, URISyntaxException {
         Pattern totempole666Pat = Pattern.compile("(?:https?://)?(?:www\\.)?totempole666.com/comic/([a-zA-Z0-9_-]*)/?$");
         Matcher totempole666Mat = totempole666Pat.matcher(url.toExternalForm());
         if (totempole666Mat.matches()) {
@@ -300,7 +300,7 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
             return "comixfap_" + mat.group(1);
         }
 
-        return super.getAlbumTitle(url);
+        return super.getAlbumTitle();
     }
 
     @Override

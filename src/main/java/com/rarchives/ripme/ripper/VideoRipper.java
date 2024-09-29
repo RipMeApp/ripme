@@ -44,7 +44,7 @@ public abstract class VideoRipper extends AbstractRipper {
     }
 
     @Override
-    public String getAlbumTitle(URL url) {
+    public String getAlbumTitle() {
         return "videos";
     }
 

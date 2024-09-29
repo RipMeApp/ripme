@@ -50,7 +50,7 @@ public class ZizkiRipper extends AbstractHTMLRipper {
     }
 
     @Override
-    public String getAlbumTitle(URL url) throws MalformedURLException, URISyntaxException {
+    public String getAlbumTitle() throws MalformedURLException, URISyntaxException {
         try {
             // Attempt to use album title as GID
             Element titleElement = getCachedFirstPage().select("h1.title").first();
@@ -64,7 +64,7 @@ public class ZizkiRipper extends AbstractHTMLRipper {
             // Fall back to default album naming convention
             logger.info("Unable to find title at " + url);
         }
-        return super.getAlbumTitle(url);
+        return super.getAlbumTitle();
     }
 
     @Override

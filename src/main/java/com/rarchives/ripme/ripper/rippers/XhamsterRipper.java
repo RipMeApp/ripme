@@ -220,7 +220,7 @@ public class XhamsterRipper extends AbstractHTMLRipper {
     }
 
     @Override
-    public String getAlbumTitle(URL url) throws MalformedURLException, URISyntaxException {
+    public String getAlbumTitle() throws MalformedURLException, URISyntaxException {
         try {
             // Attempt to use album title and username as GID
             Document doc = getCachedFirstPage();
@@ -235,6 +235,6 @@ public class XhamsterRipper extends AbstractHTMLRipper {
         } catch (IOException | NullPointerException e) {
             // Fall back to default album naming convention
         }
-        return super.getAlbumTitle(url);
+        return super.getAlbumTitle();
     }
 }

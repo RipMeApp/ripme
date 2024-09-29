@@ -179,9 +179,9 @@ public class FlickrRipper extends AbstractHTMLRipper {
     }
 
     @Override
-    public String getAlbumTitle(URL url) throws MalformedURLException, URISyntaxException {
+    public String getAlbumTitle() throws MalformedURLException, URISyntaxException {
         if (!url.toExternalForm().contains("/sets/")) {
-            return super.getAlbumTitle(url);
+            return super.getAlbumTitle();
         }
         try {
             // Attempt to use album title as GID
@@ -196,7 +196,7 @@ public class FlickrRipper extends AbstractHTMLRipper {
         } catch (Exception e) {
             // Fall back to default album naming convention
         }
-        return super.getAlbumTitle(url);
+        return super.getAlbumTitle();
     }
 
     @Override

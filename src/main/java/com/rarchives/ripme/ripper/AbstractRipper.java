@@ -580,13 +580,12 @@ public abstract class AbstractRipper
     public abstract void setWorkingDir(URL url) throws IOException, URISyntaxException;
 
     /**
-     * @param url The URL you want to get the title of.
      * @return host_URLid
      *         e.g. (for a reddit post)
      *         reddit_post_7mg2ur
      * @throws MalformedURLException If any of those damned URLs gets malformed.
      */
-    public String getAlbumTitle(URL url) throws MalformedURLException, URISyntaxException {
+    public String getAlbumTitle() throws MalformedURLException, URISyntaxException {
         try {
             return getHost() + "_" + getGID(url);
         } catch (URISyntaxException e) {

@@ -108,7 +108,7 @@ public class ImgurRipper extends AbstractHTMLRipper {
     }
 
     @Override
-    public String getAlbumTitle(URL url) throws MalformedURLException {
+    public String getAlbumTitle() throws MalformedURLException {
         String gid = null;
         try {
             gid = getGID(url);
