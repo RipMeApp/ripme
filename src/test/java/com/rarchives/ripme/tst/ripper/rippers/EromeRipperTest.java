@@ -60,7 +60,7 @@ public class EromeRipperTest extends RippersTest {
     public void testPageContainsAlbums() throws IOException, URISyntaxException {
         URL url = new URI(USER_PAGE_JAY_JENNA).toURL();
         EromeRipper ripper = new EromeRipper(url);
-        assert (ripper.pageContainsAlbums(url));
+        assert (ripper.pageContainsAlbums());
     }
 
     @Test

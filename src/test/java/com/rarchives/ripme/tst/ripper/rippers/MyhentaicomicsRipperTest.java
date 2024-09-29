@@ -40,7 +40,7 @@ public class MyhentaicomicsRipperTest extends RippersTest {
         URL url = new URI("https://myhentaicomics.com/index.php/tag/3167/").toURL();
         URL url2 = new URI("https://myhentaicomics.com/index.php/search?q=test").toURL();
         MyhentaicomicsRipper ripper = new MyhentaicomicsRipper(url);
-        Assertions.assertTrue(ripper.pageContainsAlbums(url));
-        Assertions.assertTrue(ripper.pageContainsAlbums(url2));
+        Assertions.assertTrue(ripper.pageContainsAlbums());
+        Assertions.assertTrue(new MyhentaicomicsRipper(url2).pageContainsAlbums());
     }
 }

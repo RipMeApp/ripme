@@ -57,7 +57,7 @@ public class EromeRipper extends AbstractHTMLRipper {
     }
 
     @Override
-    public boolean pageContainsAlbums(URL url) {
+    public boolean pageContainsAlbums() {
         Pattern pa = Pattern.compile("https?://www.erome.com/([a-zA-Z0-9_\\-?=]*)/?");
         Matcher ma = pa.matcher(url.toExternalForm());
         return ma.matches();
