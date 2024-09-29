@@ -152,7 +152,7 @@ public class NfsfwRipper extends AbstractHTMLRipper {
     }
 
     @Override
-    public boolean pageContainsAlbums(URL url) {
+    public boolean pageContainsAlbums() {
         try {
             final var fstPage = getCachedFirstPage();
             List<String> imageURLs = getImagePageURLs(fstPage);
