@@ -32,6 +32,6 @@ public class BatoRipperTest extends RippersTest {
     public void testGetAlbumTitle() throws IOException, URISyntaxException {
         URL url = new URI("https://bato.to/chapter/1207152").toURL();
         BatoRipper ripper = new BatoRipper(url);
-        Assertions.assertEquals("bato_1207152_I_Messed_Up_by_Teaching_at_a_Black_Gyaru_School!_Ch.2", ripper.getAlbumTitle(url));
+        Assertions.assertEquals("bato_1207152_I_Messed_Up_by_Teaching_at_a_Black_Gyaru_School!_Ch.2", ripper.getAlbumTitle());
     }
 }

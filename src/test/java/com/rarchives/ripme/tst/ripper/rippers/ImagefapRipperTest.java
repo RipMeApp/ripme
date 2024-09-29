@@ -32,6 +32,6 @@ public class ImagefapRipperTest extends RippersTest {
     public void testImagefapGetAlbumTitle() throws IOException, URISyntaxException {
         URL url = new URI("https://www.imagefap.com/pictures/11365460/Cartoons").toURL();
         ImagefapRipper ripper = new ImagefapRipper(url);
-        Assertions.assertEquals("imagefap_Cartoons_11365460", ripper.getAlbumTitle(url));
+        Assertions.assertEquals("imagefap_Cartoons_11365460", ripper.getAlbumTitle());
     }
 }

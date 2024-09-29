@@ -96,14 +96,14 @@ public class Hentai2readRipper extends AbstractHTMLRipper {
         }
 
         @Override
-        public String getAlbumTitle(URL url) throws MalformedURLException, URISyntaxException {
+        public String getAlbumTitle() throws MalformedURLException, URISyntaxException {
             try {
                 return getHost() + "_" + getGID(url);
             } catch (Exception e) {
                 // Fall back to default album naming convention
                 logger.warn("Failed to get album title from " + url, e);
             }
-            return super.getAlbumTitle(url);
+            return super.getAlbumTitle();
         }
 
         @Override
