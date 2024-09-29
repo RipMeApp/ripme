@@ -70,7 +70,7 @@ public class HitomiRipper extends AbstractHTMLRipper {
     }
 
     @Override
-    public String getAlbumTitle(URL url) throws MalformedURLException, URISyntaxException {
+    public String getAlbumTitle() throws MalformedURLException, URISyntaxException {
         try {
             // Attempt to use album title and username as GID
             Document doc = Http.url(url).get();
@@ -79,7 +79,7 @@ public class HitomiRipper extends AbstractHTMLRipper {
         } catch (IOException e) {
             logger.info("Falling back");
         }
-        return super.getAlbumTitle(url);
+        return super.getAlbumTitle();
     }
 
     @Override

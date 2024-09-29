@@ -1569,7 +1569,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
                 entry.dir = rsc.getDir();
                 entry.count = rsc.count;
                 try {
-                    entry.title = ripper.getAlbumTitle(ripper.getURL());
+                    entry.title = ripper.getAlbumTitle();
                 } catch (MalformedURLException | URISyntaxException e) {
                     LOGGER.warn(e.getMessage());
                 }

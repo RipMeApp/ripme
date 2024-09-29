@@ -176,7 +176,7 @@ public class ImagefapRipper extends AbstractHTMLRipper {
     }
 
     @Override
-    public String getAlbumTitle(URL url) throws MalformedURLException, URISyntaxException {
+    public String getAlbumTitle() throws MalformedURLException, URISyntaxException {
         try {
             // Attempt to use album title as GID
             String title = getCachedFirstPage().title();
@@ -185,7 +185,7 @@ public class ImagefapRipper extends AbstractHTMLRipper {
             String toReturn = getHost() + "_" + title + "_" + getGID(url);
             return toReturn.replaceAll("__", "_");
         } catch (IOException e) {
-            return super.getAlbumTitle(url);
+            return super.getAlbumTitle();
         }
     }
 

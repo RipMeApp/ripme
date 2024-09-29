@@ -35,7 +35,8 @@ public class GirlsOfDesireRipper extends AbstractHTMLRipper {
         return "girlsofdesire.org";
     }
 
-    public String getAlbumTitle(URL url) throws MalformedURLException, URISyntaxException {
+    @Override
+    public String getAlbumTitle() throws MalformedURLException, URISyntaxException {
         try {
             // Attempt to use album title as GID
             Document doc = getCachedFirstPage();
@@ -45,7 +46,7 @@ public class GirlsOfDesireRipper extends AbstractHTMLRipper {
             // Fall back to default album naming convention
             logger.warn("Failed to get album title from " + url, e);
         }
-        return super.getAlbumTitle(url);
+        return super.getAlbumTitle();
     }
 
     @Override

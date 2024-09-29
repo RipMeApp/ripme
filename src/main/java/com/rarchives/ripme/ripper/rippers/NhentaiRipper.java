@@ -71,7 +71,7 @@ public class NhentaiRipper extends AbstractHTMLRipper {
     }
 
     @Override
-    public String getAlbumTitle(URL url) throws MalformedURLException {
+    public String getAlbumTitle() throws MalformedURLException {
         if (firstPage == null) {
             try {
                 firstPage = Http.url(url).get();
@@ -82,7 +82,7 @@ public class NhentaiRipper extends AbstractHTMLRipper {
 
         String title = firstPage.select("#info > h1").text();
         if (title == null) {
-            return getAlbumTitle(url);
+            return getAlbumTitle();
         }
         return "nhentai" + title;
     }
