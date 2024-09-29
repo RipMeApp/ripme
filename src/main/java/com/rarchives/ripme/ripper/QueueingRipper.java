@@ -83,17 +83,29 @@ public abstract class QueueingRipper extends AbstractRipper {
         }
         else {
             itemsPending.put(url, saveAs.toFile());
-            final var dft = new DownloadFileThread(url,  saveAs.toFile(),  this, getFileExtFromMIME);
-            if (referrer != null) {
-                dft.setReferrer(referrer);
-            }
-            if (cookies != null) {
-                dft.setCookies(cookies);
-            }
-            threadPool.addThread(dft);
+            downloadInBackground(url, saveAs, referrer, cookies, getFileExtFromMIME);
         }
 
         return true;
+    }
+
+    /**
+     * Start downloading of the given url in the background, using the internal threadpool.
+     * @param url
+     * @param saveAs
+     * @param referrer
+     * @param cookies
+     * @param getFileExtFromMIME
+     */
+    protected void downloadInBackground(URL url, Path saveAs, String referrer, Map<String, String> cookies, Boolean getFileExtFromMIME) {
+        final var dft = new DownloadFileThread(url,  saveAs.toFile(),  this, getFileExtFromMIME);
+        if (referrer != null) {
+            dft.setReferrer(referrer);
+        }
+        if (cookies != null) {
+            dft.setCookies(cookies);
+        }
+        threadPool.addThread(dft);
     }
 
     @Override
