@@ -1,7 +1,5 @@
 package com.rarchives.ripme.ripper.rippers;
-
 import com.rarchives.ripme.ripper.AbstractJSONRipper;
-import com.rarchives.ripme.ripper.rippers.ArtStationRipper.URL_TYPE;
 import com.rarchives.ripme.utils.Http;
 import com.rarchives.ripme.utils.Utils;
 
@@ -13,7 +11,6 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -40,14 +37,20 @@ public class CoomerPartyRipper extends AbstractJSONRipper {
     private static final String KEY_PATH = "path";
     private static final String KEY_ATTACHMENTS = "attachments";
 
+    // Posts Request Endpoint
+    private static final String POSTS_ENDPOINT = "https://coomer.su/api/v1/%s/user/%s?o=%d";
+
+    // Pagination is strictly 50 posts per page, per API schema.
     private Integer pageCount = 0;
-    
+    private static final Integer postCount = 50;    
 
-    // One of "onlyfans" or "fansly", but might have others in future?
+    // "Service" of the page to be ripped: Onlyfans, Fansly, Candfans
     private final String service;
-
+    
     // Username of the page to be ripped
     private final String user;
+
+
 
     public CoomerPartyRipper(URL url) throws IOException {
         super(url);
@@ -86,9 +89,9 @@ public class CoomerPartyRipper extends AbstractJSONRipper {
         return Utils.filesystemSafe(String.format("%s_%s", service, user));
     }
 
-    @Override
-    protected JSONObject getFirstPage() throws IOException {
-        String apiUrl = String.format("https://coomer.su/api/v1/%s/user/%s", service, user);
+    private JSONObject getJsonPostsForOffset(Integer offset) throws IOException {
+        String apiUrl = String.format(POSTS_ENDPOINT, service, user, offset);
+        
         String jsonArrayString = Http.url(apiUrl)
                 .ignoreContentType()
                 .response()
@@ -102,20 +105,15 @@ public class CoomerPartyRipper extends AbstractJSONRipper {
     }
 
     @Override
-    protected JSONObject getNextPage(JSONObject doc) throws IOException, URISyntaxException {
-        pageCount = pageCount + 1; 
-        Integer offset = 50 * pageCount;
-        String apiUrl = String.format("https://coomer.su/api/v1/%s/user/%s?o=%d", service, user, offset);
-        String jsonArrayString = Http.url(apiUrl)
-                .ignoreContentType()
-                .response()
-                .body();
-        JSONArray jsonArray = new JSONArray(jsonArrayString);
+    protected JSONObject getFirstPage() throws IOException {
+        return getJsonPostsForOffset(0);
+    }
 
-        // Ideally we'd just return the JSONArray from here, but we have to wrap it in a JSONObject
-        JSONObject wrapperObject = new JSONObject();
-        wrapperObject.put(KEY_WRAPPER_JSON_ARRAY, jsonArray);
-        return wrapperObject;
+    @Override
+    protected JSONObject getNextPage(JSONObject doc) throws IOException, URISyntaxException {
+        pageCount++;
+        Integer offset = postCount * pageCount;
+        return getJsonPostsForOffset(offset);
     }
 
 
@@ -153,6 +151,7 @@ public class CoomerPartyRipper extends AbstractJSONRipper {
             }
         } catch (JSONException e) {
             /* No-op */
+            LOGGER.error("Unable to Parse FileURL " + e.getMessage());
         }
     }
 
@@ -164,7 +163,8 @@ public class CoomerPartyRipper extends AbstractJSONRipper {
                 pullFileUrl(attachment, results);
             }
         } catch (JSONException e) {
-            /* No-op */
+             /* No-op */
+            LOGGER.error("Unable to Parse AttachmentURL " + e.getMessage());
         }
     }
 
