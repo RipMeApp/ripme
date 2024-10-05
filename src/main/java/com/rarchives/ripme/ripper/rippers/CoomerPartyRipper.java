@@ -1,6 +1,7 @@
 package com.rarchives.ripme.ripper.rippers;
 
 import com.rarchives.ripme.ripper.AbstractJSONRipper;
+import com.rarchives.ripme.ripper.rippers.ArtStationRipper.URL_TYPE;
 import com.rarchives.ripme.utils.Http;
 import com.rarchives.ripme.utils.Utils;
 
@@ -12,6 +13,8 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -36,6 +39,9 @@ public class CoomerPartyRipper extends AbstractJSONRipper {
     private static final String KEY_FILE = "file";
     private static final String KEY_PATH = "path";
     private static final String KEY_ATTACHMENTS = "attachments";
+
+    private Integer pageCount = 0;
+    
 
     // One of "onlyfans" or "fansly", but might have others in future?
     private final String service;
@@ -94,6 +100,24 @@ public class CoomerPartyRipper extends AbstractJSONRipper {
         wrapperObject.put(KEY_WRAPPER_JSON_ARRAY, jsonArray);
         return wrapperObject;
     }
+
+    @Override
+    protected JSONObject getNextPage(JSONObject doc) throws IOException, URISyntaxException {
+        pageCount = pageCount + 1; 
+        Integer offset = 50 * pageCount;
+        String apiUrl = String.format("https://coomer.su/api/v1/%s/user/%s?o=%d", service, user, offset);
+        String jsonArrayString = Http.url(apiUrl)
+                .ignoreContentType()
+                .response()
+                .body();
+        JSONArray jsonArray = new JSONArray(jsonArrayString);
+
+        // Ideally we'd just return the JSONArray from here, but we have to wrap it in a JSONObject
+        JSONObject wrapperObject = new JSONObject();
+        wrapperObject.put(KEY_WRAPPER_JSON_ARRAY, jsonArray);
+        return wrapperObject;
+    }
+
 
     @Override
     protected List<String> getURLsFromJSON(JSONObject json) {
