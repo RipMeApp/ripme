@@ -177,7 +177,7 @@ public class EHentaiRipper extends AbstractHTMLRipper {
     @Override
     public List<String> getURLsFromPage(Document page) {
         List<String> imageURLs = new ArrayList<>();
-        Elements thumbs = page.select("#gdt > .gdtm a");
+        Elements thumbs = page.select("#gdt > a");
         // Iterate over images on page
         for (Element thumb : thumbs) {
             imageURLs.add(thumb.attr("href"));
