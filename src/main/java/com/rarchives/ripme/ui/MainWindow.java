@@ -570,7 +570,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         configLogLevelCombobox = new JComboBox<>(
                 new String[] { "Log level: Error", "Log level: Warn", "Log level: Info", "Log level: Debug" });
         configSelectLangComboBox = new JComboBox<>(Utils.getSupportedLanguages());
-        configSelectLangComboBox.setSelectedItem(Utils.getSelectedLanguage());
+        configSelectLangComboBox.setSelectedItem(Utils.getConfigString("lang", Utils.getSelectedLanguage()));
         configLogLevelCombobox.setSelectedItem(Utils.getConfigString("log.level", "Log level: Debug"));
         setLogLevel(configLogLevelCombobox.getSelectedItem().toString());
         configSaveDirLabel = new JLabel();
