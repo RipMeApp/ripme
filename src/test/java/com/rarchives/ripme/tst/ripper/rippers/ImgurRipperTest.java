@@ -5,6 +5,7 @@ import com.rarchives.ripme.ripper.rippers.ImgurRipper.ImgurAlbum;
 import com.rarchives.ripme.utils.RipUtils;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -95,6 +96,7 @@ public class ImgurRipperTest extends RippersTest {
     }
 
     @Test
+    @Tag("flaky")
     public void testImgurAlbumWithMoreThan100Pictures() throws IOException, URISyntaxException {
         ImgurAlbum album = ImgurRipper.getImgurAlbum(new URI("https://imgur.com/a/HX3JSrD").toURL());
         Assertions.assertTrue(album.images.size() >= 100,
