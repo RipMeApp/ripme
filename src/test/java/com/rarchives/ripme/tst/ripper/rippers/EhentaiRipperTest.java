@@ -8,13 +8,10 @@ import java.util.List;
 
 import com.rarchives.ripme.ripper.rippers.EHentaiRipper;
 import com.rarchives.ripme.utils.RipUtils;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 
 public class EhentaiRipperTest extends RippersTest {
     @Test
-    @Tag("flaky")
     public void testEHentaiAlbum() throws IOException, URISyntaxException {
         EHentaiRipper ripper = new EHentaiRipper(new URI("https://e-hentai.org/g/1144492/e823bdf9a5/").toURL());
         testRipper(ripper);
