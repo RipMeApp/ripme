@@ -57,7 +57,7 @@ public class VidearnRipper extends VideoRipper {
         if (mp4s.isEmpty()) {
             throw new IOException("Could not find files at " + url);
         }
-        String vidUrl = mp4s.getFirst();
+        String vidUrl = mp4s.get(0);
         addURLToDownload(new URI(vidUrl).toURL(), HOST + "_" + getGID(this.url));
         waitForThreads();
     }
