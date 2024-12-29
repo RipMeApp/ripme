@@ -24,6 +24,7 @@ import java.util.Map;
  * For ripping delicious albums off the interwebz.
  * @deprecated Use AbstractHTMLRipper instead.
  */
+@Deprecated
 public abstract class AlbumRipper extends AbstractRipper {
 
     private Map<URL, File> itemsPending = Collections.synchronizedMap(new HashMap<URL, File>());
