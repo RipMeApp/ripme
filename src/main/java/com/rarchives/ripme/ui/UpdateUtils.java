@@ -296,10 +296,9 @@ public class UpdateUtils {
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {
                 try {
                     logger.info("Executing: " + batchFile);
-                    Runtime.getRuntime().exec(String.valueOf(batchFile));
+                    ProcessBuilder processBuilder = new ProcessBuilder(String.valueOf(batchFile));
+                    processBuilder.start();
                 } catch (IOException e) {
-                    // TODO implement proper stack trace handling this is really just intented as a
-                    // placeholder until you implement proper error handling
                     e.printStackTrace();
                 }
             }));
