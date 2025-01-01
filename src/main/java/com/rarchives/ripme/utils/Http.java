@@ -13,11 +13,14 @@ import org.jsoup.HttpStatusException;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
+import javax.net.ssl.*;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.security.SecureRandom;
+import java.security.cert.X509Certificate;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -229,5 +232,44 @@ public class Http {
             }
         }
         throw new IOException("Failed to load " + url + " after " + this.retries + " attempts", lastException);
+    }
+
+    public static void SSLVerifyOff() {
+        try {
+            TrustManager[] trustAllCerts = new TrustManager[]{
+                    new X509TrustManager() {
+                        public X509Certificate[] getAcceptedIssuers() {
+                            return null;
+                        }
+
+                        public void checkClientTrusted(X509Certificate[] certs, String authType) {
+                        }
+
+                        public void checkServerTrusted(X509Certificate[] certs, String authType) {
+                        }
+                    }
+            };
+            SSLContext sslContext = SSLContext.getInstance("SSL");
+            sslContext.init(null, trustAllCerts, new SecureRandom());
+            HttpsURLConnection.setDefaultSSLSocketFactory(sslContext.getSocketFactory());
+            HostnameVerifier allHostsValid = (hostname, session) -> true;
+            HttpsURLConnection.setDefaultHostnameVerifier(allHostsValid);
+        } catch (Exception e) {
+            logger.error("ignoreSSLVerification() failed.");
+            logger.error(e.getMessage());
+        }
+    }
+
+    public static void undoSSLVerifyOff() {
+        try {
+            // Reset to the default SSL socket factory and hostname verifier
+            SSLContext sslContext = SSLContext.getInstance("SSL");
+            sslContext.init(null, null, new SecureRandom());
+            HttpsURLConnection.setDefaultSSLSocketFactory(sslContext.getSocketFactory());
+            HttpsURLConnection.setDefaultHostnameVerifier(HttpsURLConnection.getDefaultHostnameVerifier());
+        } catch (Exception e) {
+            logger.error("undoSSLVerificationIgnore() failed.");
+            logger.error(e.getMessage());
+        }
     }
 }

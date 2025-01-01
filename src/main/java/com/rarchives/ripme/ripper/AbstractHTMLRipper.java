@@ -36,6 +36,11 @@ public abstract class AbstractHTMLRipper extends AbstractRipper {
 
     protected AbstractHTMLRipper(URL url) throws IOException {
         super(url);
+        if(Utils.getConfigBoolean("ssl.verify.off",false)){
+            Http.SSLVerifyOff();
+        }else {
+            Http.undoSSLVerifyOff();
+        }
     }
 
     protected abstract String getDomain();
