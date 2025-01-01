@@ -6,6 +6,8 @@
 ![alt Badge Status](https://github.com/ripmeapp2/ripme/actions/workflows/gradle.yml/badge.svg)
 [![Coverage Status](https://coveralls.io/repos/github/RipMeApp/ripme/badge.svg?branch=main)](https://coveralls.io/github/RipMeApp/ripme?branch=main)
 
+The current active development repo for RipMe is located at [ripmeapp2/ripme](https://github.com/ripmeapp2/ripme/).
+
 RipMe has been maintained with ♥️ and in our limited free time by (roughly in
 order from most recent primary developer), with current activity marked by
 color of the indicator:
