@@ -1,7 +1,8 @@
 {
-    "latestVersion": "2.1.11-20-ca96ce88",
-    "currentHash": "f882a4d8a73512f7c658b87049bd9b85d9ef50c4241b6c17bd643e122573e732",
+    "latestVersion": "2.1.12-7-d0b97acd",
+    "currentHash": "ac40e5ff60f8e0bc7832874de529283a77f9e07d5a7d4a0e8f81e05d43e2df58",
     "changeList": [
+        "2.1.12-7-d0b97acd, ripme now instead of ripme2 on github, ignore SSL verification option added",
         "2.1.11-20-ca96ce88, Commer.party next page, Imgur, E-hentai fixed, set recent language.",
         "2.1.10-21-c94a9543, Imagebam, Unify colons in UI, Motherless, right click menu, rgif fixed",
         "2.1.9-7-22e915df, HistoryMenuMouseListener right click menu, Imagefap retry logic for getFullSizedImage(), EightmusesRipper fixed",
