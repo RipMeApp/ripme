@@ -118,6 +118,21 @@ become out of date. Start by building and testing a released version
 of RipMe and then ensure that any changes you make do not cause more
 tests to break.
 
+# releasing
+edit draft release `develop build main` the following way:
+1. create a new tag with version from ripme filename, e.g. 2.1.12-7-d0b97acd
+1. set the title to same name
+1. set previous tag to release tag before, e.g.  2.1.11-20-ca96ce88
+1. press `generate release notes` button
+1. edit release text as appropriate
+1. save
+
+then, prepare the repo for update check, and next release:
+1. edit ripme.json, enter new hash, version and short description, and commit
+1. set the base tag for next release verison calculation, e.g. 2.1.13 on this commit
+1. push tag and commit
+1. remove old base tag, not needed any more, e.g. 2.1.12
+
 # New GUI - compose-jb
 As Java Swing will go away in future, a new GUI technology should be used. One of the
 candidates is [Jetpack Compose for Desktop](https://github.com/JetBrains/compose-jb/).
