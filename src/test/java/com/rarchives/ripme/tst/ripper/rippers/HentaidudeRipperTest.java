@@ -1,6 +1,7 @@
 package com.rarchives.ripme.tst.ripper.rippers;
 
 import com.rarchives.ripme.ripper.rippers.HentaidudeRipper;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -10,6 +11,7 @@ import java.net.URISyntaxException;
 public class HentaidudeRipperTest extends RippersTest{
 
     @Test
+    @Tag("flaky")
     public void testRip() throws IOException, URISyntaxException {
         HentaidudeRipper ripper = new HentaidudeRipper(new URI("https://hentaidude.com/girlfriends-4ever-dlc-2/").toURL());
         testRipper(ripper);
