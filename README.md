@@ -8,9 +8,9 @@
 
 The current active development repo for RipMe is located at [ripmeapp2/ripme](https://github.com/ripmeapp2/ripme/).
 
-RipMe has been maintained with ♥️ and in our limited free time by (roughly in
-order from most recent primary developer), with current activity marked by
-color of the indicator:
+RipMe has been maintained with ♥️ and in our limited free time by the following
+people, roughly in order from most recent primary developer, with current
+activity marked by color of the indicator:
 
 - **[@soloturn](https://github.com/soloturn)** 🟢,
 - **[@cyian-1756](https://github.com/cyian-1756)** 🟥,
