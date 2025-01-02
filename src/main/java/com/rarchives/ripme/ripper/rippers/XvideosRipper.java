@@ -82,7 +82,7 @@ public class XvideosRipper extends AbstractSingleFileRipper {
                     String[] lines = e.html().split("\n");
                     for (String line : lines) {
                         if (line.contains("html5player.setVideoUrlHigh")) {
-                            String videoURL = line.replaceAll("\t", "").replaceAll("html5player.setVideoUrlHigh\\(", "").replaceAll("\'", "").replaceAll("\\);", "");
+                            String videoURL = line.strip().replaceAll("\t", "").replaceAll("html5player.setVideoUrlHigh\\(", "").replaceAll("\'", "").replaceAll("\\);", "");
                             results.add(videoURL);
                         }
                     }
