@@ -2,14 +2,18 @@ package com.rarchives.ripme.ripper.rippers;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
+import org.apache.commons.lang.StringEscapeUtils;
 import com.rarchives.ripme.ripper.AbstractJSONRipper;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.jsoup.Connection.Method;
+import org.jsoup.Connection.Response;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -26,6 +30,7 @@ public class VkRipper extends AbstractJSONRipper {
 
     private RipType RIP_TYPE;
     private String oid;
+    private int offset = 0;
 
     public VkRipper(URL url) throws IOException {
         super(url);
@@ -59,66 +64,16 @@ public class VkRipper extends AbstractJSONRipper {
             String[] jsonStrings = doc.toString().split("<!>");
             return new JSONObject(jsonStrings[jsonStrings.length - 1]);
         } else {
-            Map<String,String> photoIDsToURLs = new HashMap<>();
-            int offset = 0;
-            while (true) {
-                LOGGER.info("    Retrieving " + this.url);
-                Map<String,String> postData = new HashMap<>();
-                postData.put("al", "1");
-                postData.put("offset", Integer.toString(offset));
-                postData.put("part", "1");
-                Document doc = Http.url(this.url)
-                        .referrer(this.url)
-                        .ignoreContentType()
-                        .data(postData)
-                        .post();
-
-                String body = doc.toString();
-                if (!body.contains("<div")) {
-                    break;
-                }
-                body = body.substring(body.indexOf("<div"));
-                doc = Jsoup.parseBodyFragment(body);
-                List<Element> elements = doc.select("a");
-                Set<String> photoIDsToGet = new HashSet<>();
-                for (Element a : elements) {
-                    if (!a.attr("onclick").contains("showPhoto('")) {
-                        LOGGER.error("a: " + a);
-                        continue;
-                    }
-                    String photoID = a.attr("onclick");
-                    photoID = photoID.substring(photoID.indexOf("showPhoto('") + "showPhoto('".length());
-                    photoID = photoID.substring(0, photoID.indexOf("'"));
-                    if (!photoIDsToGet.contains(photoID)) {
-                        photoIDsToGet.add(photoID);
-                    }
-                }
-                for (String photoID : photoIDsToGet) {
-                    if (!photoIDsToURLs.containsKey(photoID)) {
-                        try {
-                            photoIDsToURLs.putAll(getPhotoIDsToURLs(photoID));
-                        } catch (IOException e) {
-                            LOGGER.error("Exception while retrieving photo id " + photoID, e);
-                            continue;
-                        }
-                    }
-                    if (!photoIDsToURLs.containsKey(photoID)) {
-                        LOGGER.error("Could not find URL for photo ID: " + photoID);
-                        continue;
-                    }
-                    if (isStopped() || isThisATest()) {
-                        break;
-                    }
-                }
-
-                if (elements.size() < 40 || isStopped() || isThisATest()) {
-                    break;
-                }
-                offset += elements.size();
-            }
-            // Slight hack to make this into effectively a JSON ripper
-            return new JSONObject(photoIDsToURLs);
+            return getPage();
         }
+    }
+
+    @Override
+    protected JSONObject getNextPage(JSONObject doc) throws IOException {
+        if (isStopped() || isThisATest()) {
+            return null;
+        }
+        return getPage();
     }
 
     @Override
@@ -142,9 +97,9 @@ public class VkRipper extends AbstractJSONRipper {
                 pageURLs.add(videoURL);
             }
         } else {
-            Iterator keys = page.keys();
+            Iterator<String> keys = page.keys();
             while (keys.hasNext()) {
-                pageURLs.add(page.getString((String) keys.next()));
+                pageURLs.add(page.getString(keys.next()));
             }
         }
         return pageURLs;
@@ -184,19 +139,20 @@ public class VkRipper extends AbstractJSONRipper {
     }
 
     @Override
-    public void rip() throws IOException {
+    public void rip() throws IOException, URISyntaxException {
         if (this.url.toExternalForm().contains("/videos")) {
             RIP_TYPE = RipType.VIDEO;
             JSONObject json = getFirstPage();
             List<String> URLs = getURLsFromJSON(json);
             for (int index = 0; index < URLs.size(); index ++) {
-                downloadURL(new URL(URLs.get(index)), index);
+                downloadURL(new URI(URLs.get(index)).toURL(), index);
             }
             waitForThreads();
         }
         else {
             RIP_TYPE = RipType.IMAGE;
         }
+        super.rip();
     }
 
     private Map<String,String> getPhotoIDsToURLs(String photoID) throws IOException {
@@ -208,40 +164,182 @@ public class VkRipper extends AbstractJSONRipper {
         postData.put("al", "1");
         postData.put("module", "photos");
         postData.put("photo", photoID);
-        Document doc = Jsoup
-                .connect("https://vk.com/al_photos.php")
+        Response res = Jsoup.connect("https://vk.com/al_photos.php")
                 .header("Referer", this.url.toExternalForm())
+                .header("Accept", "*/*")
+                .header("Accept-Language", "en-US,en;q=0.5")
+                .header("Content-Type", "application/x-www-form-urlencoded")
+                .header("X-Requested-With", "XMLHttpRequest")
                 .ignoreContentType(true)
                 .userAgent(USER_AGENT)
                 .timeout(5000)
                 .data(postData)
-                .post();
-        String jsonString = doc.toString();
-        jsonString = jsonString.substring(jsonString.indexOf("<!json>") + "<!json>".length());
-        jsonString = jsonString.substring(0, jsonString.indexOf("<!>"));
-        JSONArray json = new JSONArray(jsonString);
-        for (int i = 0; i < json.length(); i++) {
-            JSONObject jsonImage = json.getJSONObject(i);
-            for (String key : new String[] {"z_src", "y_src", "x_src"}) {
-                if (!jsonImage.has(key)) {
-                    continue;
-                }
-                photoIDsToURLs.put(jsonImage.getString("id"), jsonImage.getString(key));
-                break;
-            }
+                .method(Method.POST)
+                .execute();
+        String jsonString = res.body();
+        JSONObject json = new JSONObject(jsonString);
+        JSONObject photoObject = findJSONObjectContainingPhotoId(photoID, json);
+        String bestSourceUrl = getBestSourceUrl(photoObject);
+
+        if (bestSourceUrl != null) {
+            photoIDsToURLs.put(photoID, bestSourceUrl);
+        } else {
+            LOGGER.error("Could not find image source for " + photoID);
         }
+
         return photoIDsToURLs;
     }
 
     @Override
     public String getGID(URL url) throws MalformedURLException {
-        Pattern p = Pattern.compile("^https?://(www\\.)?vk\\.com/(photos|album|videos)-?([a-zA-Z0-9_]+).*$");
+        Pattern p = Pattern.compile("^https?:\\/\\/(?:www\\.)?vk\\.com\\/((?:photos|album|videos)-?(?:[a-zA-Z0-9_]+).*$)");
         Matcher m = p.matcher(url.toExternalForm());
         if (!m.matches()) {
             throw new MalformedURLException("Expected format: http://vk.com/album#### or vk.com/photos####");
         }
-        int count = m.groupCount();
-        return m.group(count - 1) + m.group(count);
+        return m.group(1);
     }
 
+
+    /**
+    * Finds the nested JSON object with entry "id": "photoID" recursively.
+    * @param photoID The photoId string to be found with "id" as the key.
+    * @param json Object of type JSONObject or JSONArray.
+    * @return JSONObject with id as the photoID or null.
+    */
+    public JSONObject findJSONObjectContainingPhotoId(String photoID, Object json) {
+        // Termination condition
+        if (json instanceof JSONObject && ((JSONObject) json).has("id")
+                && ((JSONObject) json).optString("id").equals(photoID)) {
+            return ((JSONObject) json);
+        }
+
+        if (json instanceof JSONObject) {
+            // Iterate through every key:value pair in the json.
+            Iterator<String> iterator = ((JSONObject) json).keys();
+            while (iterator.hasNext()) {
+                Object o = ((JSONObject) json).get(iterator.next());
+                JSONObject responseJson = findJSONObjectContainingPhotoId(photoID, o);
+                if (responseJson != null) {
+                    return responseJson;
+                }
+            }
+
+        }
+
+        if (json instanceof JSONArray) {
+            // Iterate through every array value in the json
+            for (Object o : (JSONArray) json) {
+                if (o instanceof JSONObject || o instanceof JSONArray) {
+                    JSONObject responseJson = findJSONObjectContainingPhotoId(photoID, o);
+                    if (responseJson != null) {
+                        return responseJson;
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Find the best source url( with highest resolution).
+     * @param json JSONObject containing src urls.
+     * @return Url string for the image src or null.
+     */
+    public String getBestSourceUrl(JSONObject json) {
+        String bestSourceKey = null;
+        int bestSourceResolution = 0;
+        Iterator<String> iterator = json.keys();
+
+        while (iterator.hasNext()) {
+            String key = iterator.next();
+            Object o = json.get(key);
+            // JSON contains source urls in the below format. Check VkRipperTest.java for sample json.
+            // {...,
+            // "x_src":"src-url",
+            // "x_": ["incomplete-url", width, height],
+            // ...}
+            if (o instanceof JSONArray && ((JSONArray) o).length() == 3
+                    && !((JSONArray) o).optString(0).equals("") && ((JSONArray) o).optInt(1) != 0
+                    && ((JSONArray) o).optInt(2) != 0 && json.has(key + "src")) {
+                if (((JSONArray) o).optInt(1) * ((JSONArray) o).optInt(2) >= bestSourceResolution) {
+                    bestSourceResolution = ((JSONArray) o).optInt(1) * ((JSONArray) o).optInt(2);
+                    bestSourceKey = key;
+                }
+            }
+        }
+        
+        // In case no suitable source has been found, we fall back to the older way.
+        if(bestSourceKey == null) {
+            for (String key : new String[] {"z_src", "y_src", "x_src", "w_src"}) {
+                if(!json.has(key)) {
+                    continue;
+                }
+                return json.getString(key);
+            }
+        }else {
+            return json.getString(bestSourceKey + "src");
+        }
+        
+        return null;
+    }
+    
+    /**
+     * Common function to get the next page( containing next batch of images).
+     * @return JSONObject containing entries of "imgId": "src"
+     * @throws IOException
+     */
+    private JSONObject getPage() throws IOException {
+        Map<String, String> photoIDsToURLs = new HashMap<>();
+        Map<String, String> postData = new HashMap<>();
+
+        LOGGER.info("Retrieving " + this.url + " from offset " + offset);
+        postData.put("al", "1");
+        postData.put("offset", Integer.toString(offset));
+        postData.put("part", "1");
+        Document doc =
+                Http.url(this.url).referrer(this.url).ignoreContentType().data(postData).post();
+        String body = doc.toString();
+        if (!body.contains("<div")) {
+            return null;
+        }
+        body = body.substring(body.indexOf("<div"));
+        body = StringEscapeUtils.unescapeJavaScript(body);
+        doc = Jsoup.parseBodyFragment(body);
+        List<Element> elements = doc.select("a");
+        Set<String> photoIDsToGet = new HashSet<>();
+        for (Element a : elements) {
+            if (!a.attr("onclick").contains("showPhoto('")) {
+                continue;
+            }
+            String photoID = a.attr("onclick");
+            photoID = photoID.substring(photoID.indexOf("showPhoto('") + "showPhoto('".length());
+            photoID = photoID.substring(0, photoID.indexOf("'"));
+            if (!photoIDsToGet.contains(photoID)) {
+                photoIDsToGet.add(photoID);
+            }
+        }
+        for (String photoID : photoIDsToGet) {
+            if (!photoIDsToURLs.containsKey(photoID)) {
+                try {
+                    photoIDsToURLs.putAll(getPhotoIDsToURLs(photoID));
+                } catch (IOException e) {
+                    LOGGER.error("Exception while retrieving photo id " + photoID, e);
+                    continue;
+                }
+            }
+            if (!photoIDsToURLs.containsKey(photoID)) {
+                LOGGER.error("Could not find URL for photo ID: " + photoID);
+                continue;
+            }
+            if (isStopped() || isThisATest()) {
+                break;
+            }
+        }
+
+        offset += elements.size();
+        // Slight hack to make this into effectively a JSON ripper
+        return new JSONObject(photoIDsToURLs);
+    }
 }

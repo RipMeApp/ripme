@@ -29,11 +29,6 @@ public class SpankbangRipper extends AbstractSingleFileRipper {
     }
 
     @Override
-    public Document getFirstPage() throws IOException {
-        return Http.url(url).get();
-    }
-
-    @Override
     public List<String> getURLsFromPage(Document doc) {
         List<String> result = new ArrayList<>();
         Elements videos = doc.select(".video-js > source");

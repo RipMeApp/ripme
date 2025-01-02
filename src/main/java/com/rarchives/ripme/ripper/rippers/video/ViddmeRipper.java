@@ -2,6 +2,8 @@ package com.rarchives.ripme.ripper.rippers.video;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -52,7 +54,7 @@ public class ViddmeRipper extends VideoRipper {
     }
 
     @Override
-    public void rip() throws IOException {
+    public void rip() throws IOException, URISyntaxException {
         LOGGER.info("    Retrieving " + this.url.toExternalForm());
         Document doc = Http.url(this.url).get();
         Elements videos = doc.select("meta[name=twitter:player:stream]");
@@ -61,7 +63,7 @@ public class ViddmeRipper extends VideoRipper {
         }
         String vidUrl = videos.first().attr("content");
         vidUrl = vidUrl.replaceAll("&amp;", "&");
-        addURLToDownload(new URL(vidUrl), HOST + "_" + getGID(this.url));
+        addURLToDownload(new URI(vidUrl).toURL(), HOST + "_" + getGID(this.url));
         waitForThreads();
     }
 }

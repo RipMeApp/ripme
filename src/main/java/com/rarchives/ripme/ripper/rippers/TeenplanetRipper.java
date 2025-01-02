@@ -35,11 +35,6 @@ public class TeenplanetRipper extends AbstractHTMLRipper {
     }
 
     @Override
-    protected Document getFirstPage() throws IOException {
-        return Http.url(url).get();
-    }
-
-    @Override
     protected List<String> getURLsFromPage(Document page) {
         List<String> imageURLs = new ArrayList<>();
         for (Element thumb : page.select("#galleryImages > a > img")) {

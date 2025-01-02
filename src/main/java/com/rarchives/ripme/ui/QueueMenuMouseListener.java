@@ -58,10 +58,19 @@ class QueueMenuMouseListener extends MouseAdapter {
         updateQueue.accept(queueListModel);
     }
 
-    @SuppressWarnings("unchecked")
     @Override
-    public void mouseClicked(MouseEvent e) {
-        if (e.getModifiers() == InputEvent.BUTTON3_MASK) {
+    public void mousePressed(MouseEvent e) {
+        checkPopupTrigger(e);
+    }
+
+    @Override
+    public void mouseReleased(MouseEvent e) {
+        checkPopupTrigger(e);
+    }
+
+    @SuppressWarnings("unchecked")
+    private void checkPopupTrigger(MouseEvent e) {
+        if (e.getModifiersEx() == InputEvent.BUTTON3_DOWN_MASK) {
             if (!(e.getSource() instanceof JList)) {
                 return;
             }

@@ -6,19 +6,23 @@ import com.rarchives.ripme.utils.Http;
 import com.rarchives.ripme.utils.Utils;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.apache.commons.lang.StringUtils;
+import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 public class ImagebamRipper extends AbstractHTMLRipper {
-
-    // Current HTML document
-    private Document albumDoc = null;
 
     // Thread pool for finding direct image links from "image" pages (html)
     private DownloadThreadPool imagebamThreadPool = new DownloadThreadPool("imagebam");
@@ -45,7 +49,7 @@ public class ImagebamRipper extends AbstractHTMLRipper {
         Pattern p;
         Matcher m;
 
-        p = Pattern.compile("^https?://[wm.]*imagebam.com/gallery/([a-zA-Z0-9]+).*$");
+        p = Pattern.compile("^https?://[wm.]*imagebam.com/(gallery|view)/([a-zA-Z0-9]+).*$");
         m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             return m.group(1);
@@ -55,14 +59,6 @@ public class ImagebamRipper extends AbstractHTMLRipper {
                 "Expected imagebam gallery format: "
                         + "http://www.imagebam.com/gallery/galleryid"
                         + " Got: " + url);
-    }
-
-    @Override
-    public Document getFirstPage() throws IOException {
-        if (albumDoc == null) {
-            albumDoc = Http.url(url).get();
-        }
-        return albumDoc;
     }
 
     @Override
@@ -80,7 +76,7 @@ public class ImagebamRipper extends AbstractHTMLRipper {
     @Override
     public List<String> getURLsFromPage(Document doc) {
         List<String> imageURLs = new ArrayList<>();
-        for (Element thumb : doc.select("div > a[target=_blank]:not(.footera)")) {
+        for (Element thumb : doc.select("div > a[class=thumbnail]:not(.footera)")) {
             imageURLs.add(thumb.attr("href"));
         }
         return imageURLs;
@@ -94,18 +90,15 @@ public class ImagebamRipper extends AbstractHTMLRipper {
     }
 
     @Override
-    public String getAlbumTitle(URL url) throws MalformedURLException {
+    public String getAlbumTitle(URL url) throws MalformedURLException, URISyntaxException {
         try {
             // Attempt to use album title as GID
-            Elements elems = getFirstPage().select("legend");
+            Elements elems = getCachedFirstPage().select("[id=gallery-name]");
             String title = elems.first().text();
             LOGGER.info("Title text: '" + title + "'");
-            Pattern p = Pattern.compile("^(.*)\\s\\d* image.*$");
-            Matcher m = p.matcher(title);
-            if (m.matches()) {
-                return getHost() + "_" + getGID(url) + " (" + m.group(1).trim() + ")";
+            if (StringUtils.isNotBlank(title)) {
+                return getHost() + "_" + getGID(url) + " (" + title + ")";
             }
-            LOGGER.info("Doesn't match " + p.pattern());
         } catch (Exception e) {
             // Fall back to default album naming convention
             LOGGER.warn("Failed to get album title from " + url, e);
@@ -118,9 +111,9 @@ public class ImagebamRipper extends AbstractHTMLRipper {
      *
      * Handles case when site has IP-banned the user.
      */
-    private class ImagebamImageThread extends Thread {
-        private URL url; //link to "image page"
-        private int index; //index in album
+    private class ImagebamImageThread implements Runnable {
+        private final URL url; //link to "image page"
+        private final int index; //index in album
 
         ImagebamImageThread(URL url, int index) {
             super();
@@ -138,19 +131,19 @@ public class ImagebamRipper extends AbstractHTMLRipper {
          */
         private void fetchImage() {
             try {
-                Document doc = Http.url(url).get();
+                Map<String, String> cookies = new HashMap<>();
+                cookies.put("nsfw_inter", "1");
+                Document doc = Jsoup.connect(url.toString())
+                        .cookies(cookies)
+                        .get();
+
                 // Find image
                 Elements metaTags = doc.getElementsByTag("meta");
                 
                 String imgsrc = "";//initialize, so no NullPointerExceptions should ever happen.
-                
-                for (Element metaTag: metaTags) {
-                    //the direct link to the image seems to always be linked in the <meta> part of the html.
-                    if (metaTag.attr("property").equals("og:image")) {
-                        imgsrc = metaTag.attr("content");
-                        LOGGER.info("Found URL " + imgsrc);
-                        break;//only one (useful) image possible for an "image page".
-                    }
+                Elements elem = doc.select("img[class*=main-image]");
+                if ((elem != null) && (elem.size() > 0)) {
+                    imgsrc = elem.first().attr("src");
                 }
                
                 //for debug, or something goes wrong.
@@ -165,8 +158,8 @@ public class ImagebamRipper extends AbstractHTMLRipper {
                     prefix = String.format("%03d_", index);
                 }
                 
-                addURLToDownload(new URL(imgsrc), prefix);
-            } catch (IOException e) {
+                addURLToDownload(new URI(imgsrc).toURL(), prefix);
+            } catch (IOException | URISyntaxException e) {
                 LOGGER.error("[!] Exception while loading/parsing " + this.url, e);
             }
         }

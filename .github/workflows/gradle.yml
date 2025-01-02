@@ -1,0 +1,65 @@
+name: CI + release
+
+on:
+  pull_request:
+  push:
+    branches:
+      - '**'
+    tags:
+      - '!**'
+
+jobs:
+  build:
+
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macOS-latest]
+        java: [23]
+        include: # test old java on one os only, upload from ubuntu java-17
+          - os: ubuntu-latest
+            java: 21
+            upload: true
+
+    steps:
+
+    - uses: actions/checkout@v1
+
+    - name: Set environment CI_ variables
+      id: ci-env
+      uses: FranzDiebold/github-env-vars-action@v2
+
+    - name: Set up java
+      uses: actions/setup-java@v4.2.1
+      with:
+        java-version: ${{ matrix.java }}
+        distribution: zulu
+        cache: gradle
+
+    - name: Build with Gradle
+      run: gradle clean build -PjavacRelease=${{ matrix.java }}
+
+    - name: SHA256
+      if: matrix.upload
+      run: shasum -a 256 build/libs/*.jar
+
+    - name: upload jar as asset
+      if: matrix.upload
+      uses: actions/upload-artifact@v4
+      with:
+        name: zipped-ripme-jar
+        path: build/libs/*.jar
+
+    - name: create pre-release
+      id: create-pre-release
+      if: matrix.upload
+      uses: "marvinpinto/action-automatic-releases@latest"
+      with:
+        repo_token: "${{ secrets.GITHUB_TOKEN }}"
+        automatic_release_tag: "latest-${{ env.CI_REF_NAME_SLUG  }}"
+        prerelease: true
+        title: "development build ${{ env.CI_REF_NAME }}"
+        files: |
+            build/libs/*.jar
+
+# vim:set ts=2 sw=2 et:

@@ -21,12 +21,12 @@ public class MeituriRipper extends AbstractHTMLRipper {
 
     @Override
     public String getHost() {
-        return "meituri";
+        return "tujigu";
     }
 
     @Override
     public String getDomain() {
-        return "meituri.com";
+        return "tujigu.com";
     }
 
     // To use in getting URLs
@@ -35,23 +35,18 @@ public class MeituriRipper extends AbstractHTMLRipper {
     @Override
     public String getGID(URL url) throws MalformedURLException {
         // without escape
-        // ^https?://[w.]*meituri\.com/a/([0-9]+)/([0-9]+\.html)*$
-        // https://www.meituri.com/a/14449/
-        // also matches https://www.meituri.com/a/14449/3.html etc.
+        // ^https?://[w.]*tujigu\.com/a/([0-9]+)/([0-9]+\.html)*$
+        // https://www.tujigu.com/a/14449/
+        // also matches https://www.tujigu.com/a/14449/3.html etc.
         // group 1 is 14449
-        Pattern p = Pattern.compile("^https?://[w.]*meituri\\.com/a/([0-9]+)/([0-9]+\\.html)*$");
+        Pattern p = Pattern.compile("^https?://[w.]*tujigu\\.com/a/([0-9]+)/([0-9]+\\.html)*$");
         Matcher m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             albumID = m.group(1);
             return m.group(1);
         }
         throw new MalformedURLException(
-                "Expected meituri.com URL format: " + "meituri.com/a/albumid/ - got " + url + "instead");
-    }
-
-    @Override
-    public Document getFirstPage() throws IOException {
-        return Http.url(url).get();
+                "Expected tujigu.com URL format: " + "tujigu.com/a/albumid/ - got " + url + "instead");
     }
 
     @Override
@@ -71,7 +66,7 @@ public class MeituriRipper extends AbstractHTMLRipper {
         }
 
         // Base URL: http://ii.hywly.com/a/1/albumid/imgnum.jpg
-        String baseURL = "http://ii.hywly.com/a/1/" + albumID + "/";
+        String baseURL = "https://tjg.hywly.com/a/1/" + albumID + "/";
 
         // Loop through and add images to the URL list
         for (int i = 1; i <= numOfImages; i++) {

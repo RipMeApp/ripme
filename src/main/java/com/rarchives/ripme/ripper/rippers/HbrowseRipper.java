@@ -2,6 +2,7 @@ package com.rarchives.ripme.ripper.rippers;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -49,9 +50,9 @@ public class HbrowseRipper extends AbstractHTMLRipper {
         }
 
         @Override
-        public String getAlbumTitle(URL url) throws MalformedURLException {
+        public String getAlbumTitle(URL url) throws MalformedURLException, URISyntaxException {
             try {
-                Document doc = getFirstPage();
+                Document doc = getCachedFirstPage();
                 String title = doc.select("div[id=main] > table.listTable > tbody > tr > td.listLong").first().text();
                 return getHost() + "_" + title + "_" + getGID(url);
             } catch (Exception e) {

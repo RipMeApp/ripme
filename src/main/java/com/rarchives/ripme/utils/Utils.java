@@ -1,17 +1,32 @@
 package com.rarchives.ripme.utils;
 
+import com.rarchives.ripme.ripper.AbstractRipper;
+import org.apache.commons.configuration.ConfigurationException;
+import org.apache.commons.configuration.PropertiesConfiguration;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.appender.RollingFileAppender;
+import org.apache.logging.log4j.core.appender.rolling.DefaultRolloverStrategy;
+import org.apache.logging.log4j.core.appender.rolling.SizeBasedTriggeringPolicy;
+import org.apache.logging.log4j.core.appender.rolling.TriggeringPolicy;
+import org.apache.logging.log4j.core.config.Configuration;
+import org.apache.logging.log4j.core.config.LoggerConfig;
+
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
+import javax.sound.sampled.Line;
+import javax.sound.sampled.LineEvent;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FilenameFilter;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Constructor;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
@@ -22,58 +37,42 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.MissingResourceException;
+import java.util.Objects;
 import java.util.ResourceBundle;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Stream;
-
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.Clip;
-import javax.sound.sampled.Line;
-import javax.sound.sampled.LineEvent;
-
-import com.rarchives.ripme.ripper.AbstractRipper;
-
-import org.apache.commons.configuration.ConfigurationException;
-import org.apache.commons.configuration.PropertiesConfiguration;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
-import org.apache.log4j.PropertyConfigurator;
 
 /**
  * Common utility functions used in various places throughout the project.
  */
 public class Utils {
 
-    private static final Pattern pattern = Pattern.compile("LabelsBundle_(?<lang>[A-Za-z_]+).properties");
-    private static final String DEFAULT_LANG = "en_US";
     private static final String RIP_DIRECTORY = "rips";
     private static final String CONFIG_FILE = "rip.properties";
     private static final String OS = System.getProperty("os.name").toLowerCase();
-    private static final Logger LOGGER = Logger.getLogger(Utils.class);
+    private static final Logger LOGGER = LogManager.getLogger(Utils.class);
     private static final int SHORTENED_PATH_LENGTH = 12;
 
     private static PropertiesConfiguration config;
-    private static HashMap<String, HashMap<String, String>> cookieCache;
-    private static HashMap<ByteBuffer, String> magicHash = new HashMap<>();
+    private static final HashMap<String, HashMap<String, String>> cookieCache;
+    private static final HashMap<ByteBuffer, String> magicHash = new HashMap<>();
 
-    private static ResourceBundle resourceBundle = null;
+    private static ResourceBundle resourceBundle;
 
     static {
         cookieCache = new HashMap<>();
 
         try {
             String configPath = getConfigFilePath();
-            File file = new File(configPath);
+            Path file = Paths.get(configPath);
 
-            if (!file.exists()) {
+            if (!Files.exists(file)) {
                 // Use default bundled with .jar
                 configPath = CONFIG_FILE;
             }
@@ -81,7 +80,7 @@ public class Utils {
             config = new PropertiesConfiguration(configPath);
             LOGGER.info("Loaded " + config.getPath());
 
-            if (file.exists()) {
+            if (Files.exists(file)) {
                 // Config was loaded from file
                 if (!config.containsKey("twitter.auth") || !config.containsKey("twitter.max_requests")
                         || !config.containsKey("tumblr.auth") || !config.containsKey("error.skip404")
@@ -91,7 +90,7 @@ public class Utils {
                     // Need to reload the default config
                     // See https://github.com/4pr0n/ripme/issues/158
                     LOGGER.warn("Config does not contain key fields, deleting old config");
-                    file.delete();
+                    Files.delete(file);
                     config = new PropertiesConfiguration(CONFIG_FILE);
                     LOGGER.info("Loaded " + config.getPath());
                 }
@@ -108,21 +107,21 @@ public class Utils {
      *
      * @return Root directory to save rips to.
      */
-    public static File getWorkingDirectory() {
-        String currentDir = "";
-        try {
-            currentDir = getJarDirectory().getCanonicalPath() + File.separator + RIP_DIRECTORY + File.separator;
-        } catch (IOException e) {
-            LOGGER.error("Error while finding working dir: ", e);
-        }
+    public static Path getWorkingDirectory() {
+        String currentDir = getJarDirectory() + File.separator + RIP_DIRECTORY + File.separator;
 
         if (config != null) {
             currentDir = getConfigString("rips.directory", currentDir);
         }
 
-        File workingDir = new File(currentDir);
-        if (!workingDir.exists()) {
-            workingDir.mkdirs();
+        Path workingDir = Paths.get(currentDir);
+        if (!Files.exists(workingDir)) {
+            try {
+                Files.createDirectory(workingDir);
+            } catch (IOException e) {
+                LOGGER.error("WorkingDir " + workingDir + " not exists, and could not be created. Set to user.home, continue.");
+                workingDir = Paths.get(System.getProperty("user.home"));
+            }
         }
         return workingDir;
     }
@@ -239,13 +238,13 @@ public class Utils {
                 + File.separator + "ripme";
     }
 
-    private static File getJarDirectory() {
-        File jarDirectory = Utils.class.getResource("/rip.properties").toString().contains("jar:")
-                ? new File(System.getProperty("java.class.path")).getParentFile()
-                : new File(System.getProperty("user.dir"));
+    private static Path getJarDirectory() {
+        Path jarDirectory = Objects.requireNonNull(Utils.class.getResource("/rip.properties")).toString().contains("jar:")
+                ? Paths.get(System.getProperty("java.class.path")).getParent()
+                : Paths.get(System.getProperty("user.dir"));
 
         if (jarDirectory == null)
-            jarDirectory = new File(".");
+            jarDirectory = Paths.get(".");
 
         return jarDirectory;
     }
@@ -254,16 +253,8 @@ public class Utils {
      * Determines if the app is running in a portable mode. i.e. on a USB stick
      */
     private static boolean portableMode() {
-        try {
-            File file = new File(getJarDirectory().getCanonicalPath() + File.separator + CONFIG_FILE);
-            if (file.exists() && !file.isDirectory()) {
-                return true;
-            }
-        } catch (IOException e) {
-            return false;
-        }
-
-        return false;
+        Path file = getJarDirectory().resolve(CONFIG_FILE);
+        return Files.exists(file) && !Files.isDirectory(file);
     }
 
     /**
@@ -272,7 +263,7 @@ public class Utils {
     public static String getConfigDir() {
         if (portableMode()) {
             try {
-                return getJarDirectory().getCanonicalPath();
+                return getJarDirectory().toAbsolutePath().toString();
             } catch (Exception e) {
                 return ".";
             }
@@ -286,7 +277,7 @@ public class Utils {
             return getUnixConfigDir();
 
         try {
-            return getJarDirectory().getCanonicalPath();
+            return getJarDirectory().toAbsolutePath().toString();
         } catch (Exception e) {
             return ".";
         }
@@ -296,8 +287,12 @@ public class Utils {
      * Delete the url history file
      */
     public static void clearURLHistory() {
-        File file = new File(getURLHistoryFile());
-        file.delete();
+        Path file = Paths.get(getURLHistoryFile());
+        try {
+            Files.delete(file);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -324,16 +319,13 @@ public class Utils {
      * @param saveAs The File path
      * @return saveAs in relation to the CWD
      */
-    public static String removeCWD(File saveAs) {
-        String prettySaveAs = saveAs.toString();
+    public static String removeCWD(Path saveAs) {
         try {
-            prettySaveAs = saveAs.getCanonicalPath();
-            String cwd = new File(".").getCanonicalPath() + File.separator;
-            prettySaveAs = prettySaveAs.replace(cwd, "." + File.separator);
-        } catch (Exception e) {
-            LOGGER.error("Exception: ", e);
+            return Paths.get(".").toAbsolutePath().relativize(saveAs).toString();
         }
-        return prettySaveAs;
+        catch (IllegalArgumentException e) {
+            return saveAs.toString();
+        }
     }
 
     /**
@@ -359,23 +351,13 @@ public class Utils {
                 if (wasFirstParam) {
                     c = "?";
                 }
-                url = url.substring(0, paramIndex) + c + url.substring(nextParam + 1, url.length());
+                url = url.substring(0, paramIndex) + c + url.substring(nextParam + 1);
             } else {
                 url = url.substring(0, paramIndex);
             }
         }
 
         return url;
-    }
-
-    /**
-     * Removes the current working directory from a given filename
-     *
-     * @param file Path to the file
-     * @return 'file' without the leading current working directory
-     */
-    public static String removeCWD(String file) {
-        return removeCWD(new File(file));
     }
 
     /**
@@ -410,6 +392,7 @@ public class Utils {
         if (directory != null && directory.exists()) {
             // Get the list of the files contained in the package
             String[] files = directory.list();
+            assert files != null;
             for (String file : files) {
                 if (file.endsWith(".class") && !file.contains("$")) {
                     String className = pkgname + '.' + file.substring(0, file.length() - 6);
@@ -424,7 +407,7 @@ public class Utils {
             // Load from JAR
             try {
                 String jarPath = fullPath.replaceFirst("[.]jar[!].*", ".jar").replaceFirst("file:", "");
-                jarPath = URLDecoder.decode(jarPath, "UTF-8");
+                jarPath = URLDecoder.decode(jarPath, StandardCharsets.UTF_8);
                 JarFile jarFile = new JarFile(jarPath);
                 Enumeration<JarEntry> entries = jarFile.entries();
                 while (entries.hasMoreElements()) {
@@ -458,21 +441,23 @@ public class Utils {
      * @return The simplified path to the file.
      */
     public static String shortenPath(String path) {
-        return shortenPath(new File(path));
+        return shortenPath(path);
     }
 
     /**
      * Shortens the path to a file
      *
-     * @param file File object that you want the shortened path of.
+     * @param path File object that you want the shortened path of.
      * @return The simplified path to the file.
      */
-    public static String shortenPath(File file) {
-        String path = removeCWD(file);
-        if (path.length() < SHORTENED_PATH_LENGTH * 2) {
-            return path;
+    public static String shortenPath(Path path) {
+        Path prettyPath = path.normalize();
+        if (prettyPath.toString().length() < SHORTENED_PATH_LENGTH * 2) {
+            return prettyPath.toString();
         }
-        return path.substring(0, SHORTENED_PATH_LENGTH) + "..." + path.substring(path.length() - SHORTENED_PATH_LENGTH);
+        return prettyPath.toString().substring(0, SHORTENED_PATH_LENGTH)
+                + "..."
+                + prettyPath.toString().substring(prettyPath.toString().length() - SHORTENED_PATH_LENGTH);
     }
 
     /**
@@ -486,8 +471,15 @@ public class Utils {
         return text;
     }
 
+    /**
+     * Removes any potentially unsafe characters from a string and truncates it on a maximum length of 100 characters.
+     * Characters considered safe are alpha numerical characters as well as minus, dot, comma, underscore and whitespace.
+     *
+     * @param text The potentially unsafe text
+     * @return a filesystem safe string
+     */
     public static String filesystemSafe(String text) {
-        text = text.replaceAll("[^a-zA-Z0-9.-]", "_").replaceAll("__", "_").replaceAll("_+$", "");
+        text = text.replaceAll("[^a-zA-Z0-9-.,_ ]", "").trim();
         if (text.length() > 100) {
             text = text.substring(0, 99);
         }
@@ -500,7 +492,7 @@ public class Utils {
      * @param path - original path entered to be ripped
      * @return path of existing folder or the original path if not present
      */
-    public static String getOriginalDirectory(String path) {
+    public static String getOriginalDirectory(String path) throws IOException {
 
         int index;
         if (isUnix() || isMacOS()) {
@@ -510,13 +502,15 @@ public class Utils {
             return path;
         }
 
-        String original = path; // needs to be checked if lowercase exists
-        String lastPart = original.substring(index + 1).toLowerCase(); // setting lowercase to check if it exists
+        String lastPart = path.substring(index + 1).toLowerCase(); // setting lowercase to check if it exists
 
         // Get a List of all Directories and check its lowercase
         // if file exists return it
         File file = new File(path.substring(0, index));
-        ArrayList<String> names = new ArrayList<>(Arrays.asList(file.list()));
+        if (!(file.isDirectory() && file.canWrite() && file.canExecute())) {
+            throw new IOException("Original directory \"" + file + "\" is no directory or not writeable.");
+        }
+        ArrayList<String> names = new ArrayList<>(Arrays.asList(Objects.requireNonNull(file.list())));
 
         for (String name : names) {
             if (name.toLowerCase().equals(lastPart)) {
@@ -525,7 +519,8 @@ public class Utils {
             }
         }
 
-        return original;
+        // otherwise return original path
+        return path;
     }
 
     /**
@@ -536,7 +531,7 @@ public class Utils {
      */
     public static String bytesToHumanReadable(int bytes) {
         float fbytes = (float) bytes;
-        String[] mags = new String[] { "", "K", "M", "G", "T" };
+        String[] mags = new String[]{"", "K", "M", "G", "T"};
         int magIndex = 0;
         while (fbytes >= 1024) {
             fbytes /= 1024;
@@ -598,20 +593,32 @@ public class Utils {
      * Configures root logger, either for FILE output or just console.
      */
     public static void configureLogger() {
-        LogManager.shutdown();
-        String logFile = getConfigBoolean("log.save", false) ? "log4j.file.properties" : "log4j.properties";
-        try (InputStream stream = Utils.class.getClassLoader().getResourceAsStream(logFile)) {
-            if (stream == null) {
-                PropertyConfigurator.configure("src/main/resources/" + logFile);
-            } else {
-                PropertyConfigurator.configure(stream);
+        LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
+        Configuration config = ctx.getConfiguration();
+        LoggerConfig loggerConfig = config.getLoggerConfig(LogManager.ROOT_LOGGER_NAME);
+
+        // write to ripme.log file if checked in GUI
+        boolean logSave = getConfigBoolean("log.save", false);
+        if (logSave) {
+            LOGGER.debug("add rolling appender ripmelog");
+            TriggeringPolicy tp = SizeBasedTriggeringPolicy.createPolicy("20M");
+            DefaultRolloverStrategy rs = DefaultRolloverStrategy.newBuilder().withMax("2").build();
+            RollingFileAppender rolling = RollingFileAppender.newBuilder()
+                    .setName("ripmelog")
+                    .withFileName("ripme.log")
+                    .withFilePattern("%d{yyyy-MM-dd HH:mm:ss} %p %m%n")
+                    .withPolicy(tp)
+                    .withStrategy(rs)
+                    .build();
+            loggerConfig.addAppender(rolling, null, null);
+        } else {
+            LOGGER.debug("remove rolling appender ripmelog");
+            if (config.getAppender("ripmelog") != null) {
+                config.getAppender("ripmelog").stop();
             }
-
-            LOGGER.info("Loaded " + logFile);
-        } catch (IOException e) {
-            LOGGER.error(e.getMessage(), e);
+            loggerConfig.removeAppender("ripmelog");
         }
-
+        ctx.updateLoggers();  // This causes all Loggers to refetch information from their LoggerConfig.
     }
 
     /**
@@ -655,18 +662,13 @@ public class Utils {
         String[] parts = query.split("&");
         int pos;
 
-        try {
-            for (String part : parts) {
-                if ((pos = part.indexOf('=')) >= 0) {
-                    res.put(URLDecoder.decode(part.substring(0, pos), "UTF-8"),
-                            URLDecoder.decode(part.substring(pos + 1), "UTF-8"));
-                } else {
-                    res.put(URLDecoder.decode(part, "UTF-8"), "");
-                }
+        for (String part : parts) {
+            if ((pos = part.indexOf('=')) >= 0) {
+                res.put(URLDecoder.decode(part.substring(0, pos), StandardCharsets.UTF_8),
+                        URLDecoder.decode(part.substring(pos + 1), StandardCharsets.UTF_8));
+            } else {
+                res.put(URLDecoder.decode(part, StandardCharsets.UTF_8), "");
             }
-        } catch (UnsupportedEncodingException e) {
-            // Shouldn't happen since UTF-8 is required to be supported
-            throw new RuntimeException(e);
         }
 
         return res;
@@ -687,20 +689,15 @@ public class Utils {
         String[] parts = query.split("&");
         int pos;
 
-        try {
-            for (String part : parts) {
-                if ((pos = part.indexOf('=')) >= 0) {
-                    if (URLDecoder.decode(part.substring(0, pos), "UTF-8").equals(key)) {
-                        return URLDecoder.decode(part.substring(pos + 1), "UTF-8");
-                    }
-
-                } else if (URLDecoder.decode(part, "UTF-8").equals(key)) {
-                    return "";
+        for (String part : parts) {
+            if ((pos = part.indexOf('=')) >= 0) {
+                if (URLDecoder.decode(part.substring(0, pos), StandardCharsets.UTF_8).equals(key)) {
+                    return URLDecoder.decode(part.substring(pos + 1), StandardCharsets.UTF_8);
                 }
+
+            } else if (URLDecoder.decode(part, StandardCharsets.UTF_8).equals(key)) {
+                return "";
             }
-        } catch (UnsupportedEncodingException e) {
-            // Shouldn't happen since UTF-8 is required to be supported
-            throw new RuntimeException(e);
         }
 
         return null;
@@ -731,20 +728,19 @@ public class Utils {
      * of the UI.
      *
      * @return Returns the default resource bundle using the language specified in
-     *         the config file.
+     * the config file.
      */
     public static ResourceBundle getResourceBundle(String langSelect) {
         if (langSelect == null) {
             if (!getConfigString("lang", "").equals("")) {
-                String[] langCode = getConfigString("lang", "").split("_");
                 LOGGER.info("Setting locale to " + getConfigString("lang", ""));
-                return ResourceBundle.getBundle("LabelsBundle", new Locale(langCode[0], langCode[1]),
+                return ResourceBundle.getBundle("LabelsBundle", Locale.forLanguageTag(getConfigString("lang", "")),
                         new UTF8Control());
             }
         } else {
-            String[] langCode = langSelect.split("_");
-            LOGGER.info("Setting locale to " + langSelect);
-            return ResourceBundle.getBundle("LabelsBundle", new Locale(langCode[0], langCode[1]), new UTF8Control());
+            String[] langCode = langSelect.split("-");
+            LOGGER.info("set locale, langcoe: {}, selected langauge: {}, locale: {}", langCode, langSelect, Locale.forLanguageTag(langSelect));
+            return ResourceBundle.getBundle("LabelsBundle", Locale.forLanguageTag(langSelect), new UTF8Control());
         }
         try {
             LOGGER.info("Setting locale to default");
@@ -757,6 +753,7 @@ public class Utils {
 
     public static void setLanguage(String langSelect) {
         resourceBundle = getResourceBundle(langSelect);
+        LOGGER.info("Selected resource bundle locale: {}, from {}", resourceBundle.getLocale().toString(), langSelect);
     }
 
     public static String getSelectedLanguage() {
@@ -765,13 +762,15 @@ public class Utils {
 
     // All the langs ripme has been translated into
     public static String[] getSupportedLanguages() {
+        final Pattern pattern = Pattern.compile("LabelsBundle_(?<lang>[A-Za-z_]+).properties");
+        final String DEFAULT_LANG = "en-US";
         ArrayList<Path> filesList = new ArrayList<>();
         try {
-            URI uri = Utils.class.getResource("/rip.properties").toURI();
+            URI uri = Objects.requireNonNull(Utils.class.getResource("/rip.properties")).toURI();
 
             Path myPath;
             if (uri.getScheme().equals("jar")) {
-                FileSystem fileSystem = FileSystems.newFileSystem(uri, Collections.<String, Object>emptyMap());
+                FileSystem fileSystem = FileSystems.newFileSystem(uri, Collections.emptyMap());
                 myPath = fileSystem.getPath("/");
             } else {
                 myPath = Paths.get(uri).getParent();
@@ -784,19 +783,19 @@ public class Utils {
             for (int i = 0; i < filesList.size(); i++) {
                 Matcher matcher = pattern.matcher(filesList.get(i).toString());
                 if (matcher.find())
-                    langs[i] = matcher.group("lang");
+                    langs[i] = matcher.group("lang").replace("_", "-");
             }
 
             return langs;
         } catch (Exception e) {
             e.printStackTrace();
             // On error return default language
-            return new String[] { DEFAULT_LANG };
+            return new String[]{DEFAULT_LANG};
         }
     }
 
     public static String getLocalizedString(String key) {
-        LOGGER.debug(String.format("Getting key %s in %s value %s", key, getSelectedLanguage(),
+        LOGGER.debug(String.format("Key %s in %s is: %s", key, getSelectedLanguage(),
                 resourceBundle.getString(key)));
         return resourceBundle.getString(key);
     }
@@ -809,11 +808,10 @@ public class Utils {
      * @param bytesCompleted       How many bytes have been downloaded
      * @param bytesTotal           The total size of the file that is being
      *                             downloaded
-     * @return Returns the formatted status text for rippers using the byte progress
-     *         bar
+     * @return Returns the formatted status text for rippers using the byte progresbar
      */
     public static String getByteStatusText(int completionPercentage, int bytesCompleted, int bytesTotal) {
-        return String.valueOf(completionPercentage) + "%  - " + Utils.bytesToHumanReadable(bytesCompleted) + " / "
+        return completionPercentage + "%  - " + Utils.bytesToHumanReadable(bytesCompleted) + " / "
                 + Utils.bytesToHumanReadable(bytesTotal);
     }
 
@@ -830,46 +828,29 @@ public class Utils {
     }
 
     private static void initialiseMagicHashMap() {
-        magicHash.put(ByteBuffer.wrap(new byte[] { -1, -40, -1, -37, 0, 0, 0, 0 }), "jpeg");
-        magicHash.put(ByteBuffer.wrap(new byte[] { -119, 80, 78, 71, 13, 0, 0, 0 }), "png");
+        magicHash.put(ByteBuffer.wrap(new byte[]{-1, -40, -1, -37, 0, 0, 0, 0}), "jpeg");
+        magicHash.put(ByteBuffer.wrap(new byte[]{-119, 80, 78, 71, 13, 0, 0, 0}), "png");
     }
 
     // Checks if a file exists ignoring it's extension.
-    // Code from: https://stackoverflow.com/a/17698068
-    public static boolean fuzzyExists(File folder, String fileName) {
-        if (!folder.exists()) {
-            return false;
-        }
-        File[] listOfFiles = folder.listFiles();
-        if (listOfFiles == null) {
-            return false;
-        }
+    public static boolean fuzzyExists(Path folder, String filename) {
+        return Files.exists(folder.resolve(filename));
+    }
 
-        for (File file : listOfFiles) {
-            if (file.isFile()) {
-                String[] filename = file.getName().split("\\.(?=[^\\.]+$)"); // split filename from it's extension
-                if (filename[0].equalsIgnoreCase(fileName)) {
-                    return true;
-                }
-            }
-        }
-        return false;
+    public static Path getPath(String pathToSanitize) {
+        return Paths.get(sanitizeSaveAs(pathToSanitize));
     }
 
     public static String sanitizeSaveAs(String fileNameToSan) {
-        return fileNameToSan.replaceAll("[\\\\/:*?\"<>|]", "_");
+        return fileNameToSan.replaceAll("[\\\\:*?\"<>|]", "_");
     }
 
-    public static File shortenSaveAsWindows(String ripsDirPath, String fileName) throws FileNotFoundException {
-        // int ripDirLength = ripsDirPath.length();
-        // int maxFileNameLength = 260 - ripDirLength;
-        // LOGGER.info(maxFileNameLength);
+    public static Path shortenSaveAsWindows(String ripsDirPath, String fileName) throws FileNotFoundException {
         LOGGER.error("The filename " + fileName + " is to long to be saved on this file system.");
         LOGGER.info("Shortening filename");
         String fullPath = ripsDirPath + File.separator + fileName;
         // How long the path without the file name is
         int pathLength = ripsDirPath.length();
-        int fileNameLength = fileName.length();
         if (pathLength == 260) {
             // We've reached the max length, there's nothing more we can do
             throw new FileNotFoundException("File path is too long for this OS");
@@ -879,11 +860,17 @@ public class Utils {
         // file extension
         String fileExt = saveAsSplit[saveAsSplit.length - 1];
         // The max limit for paths on Windows is 260 chars
-        LOGGER.info(fullPath.substring(0, 259 - pathLength - fileExt.length() + 1) + "." + fileExt);
         fullPath = fullPath.substring(0, 259 - pathLength - fileExt.length() + 1) + "." + fileExt;
         LOGGER.info(fullPath);
         LOGGER.info(fullPath.length());
-        return new File(fullPath);
+        return Paths.get(fullPath);
     }
 
+    public static void sleep(long time) {
+        try {
+            Thread.sleep(time);
+        } catch (final InterruptedException e1) {
+            e1.printStackTrace();
+        }
+    }
 }

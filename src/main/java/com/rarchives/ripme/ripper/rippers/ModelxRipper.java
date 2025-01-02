@@ -42,11 +42,6 @@ public class ModelxRipper extends AbstractHTMLRipper {
     }
 
     @Override
-    public Document getFirstPage() throws IOException {
-        return Http.url(url).get();
-    }
-
-    @Override
     public List<String> getURLsFromPage(Document page) {
         List<String> result = new ArrayList<>();
 

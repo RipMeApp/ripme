@@ -2,6 +2,7 @@ package com.rarchives.ripme.ripper.rippers;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -31,10 +32,10 @@ public class ViewcomicRipper extends AbstractHTMLRipper {
         }
 
         @Override
-        public String getAlbumTitle(URL url) throws MalformedURLException {
+        public String getAlbumTitle(URL url) throws MalformedURLException, URISyntaxException {
             try {
                 // Attempt to use album title as GID
-                String titleText = getFirstPage().select("title").first().text();
+                String titleText = getCachedFirstPage().select("title").first().text();
                 String title = titleText.replace("Viewcomic reading comics online for free", "");
                 title = title.replace("_", "");
                 title = title.replace("|", "");
@@ -58,12 +59,6 @@ public class ViewcomicRipper extends AbstractHTMLRipper {
             }
             throw new MalformedURLException("Expected view-comic URL format: " +
                             "view-comic.com/COMIC_NAME - got " + url + " instead");
-        }
-
-        @Override
-        public Document getFirstPage() throws IOException {
-            // "url" is an instance field of the superclass
-            return Http.url(url).get();
         }
 
         @Override

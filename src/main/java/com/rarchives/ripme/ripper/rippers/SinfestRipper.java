@@ -42,12 +42,6 @@ public class SinfestRipper extends AbstractHTMLRipper {
     }
 
     @Override
-    public Document getFirstPage() throws IOException {
-        // "url" is an instance field of the superclass
-        return Http.url(url).get();
-    }
-
-    @Override
     public Document getNextPage(Document doc) throws IOException {
         Element elem = doc.select("td.style5 > a > img").last();
         LOGGER.info(elem.parent().attr("href"));

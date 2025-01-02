@@ -47,12 +47,6 @@ public class OglafRipper extends AbstractHTMLRipper {
     }
 
     @Override
-    public Document getFirstPage() throws IOException {
-        // "url" is an instance field of the superclass
-        return Http.url(url).get();
-    }
-
-    @Override
     public Document getNextPage(Document doc) throws IOException {
         if (doc.select("div#nav > a > div#nx").first() == null) {
             throw new IOException("No more pages");

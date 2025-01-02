@@ -8,14 +8,23 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Scanner;
-import org.apache.log4j.FileAppender;
-import org.apache.log4j.Logger;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import org.jsoup.HttpStatusException;
 import com.rarchives.ripme.App;
 import com.rarchives.ripme.ui.RipStatusComplete;
@@ -28,7 +37,7 @@ public abstract class AbstractRipper
                 extends Observable
                 implements RipperInterface, Runnable {
 
-    protected static final Logger LOGGER = Logger.getLogger(AbstractRipper.class);
+    protected static final Logger LOGGER = LogManager.getLogger(AbstractRipper.class);
     private final String URLHistoryFile = Utils.getURLHistoryFile();
 
     public static final String USER_AGENT =
@@ -41,23 +50,24 @@ public abstract class AbstractRipper
 
     private boolean completed = true;
 
-    public abstract void rip() throws IOException;
+    public abstract void rip() throws IOException, URISyntaxException;
     public abstract String getHost();
-    public abstract String getGID(URL url) throws MalformedURLException;
+    public abstract String getGID(URL url) throws MalformedURLException, URISyntaxException;
     public boolean hasASAPRipping() { return false; }
     // Everytime addUrlToDownload skips a already downloaded url this increases by 1
     public int alreadyDownloadedUrls = 0;
-    private boolean shouldStop = false;
+    private final AtomicBoolean shouldStop = new AtomicBoolean(false);
     private static boolean thisIsATest = false;
 
     public void stop() {
-        shouldStop = true;
+        LOGGER.trace("stop()");
+        shouldStop.set(true);
     }
     public boolean isStopped() {
-        return shouldStop;
+        return shouldStop.get();
     }
     protected void stopCheck() throws IOException {
-        if (shouldStop) {
+        if (shouldStop.get()) {
             throw new IOException("Ripping interrupted");
         }
     }
@@ -163,7 +173,11 @@ public abstract class AbstractRipper
         if (!canRip(url)) {
             throw new MalformedURLException("Unable to rip url: " + url);
         }
-        this.url = sanitizeURL(url);
+        try {
+            this.url = sanitizeURL(url);
+        } catch (URISyntaxException e) {
+            throw new MalformedURLException(e.getMessage());
+        }
     }
 
     /**
@@ -175,14 +189,17 @@ public abstract class AbstractRipper
      * @throws IOException 
      *      Always be prepared.
      */
-    public void setup() throws IOException {
+    public void setup() throws IOException, URISyntaxException {
         setWorkingDir(this.url);
-        Logger rootLogger = Logger.getRootLogger();
-        FileAppender fa = (FileAppender) rootLogger.getAppender("FILE");
-        if (fa != null) {
-            fa.setFile(this.workingDir + File.separator + "log.txt");
-            fa.activateOptions();
-        }
+        // we do not care if the rollingfileappender is active, just change the logfile in case
+        // TODO this does not work - not even with
+        //                     .withFileName("${sys:logFilename}")
+        // in Utils.java, RollingFileAppender.
+//        System.setProperty("logFilename", this.workingDir + "/log.txt");
+//        LOGGER.debug("Changing log file to '{}/log.txt'", this.workingDir);
+//        LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
+//        ctx.reconfigure();
+//        ctx.updateLoggers();
 
         this.threadPool = new DownloadThreadPool();
     }
@@ -199,7 +216,7 @@ public abstract class AbstractRipper
      *      Path of the local file to save the content to.
      * @return True on success, false on failure.
      */
-    public abstract boolean addURLToDownload(URL url, File saveAs);
+    public abstract boolean addURLToDownload(URL url, Path saveAs);
 
     /**
      * Queues image to be downloaded and saved.
@@ -215,7 +232,7 @@ public abstract class AbstractRipper
      *      True if downloaded successfully
      *      False if failed to download
      */
-    protected abstract boolean addURLToDownload(URL url, File saveAs, String referrer, Map<String, String> cookies,
+    protected abstract boolean addURLToDownload(URL url, Path saveAs, String referrer, Map<String, String> cookies,
                                                 Boolean getFileExtFromMIME);
 
     /**
@@ -234,9 +251,10 @@ public abstract class AbstractRipper
      */
     protected boolean addURLToDownload(URL url, Map<String, String> options, Map<String, String> cookies) {
         // Bit of a hack but this lets us pass a bool using a map<string,String>
-        boolean useMIME = options.getOrDefault("getFileExtFromMIME", "false").toLowerCase().equals("true");
-        return addURLToDownload(url, options.getOrDefault("prefix", ""), options.getOrDefault("subdirectory", ""), options.getOrDefault("referrer", null),
-                cookies, options.getOrDefault("fileName", null), options.getOrDefault("extension", null), useMIME);
+        boolean useMIME = options.getOrDefault("getFileExtFromMIME", "false").equalsIgnoreCase("true");
+        return addURLToDownload(url, options.getOrDefault("subdirectory", ""), options.getOrDefault("referrer", null),  cookies,
+                options.getOrDefault("prefix", ""), options.getOrDefault("fileName", null), options.getOrDefault("extension", null),
+                useMIME);
     }
 
 
@@ -274,7 +292,7 @@ public abstract class AbstractRipper
      *      True if downloaded successfully
      *      False if failed to download
      */
-    protected boolean addURLToDownload(URL url, String prefix, String subdirectory, String referrer, Map<String, String> cookies, String fileName, String extension, Boolean getFileExtFromMIME) {
+    protected boolean addURLToDownload(URL url, String subdirectory, String referrer, Map<String, String> cookies, String prefix, String fileName, String extension, Boolean getFileExtFromMIME) {
         // A common bug is rippers adding urls that are just "http:". This rejects said urls
         if (url.toExternalForm().equals("http:") || url.toExternalForm().equals("https:")) {
             LOGGER.info(url.toExternalForm() + " is a invalid url amd will be changed");
@@ -285,8 +303,8 @@ public abstract class AbstractRipper
         if (url.toExternalForm().contains(" ")) {
             // If for some reason the url with all spaces encoded as %20 is malformed print an error
             try {
-                url = new URL(url.toExternalForm().replaceAll(" ", "%20"));
-            } catch (MalformedURLException e) {
+                url = new URI(url.toExternalForm().replaceAll(" ", "%20")).toURL();
+            } catch (MalformedURLException | URISyntaxException e) {
                 LOGGER.error("Unable to remove spaces from url\nURL: " + url.toExternalForm());
                 e.printStackTrace();
             }
@@ -305,33 +323,18 @@ public abstract class AbstractRipper
             LOGGER.debug("Ripper has been stopped");
             return false;
         }
-        LOGGER.debug("url: " + url + ", prefix: " + prefix + ", subdirectory" + subdirectory + ", referrer: " + referrer + ", cookies: " + cookies + ", fileName: " + fileName);
-        String saveAs = getFileName(url, fileName, extension);
-        File saveFileAs;
+        LOGGER.debug("url: " + url + ", subdirectory" + subdirectory + ", referrer: " + referrer + ", cookies: " + cookies + ", prefix: " + prefix + ", fileName: " + fileName);
+        Path saveAs;
         try {
-            if (!subdirectory.equals("")) {
-                subdirectory = Utils.filesystemSafe(subdirectory);
-                subdirectory = File.separator + subdirectory;
+            saveAs = getFilePath(url, subdirectory, prefix, fileName, extension);
+            LOGGER.debug("Downloading " + url + " to " + saveAs);
+            if (!Files.exists(saveAs.getParent())) {
+                LOGGER.info("[+] Creating directory: " + saveAs.getParent());
+                Files.createDirectories(saveAs.getParent());
             }
-            prefix = Utils.filesystemSanitized(prefix);
-            String topFolderName = workingDir.getCanonicalPath();
-            if (App.stringToAppendToFoldername != null) {
-                topFolderName = topFolderName + App.stringToAppendToFoldername;
-            }
-            saveFileAs = new File(
-                    topFolderName
-                    + subdirectory
-                    + File.separator
-                    + prefix
-                    + saveAs);
         } catch (IOException e) {
             LOGGER.error("[!] Error creating save file path for URL '" + url + "':", e);
             return false;
-        }
-        LOGGER.debug("Downloading " + url + " to " + saveFileAs);
-        if (!saveFileAs.getParentFile().exists()) {
-            LOGGER.info("[+] Creating directory: " + Utils.removeCWD(saveFileAs.getParent()));
-            saveFileAs.getParentFile().mkdirs();
         }
         if (Utils.getConfigBoolean("remember.url_history", true) && !isThisATest()) {
             LOGGER.info("Writing " + url.toExternalForm() + " to file");
@@ -341,11 +344,11 @@ public abstract class AbstractRipper
                 LOGGER.debug("Unable to write URL history file");
             }
         }
-        return addURLToDownload(url, saveFileAs, referrer, cookies, getFileExtFromMIME);
+        return addURLToDownload(url, saveAs, referrer, cookies, getFileExtFromMIME);
     }
 
     protected boolean addURLToDownload(URL url, String prefix, String subdirectory, String referrer, Map<String,String> cookies, String fileName, String extension) {
-        return addURLToDownload(url, prefix, subdirectory, referrer, cookies, fileName, extension, false);
+        return addURLToDownload(url, subdirectory, referrer, cookies, prefix, fileName, extension, false);
     }
 
     protected boolean addURLToDownload(URL url, String prefix, String subdirectory, String referrer, Map<String, String> cookies, String fileName) {
@@ -384,33 +387,53 @@ public abstract class AbstractRipper
         return addURLToDownload(url, prefix, "");
     }
 
-    public static String getFileName(URL url, String fileName, String extension) {
-        String saveAs;
-        if (fileName != null) {
-            saveAs = fileName;
-        } else {
-            saveAs = url.toExternalForm();
-            saveAs = saveAs.substring(saveAs.lastIndexOf('/')+1);
+    public Path getFilePath(URL url, String subdir, String prefix, String fileName, String extension) throws IOException {
+        // construct the path: workingdir + subdir + prefix + filename + extension
+        // save into working dir
+        Path filepath = Paths.get(workingDir.getCanonicalPath());
+
+        if (null != App.stringToAppendToFoldername)
+            filepath = filepath.resolveSibling(filepath.getFileName() + App.stringToAppendToFoldername);
+
+        if (null != subdir && !subdir.trim().isEmpty())
+            filepath = filepath.resolve(Utils.filesystemSafe(subdir));
+
+        filepath = filepath.resolve(getFileName(url, prefix, fileName, extension));
+        return filepath;
+    }
+
+    public static String getFileName(URL url, String prefix, String fileName, String extension) {
+        // retrieve filename from URL if not passed
+        if (fileName == null || fileName.trim().isEmpty()) {
+            fileName = url.toExternalForm();
+            fileName = fileName.substring(fileName.lastIndexOf('/')+1);
         }
-        if (extension == null) {
+        if (fileName.indexOf('?') >= 0) { fileName = fileName.substring(0, fileName.indexOf('?')); }
+        if (fileName.indexOf('#') >= 0) { fileName = fileName.substring(0, fileName.indexOf('#')); }
+        if (fileName.indexOf('&') >= 0) { fileName = fileName.substring(0, fileName.indexOf('&')); }
+        if (fileName.indexOf(':') >= 0) { fileName = fileName.substring(0, fileName.indexOf(':')); }
+
+        // add prefix
+        if (prefix != null && !prefix.trim().isEmpty()) {
+            fileName = prefix + fileName;
+        }
+
+        // retrieve extension from URL if not passed, no extension if nothing found
+        if (extension == null || extension.trim().isEmpty()) {
             // Get the extension of the file
             String[] lastBitOfURL = url.toExternalForm().split("/");
 
             String[] lastBit = lastBitOfURL[lastBitOfURL.length - 1].split(".");
             if (lastBit.length != 0) {
                 extension = lastBit[lastBit.length - 1];
-                saveAs = saveAs + "." + extension;
             }
         }
-
-        if (saveAs.indexOf('?') >= 0) { saveAs = saveAs.substring(0, saveAs.indexOf('?')); }
-        if (saveAs.indexOf('#') >= 0) { saveAs = saveAs.substring(0, saveAs.indexOf('#')); }
-        if (saveAs.indexOf('&') >= 0) { saveAs = saveAs.substring(0, saveAs.indexOf('&')); }
-        if (saveAs.indexOf(':') >= 0) { saveAs = saveAs.substring(0, saveAs.indexOf(':')); }
+        // if extension is passed or found, add it
         if (extension != null) {
-            saveAs = saveAs + "." + extension;
+            fileName = fileName + "." + extension;
         }
-        return saveAs;
+        // make sure filename is not too long and has no unsupported chars
+        return Utils.sanitizeSaveAs(fileName);
     }
 
 
@@ -443,20 +466,16 @@ public abstract class AbstractRipper
      * @param saveAs
      *      Where the downloaded file is stored.
      */
-    public abstract void downloadCompleted(URL url, File saveAs);
+    public abstract void downloadCompleted(URL url, Path saveAs);
     /**
      * Notifies observers that a file could not be downloaded (includes a reason).
-     * @param url
-     * @param reason
      */
     public abstract void downloadErrored(URL url, String reason);
     /**
      * Notify observers that a download could not be completed,
      * but was not technically an "error".
-     * @param url
-     * @param file
      */
-    public abstract void downloadExists(URL url, File file);
+    public abstract void downloadExists(URL url, Path file);
 
     /**
      * @return Number of files downloaded.
@@ -478,17 +497,17 @@ public abstract class AbstractRipper
             completed = true;
             LOGGER.info("   Rip completed!");
 
-            RipStatusComplete rsc = new RipStatusComplete(workingDir, getCount());
+            RipStatusComplete rsc = new RipStatusComplete(workingDir.toPath(), getCount());
             RipStatusMessage msg = new RipStatusMessage(STATUS.RIP_COMPLETE, rsc);
             observer.update(this, msg);
 
-            Logger rootLogger = Logger.getRootLogger();
-            FileAppender fa = (FileAppender) rootLogger.getAppender("FILE");
-            if (fa != null) {
-                LOGGER.debug("Changing log file back to 'ripme.log'");
-                fa.setFile("ripme.log");
-                fa.activateOptions();
-            }
+            // we do not care if the rollingfileappender is active, just change the logfile in case
+            // TODO - does not work.
+//            System.setProperty("logFilename", "ripme.log");
+//            LOGGER.debug("Changing log file back to 'ripme.log'");
+//            LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
+//            ctx.reconfigure();
+
             if (Utils.getConfigBoolean("urls_only.save", false)) {
                 String urlFile = this.workingDir + File.separator + "urls.txt";
                 try {
@@ -519,7 +538,7 @@ public abstract class AbstractRipper
     }
 
     @Override
-    public abstract void setWorkingDir(URL url) throws IOException;
+    public abstract void setWorkingDir(URL url) throws IOException, URISyntaxException;
 
     /**
      * 
@@ -532,8 +551,12 @@ public abstract class AbstractRipper
      * @throws MalformedURLException 
      *      If any of those damned URLs gets malformed.
      */
-    public String getAlbumTitle(URL url) throws MalformedURLException {
-        return getHost() + "_" + getGID(url);
+    public String getAlbumTitle(URL url) throws MalformedURLException, URISyntaxException {
+        try {
+            return getHost() + "_" + getGID(url);
+        } catch (URISyntaxException e) {
+            throw new MalformedURLException(e.getMessage());
+        }
     }
 
     /**
@@ -572,7 +595,6 @@ public abstract class AbstractRipper
      *      The package name.
      * @return
      *      List of constructors for all eligible Rippers.
-     * @throws Exception
      */
     public static List<Constructor<?>> getRipperConstructors(String pkg) throws Exception {
         List<Constructor<?>> constructors = new ArrayList<>();
@@ -586,8 +608,7 @@ public abstract class AbstractRipper
 
     /**
      * Sends an update message to the relevant observer(s) on this ripper.
-     * @param status 
-     * @param message
+     * @param status
      */
     public void sendUpdate(STATUS status, Object message) {
         if (observer == null) {
@@ -679,4 +700,18 @@ public abstract class AbstractRipper
     protected boolean useByteProgessBar() { return false;}
     // If true ripme will try to resume a broken download for this ripper
     protected boolean tryResumeDownload() { return false;}
+
+    protected boolean shouldIgnoreURL(URL url) {
+        final String[] ignoredExtensions = Utils.getConfigStringArray("download.ignore_extensions");
+        if (ignoredExtensions == null || ignoredExtensions.length == 0) return false; // nothing ignored
+        String[] pathElements = url.getPath().split("\\.");
+        if (pathElements.length == 0) return false; // no extension, can't filter
+        String extension = pathElements[pathElements.length - 1];
+        for (String ignoredExtension : ignoredExtensions) {
+            if (ignoredExtension.equalsIgnoreCase(extension)) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

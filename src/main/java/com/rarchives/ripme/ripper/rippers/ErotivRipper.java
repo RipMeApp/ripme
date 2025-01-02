@@ -2,6 +2,8 @@ package com.rarchives.ripme.ripper.rippers;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -11,7 +13,6 @@ import java.util.regex.Pattern;
 import org.jsoup.Connection.Response;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
 
 import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 import com.rarchives.ripme.utils.Http;
@@ -57,8 +58,8 @@ public class ErotivRipper extends AbstractHTMLRipper {
     }
 
     @Override
-    public URL sanitizeURL(URL url) throws MalformedURLException {
-        return new URL(url.toExternalForm().replaceAll("https?://www.erotiv.io", "https://erotiv.io"));
+    public URL sanitizeURL(URL url) throws MalformedURLException, URISyntaxException {
+        return new URI(url.toExternalForm().replaceAll("https?://www.erotiv.io", "https://erotiv.io")).toURL();
     }
 
     @Override

@@ -1,9 +1,23 @@
 package com.rarchives.ripme.ripper.rippers;
 
-import java.io.File;
+import com.rarchives.ripme.ripper.AbstractHTMLRipper;
+import com.rarchives.ripme.ripper.DownloadThreadPool;
+import com.rarchives.ripme.ui.RipStatusMessage;
+import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
+import com.rarchives.ripme.utils.Http;
+import com.rarchives.ripme.utils.RipUtils;
+import com.rarchives.ripme.utils.Utils;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -11,44 +25,31 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.rarchives.ripme.ui.RipStatusMessage;
-import com.rarchives.ripme.utils.RipUtils;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-
-import com.rarchives.ripme.ripper.AbstractHTMLRipper;
-import com.rarchives.ripme.ripper.DownloadThreadPool;
-import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
-import com.rarchives.ripme.utils.Http;
-import com.rarchives.ripme.utils.Utils;
-
 public class EHentaiRipper extends AbstractHTMLRipper {
     // All sleep times are in milliseconds
-    private static final int PAGE_SLEEP_TIME     = 3000;
-    private static final int IMAGE_SLEEP_TIME    = 1500;
-    private static final int IP_BLOCK_SLEEP_TIME = 60  * 1000;
+    private static final int PAGE_SLEEP_TIME = 3000;
+    private static final int IMAGE_SLEEP_TIME = 1500;
+    private static final int IP_BLOCK_SLEEP_TIME = 60 * 1000;
+    private static final Map<String, String> cookies = new HashMap<>();
 
-    private String lastURL = null;
-
-    // Thread pool for finding direct image links from "image" pages (html)
-    private DownloadThreadPool ehentaiThreadPool = new DownloadThreadPool("ehentai");
-    @Override
-    public DownloadThreadPool getThreadPool() {
-        return ehentaiThreadPool;
-    }
-
-    // Current HTML document
-    private Document albumDoc = null;
-
-    private static final Map<String,String> cookies = new HashMap<>();
     static {
         cookies.put("nw", "1");
         cookies.put("tip", "1");
     }
 
+    private String lastURL = null;
+    // Thread pool for finding direct image links from "image" pages (html)
+    private final DownloadThreadPool ehentaiThreadPool = new DownloadThreadPool("ehentai");
+    // Current HTML document
+    private Document albumDoc = null;
+
     public EHentaiRipper(URL url) throws IOException {
         super(url);
+    }
+
+    @Override
+    public DownloadThreadPool getThreadPool() {
+        return ehentaiThreadPool;
     }
 
     @Override
@@ -61,7 +62,7 @@ public class EHentaiRipper extends AbstractHTMLRipper {
         return "e-hentai.org";
     }
 
-    public String getAlbumTitle(URL url) throws MalformedURLException {
+    public String getAlbumTitle(URL url) throws MalformedURLException, URISyntaxException {
         try {
             // Attempt to use album title as GID
             if (albumDoc == null) {
@@ -93,12 +94,6 @@ public class EHentaiRipper extends AbstractHTMLRipper {
                         + " Got: " + url);
     }
 
-    /**
-     * Attempts to get page, checks for IP ban, waits.
-     * @param url
-     * @return Page document
-     * @throws IOException If page loading errors, or if retries are exhausted
-     */
     private Document getPageWithRetries(URL url) throws IOException {
         Document doc;
         int retries = 3;
@@ -106,9 +101,9 @@ public class EHentaiRipper extends AbstractHTMLRipper {
             sendUpdate(STATUS.LOADING_RESOURCE, url.toExternalForm());
             LOGGER.info("Retrieving " + url);
             doc = Http.url(url)
-                      .referrer(this.url)
-                      .cookies(cookies)
-                      .get();
+                    .referrer(this.url)
+                    .cookies(cookies)
+                    .get();
             if (doc.toString().contains("IP address will be automatically banned")) {
                 if (retries == 0) {
                     throw new IOException("Hit rate limit and maximum number of retries, giving up");
@@ -120,8 +115,7 @@ public class EHentaiRipper extends AbstractHTMLRipper {
                 } catch (InterruptedException e) {
                     throw new IOException("Interrupted while waiting for rate limit to subside");
                 }
-            }
-            else {
+            } else {
                 return doc;
             }
         }
@@ -155,7 +149,7 @@ public class EHentaiRipper extends AbstractHTMLRipper {
     }
 
     @Override
-    public Document getNextPage(Document doc) throws IOException {
+    public Document getNextPage(Document doc) throws IOException, URISyntaxException {
         // Check if we've stopped
         if (isStopped()) {
             throw new IOException("Ripping interrupted");
@@ -175,7 +169,7 @@ public class EHentaiRipper extends AbstractHTMLRipper {
         // Sleep before loading next page
         sleep(PAGE_SLEEP_TIME);
         // Load next page
-        Document nextPage = getPageWithRetries(new URL(nextURL));
+        Document nextPage = getPageWithRetries(new URI(nextURL).toURL());
         this.lastURL = nextURL;
         return nextPage;
     }
@@ -183,7 +177,7 @@ public class EHentaiRipper extends AbstractHTMLRipper {
     @Override
     public List<String> getURLsFromPage(Document page) {
         List<String> imageURLs = new ArrayList<>();
-        Elements thumbs = page.select("#gdt > .gdtm a");
+        Elements thumbs = page.select("#gdt > a");
         // Iterate over images on page
         for (Element thumb : thumbs) {
             imageURLs.add(thumb.attr("href"));
@@ -193,27 +187,26 @@ public class EHentaiRipper extends AbstractHTMLRipper {
 
     @Override
     public void downloadURL(URL url, int index) {
-        EHentaiImageThread t = new EHentaiImageThread(url, index, this.workingDir);
+        EHentaiImageThread t = new EHentaiImageThread(url, index, this.workingDir.toPath());
         ehentaiThreadPool.addThread(t);
         try {
             Thread.sleep(IMAGE_SLEEP_TIME);
-        }
-        catch (InterruptedException e) {
+        } catch (InterruptedException e) {
             LOGGER.warn("Interrupted while waiting to load next image", e);
         }
     }
 
     /**
      * Helper class to find and download images found on "image" pages
-     *
+     * <p>
      * Handles case when site has IP-banned the user.
      */
-    private class EHentaiImageThread extends Thread {
-        private URL url;
-        private int index;
-        private File workingDir;
+    private class EHentaiImageThread implements Runnable {
+        private final URL url;
+        private final int index;
+        private final Path workingDir;
 
-        EHentaiImageThread(URL url, int index, File workingDir) {
+        EHentaiImageThread(URL url, int index, Path workingDir) {
             super();
             this.url = url;
             this.index = index;
@@ -246,22 +239,21 @@ public class EHentaiRipper extends AbstractHTMLRipper {
                 Matcher m = p.matcher(imgsrc);
                 if (m.matches()) {
                     // Manually discover filename from URL
-                    String savePath = this.workingDir + File.separator;
+                    String savePath = this.workingDir + "/";
                     if (Utils.getConfigBoolean("download.save_order", true)) {
                         savePath += String.format("%03d_", index);
                     }
                     savePath += m.group(1);
-                    addURLToDownload(new URL(imgsrc), new File(savePath));
-                }
-                else {
+                    addURLToDownload(new URI(imgsrc).toURL(), Paths.get(savePath));
+                } else {
                     // Provide prefix and let the AbstractRipper "guess" the filename
                     String prefix = "";
                     if (Utils.getConfigBoolean("download.save_order", true)) {
                         prefix = String.format("%03d_", index);
                     }
-                    addURLToDownload(new URL(imgsrc), prefix);
+                    addURLToDownload(new URI(imgsrc).toURL(), prefix);
                 }
-            } catch (IOException e) {
+            } catch (IOException | URISyntaxException e) {
                 LOGGER.error("[!] Exception while loading/parsing " + this.url, e);
             }
         }

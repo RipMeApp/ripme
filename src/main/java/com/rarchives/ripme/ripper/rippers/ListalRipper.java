@@ -2,6 +2,8 @@ package com.rarchives.ripme.ripper.rippers;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -26,7 +28,7 @@ public class ListalRipper extends AbstractHTMLRipper {
 
     private Pattern p1 = Pattern.compile("https:\\/\\/www.listal.com\\/list\\/([a-zA-Z0-9-]+)");
     private Pattern p2 =
-            Pattern.compile("https:\\/\\/www.listal.com\\/((?:(?:[a-zA-Z0-9-]+)\\/?)+)");
+            Pattern.compile("https:\\/\\/www.listal.com\\/((?:(?:[a-zA-Z0-9-_%]+)\\/?)+)");
     private String listId = null; // listId to get more images via POST.
     private String postUrl = "https://www.listal.com/item-list/"; //to load more images.
     private UrlType urlType = UrlType.UNKNOWN;
@@ -94,7 +96,7 @@ public class ListalRipper extends AbstractHTMLRipper {
     }
 
     @Override
-    public Document getNextPage(Document page) throws IOException {
+    public Document getNextPage(Document page) throws IOException, URISyntaxException {
         Document nextPage = super.getNextPage(page);
         switch (urlType) {
             case LIST:
@@ -182,10 +184,10 @@ public class ListalRipper extends AbstractHTMLRipper {
         throw new MalformedURLException("Unable to fetch the gid for given url.");
     }
 
-    private class ListalImageDownloadThread extends Thread {
+    private class ListalImageDownloadThread implements Runnable {
 
-        private URL url;
-        private int index;
+        private final URL url;
+        private final int index;
 
         public ListalImageDownloadThread(URL url, int index) {
             super();
@@ -204,12 +206,12 @@ public class ListalRipper extends AbstractHTMLRipper {
 
                 String imageUrl = doc.getElementsByClass("pure-img").attr("src");
                 if (imageUrl != "") {
-                    addURLToDownload(new URL(imageUrl), getPrefix(index), "", null, null,
+                    addURLToDownload(new URI(imageUrl).toURL(), getPrefix(index), "", null, null,
                             getImageName());
                 } else {
                     LOGGER.error("Couldnt find image from url: " + url);
                 }
-            } catch (IOException e) {
+            } catch (IOException | URISyntaxException e) {
                 LOGGER.error("[!] Exception while downloading image: " + url, e);
             }
         }

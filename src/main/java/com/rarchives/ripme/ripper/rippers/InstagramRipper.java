@@ -1,18 +1,13 @@
 package com.rarchives.ripme.ripper.rippers;
 
+import com.oracle.js.parser.ErrorManager;
+import com.oracle.js.parser.Parser;
+import com.oracle.js.parser.ScriptEnvironment;
+import com.oracle.js.parser.Source;
+import com.oracle.js.parser.ir.*;
 import com.rarchives.ripme.ripper.AbstractJSONRipper;
 import com.rarchives.ripme.utils.Http;
 import com.rarchives.ripme.utils.Utils;
-import jdk.nashorn.internal.ir.Block;
-import jdk.nashorn.internal.ir.CallNode;
-import jdk.nashorn.internal.ir.ExpressionStatement;
-import jdk.nashorn.internal.ir.FunctionNode;
-import jdk.nashorn.internal.ir.Statement;
-import jdk.nashorn.internal.parser.Parser;
-import jdk.nashorn.internal.runtime.Context;
-import jdk.nashorn.internal.runtime.ErrorManager;
-import jdk.nashorn.internal.runtime.Source;
-import jdk.nashorn.internal.runtime.options.Options;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.jsoup.Connection;
@@ -26,12 +21,7 @@ import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Spliterators;
+import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -176,13 +166,17 @@ public class InstagramRipper extends AbstractJSONRipper {
         if (postRip) {
             return null;
         }
-        Predicate<String> hrefFilter = (storiesRip || pinnedReelRip) ? href -> href.contains("Consumer.js") :
-                href -> href.contains("ProfilePageContainer.js") || href.contains("TagPageContainer.js");
+
+        Predicate<String> hrefFilter = href -> href.contains("Consumer.js");
+        if (taggedRip) {
+            hrefFilter = href -> href.contains("ProfilePageContainer.js") || href.contains("TagPageContainer.js");
+        }
 
         String href = doc.select("link[rel=preload]").stream()
-                         .map(link -> link.attr("href"))
-                         .filter(hrefFilter)
-                         .findFirst().orElse("");
+                .map(link -> link.attr("href"))
+                .filter(hrefFilter)
+                .findFirst().orElse("");
+
         String body = Http.url("https://www.instagram.com" + href).cookies(cookies).response().body();
 
         Function<String, String> hashExtractor =
@@ -198,7 +192,8 @@ public class InstagramRipper extends AbstractJSONRipper {
     }
 
     private String getProfileHash(String jsData) {
-        return getHashValue(jsData, "loadProfilePageExtras", -1);
+        return getHashValue(jsData, "loadProfilePageExtras", -1,
+                s -> s.replaceAll(".*queryId\\s?:\\s?\"([0-9a-f]*)\".*", "$1"));
     }
 
     private String getPinnedHash(String jsData) {
@@ -386,7 +381,7 @@ public class InstagramRipper extends AbstractJSONRipper {
             case "GraphSidecar":
                 JSONArray sideCar = getJsonArrayByPath(mediaItem, "edge_sidecar_to_children.edges");
                 return getStreamOfJsonArray(sideCar).map(object -> object.getJSONObject("node"))
-                                                    .flatMap(this::parseRootForUrls);
+                        .flatMap(this::parseRootForUrls);
             default:
                 return Stream.empty();
         }
@@ -413,26 +408,35 @@ public class InstagramRipper extends AbstractJSONRipper {
 
     // Javascript parsing
     /* ------------------------------------------------------------------------------------------------------- */
-    private String getHashValue(String javaScriptData, String keyword, int offset) {
+    private String getHashValue(String javaScriptData, String keyword, int offset,
+            Function<String, String> extractHash) {
         List<Statement> statements = getJsBodyBlock(javaScriptData).getStatements();
+
         return statements.stream()
-                         .flatMap(statement -> filterItems(statement, ExpressionStatement.class))
-                         .map(ExpressionStatement::getExpression)
-                         .flatMap(expression -> filterItems(expression, CallNode.class))
-                         .map(CallNode::getArgs)
-                         .map(expressions -> expressions.get(0))
-                         .flatMap(expression -> filterItems(expression, FunctionNode.class))
-                         .map(FunctionNode::getBody)
-                         .map(Block::getStatements)
-                         .map(statementList -> lookForHash(statementList, keyword, offset))
-                         .filter(Objects::nonNull)
-                         .findFirst().orElse(null);
+                .flatMap(statement -> filterItems(statement, ExpressionStatement.class))
+                .map(ExpressionStatement::getExpression)
+                .flatMap(expression -> filterItems(expression, CallNode.class))
+                .map(CallNode::getArgs)
+                .map(expressions -> expressions.get(0))
+                .flatMap(expression -> filterItems(expression, FunctionNode.class))
+                .map(FunctionNode::getBody)
+                .map(Block::getStatements)
+                .map(statementList -> lookForHash(statementList, keyword, offset, extractHash))
+                .filter(Objects::nonNull)
+                .findFirst().orElse(null);
     }
 
-    private String lookForHash(List<Statement> list, String keyword, int offset) {
+    private String getHashValue(String javaScriptData, String keyword, int offset) {
+        return getHashValue(javaScriptData, keyword, offset, null);
+    }
+
+    private String lookForHash(List<Statement> list, String keyword, int offset, Function<String, String> extractHash) {
         for (int i = 0; i < list.size(); i++) {
             Statement st = list.get(i);
             if (st.toString().contains(keyword)) {
+                if (extractHash != null) {
+                    return extractHash.apply(list.get(i + offset).toString());
+                }
                 return list.get(i + offset).toString().replaceAll(".*\"([0-9a-f]*)\".*", "$1");
             }
         }
@@ -444,9 +448,10 @@ public class InstagramRipper extends AbstractJSONRipper {
     }
 
     private Block getJsBodyBlock(String javaScriptData) {
-        ErrorManager errors = new ErrorManager();
-        Context context = new Context(new Options("nashorn"), errors, Thread.currentThread().getContextClassLoader());
-        return new Parser(context.getEnv(), Source.sourceFor("name", javaScriptData), errors).parse().getBody();
+        ScriptEnvironment env = ScriptEnvironment.builder().ecmaScriptVersion(10).constAsVar(true).build();
+        ErrorManager errorManager = new ErrorManager.ThrowErrorManager();
+        Source src = Source.sourceFor("name", javaScriptData);
+        return new Parser(env, src, errorManager).parse().getBody();
     }
 
     // Some JSON helper methods below

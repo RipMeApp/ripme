@@ -2,6 +2,7 @@ package com.rarchives.ripme.ripper.rippers;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -19,7 +20,6 @@ import com.rarchives.ripme.utils.Http;
 
 public class ZizkiRipper extends AbstractHTMLRipper {
 
-    private Document albumDoc = null;
     private Map<String,String> cookies = new HashMap<>();
 
     public ZizkiRipper(URL url) throws IOException {
@@ -46,13 +46,13 @@ public class ZizkiRipper extends AbstractHTMLRipper {
     }
 
     @Override
-    public String getAlbumTitle(URL url) throws MalformedURLException {
+    public String getAlbumTitle(URL url) throws MalformedURLException, URISyntaxException {
         try {
             // Attempt to use album title as GID
-            Element titleElement = getFirstPage().select("h1.title").first();
+            Element titleElement = getCachedFirstPage().select("h1.title").first();
             String title = titleElement.text();
 
-            Element authorSpan = getFirstPage().select("span[class=creator]").first();
+            Element authorSpan = getCachedFirstPage().select("span[class=creator]").first();
             String author = authorSpan.select("a").first().text();
             LOGGER.debug("Author: " + author);
             return getHost() + "_" + author + "_" + title.trim();
@@ -65,12 +65,9 @@ public class ZizkiRipper extends AbstractHTMLRipper {
 
     @Override
     public Document getFirstPage() throws IOException {
-        if (albumDoc == null) {
-            Response resp = Http.url(url).response();
-            cookies.putAll(resp.cookies());
-            albumDoc = resp.parse();
-        }
-        return albumDoc;
+        Response resp = Http.url(url).response();
+        cookies.putAll(resp.cookies());
+        return resp.parse();
     }
 
     @Override
@@ -87,14 +84,12 @@ public class ZizkiRipper extends AbstractHTMLRipper {
             if (thumb.hasAttr("typeof")) {
                 img_type = thumb.attr("typeof");
                 if (img_type.equals("foaf:Image")) {
-                  LOGGER.debug("Found image with " + img_type);
                   if (thumb.parent() != null &&
-                      thumb.parent().parent() != null &&
-                      thumb.parent().parent().attr("class") != null &&
-                      thumb.parent().parent().attr("class").equals("aimage-center")
+                      thumb.parent().attr("class") != null &&
+                      thumb.parent().attr("class").contains("colorbox")
                      )
                   {
-                     src = thumb.attr("src");
+                     src = thumb.parent().attr("href");
                      LOGGER.debug("Found url with " + src);
                      if (!src.contains("zizki.com")) {
                      } else {
