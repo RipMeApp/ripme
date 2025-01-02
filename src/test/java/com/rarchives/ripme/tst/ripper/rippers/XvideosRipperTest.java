@@ -22,4 +22,16 @@ public class XvideosRipperTest extends RippersTest {
         XvideosRipper ripper = new XvideosRipper(new URI("https://www.xvideos.com/video.ufkmptkc4ae/big_tit_step_sis_made_me_cum_inside_her").toURL());
         testRipper(ripper);
     }
+
+    @Test
+    public void testXvideosAmateursAlbum() throws IOException, URISyntaxException {
+        XvideosRipper ripper = new XvideosRipper(new URI("https://www.xvideos.com/amateurs/nikibeee/photos/2476083/lanikki").toURL());
+        testRipper(ripper);
+    }
+
+    @Test
+    public void testXvideosProfilesAlbum() throws IOException, URISyntaxException {
+        XvideosRipper ripper = new XvideosRipper(new URI("https://www.xvideos.com/profiles/dmthate/photos/8259625/sexy").toURL());
+        testRipper(ripper);
+    }
 }
