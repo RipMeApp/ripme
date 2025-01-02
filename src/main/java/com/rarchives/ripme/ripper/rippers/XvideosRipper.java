@@ -9,20 +9,26 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-
 import com.rarchives.ripme.ripper.AbstractSingleFileRipper;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import com.rarchives.ripme.utils.Http;
-
 public class XvideosRipper extends AbstractSingleFileRipper {
+
+    private static final Logger logger = LogManager.getLogger(XvideosRipper.class);
 
     private static final String HOST = "xvideos";
 
+    private static final Pattern videoPattern = Pattern.compile("^https?://[wm.]*xvideos\\.com/video([0-9]+|\\.[^/]*)(.*)$");
+    private static final Pattern albumPattern = Pattern.compile("^https?://[wm.]*xvideos\\.com/profiles/([a-zA-Z0-9_-]+)/photos/(\\d+)/([a-zA-Z0-9_-]+)$");
+
     public XvideosRipper(URL url) throws IOException {
         super(url);
+        logger.debug("Attempting to initialize XvideosRipper video from " + url);
     }
 
     @Override
@@ -37,12 +43,13 @@ public class XvideosRipper extends AbstractSingleFileRipper {
 
     @Override
     public boolean canRip(URL url) {
-        Pattern p = Pattern.compile("^https?://[wm.]*xvideos\\.com/video[0-9]+.*$");
+        logger.debug("Checking if XvideosRipper can rip " + url);
+        Pattern p = videoPattern;
         Matcher m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             return true;
         }
-        p = Pattern.compile("^https?://[wm.]*xvideos\\.com/profiles/[a-zA-Z0-9_-]+/photos/\\d+/[a-zA-Z0-9_-]+$");
+        p = albumPattern;
         m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             return true;
@@ -52,15 +59,15 @@ public class XvideosRipper extends AbstractSingleFileRipper {
 
     @Override
     public String getGID(URL url) throws MalformedURLException {
-        Pattern p = Pattern.compile("^https?://[wm.]*xvideos\\.com/video([0-9]+).*$");
+        Pattern p = videoPattern;
         Matcher m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             return m.group(1);
         }
-        p = Pattern.compile("^https?://[wm.]*xvideos\\.com/profiles/[a-zA-Z0-9_-]+/photos/(\\d+)/[a-zA-Z0-9_-]+$");
+        p = albumPattern;
         m = p.matcher(url.toExternalForm());
         if (m.matches()) {
-            return m.group(1);
+            return m.group(2);
         }
 
         throw new MalformedURLException(
@@ -72,7 +79,7 @@ public class XvideosRipper extends AbstractSingleFileRipper {
     @Override
     public List<String> getURLsFromPage(Document doc) {
         List<String> results = new ArrayList<>();
-        Pattern p = Pattern.compile("^https?://[wm.]*xvideos\\.com/video([0-9]+).*$");
+        Pattern p = videoPattern;
         Matcher m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             Elements scripts = doc.select("script");
@@ -106,12 +113,18 @@ public class XvideosRipper extends AbstractSingleFileRipper {
 
     @Override
     public String getAlbumTitle(URL url) throws MalformedURLException, URISyntaxException {
-        Pattern p = Pattern.compile("^https?://[wm.]*xvideos\\.com/profiles/([a-zA-Z0-9_-]+)/photos/(\\d+)/([a-zA-Z0-9_-]+)$");
+        Pattern p = albumPattern;
         Matcher m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             return getHost() + "_" + m.group(1) + "_" + m.group(3) + "_" + m.group(2);
-        } else {
-            return super.getAlbumTitle(url);
         }
+
+        p = videoPattern;
+        m = p.matcher(url.toExternalForm());
+        if (m.matches()) {
+            return getHost() + "_" + m.group(1) + "_" + m.group(2);
+        }
+
+        return super.getAlbumTitle(url);
     }
 }
