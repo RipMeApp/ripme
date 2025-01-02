@@ -25,7 +25,7 @@ Chat with the team and community on [gitter](https://gitter.im/RipMeApp/Lobby) a
 # About
 
 RipMe is an album ripper for various websites. It is a cross-platform tool that runs on your computer, and
-requires Java 23 to run. RipMe has been tested and is confirmed working on Windows, Linux, and MacOS.
+requires Java 21 or later to run. RipMe has been tested and is confirmed working on Windows, Linux, and MacOS.
 
 ![Screenshot](https://i.imgur.com/UCQNjeg.png)
 
