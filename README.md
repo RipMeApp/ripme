@@ -121,6 +121,7 @@ the following combinations of tags:
 - testSlow runs tests with tag "slow".
 - tests can be run by test class, or single test. Use "testAll" so it does
   not matter if a test is tagged or not.
+- tests can give the full stack of an assertion, exception, or error if you pass `--info` to the command
 
 ```bash
 ./gradlew test
@@ -129,6 +130,7 @@ the following combinations of tags:
 ./gradlew testSlow
 ./gradlew testAll --tests XhamsterRipperTest
 ./gradlew testAll --tests XhamsterRipperTest.testXhamster2Album
+./gradlew testAll --tests ChanRipperTest --info
 ```
 
 Please note that some tests may fail as sites change and our rippers

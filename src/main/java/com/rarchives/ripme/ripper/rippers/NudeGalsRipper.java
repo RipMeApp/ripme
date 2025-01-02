@@ -56,6 +56,7 @@ public class NudeGalsRipper extends AbstractHTMLRipper {
         for (Element thumb : thumbs) {
             String link = thumb.attr("src").replaceAll("thumbs/th_", "");
             String imgSrc = "http://nude-gals.com/" + link;
+            imgSrc = imgSrc.replaceAll(" ", "%20");
             imageURLs.add(imgSrc);
         }
 
