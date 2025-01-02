@@ -6,7 +6,14 @@
 ![alt Badge Status](https://github.com/ripmeapp2/ripme/actions/workflows/gradle.yml/badge.svg)
 [![Coverage Status](https://coveralls.io/repos/github/RipMeApp/ripme/badge.svg?branch=main)](https://coveralls.io/github/RipMeApp/ripme?branch=main)
 
-The current active development repo for RipMe is located at [ripmeapp2/ripme](https://github.com/ripmeapp2/ripme/).
+## Recent development updates
+
+- For a while, the ripmeapp/ripme repo was inactive, but development continued at ripmeapp2/ripme.
+- Now, maintainers have been updated and development has been rejoined with ripmeapp/ripme where it will continue.
+- You may find a number of stale issues on ripmeapp/ripme and/or on ripmeapp2/ripme until everything is merged back together and statuses are updated.
+- The current active development repo for RipMe is located at [ripmeapp/ripme](https://github.com/ripmeapp/ripme/).
+
+## Maintainers
 
 RipMe has been maintained with ♥️ and in our limited free time by the following
 people, roughly in order from most recent primary developer, with current
@@ -19,6 +26,8 @@ activity marked by color of the indicator:
 - and its original creator, **[@4pr0n](https://github.com/4pr0n)** 🟥.
 
 If you'd like to become a maintainer, ask an active maintainer to be added to the team.
+
+## Contact
 
 Chat with the team and community on [gitter](https://gitter.im/RipMeApp/Lobby) and [reddit.com/r/ripme](https://www.reddit.com/r/ripme/)
 
