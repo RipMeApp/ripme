@@ -24,7 +24,7 @@ public class XvideosRipper extends AbstractSingleFileRipper {
     private static final String HOST = "xvideos";
 
     private static final Pattern videoPattern = Pattern.compile("^https?://[wm.]*xvideos\\.com/video([0-9]+|\\.[^/]*)(.*)$");
-    private static final Pattern albumPattern = Pattern.compile("^https?://[wm.]*xvideos\\.com/profiles/([a-zA-Z0-9_-]+)/photos/(\\d+)/([a-zA-Z0-9_-]+)$");
+    private static final Pattern albumPattern = Pattern.compile("^https?://[wm.]*xvideos\\.com/(profiles|amateurs)/([a-zA-Z0-9_-]+)/photos/(\\d+)/([a-zA-Z0-9_-]+)$");
 
     public XvideosRipper(URL url) throws IOException {
         super(url);
@@ -67,7 +67,7 @@ public class XvideosRipper extends AbstractSingleFileRipper {
         p = albumPattern;
         m = p.matcher(url.toExternalForm());
         if (m.matches()) {
-            return m.group(2);
+            return m.group(3);
         }
 
         throw new MalformedURLException(
@@ -116,7 +116,7 @@ public class XvideosRipper extends AbstractSingleFileRipper {
         Pattern p = albumPattern;
         Matcher m = p.matcher(url.toExternalForm());
         if (m.matches()) {
-            return getHost() + "_" + m.group(1) + "_" + m.group(3) + "_" + m.group(2);
+            return getHost() + "_" + m.group(1) + "_" + m.group(2) + "_" + m.group(4) + "_" + m.group(3);
         }
 
         p = videoPattern;
