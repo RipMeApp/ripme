@@ -20,10 +20,19 @@ import java.util.regex.Pattern;
 public class LusciousRipper extends AbstractHTMLRipper {
     private static String albumid;
 
-    private static final Pattern P = Pattern.compile("^https?://(?:members\\.|legacy\\.|www\\.)?luscious.net/albums/([-_.0-9a-zA-Z]+)/?");
+    private static final Pattern p = Pattern.compile("^https?://(?:www\\.)?(?:members\\.||legacy\\.||old\\.)?luscious\\.net/albums/([-_.0-9a-zA-Z]+).*$");
 
     public LusciousRipper(URL url) throws IOException {
         super(url);
+    }
+
+    @Override
+    public URL sanitizeURL(URL url) throws MalformedURLException {
+        String URLToReturn = url.toExternalForm();
+        URLToReturn = URLToReturn.replaceAll("https?://(?:www\\.)?luscious\\.", "https://old.luscious.");
+        URL san_url = new URL(URLToReturn);
+        LOGGER.info("sanitized URL is " + san_url.toExternalForm());
+        return san_url;
     }
 
     @Override
