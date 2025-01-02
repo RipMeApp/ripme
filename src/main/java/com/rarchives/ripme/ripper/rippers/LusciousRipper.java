@@ -85,7 +85,7 @@ public class LusciousRipper extends AbstractHTMLRipper {
 
     @Override
     public String getGID(URL url) throws MalformedURLException {
-        Matcher m = P.matcher(url.toExternalForm());
+        Matcher m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             albumid = m.group(1).split("_")[m.group(1).split("_").length - 1];
             return m.group(1);
