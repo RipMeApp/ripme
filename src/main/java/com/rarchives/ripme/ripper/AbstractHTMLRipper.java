@@ -28,7 +28,7 @@ import com.rarchives.ripme.utils.Http;
  * Simplified ripper, designed for ripping from sites by parsing HTML.
  */
 public abstract class AbstractHTMLRipper extends AbstractRipper {
-    
+
     private final Map<URL, File> itemsPending = Collections.synchronizedMap(new HashMap<>());
     private final Map<URL, Path> itemsCompleted = Collections.synchronizedMap(new HashMap<>());
     private final Map<URL, String> itemsErrored = Collections.synchronizedMap(new HashMap<>());
@@ -60,11 +60,15 @@ public abstract class AbstractHTMLRipper extends AbstractRipper {
     public Document getNextPage(Document doc) throws IOException, URISyntaxException {
         return null;
     }
-    protected abstract List<String> getURLsFromPage(Document page) throws UnsupportedEncodingException;
+
+    protected abstract List<String> getURLsFromPage(Document page) throws UnsupportedEncodingException, URISyntaxException;
+
     protected List<String> getDescriptionsFromPage(Document doc) throws IOException {
         throw new IOException("getDescriptionsFromPage not implemented"); // Do I do this or make an abstract function?
     }
+
     protected abstract void downloadURL(URL url, int index);
+
     protected DownloadThreadPool getThreadPool() {
         return null;
     }
@@ -130,7 +134,7 @@ public abstract class AbstractHTMLRipper extends AbstractRipper {
         List<String> doclocation = new ArrayList<>();
 
         LOGGER.info("Got doc location " + doc.location());
-        
+
         while (doc != null) {
 
             LOGGER.info("Processing a doc...");
@@ -167,7 +171,7 @@ public abstract class AbstractHTMLRipper extends AbstractRipper {
                 for (String imageURL : imageURLs) {
                     index += 1;
                     LOGGER.debug("Found image url #" + index + ": '" + imageURL + "'");
-                    downloadURL(new URL(imageURL), index);
+                    downloadURL(new URI(imageURL).toURL(), index);
                     if (isStopped() || isThisATest()) {
                         break;
                     }
@@ -182,19 +186,26 @@ public abstract class AbstractHTMLRipper extends AbstractRipper {
                         if (isStopped() || isThisATest()) {
                             break;
                         }
+
                         textindex += 1;
                         LOGGER.debug("Getting description from " + textURL);
                         String[] tempDesc = getDescription(textURL,doc);
+
                         if (tempDesc != null) {
-                            if (Utils.getConfigBoolean("file.overwrite", false) || !(new File(
-                                    workingDir.getCanonicalPath()
-                                            + ""
-                                            + File.separator
-                                            + getPrefix(index)
-                                            + (tempDesc.length > 1 ? tempDesc[1] : fileNameFromURL(new URL(textURL)))
-                                            + ".txt").exists())) {
+                            URL url = new URI(textURL).toURL();
+                            String filename = fileNameFromURL(url);
+
+                            boolean fileExists = new File(
+                                workingDir.getCanonicalPath()
+                                        + ""
+                                        + File.separator
+                                        + getPrefix(index)
+                                        + (tempDesc.length > 1 ? tempDesc[1] : filename)
+                                        + ".txt").exists();
+
+                            if (Utils.getConfigBoolean("file.overwrite", false) || !fileExists) {
                                 LOGGER.debug("Got description from " + textURL);
-                                saveText(new URL(textURL), "", tempDesc[0], textindex, (tempDesc.length > 1 ? tempDesc[1] : fileNameFromURL(new URL(textURL))));
+                                saveText(url, "", tempDesc[0], textindex, (tempDesc.length > 1 ? tempDesc[1] : filename));
                                 sleep(descSleepTime());
                             } else {
                                 LOGGER.debug("Description from " + textURL + " already exists.");
@@ -225,12 +236,12 @@ public abstract class AbstractHTMLRipper extends AbstractRipper {
         }
         waitForThreads();
     }
-    
+
     /**
      * Gets the file name from the URL
-     * @param url 
+     * @param url
      *      URL that you want to get the filename from
-     * @return 
+     * @return
      *      Filename of the URL
      */
     private String fileNameFromURL(URL url) {
@@ -244,7 +255,7 @@ public abstract class AbstractHTMLRipper extends AbstractRipper {
         return saveAs;
     }
     /**
-     * 
+     *
      * @param url
      *      Target URL
      * @param subdirectory
@@ -253,7 +264,7 @@ public abstract class AbstractHTMLRipper extends AbstractRipper {
      *      Text you want to save
      * @param index
      *      Index in something like an album
-     * @return 
+     * @return
      *      True if ripped successfully
      *      False if failed
      */
@@ -295,12 +306,12 @@ public abstract class AbstractHTMLRipper extends AbstractRipper {
         }
         return true;
     }
-    
+
     /**
      * Gets prefix based on where in the index it is
-     * @param index 
+     * @param index
      *      The index in question
-     * @return 
+     * @return
      *      Returns prefix for a file. (?)
      */
     protected String getPrefix(int index) {
@@ -313,9 +324,9 @@ public abstract class AbstractHTMLRipper extends AbstractRipper {
 
     /*
      * ------ Methods copied from AlbumRipper. ------
-     * This removes AlbumnRipper's usage from this class. 
+     * This removes AlbumnRipper's usage from this class.
      */
-    
+
     protected boolean allowDuplicates() {
         return false;
     }

@@ -6,6 +6,7 @@ import com.rarchives.ripme.utils.Utils;
 import com.rarchives.ripme.utils.RipUtils;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -208,7 +209,7 @@ public class ChanRipper extends AbstractHTMLRipper {
         return false;
     }
     @Override
-    public List<String> getURLsFromPage(Document page) {
+    public List<String> getURLsFromPage(Document page) throws URISyntaxException {
         List<String> imageURLs = new ArrayList<>();
         Pattern p; Matcher m;
         for (Element link : page.select("a")) {
@@ -254,8 +255,8 @@ public class ChanRipper extends AbstractHTMLRipper {
                 //Copied code from RedditRipper, getFilesFromURL should also implement stuff like flickr albums
                 URL originalURL;
                 try {
-                    originalURL = new URL(href);
-                } catch (MalformedURLException e) {
+                    originalURL = new URI(href).toURL();
+                } catch (MalformedURLException | URISyntaxException | IllegalArgumentException e) {
                     continue;
                 }
 
