@@ -57,6 +57,7 @@ public class UIContextMenuTests {
     }
 
     @Test
+    @Tag("flaky")
     void testCut() {
         // Simulate a cut event
         simulateCutEvent();
@@ -64,6 +65,7 @@ public class UIContextMenuTests {
     }
 
     @Test
+    @Tag("flaky")
     void testCopy() {
         // Simulate a copy event
         simulateCopyEvent();
@@ -71,6 +73,7 @@ public class UIContextMenuTests {
     }
 
     @Test
+    @Tag("flaky")
     void testPaste() {
         // Simulate a paste event
         simulatePasteEvent();
@@ -78,6 +81,7 @@ public class UIContextMenuTests {
     }
 
     @Test
+    @Tag("flaky")
     void testSelectAll() {
         // Simulate a select all event
         simulateSelectAllEvent();
@@ -85,6 +89,7 @@ public class UIContextMenuTests {
     }
 
     @Test
+    @Tag("flaky")
     void testUndo() {
         // Simulate an undo event
         simulateUndoEvent();

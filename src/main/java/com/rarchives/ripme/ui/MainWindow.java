@@ -751,8 +751,8 @@ public final class MainWindow implements Runnable, RipStatusHandler {
     }
 
     private void setupHandlers() {
-        ripButton.addActionListener(new RipButtonHandler());
-        ripTextfield.addActionListener(new RipButtonHandler());
+        ripButton.addActionListener(new RipButtonHandler(this));
+        ripTextfield.addActionListener(new RipButtonHandler(this));
         ripTextfield.getDocument().addDocumentListener(new DocumentListener() {
             @Override
             public void removeUpdate(DocumentEvent e) {
@@ -1390,10 +1390,25 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         }
     }
 
-    class RipButtonHandler implements ActionListener {
+
+    public static JTextField getRipTextfield() {
+        return ripTextfield;
+    }
+
+    public static DefaultListModel<Object> getQueueListModel() {
+        return queueListModel;
+    }
+    static class RipButtonHandler implements ActionListener {
+
+        private MainWindow mainWindow;
+
+        public RipButtonHandler(MainWindow mainWindow) {
+            this.mainWindow = mainWindow;
+        }
         public void actionPerformed(ActionEvent event) {
             String url = ripTextfield.getText();
-            if (!queueListModel.contains(url) && !url.equals("")) {
+            boolean url_not_empty = !url.equals("");
+            if (!queueListModel.contains(url) && url_not_empty) {
                 // Check if we're ripping a range of urls
                 if (url.contains("{")) {
                     // Make sure the user hasn't forgotten the closing }
@@ -1403,22 +1418,25 @@ public final class MainWindow implements Runnable, RipStatusHandler {
                         int rangeEnd = Integer.parseInt(rangeToParse.split("-")[1]);
                         for (int i = rangeStart; i < rangeEnd + 1; i++) {
                             String realURL = url.replaceAll("\\{\\S*\\}", Integer.toString(i));
-                            if (canRip(realURL)) {
-                                queueListModel.add(queueListModel.size(), realURL);
+                            if (mainWindow.canRip(realURL)) {
+                                queueListModel.addElement(realURL);
                                 ripTextfield.setText("");
                             } else {
-                                displayAndLogError("Can't find ripper for " + realURL, Color.RED);
+                                mainWindow.displayAndLogError("Can't find ripper for " + realURL, Color.RED);
                             }
                         }
                     }
                 } else {
-                    queueListModel.add(queueListModel.size(), ripTextfield.getText());
+                    queueListModel.addElement(url);
                     ripTextfield.setText("");
                 }
-            } else {
-                if (!isRipping) {
-                    ripNextAlbum();
-                }
+            } else if (url_not_empty) {
+                mainWindow.displayAndLogError("This URL is already in queue: " + url, Color.RED);
+                mainWindow.statusWithColor("This URL is already in queue: " + url, Color.ORANGE);
+                ripTextfield.setText("");
+            }
+            else if(!mainWindow.isRipping){
+                mainWindow.ripNextAlbum();
             }
         }
     }

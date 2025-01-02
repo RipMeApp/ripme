@@ -23,32 +23,18 @@ import org.junit.jupiter.api.Test;
 public class ChanRipperTest extends RippersTest {
     @Test
     @Tag("flaky")
-    public void testChanURLPasses() throws IOException, URISyntaxException  {
+    public void testChanURLPasses() throws IOException, URISyntaxException {
         List<URL> passURLs = new ArrayList<>();
         // URLs that should work
         passURLs.add(new URI("http://desuchan.net/v/res/7034.html").toURL());
         passURLs.add(new URI("https://boards.4chan.org/hr/thread/3015701").toURL());
-        passURLs.add(new URI("https://boards.420chan.org/420/res/232066.php").toURL());
+//        passURLs.add(new URI("https://boards.420chan.org/420/res/232066.php").toURL()); - Dead link
         passURLs.add(new URI("http://7chan.org/gif/res/25873.html").toURL());
         passURLs.add(new URI("https://rbt.asia/g/thread/70643087/").toURL()); //must work with TLDs with len of 4
         for (URL url : passURLs) {
             ChanRipper ripper = new ChanRipper(url);
             // Use CompletableFuture to run setup() asynchronously
-            CompletableFuture<Void> setupFuture = CompletableFuture.runAsync(() -> {
-                try {
-                    ripper.setup();
-                } catch (IOException | URISyntaxException e) {
-                    throw new RuntimeException(e);
-                }
-            });
-
-            try {
-                // Wait for up to 5 seconds for setup() to complete
-                setupFuture.get(5, TimeUnit.SECONDS);
-            } catch (InterruptedException | ExecutionException |
-                     TimeoutException e) {
-                e.printStackTrace(); // Handle exceptions as needed
-            }
+            ripper.setup();
             assert (ripper.canRip(url));
             Assertions.assertNotNull(ripper.getWorkingDir(), "Ripper for " + url + " did not have a valid working directory.");
             deleteDir(ripper.getWorkingDir());
