@@ -256,7 +256,7 @@ public class ChanRipper extends AbstractHTMLRipper {
                 URL originalURL;
                 try {
                     originalURL = new URI(href).toURL();
-                } catch (MalformedURLException e) {
+                } catch (MalformedURLException | URISyntaxException | IllegalArgumentException e) {
                     continue;
                 }
 
