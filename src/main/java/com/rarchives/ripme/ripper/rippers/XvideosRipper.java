@@ -11,15 +11,11 @@ import java.util.regex.Pattern;
 
 import com.rarchives.ripme.ripper.AbstractSingleFileRipper;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 public class XvideosRipper extends AbstractSingleFileRipper {
-
-    private static final Logger logger = LogManager.getLogger(XvideosRipper.class);
 
     private static final String HOST = "xvideos";
 
@@ -28,7 +24,6 @@ public class XvideosRipper extends AbstractSingleFileRipper {
 
     public XvideosRipper(URL url) throws IOException {
         super(url);
-        logger.debug("Attempting to initialize XvideosRipper video from " + url);
     }
 
     @Override
@@ -43,7 +38,6 @@ public class XvideosRipper extends AbstractSingleFileRipper {
 
     @Override
     public boolean canRip(URL url) {
-        logger.debug("Checking if XvideosRipper can rip " + url);
         Pattern p = videoPattern;
         Matcher m = p.matcher(url.toExternalForm());
         if (m.matches()) {
