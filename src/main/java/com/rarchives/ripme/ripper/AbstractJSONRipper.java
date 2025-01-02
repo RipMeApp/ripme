@@ -8,6 +8,7 @@ import org.json.JSONObject;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -94,7 +95,7 @@ public abstract class AbstractJSONRipper extends AbstractRipper {
                 
                 index += 1;
                 LOGGER.debug("Found image url #" + index+ ": " + imageURL);
-                downloadURL(new URL(imageURL), index);
+                downloadURL(new URI(imageURL).toURL(), index);
             }
 
             if (isStopped() || isThisATest()) {
