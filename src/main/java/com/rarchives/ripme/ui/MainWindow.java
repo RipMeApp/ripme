@@ -1543,7 +1543,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
             openButton.setVisible(true);
             Path f = rsc.dir;
             String prettyFile = Utils.shortenPath(f);
-            openButton.setText(Utils.getLocalizedString("open") + prettyFile);
+            openButton.setText(Utils.getLocalizedString("open") + " " + prettyFile);
             mainFrame.setTitle("RipMe v" + UpdateUtils.getThisJarVersion());
             try {
                 Image folderIcon = ImageIO.read(getClass().getClassLoader().getResource("folder.png"));
