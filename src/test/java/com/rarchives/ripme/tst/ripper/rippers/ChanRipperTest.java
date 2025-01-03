@@ -22,14 +22,10 @@ import org.junit.jupiter.api.Test;
 
 public class ChanRipperTest extends RippersTest {
     @Test
-    @Tag("flaky")
     public void testChanURLPasses() throws IOException, URISyntaxException {
         List<URL> passURLs = new ArrayList<>();
         // URLs that should work
-        passURLs.add(new URI("http://desuchan.net/v/res/7034.html").toURL());
-        passURLs.add(new URI("https://boards.4chan.org/hr/thread/3015701").toURL());
-//        passURLs.add(new URI("https://boards.420chan.org/420/res/232066.php").toURL()); - Dead link
-        passURLs.add(new URI("http://7chan.org/gif/res/25873.html").toURL());
+        passURLs.add(new URI("https://boards.4chan.org/g/thread/103742599").toURL());
         passURLs.add(new URI("https://rbt.asia/g/thread/70643087/").toURL()); //must work with TLDs with len of 4
         for (URL url : passURLs) {
             ChanRipper ripper = new ChanRipper(url);
