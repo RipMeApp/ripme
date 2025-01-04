@@ -4,8 +4,9 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import com.rarchives.ripme.ripper.rippers.FapDungeonRipper;
 import org.junit.jupiter.api.Test;
+
+import com.rarchives.ripme.ripper.rippers.FapDungeonRipper;
 
 public class FapDungeonRipperTest extends RippersTest {
     @Test
