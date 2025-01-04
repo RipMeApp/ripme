@@ -154,11 +154,15 @@ class DownloadFileThread implements Runnable {
                     throw new IOException("Redirect status code " + statusCode + " - redirect to " + location);
                 }
                 if (statusCode / 100 == 4) { // 4xx errors
-                    logger.error("[!] " + Utils.getLocalizedString("nonretriable.status.code") + " " + statusCode
-                            + " while downloading from " + url);
-                    observer.downloadErrored(url, Utils.getLocalizedString("nonretriable.status.code") + " "
-                            + statusCode + " while downloading " + url.toExternalForm());
-                    return; // Not retriable, drop out.
+                    if (statusCode == 429) {
+                        throw new IOException(Utils.getLocalizedString("retriable.status.code") + " " + statusCode);
+                    } else {
+                        logger.error("[!] " + Utils.getLocalizedString("nonretriable.status.code") + " " + statusCode
+                                + " while downloading from " + url);
+                        observer.downloadErrored(url, Utils.getLocalizedString("nonretriable.status.code") + " "
+                                + statusCode + " while downloading " + url.toExternalForm());
+                        return; // Not retriable, drop out.
+                    }
                 }
                 if (statusCode / 100 == 5) { // 5xx errors
                     observer.downloadErrored(url, Utils.getLocalizedString("retriable.status.code") + " " + statusCode

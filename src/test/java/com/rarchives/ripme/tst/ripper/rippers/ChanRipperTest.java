@@ -25,6 +25,8 @@ public class ChanRipperTest extends RippersTest {
     public void testChanURLPasses() throws IOException, URISyntaxException {
         List<URL> passURLs = new ArrayList<>();
         // URLs that should work
+
+        passURLs.add(new URI("https://boards.4chan.org/gif/thread/28319534").toURL());
         passURLs.add(new URI("https://boards.4chan.org/g/thread/103742599").toURL());
         passURLs.add(new URI("https://rbt.asia/g/thread/70643087/").toURL()); //must work with TLDs with len of 4
         for (URL url : passURLs) {
