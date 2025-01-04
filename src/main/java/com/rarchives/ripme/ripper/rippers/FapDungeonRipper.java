@@ -27,16 +27,6 @@ public class FapDungeonRipper extends AbstractHTMLRipper {
     private static final Pattern pagePattern = Pattern
             .compile("^https?://[wm\\.]*fapdungeon\\.com/([a-zA-Z0-9_-]+)/(.+)/?$");
 
-    protected class FapDungeonDownloadItem {
-        public String url;
-        public String title;
-
-        public FapDungeonDownloadItem(String url, String title) {
-            this.url = url;
-            this.title = title;
-        }
-    }
-
     public FapDungeonRipper(URL url) throws IOException {
         super(url);
     }
