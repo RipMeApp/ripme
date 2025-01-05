@@ -32,6 +32,14 @@ public class DeviantartRipperTest extends RippersTest {
 
     @Test
     @Disabled("Broken ripper")
+    public void testDeviantartNSFWAlbumSpecificGallery() throws IOException, URISyntaxException {
+        URL url = new URI("https://www.deviantart.com/justgenitals/gallery/64358240/special-minamishots").toURL();
+        DeviantartRipper ripper = new DeviantartRipper(url);
+        Assertions.assertEquals("airgee", ripper.getGID(url));
+    }
+
+    @Test
+    @Disabled("Broken ripper")
     public void testGetGID() throws IOException, URISyntaxException {
         URL url = new URI("https://www.deviantart.com/airgee/gallery/").toURL();
         DeviantartRipper ripper = new DeviantartRipper(url);
