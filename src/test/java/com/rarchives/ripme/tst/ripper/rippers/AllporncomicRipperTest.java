@@ -12,8 +12,8 @@ public class AllporncomicRipperTest extends RippersTest {
     @Test
     @Tag("flaky")
     public void testAlbum() throws IOException, URISyntaxException {
-        AllporncomicRipper ripper = new AllporncomicRipper(new URI("https://allporncomic.com/porncomic/dnd-pvp-dungeons-dragons-fred-perry/1-dnd-pvp").toURL());
+        AllporncomicRipper ripper = new AllporncomicRipper(
+                new URI("https://allporncomic.com/porncomic/dnd-pvp-dungeons-dragons-fred-perry/1-dnd-pvp").toURL());
         testRipper(ripper);
     }
-
 }
