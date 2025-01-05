@@ -48,6 +48,11 @@ a person, the number of commits since this version (`17`). The commit SHA (`2167
 source code ripme was built from. If it is not built from the main branch, the branch name (`feature/auto-release`) is
 given.
 
+Note that this follows the Semantic Versioning spec (see https://semver.org/),
+and uses the feature of the format that adds extra data after the `-` to
+provide helpful context so that every commit on every branch has a dintinct
+semver version associated with it.
+
 ## Installation
 
 On macOS, there is a [cask](https://github.com/Homebrew/homebrew-cask/blob/master/Casks/ripme.rb).
