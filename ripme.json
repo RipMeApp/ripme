@@ -1,7 +1,8 @@
 {
-    "latestVersion": "2.1.14-33-c275bbf6",
-    "currentHash": "95ca8fe6a5309f055eed6eadb3cbb0a81d9c4d454c49077ce9bca94167f04e20",
+    "latestVersion": "2.1.16-3-c11bafeb",
+    "currentHash": "494ee164884778ed9c717fda3cd626713a95a1eb1fc3044fd242ce917af9f22f",
     "changeList": [
+	"2.1.16-3-c11bafeb: Republishing the build with an updated version number",
 	"2.1.14-33-c275bbf6: Java-17 is now minimum version requirement, down from java-21; User Agent updated; fix Xvideos, add FapDungeon, add NsfwAlbum; added rate limiting to Coomer, E621, Redgifs, and RedditRipper's handling of Redgifs; rate limit sleep()s now include jitter; code cleanup; removed several rippers for site that are permanently offline",
         "2.1.13-7-fac3f8ea, luscious, xvideos fixed",
         "2.1.12-7-d0b97acd, ripme now instead of ripme2 on github, ignore SSL verification option added",
