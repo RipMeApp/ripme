@@ -1,9 +1,5 @@
 package com.rarchives.ripme.ripper.rippers;
 
-import com.rarchives.ripme.utils.Http;
-
-import org.json.JSONObject;
-
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -21,8 +17,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.http.client.utils.URIBuilder;
+import org.json.JSONObject;
 
 import com.rarchives.ripme.ripper.AbstractJSONRipper;
+import com.rarchives.ripme.utils.Http;
 
 public class RedgifsRipper extends AbstractJSONRipper {
 
@@ -34,11 +32,15 @@ public class RedgifsRipper extends AbstractJSONRipper {
     private static final String SEARCH_ENDPOINT = "https://api.redgifs.com/v2/search/%s";
     private static final String TAGS_ENDPOINT = "https://api.redgifs.com/v2/gifs/search";
     private static final String TEMPORARY_AUTH_ENDPOINT = "https://api.redgifs.com/v2/auth/temporary";
-    private static final Pattern PROFILE_PATTERN = Pattern.compile("^https?://[a-zA-Z0-9.]*redgifs\\.com/users/([a-zA-Z0-9_.-]+).*$");
-    private static final Pattern SEARCH_PATTERN = Pattern.compile("^https?:\\/\\/[a-zA-Z0-9.]*redgifs\\.com\\/search(?:\\/[a-zA-Z]+)?\\?.*?query=([a-zA-Z0-9-_+%]+).*$");
-    private static final Pattern TAGS_PATTERN = Pattern.compile("^https?:\\/\\/[a-zA-Z0-9.]*redgifs\\.com\\/gifs\\/([a-zA-Z0-9_.,-]+).*$");
-    private static final Pattern SINGLETON_PATTERN = Pattern.compile("^https?://[a-zA-Z0-9.]*redgifs\\.com/watch/([a-zA-Z0-9_-]+).*$");
-    
+    private static final Pattern PROFILE_PATTERN = Pattern
+            .compile("^https?://[a-zA-Z0-9.]*redgifs\\.com/users/([a-zA-Z0-9_.-]+).*$");
+    private static final Pattern SEARCH_PATTERN = Pattern.compile(
+            "^https?:\\/\\/[a-zA-Z0-9.]*redgifs\\.com\\/search(?:\\/[a-zA-Z]+)?\\?.*?query=([a-zA-Z0-9-_+%]+).*$");
+    private static final Pattern TAGS_PATTERN = Pattern
+            .compile("^https?:\\/\\/[a-zA-Z0-9.]*redgifs\\.com\\/gifs\\/([a-zA-Z0-9_.,-]+).*$");
+    private static final Pattern SINGLETON_PATTERN = Pattern
+            .compile("^https?://[a-zA-Z0-9.]*redgifs\\.com/watch/([a-zA-Z0-9_-]+).*$");
+
     /**
      * Keep a single auth token for the complete lifecycle of the app.
      * This should prevent fetching of multiple tokens.
@@ -55,7 +57,9 @@ public class RedgifsRipper extends AbstractJSONRipper {
     }
 
     @Override
-    public String getDomain() { return "redgifs.com"; }
+    public String getDomain() {
+        return "redgifs.com";
+    }
 
     @Override
     public String getHost() {
@@ -137,14 +141,15 @@ public class RedgifsRipper extends AbstractJSONRipper {
         if (m.matches()) {
             var sText = m.group(1);
             if (sText == null || sText.isBlank()) {
-                throw new MalformedURLException(String.format("Expected redgifs.com/search?query=searchtext\n Got %s", url));
+                throw new MalformedURLException(
+                        String.format("Expected redgifs.com/search?query=searchtext\n Got %s", url));
             }
             sText = URLDecoder.decode(sText, StandardCharsets.UTF_8);
             sText = sText.replaceAll("[^A-Za-z0-9_-]", "-");
-            return sText;            
+            return sText;
         }
         m = isTags();
-        if (m.matches()) { 
+        if (m.matches()) {
             var sText = m.group(1);
             if (sText == null || sText.isBlank()) {
                 throw new MalformedURLException(String.format("Expected redgifs.com/gifs/searchtags\n Got %s", url));
@@ -152,7 +157,7 @@ public class RedgifsRipper extends AbstractJSONRipper {
             sText = URLDecoder.decode(sText, StandardCharsets.UTF_8);
             var list = Arrays.asList(sText.split(","));
             if (list.size() > 1) {
-            LOGGER.warn("Url with multiple tags found. \nThey will be sorted alphabetically for folder name.");
+                LOGGER.warn("Url with multiple tags found. \nThey will be sorted alphabetically for folder name.");
             }
             Collections.sort(list);
             var gid = list.stream().reduce("", (acc, val) -> acc.concat("_" + val));
@@ -184,14 +189,14 @@ public class RedgifsRipper extends AbstractJSONRipper {
             maxPages = json.getInt("pages");
             return json;
         } else if (isProfile().matches()) {
-                var uri = new URIBuilder(String.format(USERS_SEARCH_ENDPOINT, getGID(url)));
-                uri.addParameter("order", "new");
-                uri.addParameter("count", Integer.toString(count));
-                uri.addParameter("page", Integer.toString(currentPage));
-                var json = Http.url(uri.build().toURL()).header("Authorization", "Bearer " + authToken).getJSON();
-                // Handle rare maxPages change during a rip
-                maxPages = json.getInt("pages");
-                return json;
+            var uri = new URIBuilder(String.format(USERS_SEARCH_ENDPOINT, getGID(url)));
+            uri.addParameter("order", "new");
+            uri.addParameter("count", Integer.toString(count));
+            uri.addParameter("page", Integer.toString(currentPage));
+            var json = Http.url(uri.build().toURL()).header("Authorization", "Bearer " + authToken).getJSON();
+            // Handle rare maxPages change during a rip
+            maxPages = json.getInt("pages");
+            return json;
         } else {
             return null;
         }
@@ -203,12 +208,12 @@ public class RedgifsRipper extends AbstractJSONRipper {
         if (isProfile().matches() || isSearch().matches() || isTags().matches()) {
             var gifs = json.getJSONArray("gifs");
             for (var gif : gifs) {
-                if (((JSONObject)gif).isNull("gallery")) {
-                    var hdURL = ((JSONObject)gif).getJSONObject("urls").getString("hd");
+                if (((JSONObject) gif).isNull("gallery")) {
+                    var hdURL = ((JSONObject) gif).getJSONObject("urls").getString("hd");
                     result.add(hdURL);
                 } else {
-                    var galleryID = ((JSONObject)gif).getString("gallery");
-                    var gifID = ((JSONObject)gif).getString("id");
+                    var galleryID = ((JSONObject) gif).getString("gallery");
+                    var gifID = ((JSONObject) gif).getString("id");
                     result.addAll(getURLsForGallery(galleryID, gifID));
                 }
             }
@@ -226,22 +231,23 @@ public class RedgifsRipper extends AbstractJSONRipper {
         return result;
     }
 
-    
-    /** 
+    /**
      * Get all images for a gif url with multiple images
+     *
      * @param galleryID gallery id
-     * @param gifID gif id with multiple images for logging
+     * @param gifID     gif id with multiple images for logging
      * @return List<String>
      */
     private static List<String> getURLsForGallery(String galleryID, String gifID) {
         List<String> list = new ArrayList<>();
         if (galleryID == null || galleryID.isBlank()) {
-            return  list;
+            return list;
         }
         try {
-            var json = Http.url(String.format(GALLERY_ENDPOINT, galleryID)).header("Authorization", "Bearer " + authToken).getJSON();
+            var json = Http.url(String.format(GALLERY_ENDPOINT, galleryID))
+                    .header("Authorization", "Bearer " + authToken).getJSON();
             for (var gif : json.getJSONArray("gifs")) {
-                var hdURL = ((JSONObject)gif).getJSONObject("urls").getString("hd");
+                var hdURL = ((JSONObject) gif).getJSONObject("urls").getString("hd");
                 list.add(hdURL);
             }
         } catch (IOException e) {
@@ -249,9 +255,11 @@ public class RedgifsRipper extends AbstractJSONRipper {
         }
         return list;
     }
+
     /**
      * Static helper method for retrieving video URLs for usage in RipUtils.
      * Most of the code is lifted from getFirstPage and getURLsFromJSON
+     *
      * @param url URL to redgif page
      * @return URL to video
      * @throws IOException
@@ -259,41 +267,45 @@ public class RedgifsRipper extends AbstractJSONRipper {
     public static String getVideoURL(URL url) throws IOException, URISyntaxException {
         LOGGER.info("Retrieving " + url.toExternalForm());
         var m = SINGLETON_PATTERN.matcher(url.toExternalForm());
-        if (!m.matches()){
-            throw  new IOException(String.format("Cannot fetch redgif url %s", url.toExternalForm()));
+        if (!m.matches()) {
+            throw new IOException(String.format("Cannot fetch redgif url %s", url.toExternalForm()));
         }
-        if (authToken == null || authToken.isBlank()){
+        if (authToken == null || authToken.isBlank()) {
             fetchAuthToken();
         }
         var gid = m.group(1).split("-")[0];
         var gifDetailsURL = String.format(GIFS_DETAIL_ENDPOINT, gid);
         var json = Http.url(gifDetailsURL).header("Authorization", "Bearer " + authToken).getJSON();
         var gif = json.getJSONObject("gif");
-        if (!gif.isNull("gallery")){
-            // TODO check how to handle a image gallery 
+        if (!gif.isNull("gallery")) {
+            // TODO check how to handle a image gallery
             throw new IOException(String.format("Multiple images found for url %s", url));
-        } 
+        }
         return gif.getJSONObject("urls").getString("hd");
     }
 
-
-    /** 
+    /**
      * Fetch a temorary auth token for the rip
+     *
      * @throws IOException
      */
-    private static void fetchAuthToken() throws IOException{
+    private static void fetchAuthToken() throws IOException {
         var json = Http.url(TEMPORARY_AUTH_ENDPOINT).getJSON();
         var token = json.getString("token");
         authToken = token;
         LOGGER.info("Incase of redgif 401 errors, please restart the app to refresh the auth token");
     }
-    
-    /** 
-     * Map browser url query params to search or tags endpoint query params and return the complete url.
-     * 
-     * Search text for search url comes from the query params, whereas search text for tags url comes from the path.
-     * 
-     * Tab type for search url comes from the path whereas, tab type for tags url comes from query params.
+
+    /**
+     * Map browser url query params to search or tags endpoint query params and
+     * return the complete url.
+     *
+     * Search text for search url comes from the query params, whereas search text
+     * for tags url comes from the path.
+     *
+     * Tab type for search url comes from the path whereas, tab type for tags url
+     * comes from query params.
+     *
      * @return Search or tags endpoint url
      */
     private URL getSearchOrTagsURL() throws IOException, URISyntaxException {
@@ -304,7 +316,7 @@ public class RedgifsRipper extends AbstractJSONRipper {
             var name = qp.getName();
             var value = qp.getValue();
             switch (name) {
-                case "query": 
+                case "query":
                     endpointQueryParams.put("query", URLDecoder.decode(value, StandardCharsets.UTF_8));
                     break;
                 case "tab":
@@ -314,7 +326,7 @@ public class RedgifsRipper extends AbstractJSONRipper {
                         default -> LOGGER.warn(String.format("Unsupported tab for tags url %s", value));
                     }
                     break;
-                case "verified": 
+                case "verified":
                     if (value != null && value.equals("1")) {
                         if (isTags().matches()) {
                             endpointQueryParams.put("verified", "y");
@@ -330,14 +342,14 @@ public class RedgifsRipper extends AbstractJSONRipper {
                     break;
                 default:
                     LOGGER.warn(String.format("Unexpected query param %s for search url. Skipping.", name));
-            }                
+            }
         }
 
         // Build the search or tags url and add missing query params if any
         if (isTags().matches()) {
             var subpaths = url.getPath().split("/");
             if (subpaths.length != 0) {
-                endpointQueryParams.put("search_text", subpaths[subpaths.length-1]);
+                endpointQueryParams.put("search_text", subpaths[subpaths.length - 1]);
             } else {
                 throw new IOException("Failed to get search tags for url");
             }
@@ -351,11 +363,12 @@ public class RedgifsRipper extends AbstractJSONRipper {
             var tabType = "gifs";
             var subpaths = url.getPath().split("/");
             if (subpaths.length != 0) {
-                switch (subpaths[subpaths.length-1]) {
+                switch (subpaths[subpaths.length - 1]) {
                     case "gifs" -> tabType = "gifs";
                     case "images" -> tabType = "images";
                     case "search" -> LOGGER.warn("No tab selected, defaulting to gifs");
-                    default -> LOGGER.warn(String.format("Unsupported search tab %s, defaulting to gifs", subpaths[subpaths.length-1]));
+                    default -> LOGGER.warn(String.format("Unsupported search tab %s, defaulting to gifs",
+                            subpaths[subpaths.length - 1]));
                 }
             }
             uri = new URIBuilder(String.format(SEARCH_ENDPOINT, tabType));
