@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Observable;
+import java.util.Random;
 import java.util.Scanner;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -47,6 +48,8 @@ public abstract class AbstractRipper
     private final String URLHistoryFile = Utils.getURLHistoryFile();
 
     public static final String USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36";
+
+    private static Random randomGenerator = new Random();
 
     protected URL url;
     protected File workingDir;
@@ -694,6 +697,51 @@ public abstract class AbstractRipper
     }
 
     /**
+     * To look more like a natural human usage,
+     * randomize the requested sleep interval on a gaussian distribution with a
+     * std-deviation of 30% of the value requested
+     * to look more like natural usage.
+     *
+     * The method nextGaussian returns a sample from a normal distribution with mean
+     * 0 and std-deviation 1.
+     * We need to transform this so that the standard deviation is 30% of the
+     * requested sleep time.
+     *
+     * To achieve this, scale the value by 0.3 and multiply it by milliseconds to
+     * get the adjustment we want, then apply that to the sleep time.
+     * and then multiply that by milliseconds to get the final sleep time.
+     * But we also want to make sure that we have an even better guarantee that we
+     * sleep long enough
+     * to avoid being rate-limited, so make the minimum for this value 47% (an
+     * arbitrary number near 50%) less than the requested time.
+     *
+     * @param milliseconds Sleep time requested.
+     * @return A sleep time that has been adjusted according to a gaussian
+     *         distribution with mean milliseconds and std-deviation of 30% of
+     *         milliseconds.
+     */
+    private int gaussianJitterSleepValue(int milliseconds) {
+        LOGGER.debug("Requested sleep time: " + milliseconds);
+
+        double gauss = randomGenerator.nextGaussian();
+        int sleepTime = (int) (milliseconds + (milliseconds * 0.3 * gauss));
+        LOGGER.debug(
+                "Sleep time after gaussian jitter: " + sleepTime + "(requested sleep time was " + milliseconds + ")");
+
+        int minSleepTime = (int) (milliseconds * 0.47);
+        LOGGER.debug("Minimum allowable sleep time after gaussian jitter: " + sleepTime + "(requested sleep time was "
+                + milliseconds + ")");
+
+        if (sleepTime < minSleepTime) {
+            LOGGER.debug("Sleep time after gaussian jitter on " + milliseconds + " was " + sleepTime
+                    + " which is less than minimum sleep time; adjusting to minimum sleep time of " + minSleepTime);
+            sleepTime = minSleepTime;
+        }
+
+        return sleepTime;
+    }
+
+    /**
      * Pauses thread for a set amount of time.
      *
      * @param milliseconds Amount of time (in milliseconds) that the thread gets
@@ -702,6 +750,8 @@ public abstract class AbstractRipper
      *         False if failed to pause/got interrupted.
      */
     protected boolean sleep(int milliseconds) {
+        milliseconds = gaussianJitterSleepValue(milliseconds);
+
         try {
             LOGGER.debug("Sleeping " + milliseconds + "ms");
             Thread.sleep(milliseconds);
