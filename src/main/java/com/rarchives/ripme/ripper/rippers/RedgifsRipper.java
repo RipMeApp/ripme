@@ -128,6 +128,8 @@ public class RedgifsRipper extends AbstractJSONRipper {
 
     @Override
     public void downloadURL(URL url, int index) {
+         // redgifs is easy to trigger rate limit, so be a little cautious
+        sleep(3000);
         addURLToDownload(url, getPrefix(index));
     }
 
@@ -179,6 +181,9 @@ public class RedgifsRipper extends AbstractJSONRipper {
 
     @Override
     public JSONObject getNextPage(JSONObject doc) throws IOException, URISyntaxException {
+        // rate limit on getting next page to not look too much like a crawler/bot
+        sleep(1000);
+
         if (currentPage == maxPages || isSingleton().matches()) {
             return null;
         }
