@@ -729,10 +729,8 @@ public abstract class AbstractRipper
         LOGGER.debug("Sleep time after gaussian jitter: " + sleepTime + requestedMsg);
 
         int minSleepTime = (int) (milliseconds * 0.47);
-        LOGGER.debug("Minimum allowable sleep time after gaussian jitter: " + sleepTime + requestedMsg);
-
         if (sleepTime < minSleepTime) {
-            LOGGER.debug("Sleep time after gaussian jitter on " + milliseconds + " was " + sleepTime
+            LOGGER.debug("Sleep time after gaussian jitter was " + sleepTime
                     + " which is less than minimum sleep time; adjusting to minimum sleep time of " + minSleepTime
                     + requestedMsg);
 
