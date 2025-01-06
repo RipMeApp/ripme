@@ -723,18 +723,19 @@ public abstract class AbstractRipper
     private int gaussianJitterSleepValue(int milliseconds) {
         LOGGER.debug("Requested sleep time: " + milliseconds);
 
-        double gauss = randomGenerator.nextGaussian();
-        int sleepTime = (int) (milliseconds + (milliseconds * 0.3 * gauss));
-        LOGGER.debug(
-                "Sleep time after gaussian jitter: " + sleepTime + "(requested sleep time was " + milliseconds + ")");
+        String requestedMsg = " (Requested sleep time was " + milliseconds + " ms)";
+
+        int sleepTime = (int) randomGenerator.nextGaussian(milliseconds, milliseconds * 0.3);
+        LOGGER.debug("Sleep time after gaussian jitter: " + sleepTime + requestedMsg);
 
         int minSleepTime = (int) (milliseconds * 0.47);
-        LOGGER.debug("Minimum allowable sleep time after gaussian jitter: " + sleepTime + "(requested sleep time was "
-                + milliseconds + ")");
+        LOGGER.debug("Minimum allowable sleep time after gaussian jitter: " + sleepTime + requestedMsg);
 
         if (sleepTime < minSleepTime) {
             LOGGER.debug("Sleep time after gaussian jitter on " + milliseconds + " was " + sleepTime
-                    + " which is less than minimum sleep time; adjusting to minimum sleep time of " + minSleepTime);
+                    + " which is less than minimum sleep time; adjusting to minimum sleep time of " + minSleepTime
+                    + requestedMsg);
+
             sleepTime = minSleepTime;
         }
 
