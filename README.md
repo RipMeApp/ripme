@@ -96,7 +96,7 @@ brew install --cask ripme && xattr -d com.apple.quarantine /Applications/ripme.j
 
 ## Not Supported?
 
-Request support for more sites by adding a comment to [this Github issue](https://github.com/RipMeApp/ripme/issues/38).
+Request support for more sites by adding a comment to [this Github issue](https://github.com/RipMeApp/ripme/issues/2068).
 
 If you're a developer, you can add your own Ripper by following the wiki guide:
 [How To Create A Ripper for HTML Websites](https://github.com/ripmeapp/ripme/wiki/How-To-Create-A-Ripper-for-HTML-websites).
