@@ -496,7 +496,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         historyPanel.add(historyTablePanel, gbc);
         gbc.ipady = 0;
         JPanel historyButtonPanel = new JPanel(new GridBagLayout());
-        historyButtonPanel.setPreferredSize(new Dimension(300, 10));
+        historyButtonPanel.setSize(new Dimension(300, 10));
         historyButtonPanel.setBorder(emptyBorder);
         gbc.gridx = 0;
         historyButtonPanel.add(historyButtonRemove, gbc);
