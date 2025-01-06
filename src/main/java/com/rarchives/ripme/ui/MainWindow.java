@@ -1,25 +1,5 @@
 package com.rarchives.ripme.ui;
 
-import com.rarchives.ripme.ripper.AbstractRipper;
-import com.rarchives.ripme.uiUtils.ContextActionProtections;
-import com.rarchives.ripme.utils.RipUtils;
-import com.rarchives.ripme.utils.Utils;
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.core.LoggerContext;
-import org.apache.logging.log4j.core.config.Configuration;
-import org.apache.logging.log4j.core.config.LoggerConfig;
-
-import javax.imageio.ImageIO;
-import javax.swing.*;
-import javax.swing.border.EmptyBorder;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import javax.swing.event.ListDataEvent;
-import javax.swing.event.ListDataListener;
-import javax.swing.table.AbstractTableModel;
-import javax.swing.text.*;
 import java.awt.*;
 import java.awt.TrayIcon.MessageType;
 import java.awt.event.*;
@@ -40,6 +20,28 @@ import java.util.Date;
 import java.util.List;
 import java.util.stream.Stream;
 
+import javax.imageio.ImageIO;
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.event.ListDataEvent;
+import javax.swing.event.ListDataListener;
+import javax.swing.table.AbstractTableModel;
+import javax.swing.text.*;
+
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.config.Configuration;
+import org.apache.logging.log4j.core.config.LoggerConfig;
+
+import com.rarchives.ripme.ripper.AbstractRipper;
+import com.rarchives.ripme.uiUtils.ContextActionProtections;
+import com.rarchives.ripme.utils.RipUtils;
+import com.rarchives.ripme.utils.Utils;
+
 /**
  * Everything UI-related starts and ends here.
  */
@@ -47,6 +49,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
 
     private static final Logger LOGGER = LogManager.getLogger(MainWindow.class);
 
+    /* not static! */
     private boolean isRipping = false; // Flag to indicate if we're ripping something
 
     private static JFrame mainFrame;
@@ -91,7 +94,10 @@ public final class MainWindow implements Runnable, RipStatusHandler {
     private static JLabel configSaveDirLabel;
     private static JButton configSaveDirButton;
     private static JTextField configRetriesText;
+
+    /* not static */
     private JTextField configRetrySleepText;
+
     private static JCheckBox configAutoupdateCheckbox;
     private static JComboBox<String> configLogLevelCombobox;
     private static JCheckBox configURLHistoryCheckbox;
@@ -144,7 +150,6 @@ public final class MainWindow implements Runnable, RipStatusHandler {
             Utils.setConfigBoolean(configString, checkBox.isSelected());
             Utils.configureLogger();
         });
-
     }
 
     private static JCheckBox addNewCheckbox(String text, String configString, Boolean configBool) {
@@ -246,7 +251,6 @@ public final class MainWindow implements Runnable, RipStatusHandler {
 
     private boolean isCollapsed() {
         return (!logPanel.isVisible() && !historyPanel.isVisible() && !queuePanel.isVisible()
-
                 && !configurationPanel.isVisible());
     }
 
@@ -279,7 +283,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         ripTextfield = new JTextField("", 20);
         ripTextfield.addMouseListener(new ContextMenuMouseListener(ripTextfield));
 
-        //Add keyboard protection of cntl + v for pasting.
+        // Add keyboard protection of Ctrl+V for pasting.
         ripTextfield.addKeyListener(new KeyAdapter() {
             @Override
             public void keyTyped(KeyEvent e) {
@@ -414,6 +418,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         historyPanel.setBorder(emptyBorder);
         historyPanel.setVisible(false);
         historyPanel.setPreferredSize(new Dimension(300, 250));
+
         historyTableModel = new AbstractTableModel() {
             private static final long serialVersionUID = 1L;
 
@@ -455,9 +460,11 @@ public final class MainWindow implements Runnable, RipStatusHandler {
                 }
             }
         };
+
         historyTable = new JTable(historyTableModel);
         historyTable.addMouseListener(new HistoryMenuMouseListener());
         historyTable.setAutoCreateRowSorter(true);
+
         for (int i = 0; i < historyTable.getColumnModel().getColumnCount(); i++) {
             int width = 130; // Default
             switch (i) {
@@ -473,6 +480,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
             }
             historyTable.getColumnModel().getColumn(i).setPreferredWidth(width);
         }
+
         JScrollPane historyTableScrollPane = new JScrollPane(historyTable);
         historyButtonRemove = new JButton(Utils.getLocalizedString("remove"));
         historyButtonClear = new JButton(Utils.getLocalizedString("clear"));
@@ -507,14 +515,13 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         queuePanel.setVisible(false);
         queuePanel.setPreferredSize(new Dimension(300, 250));
         queueListModel = new DefaultListModel<>();
-        JList queueList = new JList(queueListModel);
+        JList<Object> queueList = new JList<>(queueListModel);
         queueList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-        QueueMenuMouseListener queueMenuMouseListener;
-        queueList.addMouseListener(
-                queueMenuMouseListener = new QueueMenuMouseListener(d -> updateQueue(queueListModel)));
+        QueueMenuMouseListener queueMenuMouseListener = new QueueMenuMouseListener(d -> updateQueue(queueListModel));
+        queueList.addMouseListener(queueMenuMouseListener);
         JScrollPane queueListScroll = new JScrollPane(queueList, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
-
                 JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+
         for (String item : Utils.getConfigList("queue")) {
             queueListModel.addElement(item);
         }
@@ -533,6 +540,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         configurationPanel = new JPanel(new GridBagLayout());
         configurationPanel.setBorder(emptyBorder);
         configurationPanel.setVisible(false);
+
         // TODO Configuration components
         configUpdateButton = new JButton(Utils.getLocalizedString("check.for.updates"));
         configUpdateLabel = new JLabel(
@@ -586,6 +594,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         } catch (Exception e) {
             LOGGER.error(e);
         }
+
         configSaveDirLabel.setToolTipText(configSaveDirLabel.getText());
         configSaveDirLabel.setHorizontalAlignment(JLabel.RIGHT);
         configSaveDirButton = new JButton(Utils.getLocalizedString("select.save.dir") + "...");
@@ -639,7 +648,6 @@ public final class MainWindow implements Runnable, RipStatusHandler {
     private JTextField configField(String key, int defaultValue) {
         final var field = new JTextField(Integer.toString(Utils.getConfigInteger(key, defaultValue)));
         field.getDocument().addDocumentListener(new DocumentListener() {
-
             @Override
             public void insertUpdate(DocumentEvent e) {
                 checkAndUpdate();
@@ -659,7 +667,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
                 final var txt = field.getText();
                 try {
                     final var newValue = Integer.parseInt(txt);
-                    if (newValue>0) {
+                    if (newValue > 0) {
                         Utils.setConfigInteger(key, newValue);
                     }
                 } catch (final Exception e) {
@@ -697,6 +705,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         configurationPanel.add(thing2ToAdd, gbc);
     }
 
+    @SuppressWarnings("rawtypes")
     private void addItemToConfigGridBagConstraints(GridBagConstraints gbc, int gbcYValue, JCheckBox thing1ToAdd,
             JComboBox thing2ToAdd) {
         gbc.gridy = gbcYValue;
@@ -706,6 +715,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         configurationPanel.add(thing2ToAdd, gbc);
     }
 
+    @SuppressWarnings("rawtypes")
     private void addItemToConfigGridBagConstraints(GridBagConstraints gbc, int gbcYValue, JComboBox thing1ToAdd,
             JButton thing2ToAdd) {
         gbc.gridy = gbcYValue;
@@ -715,6 +725,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         configurationPanel.add(thing2ToAdd, gbc);
     }
 
+    @SuppressWarnings({ "unused", "rawtypes" })
     private void addItemToConfigGridBagConstraints(GridBagConstraints gbc, int gbcYValue, JComboBox thing1ToAdd) {
         gbc.gridy = gbcYValue;
         gbc.gridx = 0;
@@ -786,6 +797,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
                 }
             }
         });
+
         stopButton.addActionListener(event -> {
             if (ripper != null) {
                 ripper.stop();
@@ -799,6 +811,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
                 appendLog("Download interrupted", Color.RED);
             }
         });
+
         optionLog.addActionListener(event -> {
             logPanel.setVisible(!logPanel.isVisible());
             emptyPanel.setVisible(!logPanel.isVisible());
@@ -815,6 +828,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
             optionConfiguration.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
             pack();
         });
+
         optionHistory.addActionListener(event -> {
             logPanel.setVisible(false);
             historyPanel.setVisible(!historyPanel.isVisible());
@@ -831,6 +845,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
             optionConfiguration.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
             pack();
         });
+
         optionQueue.addActionListener(event -> {
             logPanel.setVisible(false);
             historyPanel.setVisible(false);
@@ -847,6 +862,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
             optionConfiguration.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
             pack();
         });
+
         optionConfiguration.addActionListener(event -> {
             logPanel.setVisible(false);
             historyPanel.setVisible(false);
@@ -863,6 +879,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
             }
             pack();
         });
+
         historyButtonRemove.addActionListener(event -> {
             int[] indices = historyTable.getSelectedRows();
             for (int i = indices.length - 1; i >= 0; i--) {
@@ -876,6 +893,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
             }
             saveHistory();
         });
+
         historyButtonClear.addActionListener(event -> {
             if (Utils.getConfigBoolean("history.warn_before_delete", true)) {
 
@@ -938,19 +956,23 @@ public final class MainWindow implements Runnable, RipStatusHandler {
                         "RipMe Error", JOptionPane.ERROR_MESSAGE);
             }
         });
+
         configUpdateButton.addActionListener(arg0 -> {
             Thread t = new Thread(() -> UpdateUtils.updateProgramGUI(configUpdateLabel));
             t.start();
         });
+
         configLogLevelCombobox.addActionListener(arg0 -> {
             String level = ((JComboBox<?>) arg0.getSource()).getSelectedItem().toString();
             setLogLevel(level);
         });
+
         configSelectLangComboBox.addActionListener(arg0 -> {
             String level = ((JComboBox<?>) arg0.getSource()).getSelectedItem().toString();
             Utils.setLanguage(level);
             changeLocale();
         });
+
         configSaveDirLabel.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -964,6 +986,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
                 }
             }
         });
+
         configSaveDirButton.addActionListener(arg0 -> {
             UIManager.put("FileChooser.useSystemExtensionHiding", false);
             JFileChooser jfc =  new JFileChooser(Utils.getWorkingDirectory().toString());
@@ -983,6 +1006,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
             configSaveDirLabel.setText(Utils.shortenPath(chosenPath));
             Utils.setConfigString("rips.directory", chosenPath.toString());
         });
+
         configUrlFileChooserButton.addActionListener(arg0 -> {
             UIManager.put("FileChooser.useSystemExtensionHiding", false);
             JFileChooser jfc =  new JFileChooser(Utils.getWorkingDirectory().toAbsolutePath().toString());
@@ -1013,6 +1037,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
                 LOGGER.error("Error reading file " + e.getMessage());
             }
         });
+
         addCheckboxListener(configSaveOrderCheckbox, "download.save_order");
         addCheckboxListener(configOverwriteCheckbox, "file.overwrite");
         addCheckboxListener(configSaveLogs, "log.save");
@@ -1094,6 +1119,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
                 trayMenuMain.setLabel(Utils.getLocalizedString("tray.show"));
             }
         });
+
         PopupMenu trayMenu = new PopupMenu();
         trayMenuMain = new MenuItem(Utils.getLocalizedString("tray.hide"));
         trayMenuMain.addActionListener(arg0 -> toggleTrayClick());
@@ -1119,6 +1145,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
             } catch (Exception e) {
                 LOGGER.warn(e.getMessage());
             }
+
             about.append("<br>And download videos from video sites:");
             try {
                 List<String> rippers = Utils.getListOfVideoRippers();
@@ -1149,6 +1176,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
                 }
             }
         });
+
         MenuItem trayMenuExit = new MenuItem(Utils.getLocalizedString("tray.exit"));
         trayMenuExit.addActionListener(arg0 -> System.exit(0));
         trayMenuAutorip = new CheckboxMenuItem(Utils.getLocalizedString("tray.autorip"));
@@ -1156,6 +1184,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
             ClipboardUtils.setClipboardAutoRip(trayMenuAutorip.getState());
             configClipboardAutorip.setSelected(trayMenuAutorip.getState());
         });
+
         trayMenu.add(trayMenuMain);
         trayMenu.add(trayMenuAbout);
         trayMenu.addSeparator();
@@ -1181,7 +1210,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
                 }
             });
         } catch (IOException | AWTException e) {
-            // TODO implement proper stack trace handling this is really just intented as a
+            // TODO implement proper stack trace handling this is really just intended as a
             // placeholder until you implement proper error handling
             LOGGER.warn(e.getMessage());
         }
@@ -1284,6 +1313,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
 
     private void ripNextAlbum() {
         isRipping = true;
+
         // Save current state of queue to configuration.
         Utils.setConfigList("queue", queueListModel.elements());
 
@@ -1292,6 +1322,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
             isRipping = false;
             return;
         }
+
         String nextAlbum = (String) queueListModel.remove(0);
 
         updateQueue();
@@ -1303,6 +1334,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
             } catch (InterruptedException ie) {
                 LOGGER.error(Utils.getLocalizedString("interrupted.while.waiting.to.rip.next.album"), ie);
             }
+
             ripNextAlbum();
         } else {
             t.start();
@@ -1310,7 +1342,6 @@ public final class MainWindow implements Runnable, RipStatusHandler {
     }
 
     private Thread ripAlbum(String urlString) {
-        // shutdownCleanup();
         if (!logPanel.isVisible()) {
             optionLog.doClick();
         }
@@ -1382,8 +1413,11 @@ public final class MainWindow implements Runnable, RipStatusHandler {
                 urlText = "http://" + urlText;
             }
             URL url = new URI(urlText).toURL();
+
             // Ripper is needed here to throw/not throw an Exception
+            @SuppressWarnings("unused")
             AbstractRipper ripper = AbstractRipper.getRipper(url);
+
             return true;
         } catch (Exception e) {
             return false;
@@ -1398,13 +1432,14 @@ public final class MainWindow implements Runnable, RipStatusHandler {
     public static DefaultListModel<Object> getQueueListModel() {
         return queueListModel;
     }
-    static class RipButtonHandler implements ActionListener {
 
+    static class RipButtonHandler implements ActionListener {
         private MainWindow mainWindow;
 
         public RipButtonHandler(MainWindow mainWindow) {
             this.mainWindow = mainWindow;
         }
+
         public void actionPerformed(ActionEvent event) {
             String url = ripTextfield.getText();
             boolean url_not_empty = !url.equals("");
@@ -1459,6 +1494,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         if (ripper.isStopped()) {
             return;
         }
+
         RipStatusMessage msg = evt.msg;
 
         int completedPercent = evt.ripper.getCompletionPercentage();
