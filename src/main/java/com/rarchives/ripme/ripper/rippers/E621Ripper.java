@@ -1,13 +1,5 @@
 package com.rarchives.ripme.ripper.rippers;
 
-import com.rarchives.ripme.ripper.AbstractHTMLRipper;
-import com.rarchives.ripme.ripper.DownloadThreadPool;
-import com.rarchives.ripme.utils.Http;
-import com.rarchives.ripme.utils.RipUtils;
-import com.rarchives.ripme.utils.Utils;
-import com.rarchives.ripme.ui.RipStatusMessage;
-import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
-
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -26,7 +18,13 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-
+import com.rarchives.ripme.ripper.AbstractHTMLRipper;
+import com.rarchives.ripme.ripper.DownloadThreadPool;
+import com.rarchives.ripme.ui.RipStatusMessage;
+import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
+import com.rarchives.ripme.utils.Http;
+import com.rarchives.ripme.utils.RipUtils;
+import com.rarchives.ripme.utils.Utils;
 
 public class E621Ripper extends AbstractHTMLRipper {
     private static final Logger logger = LogManager.getLogger(E621Ripper.class);
@@ -49,20 +47,26 @@ public class E621Ripper extends AbstractHTMLRipper {
 
     private void loadConfig() {
         String cookiesString = Utils.getConfigString("e621.cookies", "");
-        if(!cookiesString.equals("")) {
+        if (!cookiesString.equals("")) {
             cookies = RipUtils.getCookiesFromString(cookiesString);
-            if(cookies.containsKey("cf_clearance"))
-                sendUpdate(STATUS.DOWNLOAD_WARN, "Using CloudFlare captcha cookies, make sure to update them and set your browser's useragent in config!");
-            if(cookies.containsKey("remember"))
+
+            if (cookies.containsKey("cf_clearance")) {
+                sendUpdate(STATUS.DOWNLOAD_WARN,
+                        "Using CloudFlare captcha cookies, make sure to update them and set your browser's useragent in config!");
+            }
+
+            if (cookies.containsKey("remember")) {
                 sendUpdate(STATUS.DOWNLOAD_WARN, "Logging in using auth cookie.");
+            }
         }
+
         userAgent = Utils.getConfigString("e621.useragent", USER_AGENT);
-        
     }
 
     private void warnAboutBlacklist(Document page) {
-        if(!page.select("div.hidden-posts-notice").isEmpty()) 
-            sendUpdate(STATUS.DOWNLOAD_WARN, "Some posts are blacklisted. Consider logging in. Search for \"e621\" in this wiki page: https://github.com/RipMeApp/ripme/wiki/Config-options");
+        if (!page.select("div.hidden-posts-notice").isEmpty())
+            sendUpdate(STATUS.DOWNLOAD_WARN,
+                    "Some posts are blacklisted. Consider logging in. Search for \"e621\" in this wiki page: https://github.com/RipMeApp/ripme/wiki/Config-options");
     }
 
     private Document getDocument(String url, int retries) throws IOException {
@@ -92,11 +96,12 @@ public class E621Ripper extends AbstractHTMLRipper {
     public Document getFirstPage() throws IOException {
         loadConfig();
         Document page;
-        if (url.getPath().startsWith("/pool"))
+        if (url.getPath().startsWith("/pool")) {
             page = getDocument("https://e621.net/pools/" + getTerm(url));
-        else
+        } else {
             page = getDocument("https://e621.net/posts?tags=" + getTerm(url));
-        
+        }
+
         warnAboutBlacklist(page);
         return page;
     }
@@ -127,6 +132,8 @@ public class E621Ripper extends AbstractHTMLRipper {
 
     @Override
     public void downloadURL(final URL url, int index) {
+        // rate limit
+        sleep(3000);
         // addURLToDownload(url, getPrefix(index));
         e621ThreadPool.addThread(new E621FileThread(url, getPrefix(index)));
     }
@@ -135,16 +142,24 @@ public class E621Ripper extends AbstractHTMLRipper {
         // old url style => new url style:
         // /post/index/1/<tags> => /posts?tags=<tags>
         // /pool/show/<id> => /pools/id
-        if (gidPattern == null)
+        if (gidPattern == null) {
             gidPattern = Pattern.compile(
                     "^https?://(www\\.)?e621\\.net/post/index/[^/]+/([a-zA-Z0-9$_.+!*'():,%\\-]+)(/.*)?(#.*)?$");
-        if (gidPatternPool == null)
+        }
+
+        if (gidPatternPool == null) {
             gidPatternPool = Pattern.compile(
                     "^https?://(www\\.)?e621\\.net/pool/show/([a-zA-Z0-9$_.+!*'(),%:\\-]+)(\\?.*)?(/.*)?(#.*)?$");
-        if (gidPatternNew == null)
-            gidPatternNew = Pattern.compile("^https?://(www\\.)?e621\\.net/posts\\?([\\S]*?)tags=([a-zA-Z0-9$_.+!*'(),%:\\-]+)(\\&[\\S]+)?");
-        if (gidPatternPoolNew == null)
+        }
+
+        if (gidPatternNew == null) {
+            gidPatternNew = Pattern.compile(
+                    "^https?://(www\\.)?e621\\.net/posts\\?([\\S]*?)tags=([a-zA-Z0-9$_.+!*'(),%:\\-]+)(\\&[\\S]+)?");
+        }
+
+        if (gidPatternPoolNew == null) {
             gidPatternPoolNew = Pattern.compile("^https?://(www\\.)?e621\\.net/pools/([\\d]+)(\\?[\\S]*)?");
+        }
 
         Matcher m = gidPattern.matcher(url.toExternalForm());
         if (m.matches()) {
@@ -184,19 +199,20 @@ public class E621Ripper extends AbstractHTMLRipper {
 
     @Override
     public URL sanitizeURL(URL url) throws MalformedURLException, URISyntaxException {
-        if (gidPattern2 == null)
+        if (gidPattern2 == null) {
             gidPattern2 = Pattern.compile(
                     "^https?://(www\\.)?e621\\.net/post/search\\?tags=([a-zA-Z0-9$_.+!*'():,%-]+)(/.*)?(#.*)?$");
+        }
 
         Matcher m = gidPattern2.matcher(url.toExternalForm());
-        if (m.matches())
+        if (m.matches()) {
             return new URI("https://e621.net/post/index/1/" + m.group(2).replace("+", "%20")).toURL();
+        }
 
         return url;
     }
 
     public class E621FileThread implements Runnable {
-
         private final URL url;
         private final String index;
 
@@ -219,24 +235,29 @@ public class E621Ripper extends AbstractHTMLRipper {
 
         private String getFullSizedImage(URL imageURL) throws IOException {
             Document page = getDocument(imageURL.toExternalForm(), 3);
-            /*Elements video = page.select("video > source");
-            Elements flash = page.select("embed");
-            Elements image = page.select("a#highres");
-            if (video.size() > 0) {
-                return video.attr("src");
-            } else if (flash.size() > 0) {
-                return flash.attr("src");
-            } else if (image.size() > 0) {
-                return image.attr("href");
-            } else {
-                throw new IOException();
-            }*/
+
+            /*
+             * Elements video = page.select("video > source");
+             * Elements flash = page.select("embed");
+             * Elements image = page.select("a#highres");
+             * if (video.size() > 0) {
+             * return video.attr("src");
+             * } else if (flash.size() > 0) {
+             * return flash.attr("src");
+             * } else if (image.size() > 0) {
+             * return image.attr("href");
+             * } else {
+             * throw new IOException();
+             * }
+             */
 
             if (!page.select("div#image-download-link > a").isEmpty()) {
                 return page.select("div#image-download-link > a").attr("abs:href");
             } else {
-                if(!page.select("#blacklist-box").isEmpty())
-                    sendUpdate(RipStatusMessage.STATUS.RIP_ERRORED, "Cannot download image - blocked by blacklist. Consider logging in. Search for \"e621\" in this wiki page: https://github.com/RipMeApp/ripme/wiki/Config-options");
+                if (!page.select("#blacklist-box").isEmpty()) {
+                    sendUpdate(RipStatusMessage.STATUS.RIP_ERRORED,
+                            "Cannot download image - blocked by blacklist. Consider logging in. Search for \"e621\" in this wiki page: https://github.com/RipMeApp/ripme/wiki/Config-options");
+                }
                 throw new IOException();
             }
         }
