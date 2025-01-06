@@ -419,8 +419,7 @@ public class RedditRipper extends AlbumRipper {
                 String savePath = this.workingDir + "/";
                 savePath += id + "-" + m.group(1) + Utils.filesystemSafe(title) + ".jpg";
                 addURLToDownload(urls.get(0), Utils.getPath(savePath));
-            }
-            if (url.contains("v.redd.it")) {
+            } else if (url.contains("v.redd.it")) {
                 String savePath = this.workingDir + "/";
                 savePath += id + "-" + url.split("/")[3] + Utils.filesystemSafe(title) + ".mp4";
                 URL urlToDownload = parseRedditVideoMPD(urls.get(0).toExternalForm());
@@ -428,8 +427,12 @@ public class RedditRipper extends AlbumRipper {
                     LOGGER.info("url: " + urlToDownload + " file: " + savePath);
                     addURLToDownload(urlToDownload, Utils.getPath(savePath));
                 }
-            }
-            else {
+            } else {
+                if (url.contains("redgifs.com")) {
+                    // redgifs.com rate limits us if we download too fast,
+                    // and redgifs.com is a pretty common link on Reddit.
+                    sleep(3000);
+                }
                 addURLToDownload(urls.get(0), Utils.filesystemSafe(id + title), "", theUrl, null);
             }
         } else if (urls.size() > 1) {
