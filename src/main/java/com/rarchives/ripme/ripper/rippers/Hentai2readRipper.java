@@ -2,6 +2,7 @@ package com.rarchives.ripme.ripper.rippers;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -11,10 +12,15 @@ import java.util.regex.Pattern;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 import com.rarchives.ripme.utils.Http;
 
 public class Hentai2readRipper extends AbstractHTMLRipper {
+
+    private static final Logger logger = LogManager.getLogger(Hentai2readRipper.class);
+
     String lastPage;
 
     public Hentai2readRipper(URL url) throws IOException {
@@ -38,7 +44,7 @@ public class Hentai2readRipper extends AbstractHTMLRipper {
 
     @Override
     public boolean pageContainsAlbums(URL url) {
-        LOGGER.info("Page contains albums");
+        logger.info("Page contains albums");
         Pattern pat = Pattern.compile("https?://hentai2read\\.com/([a-zA-Z0-9_-]*)/?");
         Matcher mat = pat.matcher(url.toExternalForm());
         if (mat.matches()) {
@@ -90,12 +96,12 @@ public class Hentai2readRipper extends AbstractHTMLRipper {
         }
 
         @Override
-        public String getAlbumTitle(URL url) throws MalformedURLException {
+        public String getAlbumTitle(URL url) throws MalformedURLException, URISyntaxException {
             try {
                 return getHost() + "_" + getGID(url);
             } catch (Exception e) {
                 // Fall back to default album naming convention
-                LOGGER.warn("Failed to get album title from " + url, e);
+                logger.warn("Failed to get album title from " + url, e);
             }
             return super.getAlbumTitle(url);
         }

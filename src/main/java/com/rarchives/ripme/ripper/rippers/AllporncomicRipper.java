@@ -12,7 +12,6 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
 import com.rarchives.ripme.ripper.AbstractHTMLRipper;
-import com.rarchives.ripme.utils.Http;
 
 public class AllporncomicRipper extends AbstractHTMLRipper {
 
@@ -47,16 +46,10 @@ public class AllporncomicRipper extends AbstractHTMLRipper {
     }
 
     @Override
-    public Document getFirstPage() throws IOException {
-        // "url" is an instance field of the superclass
-        return Http.url(url).get();
-    }
-
-    @Override
     public List<String> getURLsFromPage(Document doc) {
         List<String> result = new ArrayList<>();
         for (Element el : doc.select(".wp-manga-chapter-img")) {
-            result.add(el.attr("src"));
+            result.add(el.attr("data-src"));
         }
         return result;
     }

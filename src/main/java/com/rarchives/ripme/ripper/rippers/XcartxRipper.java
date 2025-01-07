@@ -45,18 +45,13 @@ public class XcartxRipper extends AbstractHTMLRipper {
     }
 
     @Override
-    public Document getFirstPage() throws IOException {
-        return Http.url(url).get();
-    }
-
-    @Override
     public List<String> getURLsFromPage(Document page) {
         List<String> imageURLs = new ArrayList<>();
         Elements imageElements = page.select("div.f-desc img");
         for (Element image : imageElements) {
             String imageUrl = image.attr("data-src");
 
-            imageURLs.add(getDomain() + imageUrl);
+            imageURLs.add("https://" + getDomain() + imageUrl);
         }
         return imageURLs;
     }

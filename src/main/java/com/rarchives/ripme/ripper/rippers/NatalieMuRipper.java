@@ -8,13 +8,16 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
 import com.rarchives.ripme.ripper.AbstractHTMLRipper;
-import com.rarchives.ripme.utils.Http;
 
 public class NatalieMuRipper extends AbstractHTMLRipper {
+
+    private static final Logger logger = LogManager.getLogger(NatalieMuRipper.class);
 
     public int news_id = 0;
 
@@ -80,11 +83,6 @@ public class NatalieMuRipper extends AbstractHTMLRipper {
     }
 
     @Override
-    public Document getFirstPage() throws IOException {
-        return Http.url(this.url).get();
-    }
-
-    @Override
     public List<String> getURLsFromPage(Document page) {
         List<String> imageURLs = new ArrayList<>();
         Pattern p; Matcher m;
@@ -109,7 +107,7 @@ public class NatalieMuRipper extends AbstractHTMLRipper {
                 imgUrl = imgUrl.replace("list_thumb_inbox","xlarge");
                 // Don't download the same URL twice
                 if (imageURLs.contains(imgUrl)) {
-                    LOGGER.debug("Already attempted: " + imgUrl);
+                    logger.debug("Already attempted: " + imgUrl);
                     continue;
                 }
                 imageURLs.add(imgUrl);

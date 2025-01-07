@@ -8,7 +8,7 @@ import java.util.regex.Pattern;
 
 public class XlecxRipper extends XcartxRipper {
 
-    private Pattern p = Pattern.compile("^https?://xlecx.com/([a-zA-Z0-9_\\-]+).html");
+    private Pattern p = Pattern.compile("^https?://xlecx.org/([a-zA-Z0-9_\\-]+).html");
 
     public XlecxRipper(URL url) throws IOException {
         super(url);
@@ -21,7 +21,7 @@ public class XlecxRipper extends XcartxRipper {
 
     @Override
     public String getDomain() {
-        return "xlecx.com";
+        return "xlecx.org";
     }
 
     @Override
@@ -30,7 +30,7 @@ public class XlecxRipper extends XcartxRipper {
         if (m.matches()) {
             return m.group(1);
         }
-        throw new MalformedURLException("Expected URL format: http://xlecx.com/comic, got: " + url);
+        throw new MalformedURLException("Expected URL format: http://xlecx.org/comic, got: " + url);
 
     }
 }

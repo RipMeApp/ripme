@@ -4,16 +4,16 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.log4j.Logger;
-
 import com.rarchives.ripme.utils.Utils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * Simple wrapper around a FixedThreadPool.
  */
 public class DownloadThreadPool {
 
-    private static final Logger logger = Logger.getLogger(DownloadThreadPool.class);
+    private static final Logger logger = LogManager.getLogger(DownloadThreadPool.class);
     private ThreadPoolExecutor threadPool = null;
 
     public DownloadThreadPool() {
@@ -35,10 +35,10 @@ public class DownloadThreadPool {
     }
     /**
      * For adding threads to execution pool.
-     * @param t 
+     * @param t
      *      Thread to be added.
      */
-    public void addThread(Thread t) {
+    public void addThread(Runnable t) {
         threadPool.execute(t);
     }
 

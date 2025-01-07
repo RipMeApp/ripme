@@ -42,10 +42,6 @@ public class DribbbleRipper extends AbstractHTMLRipper {
     }
 
     @Override
-    public Document getFirstPage() throws IOException {
-        return Http.url(url).get();
-    }
-    @Override
     public Document getNextPage(Document doc) throws IOException {
         // Find next page
         Elements hrefs = doc.select("a.next_page");

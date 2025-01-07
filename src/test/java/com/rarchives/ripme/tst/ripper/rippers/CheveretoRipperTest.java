@@ -1,20 +1,23 @@
 package com.rarchives.ripme.tst.ripper.rippers;
 
 import java.io.IOException;
-import java.net.URL;
+import java.net.URI;
+import java.net.URISyntaxException;
+
+import org.junit.jupiter.api.Test;
 
 import com.rarchives.ripme.ripper.rippers.CheveretoRipper;
-import org.junit.jupiter.api.Test;
 
 public class CheveretoRipperTest extends RippersTest {
     @Test
-    public void testTagFox() throws IOException {
-        CheveretoRipper ripper = new CheveretoRipper(new URL("http://tag-fox.com/album/Thjb"));
+    public void testSubdirAlbum1() throws IOException, URISyntaxException {
+        CheveretoRipper ripper = new CheveretoRipper(new URI("https://kenzato.uk/booru/album/TnEc").toURL());
         testRipper(ripper);
     }
+
     @Test
-    public void testSubdirAlbum() throws IOException {
-        CheveretoRipper ripper = new CheveretoRipper(new URL("https://kenzato.uk/booru/album/TnEc"));
+    public void testSubdirAlbum2() throws IOException, URISyntaxException {
+        CheveretoRipper ripper = new CheveretoRipper(new URI("https://kenzato.uk/booru/album/XWdIp").toURL());
         testRipper(ripper);
     }
 }

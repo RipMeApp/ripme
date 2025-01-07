@@ -16,8 +16,6 @@ import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 import com.rarchives.ripme.utils.Http;
 
 public class NudeGalsRipper extends AbstractHTMLRipper {
-    // Current HTML document
-    private Document albumDoc = null;
 
     public NudeGalsRipper(URL url) throws IOException {
         super(url);
@@ -51,14 +49,6 @@ public class NudeGalsRipper extends AbstractHTMLRipper {
     }
 
     @Override
-    public Document getFirstPage() throws IOException {
-        if (albumDoc == null) {
-            albumDoc = Http.url(url).get();
-        }
-        return albumDoc;
-    }
-
-    @Override
     public List<String> getURLsFromPage(Document doc) {
         List<String> imageURLs = new ArrayList<>();
 
@@ -66,6 +56,7 @@ public class NudeGalsRipper extends AbstractHTMLRipper {
         for (Element thumb : thumbs) {
             String link = thumb.attr("src").replaceAll("thumbs/th_", "");
             String imgSrc = "http://nude-gals.com/" + link;
+            imgSrc = imgSrc.replaceAll(" ", "%20");
             imageURLs.add(imgSrc);
         }
 

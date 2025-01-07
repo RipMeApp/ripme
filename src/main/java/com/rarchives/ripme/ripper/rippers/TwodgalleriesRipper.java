@@ -10,6 +10,8 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jsoup.Connection.Method;
 import org.jsoup.Connection.Response;
 import org.jsoup.nodes.Document;
@@ -20,6 +22,8 @@ import com.rarchives.ripme.utils.Base64;
 import com.rarchives.ripme.utils.Http;
 
 public class TwodgalleriesRipper extends AbstractHTMLRipper {
+
+    private static final Logger logger = LogManager.getLogger(TwodgalleriesRipper.class);
 
     private int offset = 0;
     private Map<String,String> cookies = new HashMap<>();
@@ -66,7 +70,7 @@ public class TwodgalleriesRipper extends AbstractHTMLRipper {
         try {
             login();
         } catch (IOException e) {
-            LOGGER.error("Failed to login", e);
+            logger.error("Failed to login", e);
         }
         String url = getURL(getGID(this.url), offset);
         return Http.url(url)

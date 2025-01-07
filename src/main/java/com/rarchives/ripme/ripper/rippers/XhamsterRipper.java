@@ -2,6 +2,8 @@ package com.rarchives.ripme.ripper.rippers;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -10,6 +12,8 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jsoup.Connection.Response;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -24,13 +28,15 @@ import com.rarchives.ripme.utils.Http;
 
 public class XhamsterRipper extends AbstractHTMLRipper {
 
-    public XhamsterRipper(URL url) throws IOException {
-        super(url);
-    }
+    private static final Logger logger = LogManager.getLogger(XhamsterRipper.class);
 
     private int index = 1;
     private Document albumDoc = null;
     private Map<String, String> cookies = new HashMap<>();
+
+    public XhamsterRipper(URL url) throws IOException {
+        super(url);
+    }
 
     @Override
     public boolean hasASAPRipping() {
@@ -48,48 +54,52 @@ public class XhamsterRipper extends AbstractHTMLRipper {
     }
 
     @Override
-    public URL sanitizeURL(URL url) throws MalformedURLException {
+    public URL sanitizeURL(URL url) throws MalformedURLException, URISyntaxException {
         if (isVideoUrl(url)) {
             return url;
         }
         String URLToReturn = url.toExternalForm();
-        URLToReturn = URLToReturn.replaceAll("https?://\\w?\\w?\\.?xhamster\\.", "https://m.xhamster.");
-        URLToReturn = URLToReturn.replaceAll("https?://xhamster2\\.", "https://m.xhamster2.");
-        URL san_url = new URL(URLToReturn);
-        LOGGER.info("sanitized URL is " + san_url.toExternalForm());
+        URLToReturn = URLToReturn.replaceAll("https?://\\w?\\w?\\.?xhamster([^<]*)\\.", "https://m.xhamster$1.");
+        URL san_url = new URI(URLToReturn).toURL();
+        logger.info("sanitized URL is " + san_url.toExternalForm());
         return san_url;
     }
 
     @Override
     public String getGID(URL url) throws MalformedURLException {
-        Pattern p = Pattern.compile("^https?://[\\w\\w.]*xhamster2?\\.com/photos/gallery/.*?(\\d+)$");
+        Pattern p = Pattern.compile("^https?://([\\w\\w]*\\.)?xhamster([^<]*)\\.(com|desi)/photos/gallery/.*?(\\d+)$");
         Matcher m = p.matcher(url.toExternalForm());
         if (m.matches()) {
-            return m.group(1);
+            return m.group(4);
         }
-        p = Pattern.compile("^https?://[\\w\\w.]*xhamster2?\\.com/users/([a-zA-Z0-9_-]+)/(photos|videos)(/\\d+)?");
+        p = Pattern.compile("^https?://[\\w\\w.]*xhamster([^<]*)\\.(com|desi)/users/([a-zA-Z0-9_-]+)/(photos|videos)(/\\d+)?");
         m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             return "user_" + m.group(1);
         }
-        p = Pattern.compile("^https?://.*xhamster2?\\.com/(movies|videos)/(.*)$");
+        p = Pattern.compile("^https?://.*xhamster([^<]*)\\.(com|desi)/(movies|videos)/(.*$)");
         m = p.matcher(url.toExternalForm());
         if (m.matches()) {
-            return m.group(2);
+            return m.group(4);
         }
 
         throw new MalformedURLException(
-                "Expected xhamster.com gallery formats: " + "xhamster.com/photos/gallery/xxxxx-#####" + " Got: " + url);
+                "Expected xhamster.com gallery formats: "
+                        + "xhamster.com/photos/gallery/xxxxx-#####"
+                        + " Got: " + url);
     }
 
     @Override
     public List<String> getAlbumsToQueue(Document doc) {
         List<String> urlsToAddToQueue = new ArrayList<>();
-        LOGGER.info("getting albums");
+        logger.info("getting albums");
         for (Element elem : doc.select("div.item-container > a.item")) {
             urlsToAddToQueue.add(elem.attr("href"));
+            if (isStopped() || isThisATest()) {
+                break;
+            }
         }
-        LOGGER.info(doc.html());
+        logger.info(doc.html());
         return urlsToAddToQueue;
     }
 
@@ -100,11 +110,10 @@ public class XhamsterRipper extends AbstractHTMLRipper {
 
     @Override
     public boolean pageContainsAlbums(URL url) {
-        Pattern p = Pattern
-                .compile("^https?://[\\w\\w.]*xhamster\\.com/users/([a-zA-Z0-9_-]+)/(photos|videos)(/\\d+)?");
+        Pattern p = Pattern.compile("^https?://[\\w\\w.]*xhamster([^<]*)\\.(com|desi)/users/([a-zA-Z0-9_-]+)/(photos|videos)(/\\d+)?");
         Matcher m = p.matcher(url.toExternalForm());
-        LOGGER.info("Checking if page has albums");
-        LOGGER.info(m.matches());
+        logger.info("Checking if page has albums");
+        logger.info(m.matches());
         return m.matches();
     }
 
@@ -120,18 +129,17 @@ public class XhamsterRipper extends AbstractHTMLRipper {
 
     @Override
     public boolean canRip(URL url) {
-        Pattern p = Pattern.compile("^https?://([\\w\\w]*\\.)?xhamster2?\\.(com|one|desi)/photos/gallery/.*?(\\d+)$");
+        Pattern p = Pattern.compile("^https?://([\\w\\w]*\\.)?xhamster([^<]*)\\.(com|desi)/photos/gallery/.*?(\\d+)$");
         Matcher m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             return true;
         }
-        p = Pattern.compile(
-                "^https?://[\\w\\w.]*xhamster2?\\.(com|one|desi)/users/([a-zA-Z0-9_-]+)/(photos|videos)(/\\d+)?");
+        p = Pattern.compile("^https?://[\\w\\w.]*xhamster([^<]*)\\.(com|desi)/users/([a-zA-Z0-9_-]+)/(photos|videos)(/\\d+)?");
         m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             return true;
         }
-        p = Pattern.compile("^https?://.*xhamster2?\\.(com|one|desi)/(movies|videos)/.*$");
+        p = Pattern.compile("^https?://.*xhamster([^<]*)\\.(com|desi)/(movies|videos)/(.*$)");
         m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             return true;
@@ -140,18 +148,17 @@ public class XhamsterRipper extends AbstractHTMLRipper {
     }
 
     private boolean isVideoUrl(URL url) {
-        Pattern p = Pattern.compile("^https?://.*xhamster2?\\.(com|one|desi)/(movies|videos)/.*$");
+        Pattern p = Pattern.compile("^https?://.*xhamster([^<]*)\\.(com|desi)/(movies|videos)/(.*$)");
         Matcher m = p.matcher(url.toExternalForm());
         return m.matches();
     }
 
     @Override
     public Document getNextPage(Document doc) throws IOException {
-        if (doc.select("a[data-page=next]").first() != null) {
-            String nextPageUrl = doc.select("a[data-page=next]").first().attr("href");
+        if (doc.select("a.prev-next-list-link").first() != null) {
+            String nextPageUrl = doc.select("a.prev-next-list-link--next").first().attr("href");
             if (nextPageUrl.startsWith("http")) {
-                nextPageUrl = nextPageUrl.replaceAll("https?://\\w?\\w?\\.?xhamster\\.", "https://m.xhamster.");
-                nextPageUrl = nextPageUrl.replaceAll("https?://xhamster2\\.", "https://m.xhamster2.");
+                nextPageUrl = nextPageUrl.replaceAll("https?://\\w?\\w?\\.?xhamster([^<]*)\\.", "https://m.xhamster$1.");
                 return Http.url(nextPageUrl).get();
             }
         }
@@ -160,31 +167,55 @@ public class XhamsterRipper extends AbstractHTMLRipper {
     }
 
     @Override
+    public Document getFirstPage() throws IOException, URISyntaxException {
+        return super.getFirstPage();
+    }
+
+    @Override
     public List<String> getURLsFromPage(Document doc) {
-        LOGGER.debug("Checking for urls");
+        logger.debug("Checking for urls");
         List<String> result = new ArrayList<>();
         if (!isVideoUrl(url)) {
-            for (Element page : doc
-                    .select("div.picture_view > div.pictures_block > div.items > div.item-container > a.item")) {
-                // Make sure we don't waste time running the loop if the ripper has been stopped
-                if (isStopped()) {
-                    break;
+            if (!doc.select("div.picture_view > div.pictures_block > div.items > div.item-container > a.item").isEmpty()) {
+                // Old HTML structure is still present at some places
+                for (Element page : doc.select(".clearfix > div > a.slided")) {
+                    // Make sure we don't waste time running the loop if the ripper has been stopped
+                    if (isStopped()) {
+                        break;
+                    }
+                    String pageWithImageUrl = page.attr("href");
+                    try {
+                        // This works around some redirect fuckery xhamster likes to do where visiting m.xhamster.com sends to
+                        // the page chamster.com but displays the mobile site from m.xhamster.com
+                        pageWithImageUrl = pageWithImageUrl.replaceAll("://xhamster([^<]*)\\.", "://m.xhamster$1.");
+                        String image = Http.url(new URI(pageWithImageUrl).toURL()).get().select("a > img#photoCurr").attr("src");
+                        result.add(image);
+                        downloadFile(image);
+                    } catch (IOException | URISyntaxException e) {
+                        logger.error("Was unable to load page " + pageWithImageUrl);
+              }
+              if (isStopped() || isThisATest()) {
+                  break;
+                    }
                 }
-                String pageWithImageUrl = page.attr("href");
-                try {
-                    // This works around some redirect fuckery xhamster likes to do where visiting
-                    // m.xhamster.com sends to
+            } else {
+                // New HTML structure
+                for (Element page : doc.select("div#photo-slider > div#photo_slider > a")) {
+                    // Make sure we don't waste time running the loop if the ripper has been stopped
+                    if (isStopped()) {
+                        break;
+                    }
+                    String image = page.attr("href");
+                    // This works around some redirect fuckery xhamster likes to do where visiting m.xhamster.com sends to
                     // the page chamster.com but displays the mobile site from m.xhamster.com
-                    pageWithImageUrl = pageWithImageUrl.replaceAll("://xhamster\\.", "://m.xhamster.");
-                    pageWithImageUrl = pageWithImageUrl.replaceAll("://xhamster2\\.", "://m.xhamster.");
-                    String image = Http.url(new URL(pageWithImageUrl)).get().select("a > img#photoCurr").attr("src");
+                    image = image.replaceAll("://xhamster([^<]*)\\.", "://m.xhamster$1.");
+                    result.add(image);
                     downloadFile(image);
-                } catch (IOException e) {
-                    LOGGER.error("Was unable to load page " + pageWithImageUrl);
                 }
             }
         } else {
             String imgUrl = doc.select("div.player-container > a").attr("href");
+            result.add(imgUrl);
             downloadFile(imgUrl);
         }
         return result;
@@ -198,18 +229,18 @@ public class XhamsterRipper extends AbstractHTMLRipper {
 
     private void downloadFile(String url) {
         try {
-            addURLToDownload(new URL(url), getPrefix(index), "", this.url.toExternalForm(), cookies);
+            addURLToDownload(new URI(url).toURL(), getPrefix(index), "", this.url.toExternalForm(), cookies);
             index = index + 1;
-        } catch (MalformedURLException e) {
-            LOGGER.error("The url \"" + url + "\" is malformed");
+        } catch (MalformedURLException | URISyntaxException e) {
+            logger.error("The url \"" + url + "\" is malformed");
         }
     }
 
     @Override
-    public String getAlbumTitle(URL url) throws MalformedURLException {
+    public String getAlbumTitle(URL url) throws MalformedURLException, URISyntaxException {
         try {
             // Attempt to use album title and username as GID
-            Document doc = getFirstPage();
+            Document doc = getCachedFirstPage();
             Element user = doc.select("a.author").first();
             String username = user.text();
             String path = url.getPath();

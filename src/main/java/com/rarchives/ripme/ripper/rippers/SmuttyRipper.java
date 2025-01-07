@@ -89,11 +89,6 @@ public class SmuttyRipper extends AbstractHTMLRipper {
     }
 
     @Override
-    public Document getFirstPage() throws IOException {
-        // "url" is an instance field of the superclass
-        return Http.url(url).get();
-    }
-
     public void downloadURL(URL url, int index) {
         addURLToDownload(url, getPrefix(index));
     }

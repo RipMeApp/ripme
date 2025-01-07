@@ -11,8 +11,6 @@ import java.util.regex.Pattern;
 import com.rarchives.ripme.ripper.AbstractSingleFileRipper;
 import org.jsoup.nodes.Document;
 
-import com.rarchives.ripme.utils.Http;
-
 public class GfycatporntubeRipper extends AbstractSingleFileRipper {
 
     public GfycatporntubeRipper(URL url) throws IOException {
@@ -38,12 +36,6 @@ public class GfycatporntubeRipper extends AbstractSingleFileRipper {
         }
         throw new MalformedURLException("Expected gfycatporntube URL format: " +
                 "gfycatporntube.com/NAME - got " + url + " instead");
-    }
-
-    @Override
-    public Document getFirstPage() throws IOException {
-        // "url" is an instance field of the superclass
-        return Http.url(url).get();
     }
 
     @Override

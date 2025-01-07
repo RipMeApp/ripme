@@ -1,27 +1,29 @@
 package com.rarchives.ripme.tst.ripper.rippers;
 
 import java.io.IOException;
-import java.net.URL;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 import com.rarchives.ripme.ripper.rippers.PichunterRipper;
 
-import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 public class PichunterRipperTest extends RippersTest {
     @Test
-    @Disabled("This test was commented out at 6/08/2018 because it was randomly failing due to issues with the site see https://github.com/RipMeApp/ripme/issues/867")
-    public void testPichunterModelPageRip() throws IOException {
+    @Tag("flaky")
+    public void testPichunterModelPageRip() throws IOException, URISyntaxException {
         // A non-photoset
-        PichunterRipper ripper = new PichunterRipper(new URL("https://www.pichunter.com/models/Madison_Ivy"));
+        PichunterRipper ripper = new PichunterRipper(new URI("https://www.pichunter.com/models/Madison_Ivy").toURL());
         testRipper(ripper);
     }
 
     @Test
-    public void testPichunterGalleryRip() throws IOException {
+    @Tag("flaky")
+    public void testPichunterGalleryRip() throws IOException, URISyntaxException {
         // a photo set
         PichunterRipper ripper = new PichunterRipper(
-                new URL("http://www.pichunter.com/gallery/3270642/Its_not_only_those_who"));
+                new URI("http://www.pichunter.com/gallery/3270642/Its_not_only_those_who").toURL());
         testRipper(ripper);
     }
 }

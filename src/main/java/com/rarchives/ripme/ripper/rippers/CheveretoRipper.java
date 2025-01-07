@@ -2,6 +2,7 @@ package com.rarchives.ripme.ripper.rippers;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -11,6 +12,8 @@ import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
@@ -18,6 +21,9 @@ import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 import com.rarchives.ripme.utils.Http;
 
 public class CheveretoRipper extends AbstractHTMLRipper {
+
+    private static final Logger logger = LogManager.getLogger(CheveretoRipper.class);
+
     private static final Map<String, String> CONSENT_COOKIE;
     static {
         CONSENT_COOKIE = new TreeMap<String, String>();
@@ -28,7 +34,7 @@ public class CheveretoRipper extends AbstractHTMLRipper {
         super(url);
     }
 
-    private static List<String> explicit_domains = Arrays.asList("tag-fox.com", "kenzato.uk");
+    private static List<String> explicit_domains = Arrays.asList("kenzato.uk");
 
     @Override
     public String getHost() {
@@ -50,16 +56,16 @@ public class CheveretoRipper extends AbstractHTMLRipper {
     }
 
     @Override
-    public String getAlbumTitle(URL url) throws MalformedURLException {
+    public String getAlbumTitle(URL url) throws MalformedURLException, URISyntaxException {
         try {
             // Attempt to use album title as GID
-            Element titleElement = getFirstPage().select("meta[property=og:title]").first();
+            Element titleElement = getCachedFirstPage().select("meta[property=og:title]").first();
             String title = titleElement.attr("content");
             title = title.substring(title.lastIndexOf('/') + 1);
             return getHost() + "_" + title.trim();
         } catch (IOException e) {
             // Fall back to default album naming convention
-            LOGGER.info("Unable to find title at " + url);
+            logger.info("Unable to find title at " + url);
         }
         return super.getAlbumTitle(url);
     }
@@ -84,7 +90,6 @@ public class CheveretoRipper extends AbstractHTMLRipper {
     @Override
     public Document getNextPage(Document doc) throws IOException {
         // Find next page
-        String nextUrl = "";
         // We use comic-nav-next to the find the next page
         Element elem = doc.select("li.pagination-next > a").first();
             if (elem == null) {
