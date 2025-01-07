@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
@@ -15,6 +17,8 @@ import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 import com.rarchives.ripme.utils.Http;
 
 public class HypnohubRipper extends AbstractHTMLRipper {
+
+    private static final Logger logger = LogManager.getLogger(HypnohubRipper.class);
 
     public HypnohubRipper(URL url) throws IOException {
         super(url);
@@ -47,14 +51,14 @@ public class HypnohubRipper extends AbstractHTMLRipper {
     }
 
     private String ripPost(String url) throws IOException {
-        LOGGER.info(url);
+        logger.info(url);
         Document doc = Http.url(url).get();
         return "https:" +  doc.select("img.image").attr("src");
 
     }
 
     private String ripPost(Document doc) {
-        LOGGER.info(url);
+        logger.info(url);
         return "https:" +  doc.select("img.image").attr("src");
 
     }

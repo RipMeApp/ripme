@@ -11,6 +11,8 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jsoup.Connection.Response;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -19,6 +21,8 @@ import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 import com.rarchives.ripme.utils.Http;
 
 public class ZizkiRipper extends AbstractHTMLRipper {
+
+    private static final Logger logger = LogManager.getLogger(XvideosRipper.class);
 
     private Map<String,String> cookies = new HashMap<>();
 
@@ -54,11 +58,11 @@ public class ZizkiRipper extends AbstractHTMLRipper {
 
             Element authorSpan = getCachedFirstPage().select("span[class=creator]").first();
             String author = authorSpan.select("a").first().text();
-            LOGGER.debug("Author: " + author);
+            logger.debug("Author: " + author);
             return getHost() + "_" + author + "_" + title.trim();
         } catch (IOException e) {
             // Fall back to default album naming convention
-            LOGGER.info("Unable to find title at " + url);
+            logger.info("Unable to find title at " + url);
         }
         return super.getAlbumTitle(url);
     }
@@ -74,11 +78,10 @@ public class ZizkiRipper extends AbstractHTMLRipper {
     public List<String> getURLsFromPage(Document page) {
         List<String> imageURLs = new ArrayList<>();
         // Page contains images
-        LOGGER.info("Look for images.");
+        logger.info("Look for images.");
         for (Element thumb : page.select("img")) {
             if (super.isStopped()) break;
             // Find thumbnail image source
-            String image = null;
             String img_type = null;
             String src = null;
             if (thumb.hasAttr("typeof")) {
@@ -90,7 +93,7 @@ public class ZizkiRipper extends AbstractHTMLRipper {
                      )
                   {
                      src = thumb.parent().attr("href");
-                     LOGGER.debug("Found url with " + src);
+                     logger.debug("Found url with " + src);
                      if (!src.contains("zizki.com")) {
                      } else {
                        imageURLs.add(src.replace("/styles/medium/public/","/styles/large/public/"));

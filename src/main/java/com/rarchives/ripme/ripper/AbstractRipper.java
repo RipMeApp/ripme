@@ -44,7 +44,7 @@ public abstract class AbstractRipper
         extends Observable
         implements RipperInterface, Runnable {
 
-    protected static final Logger LOGGER = LogManager.getLogger(AbstractRipper.class);
+    private static final Logger logger = LogManager.getLogger(AbstractRipper.class);
     private final String URLHistoryFile = Utils.getURLHistoryFile();
 
     public static final String USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36";
@@ -74,7 +74,7 @@ public abstract class AbstractRipper
     private static boolean thisIsATest = false;
 
     public void stop() {
-        LOGGER.trace("stop()");
+        logger.trace("stop()");
         shouldStop.set(true);
     }
 
@@ -104,11 +104,11 @@ public abstract class AbstractRipper
         try {
             File file = new File(URLHistoryFile);
             if (!new File(Utils.getConfigDir()).exists()) {
-                LOGGER.error("Config dir doesn't exist");
-                LOGGER.info("Making config dir");
+                logger.error("Config dir doesn't exist");
+                logger.info("Making config dir");
                 boolean couldMakeDir = new File(Utils.getConfigDir()).mkdirs();
                 if (!couldMakeDir) {
-                    LOGGER.error("Couldn't make config dir");
+                    logger.error("Couldn't make config dir");
                     return;
                 }
             }
@@ -116,12 +116,12 @@ public abstract class AbstractRipper
             if (!file.exists()) {
                 boolean couldMakeDir = file.createNewFile();
                 if (!couldMakeDir) {
-                    LOGGER.error("Couldn't url history file");
+                    logger.error("Couldn't url history file");
                     return;
                 }
             }
             if (!file.canWrite()) {
-                LOGGER.error("Can't write to url history file: " + URLHistoryFile);
+                logger.error("Can't write to url history file: " + URLHistoryFile);
                 return;
             }
             fw = new FileWriter(file.getAbsoluteFile(), true);
@@ -210,7 +210,7 @@ public abstract class AbstractRipper
         // .withFileName("${sys:logFilename}")
         // in Utils.java, RollingFileAppender.
         // System.setProperty("logFilename", this.workingDir + "/log.txt");
-        // LOGGER.debug("Changing log file to '{}/log.txt'", this.workingDir);
+        // logger.debug("Changing log file to '{}/log.txt'", this.workingDir);
         // LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
         // ctx.reconfigure();
         // ctx.updateLoggers();
@@ -304,7 +304,7 @@ public abstract class AbstractRipper
         // A common bug is rippers adding urls that are just "http:".
         // This rejects said urls.
         if (url.toExternalForm().equals("http:") || url.toExternalForm().equals("https:")) {
-            LOGGER.info(url.toExternalForm() + " is a invalid url and will be changed");
+            logger.info(url.toExternalForm() + " is a invalid url and will be changed");
             return false;
 
         }
@@ -317,7 +317,7 @@ public abstract class AbstractRipper
             try {
                 url = new URI(url.toExternalForm().replaceAll(" ", "%20")).toURL();
             } catch (MalformedURLException | URISyntaxException e) {
-                LOGGER.error("Unable to remove spaces from url\nURL: " + url.toExternalForm());
+                logger.error("Unable to remove spaces from url\nURL: " + url.toExternalForm());
                 e.printStackTrace();
             }
         }
@@ -334,32 +334,32 @@ public abstract class AbstractRipper
         try {
             stopCheck();
         } catch (IOException e) {
-            LOGGER.debug("Ripper has been stopped");
+            logger.debug("Ripper has been stopped");
             return false;
         }
 
-        LOGGER.debug("url: " + url + ", subdirectory" + subdirectory + ", referrer: " + referrer + ", cookies: "
+        logger.debug("url: " + url + ", subdirectory" + subdirectory + ", referrer: " + referrer + ", cookies: "
                 + cookies + ", prefix: " + prefix + ", fileName: " + fileName);
 
         Path saveAs;
         try {
             saveAs = getFilePath(url, subdirectory, prefix, fileName, extension);
-            LOGGER.debug("Downloading " + url + " to " + saveAs);
+            logger.debug("Downloading " + url + " to " + saveAs);
             if (!Files.exists(saveAs.getParent())) {
-                LOGGER.info("[+] Creating directory: " + saveAs.getParent());
+                logger.info("[+] Creating directory: " + saveAs.getParent());
                 Files.createDirectories(saveAs.getParent());
             }
         } catch (IOException e) {
-            LOGGER.error("[!] Error creating save file path for URL '" + url + "':", e);
+            logger.error("[!] Error creating save file path for URL '" + url + "':", e);
             return false;
         }
 
         if (Utils.getConfigBoolean("remember.url_history", true) && !isThisATest()) {
-            LOGGER.info("Writing " + url.toExternalForm() + " to file");
+            logger.info("Writing " + url.toExternalForm() + " to file");
             try {
                 writeDownloadedURL(url.toExternalForm() + "\n");
             } catch (IOException e) {
-                LOGGER.debug("Unable to write URL history file");
+                logger.debug("Unable to write URL history file");
             }
         }
 
@@ -479,7 +479,7 @@ public abstract class AbstractRipper
      * Waits for downloading threads to complete.
      */
     protected void waitForThreads() {
-        LOGGER.debug("Waiting for threads to finish");
+        logger.debug("Waiting for threads to finish");
         completed = false;
         threadPool.waitForThreads();
         checkIfComplete();
@@ -528,13 +528,13 @@ public abstract class AbstractRipper
      */
     void checkIfComplete() {
         if (observer == null) {
-            LOGGER.debug("observer is null");
+            logger.debug("observer is null");
             return;
         }
 
         if (!completed) {
             completed = true;
-            LOGGER.info("   Rip completed!");
+            logger.info("   Rip completed!");
 
             RipStatusComplete rsc = new RipStatusComplete(workingDir.toPath(), getCount());
             RipStatusMessage msg = new RipStatusMessage(STATUS.RIP_COMPLETE, rsc);
@@ -544,7 +544,7 @@ public abstract class AbstractRipper
             // just change the logfile in case
             // TODO - does not work.
             // System.setProperty("logFilename", "ripme.log");
-            // LOGGER.debug("Changing log file back to 'ripme.log'");
+            // logger.debug("Changing log file back to 'ripme.log'");
             // LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
             // ctx.reconfigure();
 
@@ -553,7 +553,7 @@ public abstract class AbstractRipper
                 try {
                     Desktop.getDesktop().open(new File(urlFile));
                 } catch (IOException e) {
-                    LOGGER.warn("Error while opening " + urlFile, e);
+                    logger.warn("Error while opening " + urlFile, e);
                 }
             }
         }
@@ -606,7 +606,7 @@ public abstract class AbstractRipper
             try {
                 // by design: can throw ClassCastException
                 AbstractRipper ripper = (AbstractRipper) constructor.newInstance(url);
-                LOGGER.debug("Found album ripper: " + ripper.getClass().getName());
+                logger.debug("Found album ripper: " + ripper.getClass().getName());
                 return ripper;
             } catch (Exception e) {
                 // Incompatible rippers *will* throw exceptions during instantiation.
@@ -616,7 +616,7 @@ public abstract class AbstractRipper
             try {
                 // by design: can throw ClassCastException
                 VideoRipper ripper = (VideoRipper) constructor.newInstance(url);
-                LOGGER.debug("Found video ripper: " + ripper.getClass().getName());
+                logger.debug("Found video ripper: " + ripper.getClass().getName());
                 return ripper;
             } catch (Exception e) {
                 // Incompatible rippers *will* throw exceptions during instantiation.
@@ -670,11 +670,11 @@ public abstract class AbstractRipper
         try {
             rip();
         } catch (HttpStatusException e) {
-            LOGGER.error("Got exception while running ripper:", e);
+            logger.error("Got exception while running ripper:", e);
             waitForThreads();
             sendUpdate(STATUS.RIP_ERRORED, "HTTP status code " + e.getStatusCode() + " for URL " + e.getUrl());
         } catch (Exception e) {
-            LOGGER.error("Got exception while running ripper:", e);
+            logger.error("Got exception while running ripper:", e);
             waitForThreads();
             sendUpdate(STATUS.RIP_ERRORED, e.getMessage());
         } finally {
@@ -688,10 +688,10 @@ public abstract class AbstractRipper
     private void cleanup() {
         if (this.workingDir.list().length == 0) {
             // No files, delete the dir
-            LOGGER.info("Deleting empty directory " + this.workingDir);
+            logger.info("Deleting empty directory " + this.workingDir);
             boolean deleteResult = this.workingDir.delete();
             if (!deleteResult) {
-                LOGGER.error("Unable to delete empty directory " + this.workingDir);
+                logger.error("Unable to delete empty directory " + this.workingDir);
             }
         }
     }
@@ -721,16 +721,16 @@ public abstract class AbstractRipper
      *         milliseconds.
      */
     private int gaussianJitterSleepValue(int milliseconds) {
-        LOGGER.debug("Requested sleep time: " + milliseconds);
+        logger.debug("Requested sleep time: " + milliseconds);
 
         String requestedMsg = " (Requested sleep time was " + milliseconds + " ms)";
 
         int sleepTime = (int) randomGenerator.nextGaussian(milliseconds, milliseconds * 0.3);
-        LOGGER.debug("Sleep time after gaussian jitter: " + sleepTime + requestedMsg);
+        logger.debug("Sleep time after gaussian jitter: " + sleepTime + requestedMsg);
 
         int minSleepTime = (int) (milliseconds * 0.47);
         if (sleepTime < minSleepTime) {
-            LOGGER.debug("Sleep time after gaussian jitter was " + sleepTime
+            logger.debug("Sleep time after gaussian jitter was " + sleepTime
                     + " which is less than minimum sleep time; adjusting to minimum sleep time of " + minSleepTime
                     + requestedMsg);
 
@@ -752,11 +752,11 @@ public abstract class AbstractRipper
         milliseconds = gaussianJitterSleepValue(milliseconds);
 
         try {
-            LOGGER.debug("Sleeping " + milliseconds + "ms");
+            logger.debug("Sleeping " + milliseconds + "ms");
             Thread.sleep(milliseconds);
             return true;
         } catch (InterruptedException e) {
-            LOGGER.error("Interrupted while waiting to load next page", e);
+            logger.error("Interrupted while waiting to load next page", e);
             return false;
         }
     }
@@ -771,7 +771,7 @@ public abstract class AbstractRipper
 
     /** Methods for detecting when we're running a test. */
     public void markAsTest() {
-        LOGGER.debug("THIS IS A TEST RIP");
+        logger.debug("THIS IS A TEST RIP");
         thisIsATest = true;
     }
 

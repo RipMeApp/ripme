@@ -1,12 +1,5 @@
 package com.rarchives.ripme.ripper.rippers;
 
-import com.rarchives.ripme.ripper.AbstractHTMLRipper;
-import com.rarchives.ripme.ui.RipStatusMessage;
-import com.rarchives.ripme.utils.Http;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -19,7 +12,19 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
+import com.rarchives.ripme.ripper.AbstractHTMLRipper;
+import com.rarchives.ripme.ui.RipStatusMessage;
+import com.rarchives.ripme.utils.Http;
+
 public class ErofusRipper extends AbstractHTMLRipper {
+
+    private static final Logger logger = LogManager.getLogger(ErofusRipper.class);
 
     public ErofusRipper(URL url) throws IOException {
         super(url);
@@ -52,11 +57,11 @@ public class ErofusRipper extends AbstractHTMLRipper {
 
     @Override
     public List<String> getURLsFromPage(Document page) {
-        LOGGER.info(page);
+        logger.info(page);
         List<String> imageURLs = new ArrayList<>();
         int x = 1;
         if (pageContainsImages(page)) {
-            LOGGER.info("Page contains images");
+            logger.info("Page contains images");
             ripAlbum(page);
         } else {
             // This contains the thumbnails of all images on the page
@@ -66,12 +71,12 @@ public class ErofusRipper extends AbstractHTMLRipper {
                 if (pageLink.attr("href").contains("comics")) {
                     String subUrl = "https://erofus.com" + pageLink.attr("href");
                     try {
-                        LOGGER.info("Retrieving " + subUrl);
+                        logger.info("Retrieving " + subUrl);
                         sendUpdate(RipStatusMessage.STATUS.LOADING_RESOURCE, subUrl);
                         Document subPage = Http.url(subUrl).get();
                         List<String> subalbumImages = getURLsFromPage(subPage);
                     } catch (IOException e) {
-                        LOGGER.warn("Error while loading subalbum " + subUrl, e);
+                        logger.warn("Error while loading subalbum " + subUrl, e);
                     }
                 }
                 if (isThisATest()) break;
@@ -93,7 +98,7 @@ public class ErofusRipper extends AbstractHTMLRipper {
                 opts.put("prefix", getPrefix(x));
                 addURLToDownload(new URI(image).toURL(), opts);
             } catch (MalformedURLException | URISyntaxException e) {
-                LOGGER.info(e.getMessage());
+                logger.info(e.getMessage());
             }
             x++;
         }

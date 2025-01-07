@@ -5,22 +5,28 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.rarchives.ripme.ui.RipStatusMessage;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
-import org.json.JSONObject;
 import org.json.JSONException;
+import org.json.JSONObject;
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 
 import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 import com.rarchives.ripme.ripper.DownloadThreadPool;
+import com.rarchives.ripme.ui.RipStatusMessage;
 import com.rarchives.ripme.utils.Http;
-import org.jsoup.nodes.Element;
 
 public class FlickrRipper extends AbstractHTMLRipper {
+
+    private static final Logger logger = LogManager.getLogger(FlickrRipper.class);
 
     private final DownloadThreadPool flickrThreadPool;
 
@@ -87,11 +93,11 @@ public class FlickrRipper extends AbstractHTMLRipper {
             // You have to use .html here as .text will strip most of the javascript
             m = p.matcher(e.html());
             if (m.find()) {
-                LOGGER.info("Found api key:" + m.group(1));
+                logger.info("Found api key:" + m.group(1));
                 return m.group(1);
             }
         }
-        LOGGER.error("Unable to get api key");
+        logger.error("Unable to get api key");
         // A nice error message to tell our users what went wrong
         sendUpdate(RipStatusMessage.STATUS.DOWNLOAD_WARN, "Unable to extract api key from flickr");
         sendUpdate(RipStatusMessage.STATUS.DOWNLOAD_WARN, "Using hardcoded api key");
@@ -132,14 +138,14 @@ public class FlickrRipper extends AbstractHTMLRipper {
             apiURL = apiURLBuilder(getAlbum(url.toExternalForm()), page, apiKey);
             pageURL = new URI(apiURL).toURL();
         }  catch (MalformedURLException | URISyntaxException e) {
-            LOGGER.error("Unable to get api link " + apiURL + " is malformed");
+            logger.error("Unable to get api link " + apiURL + " is malformed");
         }
         try {
-            LOGGER.info("Fetching: " + apiURL);
-            LOGGER.info("Response: " + Http.url(pageURL).ignoreContentType().get().text());
+            logger.info("Fetching: " + apiURL);
+            logger.info("Response: " + Http.url(pageURL).ignoreContentType().get().text());
             return new JSONObject(Http.url(pageURL).ignoreContentType().get().text());
         } catch (IOException e) {
-            LOGGER.error("Unable to get api link " + apiURL + " is malformed");
+            logger.error("Unable to get api link " + apiURL + " is malformed");
             return null;
         }
     }
@@ -168,7 +174,7 @@ public class FlickrRipper extends AbstractHTMLRipper {
 
         String errorMessage = "Failed to extract photoset ID from url: " + url;
 
-        LOGGER.error(errorMessage);
+        logger.error(errorMessage);
         throw new MalformedURLException(errorMessage);
     }
 
@@ -177,7 +183,7 @@ public class FlickrRipper extends AbstractHTMLRipper {
         if (!url.toExternalForm().contains("/sets/")) {
             return super.getAlbumTitle(url);
         }
-        try {   
+        try {
             // Attempt to use album title as GID
             Document doc = getCachedFirstPage();
             String user = url.toExternalForm();
@@ -249,21 +255,21 @@ public class FlickrRipper extends AbstractHTMLRipper {
                     try {
                         rootData = jsonData.getJSONObject("photos");
                     } catch (JSONException innerE) {
-                        LOGGER.error("Unable to find photos in response");
+                        logger.error("Unable to find photos in response");
                         break;
                     }
                 }
 
                 int totalPages = rootData.getInt("pages");
-                LOGGER.info(jsonData);
+                logger.info(jsonData);
                 JSONArray pictures = rootData.getJSONArray("photo");
                 for (int i = 0; i < pictures.length(); i++) {
-                    LOGGER.info(i);
+                    logger.info(i);
                     JSONObject data = (JSONObject) pictures.get(i);
                     try {
                         addURLToDownload(getLargestImageURL(data.getString("id"), apiKey));
                     } catch (MalformedURLException | URISyntaxException e) {
-                        LOGGER.error("Flickr MalformedURLException: " + e.getMessage());
+                        logger.error("Flickr MalformedURLException: " + e.getMessage());
                     }
 
                 }
@@ -297,11 +303,11 @@ public class FlickrRipper extends AbstractHTMLRipper {
             }
 
         } catch (org.json.JSONException e) {
-            LOGGER.error("Error in  parsing of Flickr API: " + e.getMessage());
+            logger.error("Error in  parsing of Flickr API: " + e.getMessage());
         } catch (MalformedURLException e) {
-            LOGGER.error("Malformed URL returned by API");
+            logger.error("Malformed URL returned by API");
         } catch (IOException e) {
-            LOGGER.error("IOException while looking at image sizes: " + e.getMessage());
+            logger.error("IOException while looking at image sizes: " + e.getMessage());
         }
 
         return new URI(imageURLMap.lastEntry().getValue()).toURL();

@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
@@ -16,6 +18,8 @@ import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 import com.rarchives.ripme.utils.Http;
 
 public class ManganeloRipper extends AbstractHTMLRipper {
+
+    private static final Logger logger = LogManager.getLogger(ManganeloRipper.class);
 
     public ManganeloRipper(URL url) throws IOException {
         super(url);
@@ -71,7 +75,7 @@ public class ManganeloRipper extends AbstractHTMLRipper {
     }
 
     private List<String> getURLsFromChap(Document doc) {
-        LOGGER.debug("Getting urls from " + doc.location());
+        logger.debug("Getting urls from " + doc.location());
         List<String> result = new ArrayList<>();
         for (Element el : doc.select(".vung-doc > img")) {
             result.add(el.attr("src"));

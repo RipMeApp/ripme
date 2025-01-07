@@ -27,6 +27,7 @@ import com.rarchives.ripme.utils.RipUtils;
 import com.rarchives.ripme.utils.Utils;
 
 public class E621Ripper extends AbstractHTMLRipper {
+
     private static final Logger logger = LogManager.getLogger(E621Ripper.class);
 
     private static Pattern gidPattern = null;
@@ -163,7 +164,7 @@ public class E621Ripper extends AbstractHTMLRipper {
 
         Matcher m = gidPattern.matcher(url.toExternalForm());
         if (m.matches()) {
-            LOGGER.info(m.group(2));
+            logger.info(m.group(2));
             return m.group(2);
         }
 
@@ -174,13 +175,13 @@ public class E621Ripper extends AbstractHTMLRipper {
 
         m = gidPatternNew.matcher(url.toExternalForm());
         if (m.matches()) {
-            LOGGER.info(m.group(3));
+            logger.info(m.group(3));
             return m.group(3);
         }
 
         m = gidPatternPoolNew.matcher(url.toExternalForm());
         if (m.matches()) {
-            LOGGER.info(m.group(2));
+            logger.info(m.group(2));
             return m.group(2);
         }
 

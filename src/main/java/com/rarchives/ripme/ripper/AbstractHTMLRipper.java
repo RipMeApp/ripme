@@ -4,7 +4,10 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.net.*;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -16,18 +19,22 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jsoup.nodes.Document;
 
-import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
-import com.rarchives.ripme.utils.Utils;
 import com.rarchives.ripme.ui.MainWindow;
 import com.rarchives.ripme.ui.RipStatusMessage;
+import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
 import com.rarchives.ripme.utils.Http;
+import com.rarchives.ripme.utils.Utils;
 
 /**
  * Simplified ripper, designed for ripping from sites by parsing HTML.
  */
 public abstract class AbstractHTMLRipper extends AbstractRipper {
+
+    private static final Logger logger = LogManager.getLogger(AbstractHTMLRipper.class);
 
     private final Map<URL, File> itemsPending = Collections.synchronizedMap(new HashMap<>());
     private final Map<URL, Path> itemsCompleted = Collections.synchronizedMap(new HashMap<>());
@@ -116,7 +123,7 @@ public abstract class AbstractHTMLRipper extends AbstractRipper {
     public void rip() throws IOException, URISyntaxException {
         int index = 0;
         int textindex = 0;
-        LOGGER.info("Retrieving " + this.url);
+        logger.info("Retrieving " + this.url);
         sendUpdate(STATUS.LOADING_RESOURCE, this.url.toExternalForm());
         var doc = getCachedFirstPage();
 
@@ -128,20 +135,20 @@ public abstract class AbstractHTMLRipper extends AbstractRipper {
 
             // We set doc to null here so the while loop below this doesn't fire
             doc = null;
-            LOGGER.debug("Adding items from " + this.url + " to queue");
+            logger.debug("Adding items from " + this.url + " to queue");
         }
 
         List<String> doclocation = new ArrayList<>();
 
-        LOGGER.info("Got doc location " + doc.location());
+        logger.info("Got doc location " + doc.location());
 
         while (doc != null) {
 
-            LOGGER.info("Processing a doc...");
+            logger.info("Processing a doc...");
 
             // catch if we saw a doc location already, save the ones seen in a list
             if (doclocation.contains(doc.location())) {
-                LOGGER.info("Already processed location " + doc.location() + " breaking");
+                logger.info("Already processed location " + doc.location() + " breaking");
                 break;
             }
             doclocation.add(doc.location());
@@ -151,7 +158,7 @@ public abstract class AbstractHTMLRipper extends AbstractRipper {
                 break;
             }
 
-            LOGGER.info("retrieving urls from doc");
+            logger.info("retrieving urls from doc");
 
             List<String> imageURLs = getURLsFromPage(doc);
             // If hasASAPRipping() returns true then the ripper will handle downloading the files
@@ -170,7 +177,7 @@ public abstract class AbstractHTMLRipper extends AbstractRipper {
 
                 for (String imageURL : imageURLs) {
                     index += 1;
-                    LOGGER.debug("Found image url #" + index + ": '" + imageURL + "'");
+                    logger.debug("Found image url #" + index + ": '" + imageURL + "'");
                     downloadURL(new URI(imageURL).toURL(), index);
                     if (isStopped() || isThisATest()) {
                         break;
@@ -178,17 +185,17 @@ public abstract class AbstractHTMLRipper extends AbstractRipper {
                 }
             }
             if (hasDescriptionSupport() && Utils.getConfigBoolean("descriptions.save", false)) {
-                LOGGER.debug("Fetching description(s) from " + doc.location());
+                logger.debug("Fetching description(s) from " + doc.location());
                 List<String> textURLs = getDescriptionsFromPage(doc);
                 if (!textURLs.isEmpty()) {
-                    LOGGER.debug("Found description link(s) from " + doc.location());
+                    logger.debug("Found description link(s) from " + doc.location());
                     for (String textURL : textURLs) {
                         if (isStopped() || isThisATest()) {
                             break;
                         }
 
                         textindex += 1;
-                        LOGGER.debug("Getting description from " + textURL);
+                        logger.debug("Getting description from " + textURL);
                         String[] tempDesc = getDescription(textURL,doc);
 
                         if (tempDesc != null) {
@@ -204,11 +211,11 @@ public abstract class AbstractHTMLRipper extends AbstractRipper {
                                         + ".txt").exists();
 
                             if (Utils.getConfigBoolean("file.overwrite", false) || !fileExists) {
-                                LOGGER.debug("Got description from " + textURL);
+                                logger.debug("Got description from " + textURL);
                                 saveText(url, "", tempDesc[0], textindex, (tempDesc.length > 1 ? tempDesc[1] : filename));
                                 sleep(descSleepTime());
                             } else {
-                                LOGGER.debug("Description from " + textURL + " already exists.");
+                                logger.debug("Description from " + textURL + " already exists.");
                             }
                         }
 
@@ -224,14 +231,14 @@ public abstract class AbstractHTMLRipper extends AbstractRipper {
                 sendUpdate(STATUS.LOADING_RESOURCE, "next page");
                 doc = getNextPage(doc);
             } catch (IOException e) {
-                LOGGER.info("Can't get next page: " + e.getMessage());
+                logger.info("Can't get next page: " + e.getMessage());
                 break;
             }
         }
 
         // If they're using a thread pool, wait for it.
         if (getThreadPool() != null) {
-            LOGGER.debug("Waiting for threadpool " + getThreadPool().getClass().getName());
+            logger.debug("Waiting for threadpool " + getThreadPool().getClass().getName());
             getThreadPool().waitForThreads();
         }
         waitForThreads();
@@ -296,12 +303,12 @@ public abstract class AbstractHTMLRipper extends AbstractRipper {
             out.write(text.getBytes());
             out.close();
         } catch (IOException e) {
-            LOGGER.error("[!] Error creating save file path for description '" + url + "':", e);
+            logger.error("[!] Error creating save file path for description '" + url + "':", e);
             return false;
         }
-        LOGGER.debug("Downloading " + url + "'s description to " + saveFileAs);
+        logger.debug("Downloading " + url + "'s description to " + saveFileAs);
         if (!saveFileAs.getParentFile().exists()) {
-            LOGGER.info("[+] Creating directory: " + saveFileAs.getParent());
+            logger.info("[+] Creating directory: " + saveFileAs.getParent());
             saveFileAs.getParentFile().mkdirs();
         }
         return true;
@@ -355,7 +362,7 @@ public abstract class AbstractHTMLRipper extends AbstractRipper {
                   || itemsCompleted.containsKey(url)
                   || itemsErrored.containsKey(url) )) {
             // Item is already downloaded/downloading, skip it.
-            LOGGER.info("[!] Skipping " + url + " -- already attempted: " + Utils.removeCWD(saveAs));
+            logger.info("[!] Skipping " + url + " -- already attempted: " + Utils.removeCWD(saveAs));
             return false;
         }
         if (shouldIgnoreURL(url)) {
@@ -370,7 +377,7 @@ public abstract class AbstractHTMLRipper extends AbstractRipper {
                 Files.write(urlFile, text.getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
                 itemsCompleted.put(url, urlFile);
             } catch (IOException e) {
-                LOGGER.error("Error while writing to " + urlFile, e);
+                logger.error("Error while writing to " + urlFile, e);
             }
         }
         else {
@@ -423,7 +430,7 @@ public abstract class AbstractHTMLRipper extends AbstractRipper {
 
             checkIfComplete();
         } catch (Exception e) {
-            LOGGER.error("Exception while updating observer: ", e);
+            logger.error("Exception while updating observer: ", e);
         }
     }
 
@@ -486,7 +493,7 @@ public abstract class AbstractHTMLRipper extends AbstractRipper {
             path += File.separator;
         }
         String title = getAlbumTitle(this.url);
-        LOGGER.debug("Using album title '" + title + "'");
+        logger.debug("Using album title '" + title + "'");
 
         title = Utils.filesystemSafe(title);
         path += title;
@@ -494,12 +501,12 @@ public abstract class AbstractHTMLRipper extends AbstractRipper {
 
         this.workingDir = new File(path);
         if (!this.workingDir.exists()) {
-            LOGGER.info("[+] Creating directory: " + Utils.removeCWD(this.workingDir.toPath()));
+            logger.info("[+] Creating directory: " + Utils.removeCWD(this.workingDir.toPath()));
             if (!this.workingDir.mkdirs()) {
                 throw new IOException("Failed creating dir: \"" + this.workingDir + "\"");
             }
         }
-        LOGGER.debug("Set working directory to: " + this.workingDir);
+        logger.debug("Set working directory to: " + this.workingDir);
     }
 
     /**

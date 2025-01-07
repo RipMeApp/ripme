@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -20,6 +22,8 @@ import com.rarchives.ripme.utils.Http;
 import com.rarchives.ripme.utils.Utils;
 
 public class ImagevenueRipper extends AbstractHTMLRipper {
+
+    private static final Logger logger = LogManager.getLogger(ImagevenueRipper.class);
 
     // Thread pool for finding direct image links from "image" pages (html)
     private DownloadThreadPool imagevenueThreadPool = new DownloadThreadPool("imagevenue");
@@ -99,7 +103,7 @@ public class ImagevenueRipper extends AbstractHTMLRipper {
                 // Find image
                 Elements images = doc.select("a > img");
                 if (images.isEmpty()) {
-                    LOGGER.warn("Image not found at " + this.url);
+                    logger.warn("Image not found at " + this.url);
                     return;
                 }
                 Element image = images.first();
@@ -112,7 +116,7 @@ public class ImagevenueRipper extends AbstractHTMLRipper {
                 }
                 addURLToDownload(new URI(imgsrc).toURL(), prefix);
             } catch (IOException | URISyntaxException e) {
-                LOGGER.error("[!] Exception while loading/parsing " + this.url, e);
+                logger.error("[!] Exception while loading/parsing " + this.url, e);
             }
         }
     }

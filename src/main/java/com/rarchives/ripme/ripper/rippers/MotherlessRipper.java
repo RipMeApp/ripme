@@ -10,16 +10,21 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
 import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 import com.rarchives.ripme.ripper.DownloadThreadPool;
 import com.rarchives.ripme.utils.Http;
 import com.rarchives.ripme.utils.Utils;
-import org.jsoup.select.Elements;
 
 public class MotherlessRipper extends AbstractHTMLRipper {
+
+    private static final Logger logger = LogManager.getLogger(MotherlessRipper.class);
+
     // All sleep times are in milliseconds
     private static final int IMAGE_SLEEP_TIME    = 1000;
 
@@ -61,7 +66,7 @@ public class MotherlessRipper extends AbstractHTMLRipper {
             StringBuilder newPath = new StringBuilder(path);
             newPath.insert(2, "M");
             firstURL = URI.create("https://" + DOMAIN + newPath).toURL();
-            LOGGER.info("Changed URL to " + firstURL);
+            logger.info("Changed URL to " + firstURL);
         }
         return Http.url(firstURL).referrer("https://motherless.com").get();
     }
@@ -116,7 +121,7 @@ public class MotherlessRipper extends AbstractHTMLRipper {
         try {
             Thread.sleep(IMAGE_SLEEP_TIME);
         } catch (InterruptedException e) {
-            LOGGER.warn("Interrupted while waiting to load next image", e);
+            logger.warn("Interrupted while waiting to load next image", e);
         }
     }
 
@@ -154,7 +159,7 @@ public class MotherlessRipper extends AbstractHTMLRipper {
     protected DownloadThreadPool getThreadPool() {
         return motherlessThreadPool;
     }
-    
+
     /**
      * Helper class to find and download images found on "image" pages
      */
@@ -188,10 +193,10 @@ public class MotherlessRipper extends AbstractHTMLRipper {
                     }
                     addURLToDownload(new URI(file).toURL(), prefix);
                 } else {
-                    LOGGER.warn("[!] could not find '__fileurl' at " + url);
+                    logger.warn("[!] could not find '__fileurl' at " + url);
                 }
             } catch (IOException | URISyntaxException e) {
-                LOGGER.error("[!] Exception while loading/parsing " + this.url, e);
+                logger.error("[!] Exception while loading/parsing " + this.url, e);
             }
         }
     }

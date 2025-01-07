@@ -1,34 +1,33 @@
 package com.rarchives.ripme.ripper.rippers;
 
-import com.rarchives.ripme.ripper.AbstractJSONRipper;
-import com.rarchives.ripme.utils.Http;
-import com.rarchives.ripme.utils.Utils;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
-import org.jetbrains.annotations.Nullable;
-import org.json.JSONArray;
-import org.json.JSONObject;
-import org.jsoup.Connection;
-
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.zip.GZIPInputStream;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.Nullable;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import com.rarchives.ripme.ripper.AbstractJSONRipper;
+import com.rarchives.ripme.utils.Utils;
+
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 public class DanbooruRipper extends AbstractJSONRipper {
+
+    private static final Logger logger = LogManager.getLogger(DanbooruRipper.class);
+
     private static final String DOMAIN = "danbooru.donmai.us",
             HOST = "danbooru";
     private final OkHttpClient client;
@@ -59,7 +58,6 @@ public class DanbooruRipper extends AbstractJSONRipper {
         return "https://" + getDomain() + "/posts.json?page=" + num + "&tags=" + getTag(url);
     }
 
-    private final String userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:65.0) Gecko/20100101 Firefox/65.0";
     @Override
     protected JSONObject getFirstPage() throws MalformedURLException {
         return getCurrentPage();
@@ -123,7 +121,7 @@ public class DanbooruRipper extends AbstractJSONRipper {
         try {
             return Utils.filesystemSafe(new URI(getTag(url).replaceAll("([?&])tags=", "")).getPath());
         } catch (URISyntaxException ex) {
-            LOGGER.error(ex);
+            logger.error(ex);
         }
 
         throw new MalformedURLException("Expected booru URL format: " + getDomain() + "/posts?tags=searchterm - got " + url + " instead");
@@ -144,5 +142,4 @@ public class DanbooruRipper extends AbstractJSONRipper {
 
         throw new MalformedURLException("Expected danbooru URL format: " + getDomain() + "/posts?tags=searchterm - got " + url + " instead");
     }
-
 }

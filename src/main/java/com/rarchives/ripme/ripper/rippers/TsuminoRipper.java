@@ -13,22 +13,26 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.rarchives.ripme.ui.RipStatusMessage;
-import com.rarchives.ripme.utils.RipUtils;
-import com.rarchives.ripme.utils.Utils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-
-
-import com.rarchives.ripme.ripper.AbstractHTMLRipper;
-import com.rarchives.ripme.utils.Http;
 import org.jsoup.nodes.Element;
 
+import com.rarchives.ripme.ripper.AbstractHTMLRipper;
+import com.rarchives.ripme.ui.RipStatusMessage;
+import com.rarchives.ripme.utils.Http;
+import com.rarchives.ripme.utils.RipUtils;
+import com.rarchives.ripme.utils.Utils;
+
 public class TsuminoRipper extends AbstractHTMLRipper {
-    private Map<String,String> cookies = new HashMap<>();
+
+    private static final Logger logger = LogManager.getLogger(TsuminoRipper.class);
+
+    private Map<String, String> cookies = new HashMap<>();
 
     public TsuminoRipper(URL url) throws IOException {
         super(url);
@@ -36,9 +40,9 @@ public class TsuminoRipper extends AbstractHTMLRipper {
 
     public List<String> getTags(Document doc) {
         List<String> tags = new ArrayList<>();
-        LOGGER.info("Getting tags");
+        logger.info("Getting tags");
         for (Element tag : doc.select("div#Tag > a")) {
-            LOGGER.info("Found tag " + tag.text());
+            logger.info("Found tag " + tag.text());
             tags.add(tag.text().toLowerCase());
         }
         return tags;
@@ -55,7 +59,7 @@ public class TsuminoRipper extends AbstractHTMLRipper {
             JSONObject json = new JSONObject(jsonInfo);
             return json.getJSONArray("reader_page_urls");
         } catch (IOException e) {
-            LOGGER.info(e);
+            logger.info(e);
             sendUpdate(RipStatusMessage.STATUS.DOWNLOAD_ERRORED, "Unable to download album, please compete the captcha at http://www.tsumino.com/Read/Auth/"
                     + getAlbumID() + " and try again");
             return null;

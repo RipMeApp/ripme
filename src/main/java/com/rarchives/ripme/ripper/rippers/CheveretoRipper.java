@@ -12,6 +12,8 @@ import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
@@ -19,6 +21,9 @@ import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 import com.rarchives.ripme.utils.Http;
 
 public class CheveretoRipper extends AbstractHTMLRipper {
+
+    private static final Logger logger = LogManager.getLogger(CheveretoRipper.class);
+
     private static final Map<String, String> CONSENT_COOKIE;
     static {
         CONSENT_COOKIE = new TreeMap<String, String>();
@@ -60,7 +65,7 @@ public class CheveretoRipper extends AbstractHTMLRipper {
             return getHost() + "_" + title.trim();
         } catch (IOException e) {
             // Fall back to default album naming convention
-            LOGGER.info("Unable to find title at " + url);
+            logger.info("Unable to find title at " + url);
         }
         return super.getAlbumTitle(url);
     }

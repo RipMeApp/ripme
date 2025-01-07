@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -16,6 +18,8 @@ import org.jsoup.select.Elements;
 import com.rarchives.ripme.ripper.AbstractSingleFileRipper;
 
 public class XvideosRipper extends AbstractSingleFileRipper {
+
+    private static final Logger logger = LogManager.getLogger(XvideosRipper.class);
 
     private static final String HOST = "xvideos";
 
@@ -79,7 +83,7 @@ public class XvideosRipper extends AbstractSingleFileRipper {
             Elements scripts = doc.select("script");
             for (Element e : scripts) {
                 if (e.html().contains("html5player.setVideoUrlHigh")) {
-                    LOGGER.info("Found the right script");
+                    logger.info("Found the right script");
                     String[] lines = e.html().split("\n");
                     for (String line : lines) {
                         if (line.contains("html5player.setVideoUrlHigh")) {

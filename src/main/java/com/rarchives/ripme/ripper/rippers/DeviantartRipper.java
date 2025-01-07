@@ -1,11 +1,5 @@
 package com.rarchives.ripme.ripper.rippers;
 
-import com.rarchives.ripme.ripper.AbstractHTMLRipper;
-import com.rarchives.ripme.ripper.DownloadThreadPool;
-import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
-import com.rarchives.ripme.utils.Http;
-import com.rarchives.ripme.utils.Utils;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -25,6 +19,8 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jsoup.Connection;
 import org.jsoup.Connection.Method;
 import org.jsoup.Connection.Response;
@@ -33,56 +29,64 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import com.rarchives.ripme.ripper.AbstractHTMLRipper;
+import com.rarchives.ripme.ripper.DownloadThreadPool;
+import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
+import com.rarchives.ripme.utils.Http;
+import com.rarchives.ripme.utils.Utils;
+
 /**
- * 
+ *
  * @author MrPlaygon
- * 
+ *
  *         NOT using Deviantart API like the old JSON ripper because it is SLOW
  *         and somehow annoying to use. Things to consider: Using the API might
  *         be less work/maintenance later because APIs do not change as
  *         frequently as HTML source code does...?
- * 
- * 
- * 
+ *
+ *
+ *
  *         Tested for:
- * 
+ *
  *         SFW:
- * 
+ *
  *         https://www.deviantart.com/apofiss/gallery/41388863/sceneries
  *         https://www.deviantart.com/kageuri/gallery/
  *         https://www.deviantart.com/kageuri/gallery/?catpath=/
  *         https://www.deviantart.com/apofiss/favourites/39881418/gifts-and
  *         https://www.deviantart.com/kageuri/favourites/
  *         https://www.deviantart.com/kageuri/favourites/?catpath=/
- * 
+ *
  *         NSFW:
- * 
+ *
  *         https://www.deviantart.com/revpeng/gallery/67734353/Siren-Lee-Agent-of-S-I-R-E-N-S
- * 
- * 
+ *
+ *
  *         Deactivated account:
- * 
+ *
  *         https://www.deviantart.com/gingerbreadpony/gallery
- * 
+ *
  *         Banned Account:
- * 
+ *
  *         https://www.deviantart.com/ghostofflossenburg/gallery
- * 
- * 
- * 
- * 
+ *
+ *
+ *
+ *
  *         Login Data (PLEASE DONT ACTUALLY USE!!!):
- * 
+ *
  *         email: 5g5_8l4dii5lbbpc@byom.de
- * 
+ *
  *         username: 5g58l4dii5lbbpc
- * 
+ *
  *         password: 5g5_8l4dii5lbbpc
- * 
- * 
+ *
+ *
  *
  */
 public class DeviantartRipper extends AbstractHTMLRipper {
+
+	private static final Logger logger = LogManager.getLogger(DeviantartRipper.class);
 
 	private final String username = "5g58l4dii5lbbpc";
 	private final String password = "5g5_8l4dii5lbbpc";
@@ -137,7 +141,7 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 
 	/**
 	 * Checks if the URL refers to a deactivated account using the HTTP status Codes
-	 * 
+	 *
 	 * @return true when the account is good
 	 * @throws IOException when the account is deactivated
 	 */
@@ -150,9 +154,9 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 
 	/**
 	 * Stores logged in Cookies. Needed for art pieces only visible to logged in
-	 * users. 
-	 * 
-	 * 
+	 * users.
+	 *
+	 *
 	 * @throws IOException when failed to load webpage or failed to read/write
 	 *                     cookies in file (used when running multiple instances of
 	 *                     RipMe)
@@ -168,11 +172,11 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 			e.printStackTrace();
 		}
 		if (getDACookie() == null || !checkLogin()) {
-			LOGGER.info("Do Login now");
+			logger.info("Do Login now");
 			// Do login now
 
 			Map<String, String> tmpCookies = new HashMap<String, String>();
-			
+
 			// Load login page
 			Response res = Http.url("https://www.deviantart.com/users/login").connection().method(Method.GET)
 					.referrer(referer).userAgent(userAgent).execute();
@@ -181,13 +185,13 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 
 			// Find tokens
 			Document doc = res.parse();
-			
+
 			tmpCookies.putAll(res.cookies());
-			
+
 			Element form = doc.getElementById("login");
 			String token = form.select("input[name=\"validate_token\"]").first().attr("value");
 			String key = form.select("input[name=\"validate_key\"]").first().attr("value");
-			LOGGER.info("Token: " + token + " & Key: " + key);
+			logger.info("Token: " + token + " & Key: " + key);
 
 			// Build Login Data
 			HashMap<String, String> loginData = new HashMap<String, String>();
@@ -201,7 +205,7 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 			// Log in using data. Handle redirect
 			res = Http.url("https://www.deviantart.com/users/login").connection().referrer(referer).userAgent(userAgent)
 					.method(Method.POST).data(loginData).cookies(tmpCookies).followRedirects(false).execute();
-			
+
 			tmpCookies.putAll(res.cookies());
 
 			res = Http.url(res.header("location")).connection().referrer(referer).userAgent(userAgent)
@@ -209,17 +213,17 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 
 			// Store cookies
 			tmpCookies.putAll(res.cookies());
-			
+
 			updateCookie(tmpCookies);
-			
+
 
 		} else {
-			LOGGER.info("No new Login needed");
+			logger.info("No new Login needed");
 		}
 
-		LOGGER.info("DA Cookies: " + getDACookie());
+		logger.info("DA Cookies: " + getDACookie());
 	}
-	
+
 
 	/**
 	 * Returns next page Document using offset.
@@ -232,12 +236,12 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 		//updateCookie(re.cookies());
 		Document docu = re.parse();
 		Elements messages = docu.getElementsByClass("message");
-		LOGGER.info("Current Offset: " + this.offset);
+		logger.info("Current Offset: " + this.offset);
 
 		if (messages.size() > 0) {
 
 			// if message exists -> last page
-			LOGGER.info("Messages amount: " + messages.size() + " - Next Page does not exists");
+			logger.info("Messages amount: " + messages.size() + " - Next Page does not exists");
 			throw new IOException("No more pages");
 		}
 
@@ -248,9 +252,9 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 	/**
 	 * Returns list of Links to the Image pages. NOT links to fullsize image!!! e.g.
 	 * https://www.deviantart.com/kageuri/art/RUBY-568396655
-	 * 
+	 *
 	 * @param page Page of album with multiple images
-	 * 
+	 *
 	 */
 	@Override
 	protected List<String> getURLsFromPage(Document page) {
@@ -272,22 +276,22 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 
 		}
 
-		LOGGER.info("Amount of Images on Page: " + result.size());
-		LOGGER.info(page.location());
+		logger.info("Amount of Images on Page: " + result.size());
+		logger.info(page.location());
 
 		return result;
 	}
 
 	/**
 	 * Starts new Thread to find download link + filename + filetype
-	 * 
+	 *
 	 * @param url The URL to an image site.
 	 */
 	@Override
 	protected void downloadURL(URL url, int index) {
 		this.downloadCount += 1;
-		LOGGER.info("Downloading URL Number " + this.downloadCount);
-		LOGGER.info("Deviant Art URL: " + url.toExternalForm());
+		logger.info("Downloading URL Number " + this.downloadCount);
+		logger.info("Deviant Art URL: " + url.toExternalForm());
 		try {
 			Response re = Http.url(urlWithParams(this.offset)).cookies(getDACookie()).referrer(referer)
 					.userAgent(userAgent).response();
@@ -310,7 +314,7 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 	/**
 	 * Returns name of album. Album name consists of 3 words: - Artist (owner of
 	 * gallery) - Type (gallery or favorites folder) - Name of the folder
-	 * 
+	 *
 	 * Returns artist_type_name
 	 */
 	@Override
@@ -359,14 +363,14 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 		} else if (artistM.matches()) {
 			albumname = artistM.group(1);
 		}
-		LOGGER.info("Album Name: " + artist + "_" + what + "_" + albumname);
+		logger.info("Album Name: " + artist + "_" + what + "_" + albumname);
 
 		return artist + "_" + what + "_" + albumname;
 
 	}
 
 	/**
-	 * 
+	 *
 	 * @return Clean URL as String
 	 */
 	private String cleanURL() {
@@ -376,7 +380,7 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 	/**
 	 * Return correct url with params (catpath) and current offset
 	 * Offset misleasing because it might say 24 but it is not the 24th image. (DA site is bugged I guess)
-	 * 
+	 *
 	 * @return URL to page with offset
 	 */
 	private URL urlWithParams(int offset) {
@@ -396,7 +400,7 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 	/**
 	 * Returns Hashmap usable as Cookie for NSFW Artworks. Method Not really needed but
 	 * maybe useful later.
-	 * 
+	 *
 	 * @return Cookie Hashmap
 	 */
 	private Map<String, String> getDACookie() {
@@ -405,7 +409,7 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 
 	/**
 	 * Updates cookies and saves to config file.
-	 * 
+	 *
 	 * @param m new Cookies
 	 */
 	private void updateCookie(Map<String, String> m) {
@@ -422,12 +426,12 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 			}
 		}*/
 
-		LOGGER.info("Updating Cookies");
-		LOGGER.info("Old Cookies: " + getDACookie() + " ");
-		LOGGER.info("New Cookies: " + m + " ");
+		logger.info("Updating Cookies");
+		logger.info("Old Cookies: " + getDACookie() + " ");
+		logger.info("New Cookies: " + m + " ");
 		this.cookies.putAll(m);
 		this.cookies.put("agegate_state", "1");
-		LOGGER.info("Merged Cookies: " + getDACookie() + " ");
+		logger.info("Merged Cookies: " + getDACookie() + " ");
 
 		try {
 			Utils.setConfigString(utilsKey, serialize(new HashMap<String, String>(getDACookie())));
@@ -442,7 +446,7 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 	 * Serializes an Object and returns a String ready to store Used to store
 	 * cookies in the config file because the deviantart cookies contain all sort of
 	 * special characters like ; , = : and so on.
-	 * 
+	 *
 	 * @param o Object to serialize
 	 * @return The serialized base64 encoded object
 	 * @throws IOException
@@ -457,7 +461,7 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 
 	/**
 	 * Recreates the object from the base64 encoded String. Used for Cookies
-	 * 
+	 *
 	 * @param s the Base64 encoded string
 	 * @return the Cookie Map
 	 * @throws IOException
@@ -473,30 +477,30 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 	}
 
 	/**
-	 * Checks if the current cookies are still valid/usable. 
+	 * Checks if the current cookies are still valid/usable.
 	 * Also checks if agegate is given.
-	 * 
-	 * 
+	 *
+	 *
 	 * @return True when all is good.
 	 */
 	private boolean checkLogin() {
 		if (!getDACookie().containsKey("agegate_state")) {
-			LOGGER.info("No agegate key");
+			logger.info("No agegate key");
 			return false;
 		} else if (!getDACookie().get("agegate_state").equals("1")) { // agegate == 1 -> all is fine. NSFW is visible
-			LOGGER.info("Wrong agegate value");
+			logger.info("Wrong agegate value");
 			return false;
 		}
 
 		try {
-			LOGGER.info("Login with Cookies: " + getDACookie());
+			logger.info("Login with Cookies: " + getDACookie());
 			Response res = Http.url("https://www.deviantart.com/users/login").connection().followRedirects(true)
 					.cookies(getDACookie()).referrer(this.referer).userAgent(this.userAgent).execute();
 			if (!res.url().toExternalForm().equals("https://www.deviantart.com/users/login") && !res.url().toExternalForm().startsWith("https://www.deviantart.com/users/wrong-password")) {
-				LOGGER.info("Cookies are valid: " + res.url());
+				logger.info("Cookies are valid: " + res.url());
 				return true;
 			} else {
-				LOGGER.info("Cookies invalid. Wrong URL: " + res.url() + "  " + res.statusCode());
+				logger.info("Cookies invalid. Wrong URL: " + res.url() + "  " + res.statusCode());
 				return false;
 			}
 		} catch (IOException e) {
@@ -508,13 +512,13 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 	/**
 	 * Analyzes an image page like
 	 * https://www.deviantart.com/kageuri/art/RUBY-568396655 .
-	 * 
+	 *
 	 * Looks for download button, follows the authentications and redirects and adds
 	 * the Image URL to the download queue. If no download button is present it will
 	 * use the largest version of the image.
-	 * 
+	 *
 	 * Should work with all filetypes on Deviantart. Tested with .JPG .PNG and .PDF
-	 * 
+	 *
 	 * @author MrPlaygon
 	 *
 	 */
@@ -532,15 +536,15 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 
 		/**
 		 * Get URL to Artwork and return fullsize URL with file ending.
-		 * 
+		 *
 		 * @return URL like
 		 *         https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/intermediary/f/07f7a6bb-2d35-4630-93fc-be249af22b3e/d7jak0y-d20e5932-df72-4d13-b002-5e122037b373.jpg
-		 * 
-		 * 
+		 *
+		 *
 		 */
 		private void getFullSizeURL() {
 
-			LOGGER.info("Searching max. Resolution for " + url);
+			logger.info("Searching max. Resolution for " + url);
 			sendUpdate(STATUS.LOADING_RESOURCE, "Searching max. resolution for " + url);
 			try {
 				Response re = Http.url(url).connection().referrer(referer).userAgent(userAgent).cookies(getDACookie())
@@ -567,7 +571,7 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 
 				// Download Button
 				if (downloadButton != null) {
-					LOGGER.info("Download Button found for "+ url +" : "  + downloadButton.attr("href"));
+					logger.info("Download Button found for "+ url +" : "  + downloadButton.attr("href"));
 
 					Response download = Http.url(downloadButton.attr("href")).connection().cookies(getDACookie())
 							.method(Method.GET).referrer(referer).userAgent(userAgent).ignoreContentType(true)
@@ -576,9 +580,9 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 
 					String[] filetypePart = download.header("Content-Disposition").split("\\.");
 
-					LOGGER.info("Found Image URL");
-					LOGGER.info(url);
-					LOGGER.info(location);
+					logger.info("Found Image URL");
+					logger.info(url);
+					logger.info(location);
 
 					addURLToDownload(location, "", "", "", getDACookie(),
 							title + "." + filetypePart[filetypePart.length - 1]);
@@ -586,18 +590,18 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 				}
 
 				// No Download Button
-				LOGGER.info("No Download Button for: "+ url);
-				
+				logger.info("No Download Button for: "+ url);
+
 				Element div = doc.select("div.dev-view-deviation").first();
 
 				Element image = div.getElementsByTag("img").first();
 
 				String scaledImage = "";
 				if (image == null) {
-					LOGGER.error("ERROR on " + url);
+					logger.error("ERROR on " + url);
 
-					LOGGER.error("Cookies: " + getDACookie() + "    ");
-					LOGGER.error(div);
+					logger.error("Cookies: " + getDACookie() + "    ");
+					logger.error(div);
 					sendUpdate(STATUS.DOWNLOAD_ERRORED, "ERROR at\n" + url);
 					return;
 				}
@@ -605,20 +609,20 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 				// When it is text art (e.g. story) the only image is the profile
 				// picture
 				if (image.hasClass("avatar")) {
-					LOGGER.error("No Image found, probably text art: " + url);
+					logger.error("No Image found, probably text art: " + url);
 					return;
 				}
 
 				scaledImage = image.attr("src").split("\\?")[0];
 
 				String[] parts = scaledImage.split("/v1/"); // Image page uses scaled down version. Split at /v1/ to receive max size.
-				
+
 				if (parts.length > 2) {
-					LOGGER.error("Unexpected URL Format");
+					logger.error("Unexpected URL Format");
 					sendUpdate(STATUS.DOWNLOAD_ERRORED, "Unexpected URL Format");
 					return;
 				}
-				
+
 				String originalImage = parts[0]; // URL to original image without scaling (works not alwys. weird 404 errors.)
 				String downloadString = originalImage; // this works always
 				try {
@@ -627,7 +631,7 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 					downloadString = scaledImage; //revert back to save url because of error
 				}
 				String[] tmpParts = downloadString.split("\\."); //split to get file ending
-				
+
 				addURLToDownload(new URI(downloadString).toURL(), "", "", "", new HashMap<String, String>(),
 						title + "." + tmpParts[tmpParts.length - 1]);
 				return;
@@ -636,7 +640,7 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 				e.printStackTrace();
 			}
 
-			LOGGER.error("No Full Size URL for: " + url);
+			logger.error("No Full Size URL for: " + url);
 			sendUpdate(STATUS.DOWNLOAD_ERRORED, "No image found for " + url);
 
 			return;

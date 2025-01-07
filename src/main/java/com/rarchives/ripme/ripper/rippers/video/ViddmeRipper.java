@@ -8,6 +8,8 @@ import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
 
@@ -15,6 +17,8 @@ import com.rarchives.ripme.ripper.VideoRipper;
 import com.rarchives.ripme.utils.Http;
 
 public class ViddmeRipper extends VideoRipper {
+
+    private static final Logger logger = LogManager.getLogger(ViddmeRipper.class);
 
     private static final String HOST = "vid";
 
@@ -55,7 +59,7 @@ public class ViddmeRipper extends VideoRipper {
 
     @Override
     public void rip() throws IOException, URISyntaxException {
-        LOGGER.info("    Retrieving " + this.url.toExternalForm());
+        logger.info("    Retrieving " + this.url.toExternalForm());
         Document doc = Http.url(this.url).get();
         Elements videos = doc.select("meta[name=twitter:player:stream]");
         if (videos.isEmpty()) {

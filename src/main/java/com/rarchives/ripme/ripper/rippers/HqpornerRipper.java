@@ -1,14 +1,5 @@
 package com.rarchives.ripme.ripper.rippers;
 
-import com.rarchives.ripme.ripper.AbstractHTMLRipper;
-import com.rarchives.ripme.ripper.DownloadThreadPool;
-import com.rarchives.ripme.utils.Http;
-
-import org.jsoup.Connection.Response;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -19,9 +10,20 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static com.rarchives.ripme.App.logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.jsoup.Connection.Response;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
+import com.rarchives.ripme.ripper.AbstractHTMLRipper;
+import com.rarchives.ripme.ripper.DownloadThreadPool;
+import com.rarchives.ripme.utils.Http;
 
 public class HqpornerRipper extends AbstractHTMLRipper {
+
+	private static final Logger logger = LogManager.getLogger(HqpornerRipper.class);
 
 	private static final String VIDEO_URL_PREFIX = "https://hqporner.com";
 
@@ -169,7 +171,7 @@ public class HqpornerRipper extends AbstractHTMLRipper {
 				}
 
 			} catch (IOException | URISyntaxException e) {
-				LOGGER.error("[!] Exception while downloading video.", e);
+				logger.error("[!] Exception while downloading video.", e);
 			}
 		}
 
@@ -282,8 +284,8 @@ public class HqpornerRipper extends AbstractHTMLRipper {
 	}// class HqpornerDownloadThread
 
 	public String getBestQualityLink(List<String> list) {
-		// return link with the highest quality subsubstring. Keeping it simple for now. 
-		// 1080 > 720 > 480 > 360 > 240 
+		// return link with the highest quality subsubstring. Keeping it simple for now.
+		// 1080 > 720 > 480 > 360 > 240
 		if (list.isEmpty()) {
 			return null;
 		}

@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
@@ -17,6 +19,8 @@ import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 import com.rarchives.ripme.utils.Http;
 
 public class JagodibujaRipper extends AbstractHTMLRipper {
+
+    private static final Logger logger = LogManager.getLogger(JagodibujaRipper.class);
 
     public JagodibujaRipper(URL url) throws IOException {
         super(url);
@@ -56,16 +60,16 @@ public class JagodibujaRipper extends AbstractHTMLRipper {
                 sleep(500);
                 Document comicPage = Http.url(comicPageUrl.attr("href")).get();
                 Element elem = comicPage.select("span.full-size-link > a").first();
-                LOGGER.info("Got link " + elem.attr("href"));
+                logger.info("Got link " + elem.attr("href"));
                 try {
                     addURLToDownload(new URI(elem.attr("href")).toURL(), "");
                 } catch (MalformedURLException | URISyntaxException e) {
-                    LOGGER.warn("Malformed URL");
+                    logger.warn("Malformed URL");
                     e.printStackTrace();
                 }
                 result.add(elem.attr("href"));
             } catch (IOException e) {
-                LOGGER.info("Error loading " + comicPageUrl);
+                logger.info("Error loading " + comicPageUrl);
             }
         }
         return result;

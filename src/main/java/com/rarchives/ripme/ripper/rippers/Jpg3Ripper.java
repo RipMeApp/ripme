@@ -1,10 +1,5 @@
 package com.rarchives.ripme.ripper.rippers;
 
-import com.rarchives.ripme.ripper.AbstractHTMLRipper;
-import com.rarchives.ripme.utils.Http;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -13,7 +8,17 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+
+import com.rarchives.ripme.ripper.AbstractHTMLRipper;
+import com.rarchives.ripme.utils.Http;
+
 public class Jpg3Ripper extends AbstractHTMLRipper {
+
+    private static final Logger logger = LogManager.getLogger(Jpg3Ripper.class);
 
     public Jpg3Ripper(URL url) throws IOException {
         super(url);
@@ -44,7 +49,7 @@ public class Jpg3Ripper extends AbstractHTMLRipper {
     public URL sanitizeURL(URL url) throws MalformedURLException, URISyntaxException {
         String u = url.toExternalForm();
         u = u.replaceAll("https?://jpg3.su/a/([^/]+)/?.*", "https://jpg3.su/a/$1");
-        LOGGER.debug("Changed URL from " + url + " to " + u);
+        logger.debug("Changed URL from " + url + " to " + u);
         return new URI(u).toURL();
     }
 

@@ -1,9 +1,5 @@
 package com.rarchives.ripme.ripper;
 
-import com.rarchives.ripme.ui.RipStatusMessage;
-import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
-import com.rarchives.ripme.utils.Utils;
-
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -13,8 +9,16 @@ import java.net.URL;
 import java.nio.file.Path;
 import java.util.Map;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import com.rarchives.ripme.ui.RipStatusMessage;
+import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
+import com.rarchives.ripme.utils.Utils;
 
 public abstract class VideoRipper extends AbstractRipper {
+
+    private static final Logger logger = LogManager.getLogger(VideoRipper.class);
 
     private int bytesTotal = 1;
     private int bytesCompleted = 1;
@@ -57,14 +61,14 @@ public abstract class VideoRipper extends AbstractRipper {
                 RipStatusMessage msg = new RipStatusMessage(STATUS.DOWNLOAD_COMPLETE, urlFile);
                 observer.update(this, msg);
             } catch (IOException e) {
-                LOGGER.error("Error while writing to " + urlFile, e);
+                logger.error("Error while writing to " + urlFile, e);
                 return false;
             }
         } else {
             if (isThisATest()) {
                 // Tests shouldn't download the whole video
                 // Just change this.url to the download URL so the test knows we found it.
-                LOGGER.debug("Test rip, found URL: " + url);
+                logger.debug("Test rip, found URL: " + url);
                 this.url = url;
                 return true;
             }
@@ -101,11 +105,11 @@ public abstract class VideoRipper extends AbstractRipper {
         workingDir = new File(path);
 
         if (!workingDir.exists()) {
-            LOGGER.info("[+] Creating directory: " + Utils.removeCWD(workingDir.toPath()));
+            logger.info("[+] Creating directory: " + Utils.removeCWD(workingDir.toPath()));
             workingDir.mkdirs();
         }
 
-        LOGGER.debug("Set working directory to: " + workingDir);
+        logger.debug("Set working directory to: " + workingDir);
     }
 
     /**
@@ -135,7 +139,7 @@ public abstract class VideoRipper extends AbstractRipper {
 
             checkIfComplete();
         } catch (Exception e) {
-            LOGGER.error("Exception while updating observer: ", e);
+            logger.error("Exception while updating observer: ", e);
         }
     }
 

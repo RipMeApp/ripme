@@ -1,9 +1,5 @@
 package com.rarchives.ripme.ripper.rippers;
 
-import com.rarchives.ripme.ripper.AbstractHTMLRipper;
-import com.rarchives.ripme.ripper.rippers.ripperhelpers.ChanSite;
-import com.rarchives.ripme.utils.Utils;
-import com.rarchives.ripme.utils.RipUtils;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -15,10 +11,20 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
+import com.rarchives.ripme.ripper.AbstractHTMLRipper;
+import com.rarchives.ripme.ripper.rippers.ripperhelpers.ChanSite;
+import com.rarchives.ripme.utils.RipUtils;
+import com.rarchives.ripme.utils.Utils;
+
 public class ChanRipper extends AbstractHTMLRipper {
+
+    private static final Logger logger = LogManager.getLogger(ChanRipper.class);
+
     private static List<ChanSite> bakedin_explicit_domains = Arrays.asList(
             new ChanSite("boards.4chan.org",   Arrays.asList("4cdn.org", "is.4chan.org", "is2.4chan.org", "is3.4chan.org")),
             new ChanSite("boards.4channel.org",   Arrays.asList("4cdn.org", "is.4chan.org", "is2.4chan.org", "is3.4chan.org")),
@@ -51,12 +57,12 @@ public class ChanRipper extends AbstractHTMLRipper {
                 if (chanInfo.contains("[")) {
                     String siteUrl = chanInfo.split("\\[")[0];
                     String[] cdns = chanInfo.replaceAll(siteUrl + "\\[", "").replaceAll("]", "").split("\\|");
-                    LOGGER.debug("site url: " + siteUrl);
-                    LOGGER.debug("cdn: " + Arrays.toString(cdns));
+                    logger.debug("site url: " + siteUrl);
+                    logger.debug("cdn: " + Arrays.toString(cdns));
                     userChans.add(new ChanSite(siteUrl, Arrays.asList(cdns)));
                 } else {
                     // We're parsing a site without cdns
-                    LOGGER.debug("site: " + chanInfo);
+                    logger.debug("site: " + chanInfo);
                     userChans.add(new ChanSite(chanInfo));
                 }
             }
@@ -78,7 +84,7 @@ public class ChanRipper extends AbstractHTMLRipper {
     public ChanRipper(URL url) throws IOException {
         super(url);
         for (ChanSite _chanSite : explicit_domains) {
-            LOGGER.info(_chanSite.domains);
+            logger.info(_chanSite.domains);
             if (_chanSite.domains.contains(url.getHost())) {
                 chanSite = _chanSite;
                 generalChanSite = false;
@@ -110,11 +116,11 @@ public class ChanRipper extends AbstractHTMLRipper {
                 String subject = doc.select(".post.op > .postinfo > .subject").first().text();
                 return getHost() + "_" + getGID(url) + "_" + subject;
             } catch (NullPointerException e) {
-                LOGGER.warn("Failed to get thread title from " + url);
+                logger.warn("Failed to get thread title from " + url);
             }
         } catch (Exception e) {
             // Fall back to default album naming convention
-            LOGGER.warn("Failed to get album title from " + url, e);
+            logger.warn("Failed to get album title from " + url, e);
         }
         // Fall back on the GID
         return getHost() + "_" + getGID(url);
@@ -202,7 +208,7 @@ public class ChanRipper extends AbstractHTMLRipper {
     private boolean isURLBlacklisted(String url) {
         for (String blacklist_item : url_piece_blacklist) {
             if (url.contains(blacklist_item)) {
-                LOGGER.debug("Skipping link that contains '"+blacklist_item+"': " + url);
+                logger.debug("Skipping link that contains '"+blacklist_item+"': " + url);
                 return true;
             }
         }
@@ -243,7 +249,7 @@ public class ChanRipper extends AbstractHTMLRipper {
                     }
                     // Don't download the same URL twice
                     if (imageURLs.contains(href)) {
-                        LOGGER.debug("Already attempted: " + href);
+                        logger.debug("Already attempted: " + href);
                         continue;
                     }
                     imageURLs.add(href);

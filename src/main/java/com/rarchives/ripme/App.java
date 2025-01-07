@@ -43,7 +43,7 @@ import java.util.stream.Stream;
  */
 public class App {
 
-    public static final Logger logger = LogManager.getLogger(App.class);
+    private static final Logger logger = LogManager.getLogger(App.class);
     public static String stringToAppendToFoldername = null;
     private static final History HISTORY = new History();
 
@@ -140,7 +140,7 @@ public class App {
             Utils.setConfigString("history.location", historyLocation);
             logger.info("Set history file to " + historyLocation);
         }
-        
+
         //Allow file overwriting
         if (cl.hasOption('w')) {
             Utils.setConfigBoolean("file.overwrite", true);
@@ -173,7 +173,7 @@ public class App {
             // change the default rips directory
             Utils.setConfigString("rips.directory", cl.getOptionValue('l'));
         }
-        
+
         //Re-rip <i>all</i> previous albums
         if (cl.hasOption('r')) {
             // Re-rip all via command-line
@@ -386,7 +386,7 @@ public class App {
         }
     }
 
-    /* 
+    /*
     * @see MainWindow.saveHistory
     */
     private static void saveHistory() {

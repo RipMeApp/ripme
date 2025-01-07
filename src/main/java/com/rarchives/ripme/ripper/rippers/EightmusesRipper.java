@@ -1,7 +1,10 @@
 package com.rarchives.ripme.ripper.rippers;
 
 import java.io.IOException;
-import java.net.*;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -9,6 +12,8 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jsoup.Connection.Response;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -19,6 +24,8 @@ import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
 import com.rarchives.ripme.utils.Http;
 
 public class EightmusesRipper extends AbstractHTMLRipper {
+
+    private static final Logger logger = LogManager.getLogger(EightmusesRipper.class);
 
     private Map<String, String> cookies = new HashMap<>();
 
@@ -62,7 +69,7 @@ public class EightmusesRipper extends AbstractHTMLRipper {
             return getHost() + "_" + title.trim();
         } catch (IOException e) {
             // Fall back to default album naming convention
-            LOGGER.info("Unable to find title at " + url);
+            logger.info("Unable to find title at " + url);
         }
         return super.getAlbumTitle(url);
     }
@@ -85,19 +92,19 @@ public class EightmusesRipper extends AbstractHTMLRipper {
             if (thumb.attr("href").contains("/comics/album/")) {
                 String subUrl = "https://www.8muses.com" + thumb.attr("href");
                 try {
-                    LOGGER.info("Retrieving " + subUrl);
+                    logger.info("Retrieving " + subUrl);
                     sendUpdate(STATUS.LOADING_RESOURCE, subUrl);
                     Document subPage = Http.url(subUrl).get();
                     // If the page below this one has images this line will download them
                     List<String> subalbumImages = getURLsFromPage(subPage);
-                    LOGGER.info("Found " + subalbumImages.size() + " images in subalbum");
+                    logger.info("Found " + subalbumImages.size() + " images in subalbum");
                 } catch (IOException e) {
-                    LOGGER.warn("Error while loading subalbum " + subUrl, e);
+                    logger.warn("Error while loading subalbum " + subUrl, e);
                 }
 
             } else if (thumb.attr("href").contains("/comics/picture/")) {
-                LOGGER.info("This page is a album");
-                LOGGER.info("Ripping image");
+                logger.info("This page is a album");
+                logger.info("Ripping image");
                 if (super.isStopped()) break;
                 // Find thumbnail image source
                 String image = null;
@@ -110,8 +117,8 @@ public class EightmusesRipper extends AbstractHTMLRipper {
                         URL imageUrl = new URI(image).toURL();
                         addURLToDownload(imageUrl, getSubdir(page.select("title").text()), this.url.toExternalForm(), cookies, getPrefixShort(i), "", null, true);
                     } catch (MalformedURLException | URISyntaxException e) {
-                        LOGGER.error("\"" + image + "\" is malformed");
-                        LOGGER.error(e.getMessage());
+                        logger.error("\"" + image + "\" is malformed");
+                        logger.error(e.getMessage());
                     }
                 }
                 if (!image.contains("8muses.com")) {
@@ -127,7 +134,7 @@ public class EightmusesRipper extends AbstractHTMLRipper {
     }
 
     public String getSubdir(String rawHref) {
-        LOGGER.info("Raw title: " + rawHref);
+        logger.info("Raw title: " + rawHref);
         String title = rawHref;
         title = title.replaceAll("8muses - Sex and Porn Comics", "");
         title = title.replaceAll("\\s+", " ");
@@ -135,7 +142,7 @@ public class EightmusesRipper extends AbstractHTMLRipper {
         title = title.replaceAll("\\| ", "");
         title = title.replace(" - ", "-");
         title = title.replace(" ", "-");
-        LOGGER.info(title);
+        logger.info(title);
         return title;
     }
 

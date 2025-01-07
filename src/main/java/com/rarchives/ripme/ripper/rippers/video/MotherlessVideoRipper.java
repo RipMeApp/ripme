@@ -9,11 +9,16 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import com.rarchives.ripme.ripper.VideoRipper;
 import com.rarchives.ripme.utils.Http;
 import com.rarchives.ripme.utils.Utils;
 
 public class MotherlessVideoRipper extends VideoRipper {
+
+    private static final Logger logger = LogManager.getLogger(MotherlessVideoRipper.class);
 
     private static final String HOST = "motherless";
 
@@ -54,10 +59,10 @@ public class MotherlessVideoRipper extends VideoRipper {
 
     @Override
     public void rip() throws IOException, URISyntaxException {
-        LOGGER.info("    Retrieving " + this.url);
+        logger.info("    Retrieving " + this.url);
         String html = Http.url(this.url).get().toString();
         if (html.contains("__fileurl = '")) {
-            LOGGER.error("WTF");
+            logger.error("WTF");
         }
         List<String> vidUrls = Utils.between(html, "__fileurl = '", "';");
         if (vidUrls.isEmpty()) {

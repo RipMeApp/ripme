@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jsoup.nodes.Document;
 
 import com.rarchives.ripme.ripper.VideoRipper;
@@ -16,6 +18,8 @@ import com.rarchives.ripme.utils.Http;
 import com.rarchives.ripme.utils.Utils;
 
 public class VidearnRipper extends VideoRipper {
+
+    private static final Logger logger = LogManager.getLogger(VidearnRipper.class);
 
     private static final String HOST = "videarn";
 
@@ -51,7 +55,7 @@ public class VidearnRipper extends VideoRipper {
 
     @Override
     public void rip() throws IOException, URISyntaxException {
-        LOGGER.info("Retrieving " + this.url);
+        logger.info("Retrieving " + this.url);
         Document doc = Http.url(url).get();
         List<String> mp4s = Utils.between(doc.html(), "file:\"", "\"");
         if (mp4s.isEmpty()) {

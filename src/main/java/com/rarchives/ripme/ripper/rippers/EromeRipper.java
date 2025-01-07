@@ -11,19 +11,23 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.rarchives.ripme.utils.Utils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jsoup.Connection.Response;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
 import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 import com.rarchives.ripme.utils.Http;
+import com.rarchives.ripme.utils.Utils;
 
 /**
  *
  * @author losipher
  */
 public class EromeRipper extends AbstractHTMLRipper {
+
+    private static final Logger logger = LogManager.getLogger(EromeRipper.class);
 
     boolean rippingProfile;
     private HashMap<String, String> cookies = new HashMap<>();
@@ -78,7 +82,7 @@ public class EromeRipper extends AbstractHTMLRipper {
             return getHost() + "_" + getGID(url) + "_" + title.trim();
         } catch (IOException e) {
             // Fall back to default album naming convention
-            LOGGER.info("Unable to find title at " + url);
+            logger.info("Unable to find title at " + url);
         } catch (NullPointerException e) {
             return getHost() + "_" + getGID(url);
         }
@@ -158,7 +162,7 @@ public class EromeRipper extends AbstractHTMLRipper {
 
         if (results.size() == 0) {
             if (cookies.isEmpty()) {
-                LOGGER.warn("You might try setting erome.laravel_session manually " +
+                logger.warn("You might try setting erome.laravel_session manually " +
                         "if you think this page definitely contains media.");
             }
         }

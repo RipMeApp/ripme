@@ -8,6 +8,8 @@ import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
 
 import com.rarchives.ripme.ripper.VideoRipper;
@@ -15,6 +17,8 @@ import com.rarchives.ripme.utils.Base64;
 import com.rarchives.ripme.utils.Http;
 
 public class CliphunterRipper extends VideoRipper {
+
+    private static final Logger logger = LogManager.getLogger(CliphunterRipper.class);
 
     private static final String HOST = "cliphunter";
     private static final String decryptString="{'$':':','&':'.','(':'=','-':'-','_':'_','^':'&','a':'h','c':'c','b':'b','e':'v','d':'e','g':'f','f':'o','i':'d','m':'a','l':'n','n':'m','q':'t','p':'u','r':'s','w':'w','v':'p','y':'l','x':'r','z':'i','=':'/','?':'?'}";
@@ -57,7 +61,7 @@ public class CliphunterRipper extends VideoRipper {
 
     @Override
     public void rip() throws IOException, URISyntaxException {
-        LOGGER.info("Retrieving " + this.url);
+        logger.info("Retrieving " + this.url);
         String html = Http.url(url).get().html();
         String jsonString = html.substring(html.indexOf("var flashVars = {d: '") + 21);
         jsonString = jsonString.substring(0, jsonString.indexOf("'"));

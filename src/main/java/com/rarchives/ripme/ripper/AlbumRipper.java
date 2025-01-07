@@ -1,9 +1,5 @@
 package com.rarchives.ripme.ripper;
 
-import com.rarchives.ripme.ui.RipStatusMessage;
-import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
-import com.rarchives.ripme.utils.Utils;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -18,6 +14,13 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import com.rarchives.ripme.ui.RipStatusMessage;
+import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
+import com.rarchives.ripme.utils.Utils;
+
 // Should this file even exist? It does the same thing as abstractHTML ripper
 
 /**'
@@ -26,6 +29,8 @@ import java.util.Map;
  */
 @Deprecated
 public abstract class AlbumRipper extends AbstractRipper {
+
+    private static final Logger logger = LogManager.getLogger(AlbumRipper.class);
 
     private Map<URL, File> itemsPending = Collections.synchronizedMap(new HashMap<URL, File>());
     private Map<URL, Path> itemsCompleted = Collections.synchronizedMap(new HashMap<URL, Path>());
@@ -69,7 +74,7 @@ public abstract class AlbumRipper extends AbstractRipper {
                   || itemsCompleted.containsKey(url)
                   || itemsErrored.containsKey(url) )) {
             // Item is already downloaded/downloading, skip it.
-            LOGGER.info("[!] Skipping " + url + " -- already attempted: " + Utils.removeCWD(saveAs));
+            logger.info("[!] Skipping " + url + " -- already attempted: " + Utils.removeCWD(saveAs));
             return false;
         }
         if (shouldIgnoreURL(url)) {
@@ -84,7 +89,7 @@ public abstract class AlbumRipper extends AbstractRipper {
                 Files.write(urlFile, text.getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
                 itemsCompleted.put(url, urlFile);
             } catch (IOException e) {
-                LOGGER.error("Error while writing to " + urlFile, e);
+                logger.error("Error while writing to " + urlFile, e);
             }
         }
         else {
@@ -137,7 +142,7 @@ public abstract class AlbumRipper extends AbstractRipper {
 
             checkIfComplete();
         } catch (Exception e) {
-            LOGGER.error("Exception while updating observer: ", e);
+            logger.error("Exception while updating observer: ", e);
         }
     }
 
@@ -207,7 +212,7 @@ public abstract class AlbumRipper extends AbstractRipper {
         } else {
             title = super.getAlbumTitle(this.url);
         }
-        LOGGER.debug("Using album title '" + title + "'");
+        logger.debug("Using album title '" + title + "'");
 
         title = Utils.filesystemSafe(title);
         path += title;
@@ -215,10 +220,10 @@ public abstract class AlbumRipper extends AbstractRipper {
 
         this.workingDir = new File(path);
         if (!this.workingDir.exists()) {
-            LOGGER.info("[+] Creating directory: " + Utils.removeCWD(this.workingDir.toPath()));
+            logger.info("[+] Creating directory: " + Utils.removeCWD(this.workingDir.toPath()));
             this.workingDir.mkdirs();
         }
-        LOGGER.debug("Set working directory to: " + this.workingDir);
+        logger.debug("Set working directory to: " + this.workingDir);
     }
 
     /**

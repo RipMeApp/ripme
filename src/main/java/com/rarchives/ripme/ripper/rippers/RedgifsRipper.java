@@ -22,7 +22,12 @@ import org.json.JSONObject;
 import com.rarchives.ripme.ripper.AbstractJSONRipper;
 import com.rarchives.ripme.utils.Http;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 public class RedgifsRipper extends AbstractJSONRipper {
+
+    private static final Logger logger = LogManager.getLogger(RedgifsRipper.class);
 
     private static final String HOST = "redgifs.com";
     private static final String HOST_2 = "gifdeliverynetwork.com";
@@ -159,7 +164,7 @@ public class RedgifsRipper extends AbstractJSONRipper {
             sText = URLDecoder.decode(sText, StandardCharsets.UTF_8);
             var list = Arrays.asList(sText.split(","));
             if (list.size() > 1) {
-                LOGGER.warn("Url with multiple tags found. \nThey will be sorted alphabetically for folder name.");
+                logger.warn("Url with multiple tags found. \nThey will be sorted alphabetically for folder name.");
             }
             Collections.sort(list);
             var gid = list.stream().reduce("", (acc, val) -> acc.concat("_" + val));
@@ -256,7 +261,7 @@ public class RedgifsRipper extends AbstractJSONRipper {
                 list.add(hdURL);
             }
         } catch (IOException e) {
-            LOGGER.error(String.format("Error fetching gallery %s for gif %s", galleryID, gifID), e);
+            logger.error(String.format("Error fetching gallery %s for gif %s", galleryID, gifID), e);
         }
         return list;
     }
@@ -270,7 +275,7 @@ public class RedgifsRipper extends AbstractJSONRipper {
      * @throws IOException
      */
     public static String getVideoURL(URL url) throws IOException, URISyntaxException {
-        LOGGER.info("Retrieving " + url.toExternalForm());
+        logger.info("Retrieving " + url.toExternalForm());
         var m = SINGLETON_PATTERN.matcher(url.toExternalForm());
         if (!m.matches()) {
             throw new IOException(String.format("Cannot fetch redgif url %s", url.toExternalForm()));
@@ -298,7 +303,7 @@ public class RedgifsRipper extends AbstractJSONRipper {
         var json = Http.url(TEMPORARY_AUTH_ENDPOINT).getJSON();
         var token = json.getString("token");
         authToken = token;
-        LOGGER.info("Incase of redgif 401 errors, please restart the app to refresh the auth token");
+        logger.info("Incase of redgif 401 errors, please restart the app to refresh the auth token");
     }
 
     /**
@@ -328,7 +333,7 @@ public class RedgifsRipper extends AbstractJSONRipper {
                     switch (value) {
                         case "gifs" -> endpointQueryParams.put("type", "g");
                         case "images" -> endpointQueryParams.put("type", "i");
-                        default -> LOGGER.warn(String.format("Unsupported tab for tags url %s", value));
+                        default -> logger.warn(String.format("Unsupported tab for tags url %s", value));
                     }
                     break;
                 case "verified":
@@ -346,7 +351,7 @@ public class RedgifsRipper extends AbstractJSONRipper {
                 case "viewMode":
                     break;
                 default:
-                    LOGGER.warn(String.format("Unexpected query param %s for search url. Skipping.", name));
+                    logger.warn(String.format("Unexpected query param %s for search url. Skipping.", name));
             }
         }
 
@@ -360,7 +365,7 @@ public class RedgifsRipper extends AbstractJSONRipper {
             }
             // Check if it is the main tags page with all gifs, images, creator etc
             if (!endpointQueryParams.containsKey("type")) {
-                LOGGER.warn("No tab selected, defaulting to gifs");
+                logger.warn("No tab selected, defaulting to gifs");
                 endpointQueryParams.put("type", "g");
             }
             uri = new URIBuilder(TAGS_ENDPOINT);
@@ -371,8 +376,8 @@ public class RedgifsRipper extends AbstractJSONRipper {
                 switch (subpaths[subpaths.length - 1]) {
                     case "gifs" -> tabType = "gifs";
                     case "images" -> tabType = "images";
-                    case "search" -> LOGGER.warn("No tab selected, defaulting to gifs");
-                    default -> LOGGER.warn(String.format("Unsupported search tab %s, defaulting to gifs",
+                    case "search" -> logger.warn("No tab selected, defaulting to gifs");
+                    default -> logger.warn(String.format("Unsupported search tab %s, defaulting to gifs",
                             subpaths[subpaths.length - 1]));
                 }
             }

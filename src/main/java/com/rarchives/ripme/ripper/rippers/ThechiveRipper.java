@@ -1,8 +1,5 @@
 package com.rarchives.ripme.ripper.rippers;
 
-import com.rarchives.ripme.ripper.AbstractHTMLRipper;
-import com.rarchives.ripme.utils.Http;
-
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -13,16 +10,24 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.jsoup.Jsoup;
 import org.jsoup.Connection.Response;
+import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import com.rarchives.ripme.ripper.AbstractHTMLRipper;
+import com.rarchives.ripme.utils.Http;
+
 public class ThechiveRipper extends AbstractHTMLRipper {
+
+    private static final Logger logger = LogManager.getLogger(ThechiveRipper.class);
+
     private Pattern p1 = Pattern.compile("^https?://thechive.com/[0-9]*/[0-9]*/[0-9]*/([a-zA-Z0-9_\\-]*)/?$");
     private Pattern imagePattern = Pattern.compile("<img\\s(?:.|\\n)+?>");
 
@@ -130,10 +135,10 @@ public class ThechiveRipper extends AbstractHTMLRipper {
         /*
          * The image urls are stored in a <script> tag of the document. This script
          * contains a single array var by name CHIVE_GALLERY_ITEMS.
-         * 
+         *
          * We grab all the <img> tags from the particular script, combine them in a
          * string, parse it, and grab all the img/gif urls.
-         * 
+         *
          */
         List<String> result = new ArrayList<>();
         Elements scripts = doc.getElementsByTag("script");
@@ -180,10 +185,10 @@ public class ThechiveRipper extends AbstractHTMLRipper {
     private List<String> getUrlsFromIDotThechive() {
         /*
          * Image urls for i.thechive.com/someUserName as fetched via JSON request. Each
-         * 
+         *
          * JSON request uses the cookies from previous response( which contains the next
          * CSRF token).
-         * 
+         *
          * JSON request parameters:
          *  1. seed: activityId of the last url.
          *  2. queryType: 'by-username' always.
@@ -197,7 +202,7 @@ public class ThechiveRipper extends AbstractHTMLRipper {
             JSONObject json = new JSONObject(response.body());
             JSONArray imgList = json.getJSONArray("uploads");
             nextSeed = null; // if no more images, nextSeed stays null
-            
+
             for (int i = 0; i < imgList.length(); i++) {
                 JSONObject img = imgList.getJSONObject(i);
                 if (img.getString("mediaType").equals("gif")) {
@@ -207,11 +212,11 @@ public class ThechiveRipper extends AbstractHTMLRipper {
                 }
                 nextSeed = img.getString("activityId");
             }
-            
+
         } catch (IOException e) {
-            LOGGER.error("Unable to fetch JSON data for url: " + url);
+            logger.error("Unable to fetch JSON data for url: " + url);
         } catch (JSONException e) {
-            LOGGER.error("JSON error while parsing data for url: " + url);
+            logger.error("JSON error while parsing data for url: " + url);
         }
         return result;
     }

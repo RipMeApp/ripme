@@ -1,10 +1,5 @@
 package com.rarchives.ripme.ripper;
 
-import com.rarchives.ripme.ui.RipStatusMessage;
-import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
-import com.rarchives.ripme.utils.Utils;
-import org.json.JSONObject;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -21,11 +16,21 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.json.JSONObject;
+
+import com.rarchives.ripme.ui.RipStatusMessage;
+import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
+import com.rarchives.ripme.utils.Utils;
+
 /**
  * Simplified ripper, designed for ripping from sites by parsing JSON.
  */
 public abstract class AbstractJSONRipper extends AbstractRipper {
-    
+
+    private static final Logger logger = LogManager.getLogger(AbstractJSONRipper.class);
+
     private Map<URL, File> itemsPending = Collections.synchronizedMap(new HashMap<URL, File>());
     private Map<URL, Path> itemsCompleted = Collections.synchronizedMap(new HashMap<URL, Path>());
     private Map<URL, String> itemsErrored = Collections.synchronizedMap(new HashMap<URL, String>());
@@ -65,18 +70,18 @@ public abstract class AbstractJSONRipper extends AbstractRipper {
     @Override
     public void rip() throws IOException, URISyntaxException {
         int index = 0;
-        LOGGER.info("Retrieving " + this.url);
+        logger.info("Retrieving " + this.url);
         sendUpdate(STATUS.LOADING_RESOURCE, this.url.toExternalForm());
         JSONObject json = getFirstPage();
 
         while (json != null) {
             List<String> imageURLs = getURLsFromJSON(json);
-            
+
             if (alreadyDownloadedUrls >= Utils.getConfigInteger("history.end_rip_after_already_seen", 1000000000) && !isThisATest()) {
                  sendUpdate(STATUS.DOWNLOAD_COMPLETE, "Already seen the last " + alreadyDownloadedUrls + " images ending rip");
                  break;
             }
-            
+
             // Remove all but 1 image
             if (isThisATest()) {
                 while (imageURLs.size() > 1) {
@@ -92,9 +97,9 @@ public abstract class AbstractJSONRipper extends AbstractRipper {
                 if (isStopped()) {
                     break;
                 }
-                
+
                 index += 1;
-                LOGGER.debug("Found image url #" + index+ ": " + imageURL);
+                logger.debug("Found image url #" + index+ ": " + imageURL);
                 downloadURL(new URI(imageURL).toURL(), index);
             }
 
@@ -106,14 +111,14 @@ public abstract class AbstractJSONRipper extends AbstractRipper {
                 sendUpdate(STATUS.LOADING_RESOURCE, "next page");
                 json = getNextPage(json);
             } catch (IOException | URISyntaxException e) {
-                LOGGER.info("Can't get next page: " + e.getMessage());
+                logger.info("Can't get next page: " + e.getMessage());
                 break;
             }
         }
 
         // If they're using a thread pool, wait for it.
         if (getThreadPool() != null) {
-            LOGGER.debug("Waiting for threadpool " + getThreadPool().getClass().getName());
+            logger.debug("Waiting for threadpool " + getThreadPool().getClass().getName());
             getThreadPool().waitForThreads();
         }
         waitForThreads();
@@ -126,11 +131,11 @@ public abstract class AbstractJSONRipper extends AbstractRipper {
         }
         return prefix;
     }
-    
+
     /*
      * ------ Methods copied from AlbumRipper ------
      */
-    
+
     protected boolean allowDuplicates() {
         return false;
     }
@@ -159,7 +164,7 @@ public abstract class AbstractJSONRipper extends AbstractRipper {
                   || itemsCompleted.containsKey(url)
                   || itemsErrored.containsKey(url) )) {
             // Item is already downloaded/downloading, skip it.
-            LOGGER.info("[!] Skipping " + url + " -- already attempted: " + Utils.removeCWD(saveAs));
+            logger.info("[!] Skipping " + url + " -- already attempted: " + Utils.removeCWD(saveAs));
             return false;
         }
         if (shouldIgnoreURL(url)) {
@@ -174,7 +179,7 @@ public abstract class AbstractJSONRipper extends AbstractRipper {
                 Files.write(urlFile, text.getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
                 itemsCompleted.put(url, urlFile);
             } catch (IOException e) {
-                LOGGER.error("Error while writing to " + urlFile, e);
+                logger.error("Error while writing to " + urlFile, e);
             }
         }
         else {
@@ -227,7 +232,7 @@ public abstract class AbstractJSONRipper extends AbstractRipper {
 
             checkIfComplete();
         } catch (Exception e) {
-            LOGGER.error("Exception while updating observer: ", e);
+            logger.error("Exception while updating observer: ", e);
         }
     }
 
@@ -292,16 +297,16 @@ public abstract class AbstractJSONRipper extends AbstractRipper {
         } else {
             title = super.getAlbumTitle(this.url);
         }
-        LOGGER.debug("Using album title '" + title + "'");
+        logger.debug("Using album title '" + title + "'");
 
         title = Utils.filesystemSafe(title);
         wd = wd.resolve(title);
         if (!Files.exists(wd)) {
-            LOGGER.info("[+] Creating directory: " + Utils.removeCWD(wd));
+            logger.info("[+] Creating directory: " + Utils.removeCWD(wd));
             Files.createDirectory(wd);
         }
         this.workingDir = wd.toFile();
-        LOGGER.info("Set working directory to: {}", this.workingDir);
+        logger.info("Set working directory to: {}", this.workingDir);
     }
 
     /**
@@ -329,5 +334,5 @@ public abstract class AbstractJSONRipper extends AbstractRipper {
         return sb.toString();
     }
 
-    
+
 }

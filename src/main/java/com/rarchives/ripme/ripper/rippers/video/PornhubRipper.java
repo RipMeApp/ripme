@@ -13,12 +13,16 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jsoup.nodes.Document;
 
 import com.rarchives.ripme.ripper.VideoRipper;
 import com.rarchives.ripme.utils.Http;
 
 public class PornhubRipper extends VideoRipper {
+
+    private static final Logger logger = LogManager.getLogger(PornhubRipper.class);
 
     private static final String HOST = "pornhub";
 
@@ -60,7 +64,7 @@ public class PornhubRipper extends VideoRipper {
     @Override
     public void rip() throws IOException, URISyntaxException {
         String vidUrl = "";
-        LOGGER.info("    Retrieving " + this.url.toExternalForm());
+        logger.info("    Retrieving " + this.url.toExternalForm());
         Document doc = Http.url(this.url).get();
         String html = doc.body().html();
         html = StringEscapeUtils.unescapeJavaScript(html);
@@ -153,4 +157,3 @@ public class PornhubRipper extends VideoRipper {
         waitForThreads();
     }
 }
-

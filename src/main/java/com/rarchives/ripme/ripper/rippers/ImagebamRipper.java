@@ -22,7 +22,12 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 public class ImagebamRipper extends AbstractHTMLRipper {
+
+    private static final Logger logger = LogManager.getLogger(ImagebamRipper.class);
 
     // Thread pool for finding direct image links from "image" pages (html)
     private DownloadThreadPool imagebamThreadPool = new DownloadThreadPool("imagebam");
@@ -95,13 +100,13 @@ public class ImagebamRipper extends AbstractHTMLRipper {
             // Attempt to use album title as GID
             Elements elems = getCachedFirstPage().select("[id=gallery-name]");
             String title = elems.first().text();
-            LOGGER.info("Title text: '" + title + "'");
+            logger.info("Title text: '" + title + "'");
             if (StringUtils.isNotBlank(title)) {
                 return getHost() + "_" + getGID(url) + " (" + title + ")";
             }
         } catch (Exception e) {
             // Fall back to default album naming convention
-            LOGGER.warn("Failed to get album title from " + url, e);
+            logger.warn("Failed to get album title from " + url, e);
         }
         return super.getAlbumTitle(url);
     }
@@ -125,7 +130,7 @@ public class ImagebamRipper extends AbstractHTMLRipper {
         public void run() {
             fetchImage();
         }
-        
+
         /**
          * Rips useful image from "image page"
          */
@@ -139,28 +144,28 @@ public class ImagebamRipper extends AbstractHTMLRipper {
 
                 // Find image
                 Elements metaTags = doc.getElementsByTag("meta");
-                
+
                 String imgsrc = "";//initialize, so no NullPointerExceptions should ever happen.
                 Elements elem = doc.select("img[class*=main-image]");
                 if ((elem != null) && (elem.size() > 0)) {
                     imgsrc = elem.first().attr("src");
                 }
-               
+
                 //for debug, or something goes wrong.
                 if (imgsrc.isEmpty()) {
-                    LOGGER.warn("Image not found at " + this.url);
+                    logger.warn("Image not found at " + this.url);
                     return;
                 }
-               
+
                 // Provide prefix and let the AbstractRipper "guess" the filename
                 String prefix = "";
                 if (Utils.getConfigBoolean("download.save_order", true)) {
                     prefix = String.format("%03d_", index);
                 }
-                
+
                 addURLToDownload(new URI(imgsrc).toURL(), prefix);
             } catch (IOException | URISyntaxException e) {
-                LOGGER.error("[!] Exception while loading/parsing " + this.url, e);
+                logger.error("[!] Exception while loading/parsing " + this.url, e);
             }
         }
     }

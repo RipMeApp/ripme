@@ -13,9 +13,14 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 
 public class GirlsOfDesireRipper extends AbstractHTMLRipper {
+
+    private static final Logger logger = LogManager.getLogger(EromeRipper.class);
 
     public GirlsOfDesireRipper(URL url) throws IOException {
         super(url);
@@ -38,7 +43,7 @@ public class GirlsOfDesireRipper extends AbstractHTMLRipper {
             return getHost() + "_" + elems.first().text();
         } catch (Exception e) {
             // Fall back to default album naming convention
-            LOGGER.warn("Failed to get album title from " + url, e);
+            logger.warn("Failed to get album title from " + url, e);
         }
         return super.getAlbumTitle(url);
     }

@@ -1,12 +1,5 @@
 package com.rarchives.ripme.ripper.rippers;
 
-import com.rarchives.ripme.ripper.AbstractHTMLRipper;
-import com.rarchives.ripme.utils.Http;
-import org.json.JSONArray;
-import org.json.JSONObject;
-import org.jsoup.Connection;
-import org.jsoup.nodes.Document;
-
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
@@ -19,7 +12,20 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.jsoup.Connection;
+import org.jsoup.nodes.Document;
+
+import com.rarchives.ripme.ripper.AbstractHTMLRipper;
+import com.rarchives.ripme.utils.Http;
+
 public class LusciousRipper extends AbstractHTMLRipper {
+
+    private static final Logger logger = LogManager.getLogger(LusciousRipper.class);
+
     private static String albumid;
 
     private static final Pattern p = Pattern.compile("^https?://(?:www\\.)?(?:members\\.||legacy\\.||old\\.)?luscious\\.net/albums/([-_.0-9a-zA-Z]+).*$");
@@ -33,7 +39,7 @@ public class LusciousRipper extends AbstractHTMLRipper {
         String URLToReturn = url.toExternalForm();
         URLToReturn = URLToReturn.replaceAll("https?://(?:www\\.)?luscious\\.", "https://old.luscious.");
         URL san_url = new URI(URLToReturn).toURL();
-        LOGGER.info("sanitized URL is " + san_url.toExternalForm());
+        logger.info("sanitized URL is " + san_url.toExternalForm());
         return san_url;
     }
 

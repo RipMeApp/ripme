@@ -1,9 +1,5 @@
 package com.rarchives.ripme.ripper.rippers;
 
-import com.rarchives.ripme.ripper.AbstractHTMLRipper;
-import com.rarchives.ripme.utils.Http;
-import org.jsoup.nodes.Document;
-
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -13,7 +9,16 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.jsoup.nodes.Document;
+
+import com.rarchives.ripme.ripper.AbstractHTMLRipper;
+import com.rarchives.ripme.utils.Http;
+
 public class NewgroundsRipper extends AbstractHTMLRipper {
+
+    private static final Logger logger = LogManager.getLogger(NewgroundsRipper.class);
 
     private String username = "";  // Name of artist
 
@@ -120,7 +125,7 @@ public class NewgroundsRipper extends AbstractHTMLRipper {
                     }
 
                 } catch (IOException e) {
-                    LOGGER.error("IO Error on trying to check extension: " + inLink + m.group(1));
+                    logger.error("IO Error on trying to check extension: " + inLink + m.group(1));
                 }
             }
         }

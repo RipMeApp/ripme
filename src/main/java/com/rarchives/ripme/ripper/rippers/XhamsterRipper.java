@@ -10,12 +10,13 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
 import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 import com.rarchives.ripme.utils.Http;
-
 
 // WARNING
 // This ripper changes all requests to use the MOBILE version of the site
@@ -24,11 +25,13 @@ import com.rarchives.ripme.utils.Http;
 
 public class XhamsterRipper extends AbstractHTMLRipper {
 
+    private static final Logger logger = LogManager.getLogger(XhamsterRipper.class);
+
+    private int index = 1;
+
     public XhamsterRipper(URL url) throws IOException {
         super(url);
     }
-
-    private int index = 1;
 
     @Override public boolean hasASAPRipping() {
         return true;
@@ -52,7 +55,7 @@ public class XhamsterRipper extends AbstractHTMLRipper {
         String URLToReturn = url.toExternalForm();
         URLToReturn = URLToReturn.replaceAll("https?://\\w?\\w?\\.?xhamster([^<]*)\\.", "https://m.xhamster$1.");
         URL san_url = new URI(URLToReturn).toURL();
-        LOGGER.info("sanitized URL is " + san_url.toExternalForm());
+        logger.info("sanitized URL is " + san_url.toExternalForm());
         return san_url;
     }
 
@@ -83,14 +86,14 @@ public class XhamsterRipper extends AbstractHTMLRipper {
     @Override
     public List<String> getAlbumsToQueue(Document doc) {
         List<String> urlsToAddToQueue = new ArrayList<>();
-        LOGGER.info("getting albums");
+        logger.info("getting albums");
         for (Element elem : doc.select("div.item-container > a.item")) {
             urlsToAddToQueue.add(elem.attr("href"));
             if (isStopped() || isThisATest()) {
                 break;
             }
         }
-        LOGGER.info(doc.html());
+        logger.info(doc.html());
         return urlsToAddToQueue;
     }
 
@@ -103,8 +106,8 @@ public class XhamsterRipper extends AbstractHTMLRipper {
     public boolean pageContainsAlbums(URL url) {
         Pattern p = Pattern.compile("^https?://[\\w\\w.]*xhamster([^<]*)\\.(com|desi)/users/([a-zA-Z0-9_-]+)/(photos|videos)(/\\d+)?");
         Matcher m = p.matcher(url.toExternalForm());
-        LOGGER.info("Checking if page has albums");
-        LOGGER.info(m.matches());
+        logger.info("Checking if page has albums");
+        logger.info(m.matches());
         return m.matches();
     }
 
@@ -154,7 +157,7 @@ public class XhamsterRipper extends AbstractHTMLRipper {
 
     @Override
     public List<String> getURLsFromPage(Document doc) {
-        LOGGER.debug("Checking for urls");
+        logger.debug("Checking for urls");
         List<String> result = new ArrayList<>();
         if (!isVideoUrl(url)) {
             if (!doc.select("div.picture_view > div.pictures_block > div.items > div.item-container > a.item").isEmpty()) {
@@ -173,7 +176,7 @@ public class XhamsterRipper extends AbstractHTMLRipper {
                         result.add(image);
                         downloadFile(image);
                     } catch (IOException | URISyntaxException e) {
-                        LOGGER.error("Was unable to load page " + pageWithImageUrl);
+                        logger.error("Was unable to load page " + pageWithImageUrl);
               }
               if (isStopped() || isThisATest()) {
                   break;
@@ -212,7 +215,7 @@ public class XhamsterRipper extends AbstractHTMLRipper {
             addURLToDownload(new URI(url).toURL(), getPrefix(index));
             index = index + 1;
         } catch (MalformedURLException | URISyntaxException e) {
-            LOGGER.error("The url \"" + url + "\" is malformed");
+            logger.error("The url \"" + url + "\" is malformed");
         }
     }
 

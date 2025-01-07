@@ -18,8 +18,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class HentaidudeRipper extends AbstractSingleFileRipper {
+
+    private static final Logger logger = LogManager.getLogger(HentaidudeRipper.class);
 
     private Pattern p1 = Pattern.compile("https?://hentaidude\\.com/([a-zA-Z0-9_-]*)/?$"); // to match URLs.
     private Pattern p2 = Pattern.compile("data:\\s?(\\{.*?\\})", Pattern.DOTALL);
@@ -95,7 +99,7 @@ public class HentaidudeRipper extends AbstractSingleFileRipper {
                 URL videoSourceUrl = new URI(getVideoUrl(doc)).toURL();
                 addURLToDownload(videoSourceUrl, "", "", "", null, getVideoName(), "mp4");
             } catch (Exception e) {
-                LOGGER.error("Could not get video url for " + getVideoName(), e);
+                logger.error("Could not get video url for " + getVideoName(), e);
             }
         }
 
@@ -103,7 +107,7 @@ public class HentaidudeRipper extends AbstractSingleFileRipper {
             try {
                 return getGID(url);
             } catch (MalformedURLException e) {
-                LOGGER.error("Unable to get video title from " + url.toExternalForm());
+                logger.error("Unable to get video title from " + url.toExternalForm());
                 e.printStackTrace();
             }
             return "unknown";

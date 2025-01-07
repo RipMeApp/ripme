@@ -5,11 +5,19 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
 import org.apache.commons.lang.StringEscapeUtils;
-import com.rarchives.ripme.ripper.AbstractJSONRipper;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.jsoup.Connection.Method;
@@ -18,10 +26,13 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
+import com.rarchives.ripme.ripper.AbstractJSONRipper;
 import com.rarchives.ripme.utils.Http;
 import com.rarchives.ripme.utils.Utils;
 
 public class VkRipper extends AbstractJSONRipper {
+
+    private static final Logger logger = LogManager.getLogger(VkRipper.class);
 
     private static final String DOMAIN = "vk.com",
                                 HOST   = "vk";
@@ -81,7 +92,7 @@ public class VkRipper extends AbstractJSONRipper {
         List<String> pageURLs = new ArrayList<>();
         if (RIP_TYPE == RipType.VIDEO) {
             JSONArray videos = page.getJSONArray("all");
-            LOGGER.info("Found " + videos.length() + " videos");
+            logger.info("Found " + videos.length() + " videos");
 
             for (int i = 0; i < videos.length(); i++) {
                 JSONArray jsonVideo = videos.getJSONArray(i);
@@ -91,7 +102,7 @@ public class VkRipper extends AbstractJSONRipper {
                     videoURL = com.rarchives.ripme.ripper.rippers.video.VkRipper.getVideoURLAtPage(
                             "http://vk.com/video" + oid + "_" + vidid);
                 } catch (IOException e) {
-                    LOGGER.error("Error while ripping video id: " + vidid);
+                    logger.error("Error while ripping video id: " + vidid);
                     return pageURLs;
                 }
                 pageURLs.add(videoURL);
@@ -116,7 +127,7 @@ public class VkRipper extends AbstractJSONRipper {
             try {
                 Thread.sleep(500);
             } catch (InterruptedException e) {
-                LOGGER.error("Interrupted while waiting to fetch next video URL", e);
+                logger.error("Interrupted while waiting to fetch next video URL", e);
             }
         } else {
             addURLToDownload(url);
@@ -184,7 +195,7 @@ public class VkRipper extends AbstractJSONRipper {
         if (bestSourceUrl != null) {
             photoIDsToURLs.put(photoID, bestSourceUrl);
         } else {
-            LOGGER.error("Could not find image source for " + photoID);
+            logger.error("Could not find image source for " + photoID);
         }
 
         return photoIDsToURLs;
@@ -269,7 +280,7 @@ public class VkRipper extends AbstractJSONRipper {
                 }
             }
         }
-        
+
         // In case no suitable source has been found, we fall back to the older way.
         if(bestSourceKey == null) {
             for (String key : new String[] {"z_src", "y_src", "x_src", "w_src"}) {
@@ -281,10 +292,10 @@ public class VkRipper extends AbstractJSONRipper {
         }else {
             return json.getString(bestSourceKey + "src");
         }
-        
+
         return null;
     }
-    
+
     /**
      * Common function to get the next page( containing next batch of images).
      * @return JSONObject containing entries of "imgId": "src"
@@ -294,7 +305,7 @@ public class VkRipper extends AbstractJSONRipper {
         Map<String, String> photoIDsToURLs = new HashMap<>();
         Map<String, String> postData = new HashMap<>();
 
-        LOGGER.info("Retrieving " + this.url + " from offset " + offset);
+        logger.info("Retrieving " + this.url + " from offset " + offset);
         postData.put("al", "1");
         postData.put("offset", Integer.toString(offset));
         postData.put("part", "1");
@@ -325,12 +336,12 @@ public class VkRipper extends AbstractJSONRipper {
                 try {
                     photoIDsToURLs.putAll(getPhotoIDsToURLs(photoID));
                 } catch (IOException e) {
-                    LOGGER.error("Exception while retrieving photo id " + photoID, e);
+                    logger.error("Exception while retrieving photo id " + photoID, e);
                     continue;
                 }
             }
             if (!photoIDsToURLs.containsKey(photoID)) {
-                LOGGER.error("Could not find URL for photo ID: " + photoID);
+                logger.error("Could not find URL for photo ID: " + photoID);
                 continue;
             }
             if (isStopped() || isThisATest()) {

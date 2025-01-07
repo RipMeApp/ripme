@@ -8,12 +8,16 @@ import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jsoup.nodes.Document;
 
 import com.rarchives.ripme.ripper.VideoRipper;
 import com.rarchives.ripme.utils.Http;
 
 public class VkRipper extends VideoRipper {
+
+    private static final Logger logger = LogManager.getLogger(VkRipper.class);
 
     private static final String HOST = "vk";
 
@@ -54,7 +58,7 @@ public class VkRipper extends VideoRipper {
 
     @Override
     public void rip() throws IOException, URISyntaxException {
-        LOGGER.info("    Retrieving " + this.url);
+        logger.info("    Retrieving " + this.url);
         String videoURL = getVideoURLAtPage(this.url.toExternalForm());
         addURLToDownload(new URI(videoURL).toURL(), HOST + "_" + getGID(this.url));
         waitForThreads();

@@ -1,18 +1,6 @@
 package com.rarchives.ripme.ripper.rippers;
 
-import com.oracle.js.parser.ErrorManager;
-import com.oracle.js.parser.Parser;
-import com.oracle.js.parser.ScriptEnvironment;
-import com.oracle.js.parser.Source;
-import com.oracle.js.parser.ir.*;
-import com.rarchives.ripme.ripper.AbstractJSONRipper;
-import com.rarchives.ripme.utils.Http;
-import com.rarchives.ripme.utils.Utils;
-import org.json.JSONArray;
-import org.json.JSONObject;
-import org.jsoup.Connection;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
+import static java.lang.String.format;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -21,7 +9,12 @@ import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Spliterators;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -32,12 +25,33 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import static java.lang.String.format;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.jsoup.Connection;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+
+import com.oracle.js.parser.ErrorManager;
+import com.oracle.js.parser.Parser;
+import com.oracle.js.parser.ScriptEnvironment;
+import com.oracle.js.parser.Source;
+import com.oracle.js.parser.ir.Block;
+import com.oracle.js.parser.ir.CallNode;
+import com.oracle.js.parser.ir.ExpressionStatement;
+import com.oracle.js.parser.ir.FunctionNode;
+import com.oracle.js.parser.ir.Statement;
+import com.rarchives.ripme.ripper.AbstractJSONRipper;
+import com.rarchives.ripme.utils.Http;
+import com.rarchives.ripme.utils.Utils;
 
 // Available configuration options:
 // instagram.download_images_only - use to skip video links
 // instagram.session_id - should be set for stories and private accounts (look for sessionid cookie)
 public class InstagramRipper extends AbstractJSONRipper {
+
+    private static final Logger logger = LogManager.getLogger(ImagebamRipper.class);
 
     private String qHash;
     private Map<String, String> cookies = new HashMap<>();
@@ -234,7 +248,7 @@ public class InstagramRipper extends AbstractJSONRipper {
         if (pageInfo.getBoolean("has_next_page")) {
             return graphqlRequest(nextPageQuery.put("after", pageInfo.getString("end_cursor")));
         } else {
-            failedItems.forEach(LOGGER::error);
+            failedItems.forEach(logger::error);
             return null;
         }
     }
@@ -335,7 +349,7 @@ public class InstagramRipper extends AbstractJSONRipper {
             return new JSONObject(response.body());
         } catch (Exception e) {
             failedItems.add(shortcode);
-            LOGGER.trace(format("No item %s found", shortcode), e);
+            logger.trace(format("No item %s found", shortcode), e);
         }
         return null;
     }
@@ -392,7 +406,7 @@ public class InstagramRipper extends AbstractJSONRipper {
             Document doc = Http.url("https://www.instagram.com/p/" + videoID).cookies(cookies).get();
             return doc.select("meta[property=og:video]").attr("content");
         } catch (Exception e) {
-            LOGGER.warn("Unable to get page " + "https://www.instagram.com/p/" + videoID);
+            logger.warn("Unable to get page " + "https://www.instagram.com/p/" + videoID);
         }
         return "";
     }
@@ -400,7 +414,7 @@ public class InstagramRipper extends AbstractJSONRipper {
     @Override
     protected void downloadURL(URL url, int index) {
         if (Utils.getConfigBoolean("instagram.download_images_only", false) && url.toString().contains(".mp4?")) {
-            LOGGER.info("Skipped video url: " + url);
+            logger.info("Skipped video url: " + url);
             return;
         }
         addURLToDownload(url, itemPrefixes.get(index - 1), "", null, cookies);

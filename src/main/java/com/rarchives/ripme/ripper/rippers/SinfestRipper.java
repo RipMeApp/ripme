@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
@@ -15,6 +17,8 @@ import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 import com.rarchives.ripme.utils.Http;
 
 public class SinfestRipper extends AbstractHTMLRipper {
+
+    private static final Logger logger = LogManager.getLogger(SinfestRipper.class);
 
     public SinfestRipper(URL url) throws IOException {
         super(url);
@@ -44,7 +48,7 @@ public class SinfestRipper extends AbstractHTMLRipper {
     @Override
     public Document getNextPage(Document doc) throws IOException {
         Element elem = doc.select("td.style5 > a > img").last();
-        LOGGER.info(elem.parent().attr("href"));
+        logger.info(elem.parent().attr("href"));
         if (elem == null || elem.parent().attr("href").equals("view.php?date=")) {
             throw new IOException("No more pages");
         }

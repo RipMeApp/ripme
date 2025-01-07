@@ -10,9 +10,13 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static com.rarchives.ripme.App.logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 class ClipboardUtils {
+
+    private static final Logger logger = LogManager.getLogger(ClipboardUtils.class);
+
     private static AutoripThread autoripThread = new AutoripThread();
 
     public static void setClipboardAutoRip(boolean enabled) {

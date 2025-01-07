@@ -9,14 +9,21 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
 import org.jsoup.Connection;
 import org.jsoup.Connection.Method;
 import org.jsoup.Connection.Response;
+
 import com.rarchives.ripme.ripper.AbstractJSONRipper;
 import com.rarchives.ripme.utils.Http;
 
 public class ArtStationRipper extends AbstractJSONRipper {
+
+    private static final Logger logger = LogManager.getLogger(ArtStationRipper.class);
+
     enum URL_TYPE {
         SINGLE_PROJECT, USER_PORTFOLIO, UNKNOWN
     }
@@ -191,11 +198,11 @@ public class ArtStationRipper extends AbstractJSONRipper {
 
         /**
          * Construct a new ParsedURL object.
-         * 
+         *
          * @param urlType URL_TYPE enum containing the URL type
          * @param jsonURL String containing the JSON URL location
          * @param urlID   String containing the ID of this URL
-         * 
+         *
          */
         ParsedURL(URL_TYPE urlType, String jsonURL, String urlID) {
             this.urlType = urlType;
@@ -205,9 +212,9 @@ public class ArtStationRipper extends AbstractJSONRipper {
 
         /**
          * Get URL Type of this ParsedURL object.
-         * 
+         *
          * @return URL_TYPE enum containing this object type
-         * 
+         *
          */
         URL_TYPE getType() {
             return this.urlType;
@@ -215,9 +222,9 @@ public class ArtStationRipper extends AbstractJSONRipper {
 
         /**
          * Get JSON location of this ParsedURL object.
-         * 
+         *
          * @return String containing the JSON URL
-         * 
+         *
          */
         String getLocation() {
             return this.jsonURL;
@@ -225,7 +232,7 @@ public class ArtStationRipper extends AbstractJSONRipper {
 
         /**
          * Get ID of this ParsedURL object.
-         * 
+         *
          * @return For URL_TYPE.SINGLE_PROJECT, returns the project hash. For
          *         URL_TYPE.USER_PORTFOLIO, returns the account name
          */
@@ -236,13 +243,13 @@ public class ArtStationRipper extends AbstractJSONRipper {
 
     /**
      * Parses an ArtStation URL.
-     * 
+     *
      * @param url URL to an ArtStation user profile
      *            (https://www.artstation.com/username) or single project
      *            (https://www.artstation.com/artwork/projectid)
      * @return ParsedURL object containing URL type, JSON location and ID (stores
      *         account name or project hash, depending of the URL type identified)
-     * 
+     *
      */
     private ParsedURL parseURL(URL url) {
         String htmlSource;
@@ -271,7 +278,7 @@ public class ArtStationRipper extends AbstractJSONRipper {
                 parsedURL = new ParsedURL(URL_TYPE.SINGLE_PROJECT, jsonURL, urlId);
                 return parsedURL;
             } else {
-                LOGGER.error("Couldnt fetch URL: " + url);
+                logger.error("Couldnt fetch URL: " + url);
                 throw new IOException("Error fetching URL: " + url + " Status Code: " + status);
             }
         } catch (IOException e) {

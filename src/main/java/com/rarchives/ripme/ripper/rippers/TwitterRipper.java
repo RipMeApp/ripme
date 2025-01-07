@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -19,6 +21,8 @@ import com.rarchives.ripme.utils.Http;
 import com.rarchives.ripme.utils.Utils;
 
 public class TwitterRipper extends AbstractJSONRipper {
+
+    private static final Logger logger = LogManager.getLogger(TwitterRipper.class);
 
     private static final String DOMAIN = "twitter.com", HOST = "twitter";
 
@@ -104,13 +108,13 @@ public class TwitterRipper extends AbstractJSONRipper {
             JSONObject json = new JSONObject(body);
             JSONObject stats = json.getJSONObject("resources").getJSONObject(resource).getJSONObject(api);
             int remaining = stats.getInt("remaining");
-            LOGGER.info("    Twitter " + resource + " calls remaining: " + remaining);
+            logger.info("    Twitter " + resource + " calls remaining: " + remaining);
             if (remaining < 20) {
-                LOGGER.error("Twitter API calls exhausted: " + stats.toString());
+                logger.error("Twitter API calls exhausted: " + stats.toString());
                 throw new IOException("Less than 20 API calls remaining; not enough to rip.");
             }
         } catch (JSONException e) {
-            LOGGER.error("JSONException: ", e);
+            logger.error("JSONException: ", e);
             throw new IOException("Error while parsing JSON: " + body, e);
         }
     }
@@ -139,7 +143,7 @@ public class TwitterRipper extends AbstractJSONRipper {
     private JSONObject getTweets() throws IOException {
         currentRequest++;
         String url = getApiURL(lastMaxID - 1);
-        LOGGER.info("    Retrieving " + url);
+        logger.info("    Retrieving " + url);
         Document doc = Http.url(url).ignoreContentType().header("Authorization", "Bearer " + accessToken)
                 .header("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8")
                 .header("User-agent", "ripe and zipe").get();
@@ -187,7 +191,7 @@ public class TwitterRipper extends AbstractJSONRipper {
         try {
             Thread.sleep(WAIT_TIME);
         } catch (InterruptedException e) {
-            LOGGER.error("[!] Interrupted while waiting to load more results", e);
+            logger.error("[!] Interrupted while waiting to load more results", e);
         }
         return currentRequest <= MAX_REQUESTS ? getTweets() : null;
     }
@@ -241,13 +245,13 @@ public class TwitterRipper extends AbstractJSONRipper {
         }
 
         if (tweets.isEmpty()) {
-            LOGGER.info("   No more tweets found.");
+            logger.info("   No more tweets found.");
             return urls;
         }
 
-        LOGGER.debug("Twitter response #" + (currentRequest) + " Tweets:\n" + tweets);
+        logger.debug("Twitter response #" + (currentRequest) + " Tweets:\n" + tweets);
         if (tweets.size() == 1 && lastMaxID.equals(tweets.get(0).getString("id_str"))) {
-            LOGGER.info("   No more tweet found.");
+            logger.info("   No more tweet found.");
             return urls;
         }
 
@@ -255,12 +259,12 @@ public class TwitterRipper extends AbstractJSONRipper {
             lastMaxID = tweet.getLong("id");
 
             if (!tweet.has("extended_entities")) {
-                LOGGER.error("XXX Tweet doesn't have entities");
+                logger.error("XXX Tweet doesn't have entities");
                 continue;
             }
 
             if (!RIP_RETWEETS && tweet.has("retweeted_status")) {
-                LOGGER.info("Skipping a retweet as twitter.rip_retweet is set to false.");
+                logger.info("Skipping a retweet as twitter.rip_retweet is set to false.");
                 continue;
             }
 
@@ -281,7 +285,7 @@ public class TwitterRipper extends AbstractJSONRipper {
                         // Loop over all the video options and find the biggest video
                         for (int j = 0; j < variants.length(); j++) {
                             JSONObject variant = (JSONObject) variants.get(j);
-                            LOGGER.info(variant);
+                            logger.info(variant);
                             // If the video doesn't have a bitrate it's a m3u8 file we can't download
                             if (variant.has("bitrate")) {
                                 if (variant.getInt("bitrate") > largestBitrate) {
@@ -296,14 +300,14 @@ public class TwitterRipper extends AbstractJSONRipper {
                         if (urlToDownload != null) {
                             urls.add(urlToDownload);
                         } else {
-                            LOGGER.error("URLToDownload was null");
+                            logger.error("URLToDownload was null");
                         }
                     } else if (media.getString("type").equals("photo")) {
                         if (url.contains(".twimg.com/")) {
                             url += ":orig";
                             urls.add(url);
                         } else {
-                            LOGGER.debug("Unexpected media_url: " + url);
+                            logger.debug("Unexpected media_url: " + url);
                         }
                     }
                 }

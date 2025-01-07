@@ -24,7 +24,9 @@ import com.rarchives.ripme.utils.Utils;
  * <a href="https://coomer.su/api/schema">See this link for the API schema</a>.
  */
 public class CoomerPartyRipper extends AbstractJSONRipper {
-    private static final Logger LOGGER = LogManager.getLogger(CoomerPartyRipper.class);
+
+    private static final Logger logger = LogManager.getLogger(CoomerPartyRipper.class);
+
     private static final String IMG_URL_BASE = "https://c3.coomer.su/data";
     private static final String VID_URL_BASE = "https://c1.coomer.su/data";
     private static final Pattern IMG_PATTERN = Pattern.compile("^.*\\.(jpg|jpeg|png|gif|apng|webp|tif|tiff)$", Pattern.CASE_INSENSITIVE);
@@ -62,10 +64,10 @@ public class CoomerPartyRipper extends AbstractJSONRipper {
         user = pathElements.get(2);
 
         if (service == null || user == null || service.isBlank() || user.isBlank()) {
-            LOGGER.warn("service=" + service + ", user=" + user);
+            logger.warn("service=" + service + ", user=" + user);
             throw new MalformedURLException("Invalid coomer.party URL: " + url);
         }
-        LOGGER.debug("Parsed service=" + service + " and user=" + user + " from " + url);
+        logger.debug("Parsed service=" + service + " and user=" + user + " from " + url);
     }
 
     @Override
@@ -127,7 +129,7 @@ public class CoomerPartyRipper extends AbstractJSONRipper {
             pullFileUrl(post, urls);
             pullAttachmentUrls(post, urls);
         }
-        LOGGER.debug("Pulled " + urls.size() + " URLs from " + posts.length() + " posts");
+        logger.debug("Pulled " + urls.size() + " URLs from " + posts.length() + " posts");
         return urls;
     }
 
@@ -148,11 +150,11 @@ public class CoomerPartyRipper extends AbstractJSONRipper {
                 String url = VID_URL_BASE + path;
                 results.add(url);
             } else {
-                LOGGER.error("Unknown extension for coomer.su path: " + path);
+                logger.error("Unknown extension for coomer.su path: " + path);
             }
         } catch (JSONException e) {
             /* No-op */
-            LOGGER.error("Unable to Parse FileURL " + e.getMessage());
+            logger.error("Unable to Parse FileURL " + e.getMessage());
         }
     }
 
@@ -165,7 +167,7 @@ public class CoomerPartyRipper extends AbstractJSONRipper {
             }
         } catch (JSONException e) {
              /* No-op */
-            LOGGER.error("Unable to Parse AttachmentURL " + e.getMessage());
+            logger.error("Unable to Parse AttachmentURL " + e.getMessage());
         }
     }
 

@@ -1,5 +1,18 @@
 package com.rarchives.ripme.ripper.rippers;
 
+import static j2html.TagCreator.a;
+import static j2html.TagCreator.body;
+import static j2html.TagCreator.br;
+import static j2html.TagCreator.div;
+import static j2html.TagCreator.h1;
+import static j2html.TagCreator.head;
+import static j2html.TagCreator.iff;
+import static j2html.TagCreator.rawHtml;
+import static j2html.TagCreator.script;
+import static j2html.TagCreator.span;
+import static j2html.TagCreator.style;
+import static j2html.TagCreator.title;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
@@ -13,25 +26,28 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.rarchives.ripme.ui.RipStatusMessage;
-import j2html.TagCreator;
-import j2html.tags.ContainerTag;
-import j2html.tags.specialized.DivTag;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
+import org.jsoup.Jsoup;
 
 import com.rarchives.ripme.ripper.AlbumRipper;
+import com.rarchives.ripme.ui.RipStatusMessage;
 import com.rarchives.ripme.ui.UpdateUtils;
 import com.rarchives.ripme.utils.Http;
 import com.rarchives.ripme.utils.RipUtils;
 import com.rarchives.ripme.utils.Utils;
-import org.jsoup.Jsoup;
 
-import static j2html.TagCreator.*;
+import j2html.TagCreator;
+import j2html.tags.ContainerTag;
+import j2html.tags.specialized.DivTag;
 
 public class RedditRipper extends AlbumRipper {
+
+    private static final Logger logger = LogManager.getLogger(RedditRipper.class);
 
     public RedditRipper(URL url) throws IOException {
         super(url);
@@ -129,7 +145,7 @@ public class RedditRipper extends AlbumRipper {
                         saveText(getJsonArrayFromURL(getJsonURL(selfPostURL)));
                     }
                 } catch (Exception e) {
-                    LOGGER.debug("at index " + i + ", for this data: "  + data.toString() + e);
+                    logger.debug("at index " + i + ", for this data: "  + data.toString() + e);
                 }
             }
             if (data.has("after") && !data.isNull("after")) {
@@ -148,7 +164,7 @@ public class RedditRipper extends AlbumRipper {
         try {
             Thread.sleep(2000);
         } catch (InterruptedException e) {
-            LOGGER.warn("Interrupted while sleeping", e);
+            logger.warn("Interrupted while sleeping", e);
         }
         return nextURL;
     }
@@ -166,7 +182,7 @@ public class RedditRipper extends AlbumRipper {
             try {
                 Thread.sleep(timeDiff);
             } catch (InterruptedException e) {
-                LOGGER.warn("[!] Interrupted while waiting to load next page", e);
+                logger.warn("[!] Interrupted while waiting to load next page", e);
                 return new JSONArray();
             }
         }
@@ -185,7 +201,7 @@ public class RedditRipper extends AlbumRipper {
         } else if (jsonObj instanceof JSONArray) {
             jsonArray = (JSONArray) jsonObj;
         } else {
-            LOGGER.warn("[!] Unable to parse JSON: " + jsonString);
+            logger.warn("[!] Unable to parse JSON: " + jsonString);
         }
         return jsonArray;
     }
@@ -304,14 +320,14 @@ public class RedditRipper extends AlbumRipper {
             out.write(html.getBytes());
             out.close();
         } catch (IOException e) {
-            LOGGER.error("[!] Error creating save file path for description '" + url + "':", e);
+            logger.error("[!] Error creating save file path for description '" + url + "':", e);
             return;
         }
 
-        LOGGER.debug("Downloading " + url + "'s self post to " + saveFileAs);
+        logger.debug("Downloading " + url + "'s self post to " + saveFileAs);
         super.retrievingSource(permalink);
         if (!Files.exists(saveFileAs.getParent())) {
-            LOGGER.info("[+] Creating directory: " + Utils.removeCWD(saveFileAs.getParent()));
+            logger.info("[+] Creating directory: " + Utils.removeCWD(saveFileAs.getParent()));
             try {
                 Files.createDirectory(saveFileAs.getParent());
             } catch (IOException e) {
@@ -336,7 +352,7 @@ public class RedditRipper extends AlbumRipper {
                 getNestedComments(data, commentDiv, author);
                 commentsDiv.with(commentDiv);
             } catch (Exception e) {
-                LOGGER.debug("at index " + i + ", for this data: "  + data.toString() + e);
+                logger.debug("at index " + i + ", for this data: "  + data.toString() + e);
             }
         }
         return commentsDiv;
@@ -424,7 +440,7 @@ public class RedditRipper extends AlbumRipper {
                 savePath += id + "-" + url.split("/")[3] + Utils.filesystemSafe(title) + ".mp4";
                 URL urlToDownload = parseRedditVideoMPD(urls.get(0).toExternalForm());
                 if (urlToDownload != null) {
-                    LOGGER.info("url: " + urlToDownload + " file: " + savePath);
+                    logger.info("url: " + urlToDownload + " file: " + savePath);
                     addURLToDownload(urlToDownload, Utils.getPath(savePath));
                 }
             } else {
@@ -470,7 +486,7 @@ public class RedditRipper extends AlbumRipper {
             	}
                 addURLToDownload(mediaURL, prefix, subdirectory);
             } catch (MalformedURLException | JSONException | URISyntaxException e) {
-                LOGGER.error("[!] Unable to parse gallery JSON:\ngallery_data:\n" + data +"\nmedia_metadata:\n" + metadata);
+                logger.error("[!] Unable to parse gallery JSON:\ngallery_data:\n" + data +"\nmedia_metadata:\n" + metadata);
             }
         }
     }

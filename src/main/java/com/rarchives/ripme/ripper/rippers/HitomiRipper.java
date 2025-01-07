@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.jsoup.nodes.Document;
 
@@ -17,6 +19,8 @@ import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 import com.rarchives.ripme.utils.Http;
 
 public class HitomiRipper extends AbstractHTMLRipper {
+
+    private static final Logger logger = LogManager.getLogger(HitomiRipper.class);
 
     private String galleryId = "";
 
@@ -73,7 +77,7 @@ public class HitomiRipper extends AbstractHTMLRipper {
             return getHost() + "_" + getGID(url) + "_" +
                     doc.select("title").text().replaceAll(" - Read Online - hentai artistcg \\| Hitomi.la", "");
         } catch (IOException e) {
-            LOGGER.info("Falling back");
+            logger.info("Falling back");
         }
         return super.getAlbumTitle(url);
     }

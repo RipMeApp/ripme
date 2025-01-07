@@ -1,18 +1,17 @@
 package com.rarchives.ripme.ripper.rippers;
 
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -22,6 +21,8 @@ import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
 import com.rarchives.ripme.utils.Http;
 
 public class ImagefapRipper extends AbstractHTMLRipper {
+
+    private static final Logger logger = LogManager.getLogger(ImagefapRipper.class);
 
     private int callsMade = 0;
     private long startTime = System.nanoTime();
@@ -56,7 +57,7 @@ public class ImagefapRipper extends AbstractHTMLRipper {
     public URL sanitizeURL(URL url) throws MalformedURLException, URISyntaxException {
         String gid = getGID(url);
         String newURL = "https://www.imagefap.com/pictures/" + gid + "/random-string";
-        LOGGER.debug("Changed URL from " + url + " to " + newURL);
+        logger.debug("Changed URL from " + url + " to " + newURL);
         return new URI(newURL).toURL();
     }
 
@@ -121,9 +122,9 @@ public class ImagefapRipper extends AbstractHTMLRipper {
         }
         // Sleep before fetching next page.
         sleep(PAGE_SLEEP_TIME);
-        
+
         sendUpdate(STATUS.LOADING_RESOURCE, "Loading next page URL: " + nextURL);
-        LOGGER.info("Attempting to load next page URL: " + nextURL);
+        logger.info("Attempting to load next page URL: " + nextURL);
 
         // Load next page
         Document nextPage = getPageWithRetries(new URI(nextURL).toURL());
@@ -136,7 +137,7 @@ public class ImagefapRipper extends AbstractHTMLRipper {
 
         List<String> imageURLs = new ArrayList<>();
 
-        LOGGER.debug("Trying to get URLs from document... ");
+        logger.debug("Trying to get URLs from document... ");
 
         for (Element thumb : doc.select("#gallery img")) {
             if (!thumb.hasAttr("src") || !thumb.hasAttr("width")) {
@@ -156,14 +157,14 @@ public class ImagefapRipper extends AbstractHTMLRipper {
                     throw new RuntimeException("Unable to extract image URL from single image page! Unable to continue");
             }
 
-            LOGGER.debug("Adding imageURL: '" + image + "'");
+            logger.debug("Adding imageURL: '" + image + "'");
 
             imageURLs.add(image);
             if (isThisATest()) {
                 break;
             }
         }
-        LOGGER.debug("Adding " + imageURLs.size() + " URLs to download");
+        logger.debug("Adding " + imageURLs.size() + " URLs to download");
 
         return imageURLs;
     }
@@ -200,23 +201,23 @@ public class ImagefapRipper extends AbstractHTMLRipper {
             // we use a no query param version of the URL to reduce failure rate because of some query params that change between the li elements and the mainPhotoURL
             String noQueryPhotoUrl = framedPhotoUrl.split("\\?")[0];
 
-            LOGGER.debug("noQueryPhotoUrl: " + noQueryPhotoUrl);
-            
+            logger.debug("noQueryPhotoUrl: " + noQueryPhotoUrl);
+
             // we look for a li > a element who's framed attribute starts with the noQueryPhotoUrl (only reference in the page to the full URL)
             Elements selectedItem = doc.select("ul.thumbs > li > a[framed^='"+noQueryPhotoUrl+"']");
-            
+
             // the fullsize URL is in the href attribute
             String fullSizedUrl = selectedItem.attr("href");
-            
+
             if("".equals(fullSizedUrl))
                 throw new IOException("JSoup full URL extraction failed from '" + selectedItem.html() + "'");
-            
-            LOGGER.debug("fullSizedUrl: " + fullSizedUrl);
+
+            logger.debug("fullSizedUrl: " + fullSizedUrl);
 
             return fullSizedUrl;
 
         } catch (IOException | URISyntaxException e) {
-            LOGGER.debug("Unable to get full size image URL from page: " + pageURL + " because: " +  e.getMessage());
+            logger.debug("Unable to get full size image URL from page: " + pageURL + " because: " +  e.getMessage());
             return null;
         }
     }
@@ -238,8 +239,8 @@ public class ImagefapRipper extends AbstractHTMLRipper {
             callsMade++;
             checkRateLimit();
 
-            LOGGER.info("Retrieving " + url);
-            
+            logger.info("Retrieving " + url);
+
             boolean httpCallThrottled = false;
             int httpAttempts = 0;
 
@@ -250,32 +251,32 @@ public class ImagefapRipper extends AbstractHTMLRipper {
                     doc = Http.url(url).get();
                 } catch(IOException e) {
 
-                    LOGGER.info("Retrieving " + url + " error: " + e.getMessage());
+                    logger.info("Retrieving " + url + " error: " + e.getMessage());
 
                     if(e.getMessage().contains("404"))
                         throw new IOException("Gallery/Page not found!");
-                    
+
                     if(httpAttempts < HTTP_RETRY_LIMIT) {
                         sendUpdate(STATUS.DOWNLOAD_WARN, "HTTP call failed: " + e.getMessage() + " retrying " + httpAttempts + " / " + HTTP_RETRY_LIMIT);
-                        
+
                         // we sleep for a few seconds
                         sleep(PAGE_SLEEP_TIME);
                         continue;
                     } else {
                         sendUpdate(STATUS.DOWNLOAD_WARN, "HTTP call failed too many times: " + e.getMessage() + " treating this as a throttle");
                         httpCallThrottled = true;
-                    }                    
+                    }
                 }
                 // no errors, we exit
                 break;
             }
-            
+
             if (httpCallThrottled || (doc != null && doc.toString().contains("Your IP made too many requests to our servers and we need to check that you are a real human being"))) {
                 if (retries == 0) {
                     throw new IOException("Hit rate limit and maximum number of retries, giving up");
                 }
                 String message = "Probably hit rate limit while loading " + url + ", sleeping for " + IP_BLOCK_SLEEP_TIME + "ms, " + retries + " retries remaining";
-                LOGGER.warn(message);
+                logger.warn(message);
                 sendUpdate(STATUS.DOWNLOAD_WARN, message);
                 retries--;
                 try {
@@ -303,11 +304,11 @@ public class ImagefapRipper extends AbstractHTMLRipper {
         int rateLimitHour = RATE_LIMIT_HOUR;        // Request allowed every 3.6 seconds.
 
         if(duration / 1000 < 60){
-            LOGGER.debug("Rate limit: " + (rateLimitMinute - callsMade) + " calls remaining for first minute mark.");
+            logger.debug("Rate limit: " + (rateLimitMinute - callsMade) + " calls remaining for first minute mark.");
         } else if(duration / 1000 <  300){
-            LOGGER.debug("Rate limit: " + (rateLimitFiveMinutes - callsMade) + " calls remaining for first 5 minute mark.");
+            logger.debug("Rate limit: " + (rateLimitFiveMinutes - callsMade) + " calls remaining for first 5 minute mark.");
         } else if(duration / 1000 <  3600){
-            LOGGER.debug("Rate limit: " + (RATE_LIMIT_HOUR - callsMade) + " calls remaining for first hour mark.");
+            logger.debug("Rate limit: " + (RATE_LIMIT_HOUR - callsMade) + " calls remaining for first hour mark.");
         }
 
         return duration;

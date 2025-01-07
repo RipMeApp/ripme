@@ -11,14 +11,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+
 import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 import com.rarchives.ripme.ripper.DownloadThreadPool;
 import com.rarchives.ripme.utils.Http;
-
-
 
 /**
  * @author Tushar
@@ -26,11 +28,14 @@ import com.rarchives.ripme.utils.Http;
  */
 public class ListalRipper extends AbstractHTMLRipper {
 
-    private Pattern p1 = Pattern.compile("https:\\/\\/www.listal.com\\/list\\/([a-zA-Z0-9-]+)");
-    private Pattern p2 =
+    private static final Logger logger = LogManager.getLogger(ListalRipper.class);
+
+    private final Pattern p1 = Pattern.compile("https:\\/\\/www.listal.com\\/list\\/([a-zA-Z0-9-]+)");
+    private final Pattern p2 =
             Pattern.compile("https:\\/\\/www.listal.com\\/((?:(?:[a-zA-Z0-9-_%]+)\\/?)+)");
+    private final String postUrl = "https://www.listal.com/item-list/"; //to load more images.
+
     private String listId = null; // listId to get more images via POST.
-    private String postUrl = "https://www.listal.com/item-list/"; //to load more images.
     private UrlType urlType = UrlType.UNKNOWN;
 
     private DownloadThreadPool listalThreadPool = new DownloadThreadPool("listalThreadPool");
@@ -61,7 +66,7 @@ public class ListalRipper extends AbstractHTMLRipper {
     @Override
     public List<String> getURLsFromPage(Document page) {
         if (urlType == UrlType.LIST) {
-            // for url of type LIST, https://www.listal.com/list/my-list 
+            // for url of type LIST, https://www.listal.com/list/my-list
             return getURLsForListType(page);
         } else if (urlType == UrlType.FOLDER) {
             // for url of type FOLDER,  https://www.listal.com/jim-carrey/pictures
@@ -111,7 +116,7 @@ public class ListalRipper extends AbstractHTMLRipper {
                     try {
                         nextPage = Http.url(postUrl).data(postParams).retries(3).post();
                     } catch (IOException e1) {
-                        LOGGER.error("Failed to load more images after " + offSet, e1);
+                        logger.error("Failed to load more images after " + offSet, e1);
                         throw e1;
                     }
                 }
@@ -179,7 +184,7 @@ public class ListalRipper extends AbstractHTMLRipper {
             }
 
         } catch (Exception e) {
-            LOGGER.error(e);
+            logger.error(e);
         }
         throw new MalformedURLException("Unable to fetch the gid for given url.");
     }
@@ -209,10 +214,10 @@ public class ListalRipper extends AbstractHTMLRipper {
                     addURLToDownload(new URI(imageUrl).toURL(), getPrefix(index), "", null, null,
                             getImageName());
                 } else {
-                    LOGGER.error("Couldnt find image from url: " + url);
+                    logger.error("Couldnt find image from url: " + url);
                 }
             } catch (IOException | URISyntaxException e) {
-                LOGGER.error("[!] Exception while downloading image: " + url, e);
+                logger.error("[!] Exception while downloading image: " + url, e);
             }
         }
 
@@ -222,7 +227,7 @@ public class ListalRipper extends AbstractHTMLRipper {
             try {
                 name = name.substring(name.lastIndexOf("/") + 1);
             } catch (Exception e) {
-                LOGGER.info("Failed to get name for the image.");
+                logger.info("Failed to get name for the image.");
                 name = null;
             }
             // Listal stores images as .jpg

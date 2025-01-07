@@ -12,6 +12,8 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -21,6 +23,8 @@ import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 import com.rarchives.ripme.utils.Http;
 
 public class StaRipper extends AbstractHTMLRipper {
+
+    private static final Logger logger = LogManager.getLogger(StaRipper.class);
 
     public StaRipper(URL url) throws IOException {
         super(url);
@@ -61,9 +65,9 @@ public class StaRipper extends AbstractHTMLRipper {
                     cookies.putAll(resp.cookies());
                     thumbPage = resp.parse();
                 } catch (MalformedURLException | URISyntaxException e) {
-                    LOGGER.info(thumbPageURL + " is a malformed URL");
+                    logger.info(thumbPageURL + " is a malformed URL");
                 } catch (IOException e) {
-                    LOGGER.info(e.getMessage());
+                    logger.info(e.getMessage());
                 }
                 String imageDownloadUrl = thumbPage.select("a.dev-page-download").attr("href");
                 if (imageDownloadUrl != null && !imageDownloadUrl.equals("")) {
@@ -93,10 +97,10 @@ public class StaRipper extends AbstractHTMLRipper {
                     .followRedirects(false)
                     .execute();
             String imageURL = response.header("Location");
-            LOGGER.info(imageURL);
+            logger.info(imageURL);
             return imageURL;
             } catch (IOException e) {
-                LOGGER.info("Got error message " + e.getMessage() + " trying to download " + url);
+                logger.info("Got error message " + e.getMessage() + " trying to download " + url);
                 return null;
             }
     }

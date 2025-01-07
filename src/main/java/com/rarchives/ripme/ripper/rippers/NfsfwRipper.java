@@ -10,19 +10,22 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.rarchives.ripme.ripper.AbstractHTMLRipper;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 import com.rarchives.ripme.ripper.DownloadThreadPool;
 import com.rarchives.ripme.utils.Http;
 
 public class NfsfwRipper extends AbstractHTMLRipper {
 
+    private static final Logger logger = LogManager.getLogger(NfsfwRipper.class);
+
     private static final String DOMAIN = "nfsfw.com",
                                 HOST   = "nfsfw";
-
 
     private int index = 0;
     private String currentDir = "";
@@ -59,14 +62,14 @@ public class NfsfwRipper extends AbstractHTMLRipper {
         } else if (!subalbumURLs.isEmpty()){
             // Get next sub-album
             nextURL = subalbumURLs.remove(0);
-            LOGGER.info("Detected subalbum URL at:" + nextURL);
+            logger.info("Detected subalbum URL at:" + nextURL);
             Matcher m = subalbumURLPattern.matcher(nextURL);
             if (m.matches()) {
                 // Set the new save directory and save images with a new index
                 this.currentDir = m.group(1);
                 this.index = 0;
             } else {
-                LOGGER.error("Invalid sub-album URL: " + nextURL);
+                logger.error("Invalid sub-album URL: " + nextURL);
                 nextURL = null;
             }
         }
@@ -74,7 +77,7 @@ public class NfsfwRipper extends AbstractHTMLRipper {
         try {
             Thread.sleep(2000);
         } catch (InterruptedException e) {
-            LOGGER.error("Interrupted while waiting to load next page", e);
+            logger.error("Interrupted while waiting to load next page", e);
         }
         if (nextURL == null){
             throw new IOException("No more pages");
@@ -156,7 +159,7 @@ public class NfsfwRipper extends AbstractHTMLRipper {
             List<String> subalbumURLs = getSubalbumURLs(fstPage);
             return imageURLs.isEmpty() && !subalbumURLs.isEmpty();
         } catch (IOException | URISyntaxException e) {
-            LOGGER.error("Unable to load " + url, e);
+            logger.error("Unable to load " + url, e);
             return false;
         }
     }
@@ -215,7 +218,7 @@ public class NfsfwRipper extends AbstractHTMLRipper {
                                    .get();
                 Elements images = doc.select(".gbBlock img");
                 if (images.isEmpty()) {
-                    LOGGER.error("Failed to find image at " + this.url);
+                    logger.error("Failed to find image at " + this.url);
                     return;
                 }
                 String file = images.first().attr("src");
@@ -224,7 +227,7 @@ public class NfsfwRipper extends AbstractHTMLRipper {
                 }
                 addURLToDownload(new URI(file).toURL(), getPrefix(index), this.subdir);
             } catch (IOException | URISyntaxException e) {
-                LOGGER.error("[!] Exception while loading/parsing " + this.url, e);
+                logger.error("[!] Exception while loading/parsing " + this.url, e);
             }
         }
     }

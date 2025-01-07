@@ -11,16 +11,21 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.rarchives.ripme.ripper.AbstractHTMLRipper;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 import com.rarchives.ripme.ripper.DownloadThreadPool;
 import com.rarchives.ripme.utils.Http;
 import com.rarchives.ripme.utils.Utils;
 
 public class PornhubRipper extends AbstractHTMLRipper {
+
+    private static final Logger logger = LogManager.getLogger(PornhubRipper.class);
+
     // All sleep times are in milliseconds
     private static final int IMAGE_SLEEP_TIME    = 1000;
 
@@ -81,7 +86,7 @@ public class PornhubRipper extends AbstractHTMLRipper {
         try {
             Thread.sleep(IMAGE_SLEEP_TIME);
         } catch (InterruptedException e) {
-            LOGGER.warn("Interrupted while waiting to load next image", e);
+            logger.warn("Interrupted while waiting to load next image", e);
         }
     }
 
@@ -153,7 +158,7 @@ public class PornhubRipper extends AbstractHTMLRipper {
                 Elements images = doc.select("#photoImageSection img");
                 Element image = images.first();
                 String imgsrc = image.attr("src");
-                LOGGER.info("Found URL " + imgsrc + " via " + images.get(0));
+                logger.info("Found URL " + imgsrc + " via " + images.get(0));
 
                 // Provide prefix and let the AbstractRipper "guess" the filename
                 String prefix = "";
@@ -165,7 +170,7 @@ public class PornhubRipper extends AbstractHTMLRipper {
                 addURLToDownload(imgurl, prefix);
 
             } catch (IOException | URISyntaxException e) {
-                LOGGER.error("[!] Exception while loading/parsing " + this.url, e);
+                logger.error("[!] Exception while loading/parsing " + this.url, e);
             }
         }
     }
