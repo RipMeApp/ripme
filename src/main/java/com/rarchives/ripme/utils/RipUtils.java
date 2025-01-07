@@ -10,7 +10,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.rarchives.ripme.ripper.AbstractRipper;
-import com.rarchives.ripme.ripper.rippers.EroShareRipper;
 import com.rarchives.ripme.ripper.rippers.EromeRipper;
 import com.rarchives.ripme.ripper.rippers.ImgurRipper;
 import com.rarchives.ripme.ripper.rippers.RedgifsRipper;
@@ -31,9 +30,9 @@ public class RipUtils {
         List<URL> result = new ArrayList<>();
 
         logger.debug("Checking " + url);
-        // Imgur album
         if ((url.getHost().endsWith("imgur.com"))
                 && url.toExternalForm().contains("imgur.com/a/")) {
+            // Imgur album
             try {
                 logger.debug("Fetching imgur album at " + url);
                 ImgurRipper.ImgurAlbum imgurAlbum = ImgurRipper.getImgurAlbum(url);
@@ -45,8 +44,7 @@ public class RipUtils {
                 logger.error("[!] Exception while loading album " + url, e);
             }
             return result;
-        } 
-        else if (url.getHost().endsWith("i.imgur.com") && url.toExternalForm().contains("gifv")) {
+        } else if (url.getHost().endsWith("i.imgur.com") && url.toExternalForm().contains("gifv")) {
             // links to imgur gifvs
             try {
                 result.add(new URI(url.toExternalForm().replaceAll(".gifv", ".mp4")).toURL());
@@ -54,9 +52,7 @@ public class RipUtils {
                 logger.info("Couldn't get gifv from " + url);
             }
             return result;
-
-        }
-        else if (url.getHost().endsWith("redgifs.com") || url.getHost().endsWith("gifdeliverynetwork.com")) {
+        } else if (url.getHost().endsWith("redgifs.com") || url.getHost().endsWith("gifdeliverynetwork.com")) {
             try {
                 logger.debug("Fetching redgifs page " + url);
                 String videoURL = RedgifsRipper.getVideoURL(url);
@@ -67,8 +63,7 @@ public class RipUtils {
                 logger.warn("Exception while retrieving redgifs page:", e);
             }
             return result;
-        }
-        else if (url.toExternalForm().contains("vidble.com/album/") || url.toExternalForm().contains("vidble.com/show/")) {
+        } else if (url.toExternalForm().contains("vidble.com/album/") || url.toExternalForm().contains("vidble.com/show/")) {
             try {
                 logger.info("Getting vidble album " + url);
                 result.addAll(VidbleRipper.getURLsFromPage(url));
@@ -77,22 +72,10 @@ public class RipUtils {
                 logger.warn("Exception while retrieving vidble page:", e);
             }
             return result;
-        }
-        else if (url.toExternalForm().contains("eroshare.com")) {
-            try {
-                logger.info("Getting eroshare album " + url);
-                result.addAll(EroShareRipper.getURLs(url));
-            } catch (IOException | URISyntaxException e) {
-                // Do nothing
-                logger.warn("Exception while retrieving eroshare page:", e);
-            }
-            return result;
         } else if (url.toExternalForm().contains("v.redd.it")) {
             result.add(url);
             return result;
-        }
-
-        else if (url.toExternalForm().contains("erome.com")) {
+        } else if (url.toExternalForm().contains("erome.com")) {
             try {
                 logger.info("Getting eroshare album " + url);
                 EromeRipper r = new EromeRipper(url);
@@ -105,8 +88,7 @@ public class RipUtils {
                 logger.warn("Exception while retrieving eroshare page:", e);
             }
             return result;
-        }
-        else if (url.toExternalForm().contains("soundgasm.net")) {
+        } else if (url.toExternalForm().contains("soundgasm.net")) {
             try {
                 logger.info("Getting soundgasm page " + url);
                 SoundgasmRipper r = new SoundgasmRipper(url);
