@@ -55,15 +55,22 @@ public class ChanRipperTest extends RippersTest {
     }
 
     @Test
+    // Test fails when desuarchive is down. See comment on getRandomThreadDesuarchive.
+    @Tag("flaky")
     public void testChanRipper() throws IOException, URISyntaxException {
         List<URL> contentURLs = new ArrayList<>();
         contentURLs.add(getRandomThreadDesuarchive());
         for (URL url : contentURLs) {
+            if (url == null) {
+                Assertions.fail("Could not get a random thread from desuarchive");
+            }
             ChanRipper ripper = new ChanRipper(url);
             testChanRipper(ripper);
         }
     }
 
+    // This method can return null if desuarchive is down.
+    // At time of writing we experienced a 504 Gateway Timeout.
     public URL getRandomThreadDesuarchive() throws URISyntaxException {
         try {
             Document doc = Http.url(new URI("https://desuarchive.org/wsg/").toURL()).get();
@@ -73,5 +80,4 @@ public class ChanRipperTest extends RippersTest {
         }
         return null;
     }
-
 }
