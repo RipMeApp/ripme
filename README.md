@@ -186,12 +186,3 @@ then, prepare the repo for update check, and next release:
 1. set the base tag for next release verison calculation, e.g. 2.1.13 on this commit
 1. push tag and commit
 1. remove old base tag, not needed any more, e.g. 2.1.12
-
-# New GUI - compose-jb
-As Java Swing will go away in future, a new GUI technology should be used. One of the
-candidates is [Jetpack Compose for Desktop](https://github.com/JetBrains/compose-jb/).
-
-The library leverages the compose library for android and provides it for android,
-desktop and web. The navigation library is not available for desktop, so Arkadii Ivanov
-implemented
-[decompose](https://proandroiddev.com/a-comprehensive-hundred-line-navigation-for-jetpack-desktop-compose-5b723c4f256e).
