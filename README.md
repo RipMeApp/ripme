@@ -6,6 +6,10 @@
 ![alt Badge Status](https://github.com/ripmeapp2/ripme/actions/workflows/gradle.yml/badge.svg)
 [![Coverage Status](https://coveralls.io/repos/github/RipMeApp/ripme/badge.svg?branch=main)](https://coveralls.io/github/RipMeApp/ripme?branch=main)
 
+Jump to:
+- [List of Supported Sites](https://github.com/RipMeApp/ripme?tab=readme-ov-file#list-of-supported-sites)
+- [Site Not Supported?](https://github.com/RipMeApp/ripme?tab=readme-ov-file#site-not-supported)
+
 ## Recent development updates
 
 - For a while, the ripmeapp/ripme repo was inactive, but development continued at ripmeapp2/ripme.
@@ -76,25 +80,31 @@ brew install --cask ripme && xattr -d com.apple.quarantine /Applications/ripme.j
 
 ## List of Supported Sites
 
+See the full list of [Supported Sites](https://github.com/ripmeapp/ripme/wiki/Supported-Sites) in the wiki.
+
+Note: Websites change over time and therefore rippers, which fundamentally depend on website layouts, can break at any time.
+Feel free to open an issue if you notice something not working, but please search the list of issues to see if it's already been reported.
+
+The list of supported rippers includes:
+
 - imgur
-- twitter
+- twitter (currently broken, needs to be updated for X)
 - tumblr
 - instagram
 - flickr
 - photobucket
 - reddit
-- gonewild
+- redgifs
 - motherless
 - imagefap
-- imagearn
 - seenive
-- vinebox
 - 8muses
-- deviantart
+- deviantart (currently broken by major changes to the site)
 - xhamster
-- [(more)](https://github.com/ripmeapp/ripme/wiki/Supported-Sites)
+- xvideos
+- ... and [more](https://github.com/ripmeapp/ripme/wiki/Supported-Sites)!
 
-## Not Supported?
+## Site Not Supported?
 
 Request support for more sites by adding a comment to [this Github issue](https://github.com/RipMeApp/ripme/issues/2068).
 
