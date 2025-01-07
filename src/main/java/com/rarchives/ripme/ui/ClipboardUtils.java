@@ -57,18 +57,7 @@ class AutoripThread extends Thread {
                 // Check clipboard
                 String clipboard = ClipboardUtils.getClipboardString();
                 if (clipboard != null) {
-                    Pattern p = Pattern.compile(
-                            // TODO: This regex is a monster and doesn't match all links; It needs to be rewritten
-                            "\\b(((ht|f)tp(s?)://|~/|/)|www.)" +
-                            "(\\w+:\\w+@)?(([-\\w]+\\.)+(com|org|net|gov" +
-                            "|mil|biz|info|mobi|name|aero|jobs|museum" +
-                            "|travel|cafe|[a-z]{2}))(:[\\d]{1,5})?" +
-                            "(((/([-\\w~!$+|.,=]|%[a-f\\d]{2})+)+|/)+|\\?|#)?" +
-                            "((\\?([-\\w~!$+|.,*:]|%[a-f\\d{2}])+=?" +
-                            "([-\\w~!$+|.,*:=]|%[a-f\\d]{2})*)" +
-                            "(&(?:[-\\w~!$+|.,*:]|%[a-f\\d{2}])+=?" +
-                            "([-\\w~!$+|.,*:=]|%[a-f\\d]{2})*)*)*" +
-                            "(#([-\\w~!$+|.,*:=]|%[a-f\\d]{2})*)?\\b");
+                    Pattern p = Pattern.compile("^(https?|ftp|file)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]");
                     Matcher m = p.matcher(clipboard);
                     while (m.find()) {
                         String url = m.group();
