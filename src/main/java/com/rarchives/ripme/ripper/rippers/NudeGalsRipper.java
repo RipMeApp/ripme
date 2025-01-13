@@ -45,13 +45,13 @@ public class NudeGalsRipper extends AbstractHTMLRipper {
         p = ALBUM_PATTERN;
         m = p.matcher(url.toExternalForm());
         if (m.matches()) {
-            return m.group(1);
+            return "album_" + m.group(1);
         }
 
         p = VIDEO_PATTERN;
         m = p.matcher(url.toExternalForm());
         if (m.matches()) {
-            return m.group(1);
+            return "video_" + m.group(1);
         }
 
         throw new MalformedURLException(

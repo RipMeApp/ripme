@@ -27,12 +27,12 @@ public class NudeGalsRipperTest extends RippersTest {
     @Test
     public void testGetAlbumGID() throws IOException, URISyntaxException {
         NudeGalsRipper ripper = new NudeGalsRipper(new URI(ALBUM_TEST_URL).toURL());
-        Assertions.assertEquals("5541", ripper.getGID( new URI(ALBUM_TEST_URL).toURL()));
+        Assertions.assertEquals("album_5541", ripper.getGID( new URI(ALBUM_TEST_URL).toURL()));
     }
 
     @Test
     public void testGetVideoGID() throws IOException, URISyntaxException {
         NudeGalsRipper ripper = new NudeGalsRipper(new URI(VIDEO_TEST_URL).toURL());
-        Assertions.assertEquals("5541", ripper.getGID(new URI(VIDEO_TEST_URL).toURL()));
+        Assertions.assertEquals("video_1277", ripper.getGID(new URI(VIDEO_TEST_URL).toURL()));
     }
 }
