@@ -45,12 +45,14 @@ public class NudeGalsRipper extends AbstractHTMLRipper {
         p = ALBUM_PATTERN;
         m = p.matcher(url.toExternalForm());
         if (m.matches()) {
+            logger.info("Found nude-gals photo album page");
             return "album_" + m.group(1);
         }
 
         p = VIDEO_PATTERN;
         m = p.matcher(url.toExternalForm());
         if (m.matches()) {
+            logger.info("Found nude-gals video page");
             return "video_" + m.group(1);
         }
 
@@ -70,7 +72,7 @@ public class NudeGalsRipper extends AbstractHTMLRipper {
         p = ALBUM_PATTERN;
         m = p.matcher(url.toExternalForm());
         if (m.matches()) {
-            logger.info("Found nude-gals photo album");
+            logger.info("Ripping nude-gals photo album");
             Elements thumbs = doc.select("img.thumbnail");
             for (Element thumb : thumbs) {
                 String link = thumb.attr("src").strip().replaceAll("thumbs/th_", "");
@@ -83,7 +85,7 @@ public class NudeGalsRipper extends AbstractHTMLRipper {
         p = VIDEO_PATTERN;
         m = p.matcher(url.toExternalForm());
         if (m.matches()) {
-            logger.info("Found nude-gals video");
+            logger.info("Ripping nude-gals video");
             Elements thumbs = doc.select("video source");
             for (Element thumb : thumbs) {
                 String link = thumb.attr("src").strip();
