@@ -8,14 +8,20 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import com.rarchives.ripme.ripper.AbstractHTMLRipper;
-import com.rarchives.ripme.utils.Http;
 
 public class NudeGalsRipper extends AbstractHTMLRipper {
+
+    private static final Logger logger = LogManager.getLogger(NudeGalsRipper.class);
+
+    private static final Pattern ALBUM_PATTERN = Pattern.compile("^.*nude-gals\\.com/photoshoot\\.php\\?photoshoot_id=(\\d+)$");
+    private static final Pattern VIDEO_PATTERN = Pattern.compile("^.*nude-gals\\.com/video\\.php\\?video_id=(\\d+)$");
 
     public NudeGalsRipper(URL url) throws IOException {
         super(url);
@@ -36,7 +42,13 @@ public class NudeGalsRipper extends AbstractHTMLRipper {
         Pattern p;
         Matcher m;
 
-        p = Pattern.compile("^.*nude-gals\\.com/photoshoot\\.php\\?photoshoot_id=(\\d+)$");
+        p = ALBUM_PATTERN;
+        m = p.matcher(url.toExternalForm());
+        if (m.matches()) {
+            return m.group(1);
+        }
+
+        p = VIDEO_PATTERN;
         m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             return m.group(1);
@@ -50,17 +62,38 @@ public class NudeGalsRipper extends AbstractHTMLRipper {
 
     @Override
     public List<String> getURLsFromPage(Document doc) {
-        List<String> imageURLs = new ArrayList<>();
+        List<String> urlsToDownload = new ArrayList<>();
 
-        Elements thumbs = doc.select("img.thumbnail");
-        for (Element thumb : thumbs) {
-            String link = thumb.attr("src").replaceAll("thumbs/th_", "");
-            String imgSrc = "http://nude-gals.com/" + link;
-            imgSrc = imgSrc.replaceAll(" ", "%20");
-            imageURLs.add(imgSrc);
+        Pattern p;
+        Matcher m;
+
+        p = ALBUM_PATTERN;
+        m = p.matcher(url.toExternalForm());
+        if (m.matches()) {
+            logger.info("Found nude-gals photo album");
+            Elements thumbs = doc.select("img.thumbnail");
+            for (Element thumb : thumbs) {
+                String link = thumb.attr("src").strip().replaceAll("thumbs/th_", "");
+                String imgSrc = "http://nude-gals.com/" + link;
+                imgSrc = imgSrc.replaceAll(" ", "%20");
+                urlsToDownload.add(imgSrc);
+            }
         }
 
-        return imageURLs;
+        p = VIDEO_PATTERN;
+        m = p.matcher(url.toExternalForm());
+        if (m.matches()) {
+            logger.info("Found nude-gals video");
+            Elements thumbs = doc.select("video source");
+            for (Element thumb : thumbs) {
+                String link = thumb.attr("src").strip();
+                String videoSrc = "http://nude-gals.com/" + link;
+                videoSrc = videoSrc.replaceAll(" ", "%20");
+                urlsToDownload.add(videoSrc);
+            }
+        }
+
+        return urlsToDownload;
     }
 
     @Override
