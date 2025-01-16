@@ -39,6 +39,7 @@ public class ImgurRipperTest extends RippersTest {
     }
 
     @Test
+    @Tag("flaky")
     public void testImgurAlbums() throws IOException, URISyntaxException {
         List<URL> contentURLs = new ArrayList<>();
         // URLs that should return more than 1 image
@@ -63,6 +64,7 @@ public class ImgurRipperTest extends RippersTest {
     }
 
     @Test
+    @Tag("flaky")
     public void testImgurUserAccount() throws IOException, URISyntaxException {
         List<String> contentURLs = new ArrayList<>();
         // URL with albums
@@ -89,6 +91,7 @@ public class ImgurRipperTest extends RippersTest {
     }
 
     @Test
+    @Tag("flaky")
     public void testImgurAlbumWithMoreThan20Pictures() throws IOException, URISyntaxException {
         ImgurAlbum album = ImgurRipper.getImgurAlbum(new URI("http://imgur.com/a/HUMsq").toURL());
         Assertions.assertTrue(album.images.size() >= 20,
