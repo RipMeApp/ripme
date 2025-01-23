@@ -308,7 +308,7 @@ public class ImagefapRipper extends AbstractHTMLRipper {
         } else if(duration / 1000 <  300){
             logger.debug("Rate limit: " + (rateLimitFiveMinutes - callsMade) + " calls remaining for first 5 minute mark.");
         } else if(duration / 1000 <  3600){
-            logger.debug("Rate limit: " + (RATE_LIMIT_HOUR - callsMade) + " calls remaining for first hour mark.");
+            logger.debug("Rate limit: " + (rateLimitHour - callsMade) + " calls remaining for first hour mark.");
         }
 
         return duration;

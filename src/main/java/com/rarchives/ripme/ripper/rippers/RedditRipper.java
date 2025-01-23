@@ -15,6 +15,7 @@ import static j2html.TagCreator.title;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -33,8 +34,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 
-import com.rarchives.ripme.ripper.AlbumRipper;
+import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 import com.rarchives.ripme.ui.RipStatusMessage;
 import com.rarchives.ripme.ui.UpdateUtils;
 import com.rarchives.ripme.utils.Http;
@@ -45,7 +47,7 @@ import j2html.TagCreator;
 import j2html.tags.ContainerTag;
 import j2html.tags.specialized.DivTag;
 
-public class RedditRipper extends AlbumRipper {
+public class RedditRipper extends  AbstractHTMLRipper{
 
     private static final Logger logger = LogManager.getLogger(RedditRipper.class);
 
@@ -531,5 +533,23 @@ public class RedditRipper extends AlbumRipper {
 
     private static final String HTML_STYLING = " .author { font-weight: bold; } .op { color: blue; } .comment { border: 0px; margin: 0 0 25px; padding-left: 5px; } .child { margin: 2px 0 0 20px; border-left: 2px dashed #AAF; } .collapsed { background: darkgrey; margin-bottom: 0; } .collapsed > div { display: none; } .md { max-width: 840px; padding-right: 1em; } h1 { margin: 0; } body { position: relative; background-color: #eeeeec; color: #00000a; font-weight: 400; font-style: normal; font-variant: normal; font-family: Helvetica,Arial,sans-serif; line-height: 1.4 } blockquote { margin: 5px 5px 5px 15px; padding: 1px 1px 1px 15px; max-width: 60em; border: 1px solid #ccc; border-width: 0 0 0 1px; } pre { white-space: pre-wrap; } img, video { max-width: 60vw; max-height: 90vh; object-fit: contain; } .thing { overflow: hidden; margin: 0 5px 3px 40px; border: 1px solid #e0e0e0; background-color: #fcfcfb; } :target > .md { border: 5px solid blue; } .post { margin-bottom: 20px; margin-top: 20px; } .gold { background: goldenrod; } .silver { background: silver; } .platinum { background: aqua; } .deleted { background: #faa; } .md.deleted { background: inherit; border: 5px solid #faa; } .oppost { background-color: #EEF; } blockquote > p { margin: 0; } #related { max-height: 20em; overflow-y: scroll; background-color: #F4FFF4; } #related h3 { position: sticky; top: 0; background-color: white; } .flex { display: flex; flex-flow: wrap; flex-direction: row-reverse; justify-content: flex-end; } ";
     private static final String HTML_SCRIPT = "document.addEventListener('mousedown', function(e) { var t = e.target; if (t.className == 'author') { t = t.parentElement; } if (t.classList.contains('comment')) { t.classList.toggle('collapsed'); e.preventDefault(); e.stopPropagation(); return false; } });";
+
+    @Override
+    protected String getDomain() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getDomain'");
+    }
+
+    @Override
+    protected List<String> getURLsFromPage(Document page) throws UnsupportedEncodingException, URISyntaxException {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getURLsFromPage'");
+    }
+
+    @Override
+    protected void downloadURL(URL url, int index) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'downloadURL'");
+    }
 
 }

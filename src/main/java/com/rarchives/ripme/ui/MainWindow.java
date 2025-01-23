@@ -146,7 +146,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
     }
 
     private static void addCheckboxListener(JCheckBox checkBox, String configString) {
-        checkBox.addActionListener(arg0 -> {
+        checkBox.addActionListener(_ -> {
             Utils.setConfigBoolean(configString, checkBox.isSelected());
             Utils.configureLogger();
         });
@@ -798,7 +798,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
             }
         });
 
-        stopButton.addActionListener(event -> {
+        stopButton.addActionListener(_ -> {
             if (ripper != null) {
                 ripper.stop();
                 isRipping = false;
@@ -880,7 +880,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
             pack();
         });
 
-        historyButtonRemove.addActionListener(event -> {
+        historyButtonRemove.addActionListener(_ -> {
             int[] indices = historyTable.getSelectedRows();
             for (int i = indices.length - 1; i >= 0; i--) {
                 int modelIndex = historyTable.convertRowIndexToModel(indices[i]);
@@ -894,7 +894,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
             saveHistory();
         });
 
-        historyButtonClear.addActionListener(event -> {
+        historyButtonClear.addActionListener(_ -> {
             if (Utils.getConfigBoolean("history.warn_before_delete", true)) {
 
                 JPanel checkChoise = new JPanel();
@@ -912,8 +912,8 @@ public final class MainWindow implements Runnable, RipStatusHandler {
                 frame.setSize(405, 70);
                 frame.setVisible(true);
                 frame.setLocationRelativeTo(null);
-                noButton.addActionListener(e -> frame.setVisible(false));
-                yesButton.addActionListener(ed -> {
+                noButton.addActionListener(_ -> frame.setVisible(false));
+                yesButton.addActionListener(_ -> {
                     frame.setVisible(false);
                     Utils.clearURLHistory();
                     HISTORY.clear();

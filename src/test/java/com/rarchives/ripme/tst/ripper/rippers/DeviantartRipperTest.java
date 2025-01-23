@@ -8,8 +8,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.rarchives.ripme.ripper.rippers.DeviantartRipper;
-import com.rarchives.ripme.utils.Http;
-import org.jsoup.nodes.Document;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -50,11 +48,6 @@ public class DeviantartRipperTest extends RippersTest {
     @Disabled("Broken ripper")
     public void testGetGalleryIDAndUsername() throws IOException, URISyntaxException {
         URL url = new URI("https://www.deviantart.com/airgee/gallery/").toURL();
-        DeviantartRipper ripper = new DeviantartRipper(url);
-        Document doc = Http.url(url).get();
-        // Had to comment because of refactoring/style change
-        // assertEquals("airgee", ripper.getUsername(doc));
-        // assertEquals("714589", ripper.getGalleryID(doc));
     }
 
     @Test

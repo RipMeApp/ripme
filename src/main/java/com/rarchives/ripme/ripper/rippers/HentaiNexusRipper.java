@@ -110,6 +110,7 @@ public class HentaiNexusRipper extends AbstractJSONRipper {
         return "";
     }
 
+    @SuppressWarnings("unchecked")
     public String decodeJsonString(String jsonEncodedString)
     {
         /*
@@ -120,6 +121,7 @@ public class HentaiNexusRipper extends AbstractJSONRipper {
 
         byte[] jsonBytes = Base64.getDecoder().decode(jsonEncodedString);
 
+        @SuppressWarnings("rawtypes")
         ArrayList unknownArray = new ArrayList();
         ArrayList<Integer> indexesToUse = new ArrayList<>();
 

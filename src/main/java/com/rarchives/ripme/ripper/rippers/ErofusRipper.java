@@ -59,6 +59,7 @@ public class ErofusRipper extends AbstractHTMLRipper {
     public List<String> getURLsFromPage(Document page) {
         logger.info(page);
         List<String> imageURLs = new ArrayList<>();
+        @SuppressWarnings("unused")
         int x = 1;
         if (pageContainsImages(page)) {
             logger.info("Page contains images");

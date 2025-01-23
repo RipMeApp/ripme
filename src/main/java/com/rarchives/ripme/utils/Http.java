@@ -252,7 +252,7 @@ public class Http {
             SSLContext sslContext = SSLContext.getInstance("SSL");
             sslContext.init(null, trustAllCerts, new SecureRandom());
             HttpsURLConnection.setDefaultSSLSocketFactory(sslContext.getSocketFactory());
-            HostnameVerifier allHostsValid = (hostname, session) -> true;
+            HostnameVerifier allHostsValid = (_, _) -> true;
             HttpsURLConnection.setDefaultHostnameVerifier(allHostsValid);
         } catch (Exception e) {
             logger.error("ignoreSSLVerification() failed.");

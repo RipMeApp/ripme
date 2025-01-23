@@ -50,6 +50,7 @@ public class CfakeRipper extends AbstractHTMLRipper {
         @Override
         public Document getNextPage(Document doc) throws IOException {
             // Find next page
+            @SuppressWarnings("unused")
             String nextUrl = "";
             // We use comic-nav-next to the find the next page
             Element elem = doc.select("td > div.next > a").first();
