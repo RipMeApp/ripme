@@ -48,6 +48,11 @@ public class DeviantartRipperTest extends RippersTest {
     @Disabled("Broken ripper")
     public void testGetGalleryIDAndUsername() throws IOException, URISyntaxException {
         URL url = new URI("https://www.deviantart.com/airgee/gallery/").toURL();
+        DeviantartRipper ripper = new DeviantartRipper(url);
+        Document doc = Http.url(url).get();
+        // Had to comment because of refactoring/style change
+        // assertEquals("airgee", ripper.getUsername(doc));
+        // assertEquals("714589", ripper.getGalleryID(doc));
     }
 
     @Test
