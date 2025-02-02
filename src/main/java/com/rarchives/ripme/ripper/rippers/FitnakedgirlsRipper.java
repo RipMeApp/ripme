@@ -35,10 +35,10 @@ public class FitnakedgirlsRipper extends AbstractHTMLRipper {
         Pattern p;
         Matcher m;
 
-        p = Pattern.compile("^.*fitnakedgirls\\.com/gallery/(.+)$");
+        p = Pattern.compile("^https?://(\\w+\\.)?fitnakedgirls\\.com/photos/gallery/(.+)$");
         m = p.matcher(url.toExternalForm());
         if (m.matches()) {
-            return m.group(1);
+            return m.group(2);
         }
 
         throw new MalformedURLException(
@@ -49,9 +49,15 @@ public class FitnakedgirlsRipper extends AbstractHTMLRipper {
     public List<String> getURLsFromPage(Document doc) {
         List<String> imageURLs = new ArrayList<>();
 
-        Elements imgs = doc.select("div[class*=wp-tiles-tile-bg] > img");
+        Elements imgs = doc.select(".entry-inner img");
         for (Element img : imgs) {
-            String imgSrc = img.attr("src");
+            String imgSrc = img.attr("data-src");
+            if (imgSrc.strip().isEmpty()) {
+                imgSrc = img.attr("src");
+                if (imgSrc.strip().isEmpty()) {
+                    continue;
+                }
+            }
             imageURLs.add(imgSrc);
         }
 
@@ -60,6 +66,9 @@ public class FitnakedgirlsRipper extends AbstractHTMLRipper {
 
     @Override
     public void downloadURL(URL url, int index) {
+         // site is slow and goes down easily so don't overwhelm it
+        sleep(1000);
+
         // Send referrer when downloading images
         addURLToDownload(url, getPrefix(index), "", this.url.toExternalForm(), null);
     }
