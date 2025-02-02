@@ -1,31 +1,5 @@
 package com.rarchives.ripme;
 
-import java.awt.*;
-import java.io.File;
-import java.io.IOException;
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.FileNotFoundException;
-
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Date;
-
-import javax.swing.SwingUtilities;
-
-import org.apache.commons.cli.BasicParser;
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.HelpFormatter;
-import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
-import org.apache.commons.lang.SystemUtils;
-import org.apache.log4j.Logger;
-
 import com.rarchives.ripme.ripper.AbstractRipper;
 import com.rarchives.ripme.ui.History;
 import com.rarchives.ripme.ui.HistoryEntry;
@@ -34,6 +8,31 @@ import com.rarchives.ripme.ui.UpdateUtils;
 import com.rarchives.ripme.utils.Proxy;
 import com.rarchives.ripme.utils.RipUtils;
 import com.rarchives.ripme.utils.Utils;
+
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
+import org.apache.commons.lang.SystemUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import javax.swing.*;
+import java.awt.*;
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
+import java.util.stream.Stream;
 
 /**
  * Entry point to application.
@@ -44,7 +43,7 @@ import com.rarchives.ripme.utils.Utils;
  */
 public class App {
 
-    public static final Logger logger = Logger.getLogger(App.class);
+    private static final Logger logger = LogManager.getLogger(App.class);
     public static String stringToAppendToFoldername = null;
     private static final History HISTORY = new History();
 
@@ -54,11 +53,11 @@ public class App {
      *
      * @param args Array of command line arguments.
      */
-    public static void main(String[] args) throws MalformedURLException {
+    public static void main(String[] args) throws IOException {
         CommandLine cl = getArgs(args);
 
         if (args.length > 0 && cl.hasOption('v')){
-            logger.info(UpdateUtils.getThisJarVersion());
+            System.out.println(UpdateUtils.getThisJarVersion());
             System.exit(0);
         }
 
@@ -113,7 +112,7 @@ public class App {
             entry.dir = ripper.getWorkingDir().getAbsolutePath();
             try {
                 entry.title = ripper.getAlbumTitle(ripper.getURL());
-            } catch (MalformedURLException e) { }
+            } catch (MalformedURLException ignored) { }
             HISTORY.add(entry);
         }
     }
@@ -122,7 +121,7 @@ public class App {
      * For dealing with command-line arguments.
      * @param args Array of Command-line arguments
      */
-    private static void handleArguments(String[] args) {
+    private static void handleArguments(String[] args) throws IOException {
         CommandLine cl = getArgs(args);
 
         //Help (list commands)
@@ -141,7 +140,7 @@ public class App {
             Utils.setConfigString("history.location", historyLocation);
             logger.info("Set history file to " + historyLocation);
         }
-        
+
         //Allow file overwriting
         if (cl.hasOption('w')) {
             Utils.setConfigBoolean("file.overwrite", true);
@@ -169,6 +168,12 @@ public class App {
             Utils.setConfigBoolean("errors.skip404", true);
         }
 
+        //Destination directory
+        if (cl.hasOption('l')) {
+            // change the default rips directory
+            Utils.setConfigString("rips.directory", cl.getOptionValue('l'));
+        }
+
         //Re-rip <i>all</i> previous albums
         if (cl.hasOption('r')) {
             // Re-rip all via command-line
@@ -179,7 +184,7 @@ public class App {
             }
             for (HistoryEntry entry : HISTORY.toList()) {
                 try {
-                    URL url = new URL(entry.url);
+                    URL url = new URI(entry.url).toURL();
                      rip(url);
                 } catch (Exception e) {
                     logger.error("[!] Failed to rip URL " + entry.url, e);
@@ -208,7 +213,7 @@ public class App {
                 if (entry.selected) {
                     added++;
                     try {
-                        URL url = new URL(entry.url);
+                        URL url = new URI(entry.url).toURL();
                         rip(url);
                     } catch (Exception e) {
                         logger.error("[!] Failed to rip URL " + entry.url, e);
@@ -245,17 +250,11 @@ public class App {
             System.exit(-1);
         }
 
-        //Destination directory
-        if (cl.hasOption('l')) {
-            // change the default rips directory
-            Utils.setConfigString("rips.directory", cl.getOptionValue('l'));
-        }
-
         //Read URLs from File
         if (cl.hasOption('f')) {
-            String filename = cl.getOptionValue('f');
+            Path urlfile = Paths.get(cl.getOptionValue('f'));
 
-            try (BufferedReader br = new BufferedReader(new FileReader(filename))) {
+            try (BufferedReader br = Files.newBufferedReader(urlfile)) {
                 String url;
                 while ((url = br.readLine()) != null) {
                     if (url.startsWith("//") || url.startsWith("#")) {
@@ -288,11 +287,11 @@ public class App {
     /**
      * Attempt to rip targetURL.
      * @param targetURL URL to rip
-     * @param saveConfig Whether or not you want to save the config (?)
+     * @param saveConfig Whether you want to save the config (?)
      */
     private static void ripURL(String targetURL, boolean saveConfig) {
         try {
-            URL url = new URL(targetURL);
+            URL url = new URI(targetURL).toURL();
             rip(url);
             saveHistory();
         } catch (MalformedURLException e) {
@@ -337,7 +336,7 @@ public class App {
      * @return CommandLine object containing arguments.
      */
     private static CommandLine getArgs(String[] args) {
-        BasicParser parser = new BasicParser();
+        var parser = new DefaultParser();
         try {
             return parser.parse(getOptions(), args, false);
         } catch (ParseException e) {
@@ -349,19 +348,18 @@ public class App {
 
     /**
      * Loads history from history file into memory.
-     * @see MainWindow.loadHistory
      */
-    private static void loadHistory() {
-        File historyFile = new File(Utils.getConfigDir() + File.separator + "history.json");
+    private static void loadHistory() throws IOException {
+        Path historyFile = Paths.get(Utils.getConfigDir() + "/history.json");
         HISTORY.clear();
-        if (historyFile.exists()) {
+        if (Files.exists(historyFile)) {
             try {
-                logger.info("Loading history from " + historyFile.getCanonicalPath());
-                HISTORY.fromFile(historyFile.getCanonicalPath());
+                logger.info("Loading history from " + historyFile);
+                HISTORY.fromFile(historyFile.toString());
             } catch (IOException e) {
                 logger.error("Failed to load history from file " + historyFile, e);
                 logger.warn(
-                        "RipMe failed to load the history file at " + historyFile.getAbsolutePath() + "\n\n" +
+                        "RipMe failed to load the history file at " + historyFile + "\n\n" +
                         "Error: " + e.getMessage() + "\n\n" +
                         "Closing RipMe will automatically overwrite the contents of this file,\n" +
                         "so you may want to back the file up before closing RipMe!");
@@ -372,25 +370,27 @@ public class App {
             if (HISTORY.toList().isEmpty()) {
                 // Loaded from config, still no entries.
                 // Guess rip history based on rip folder
-                String[] dirs = Utils.getWorkingDirectory().list((dir, file) -> new File(dir.getAbsolutePath() + File.separator + file).isDirectory());
-                for (String dir : dirs) {
-                    String url = RipUtils.urlFromDirectoryName(dir);
+                Stream<Path> stream = Files.list(Utils.getWorkingDirectory())
+                        .filter(Files::isDirectory);
+
+                stream.forEach(dir -> {
+                    String url = RipUtils.urlFromDirectoryName(dir.toString());
                     if (url != null) {
                         // We found one, add it to history
                         HistoryEntry entry = new HistoryEntry();
                         entry.url = url;
                         HISTORY.add(entry);
                     }
-                }
+                });
             }
         }
     }
 
-    /* 
+    /*
     * @see MainWindow.saveHistory
     */
     private static void saveHistory() {
-        Path historyFile = Paths.get(Utils.getConfigDir() + File.separator + "history.json");
+        Path historyFile = Paths.get(Utils.getConfigDir() + "/history.json");
         try {
             if (!Files.exists(historyFile)) {
                 Files.createDirectories(historyFile.getParent());

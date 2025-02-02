@@ -2,16 +2,22 @@ package com.rarchives.ripme.ripper.rippers.video;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jsoup.nodes.Document;
 
 import com.rarchives.ripme.ripper.VideoRipper;
 import com.rarchives.ripme.utils.Http;
 
 public class VkRipper extends VideoRipper {
+
+    private static final Logger logger = LogManager.getLogger(VkRipper.class);
 
     private static final String HOST = "vk";
 
@@ -51,10 +57,10 @@ public class VkRipper extends VideoRipper {
     }
 
     @Override
-    public void rip() throws IOException {
-        LOGGER.info("    Retrieving " + this.url);
+    public void rip() throws IOException, URISyntaxException {
+        logger.info("    Retrieving " + this.url);
         String videoURL = getVideoURLAtPage(this.url.toExternalForm());
-        addURLToDownload(new URL(videoURL), HOST + "_" + getGID(this.url));
+        addURLToDownload(new URI(videoURL).toURL(), HOST + "_" + getGID(this.url));
         waitForThreads();
     }
 

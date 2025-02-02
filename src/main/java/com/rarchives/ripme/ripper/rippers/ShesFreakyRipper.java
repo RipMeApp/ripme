@@ -12,7 +12,6 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
 import com.rarchives.ripme.ripper.AbstractHTMLRipper;
-import com.rarchives.ripme.utils.Http;
 
 public class ShesFreakyRipper extends AbstractHTMLRipper {
 
@@ -39,11 +38,6 @@ public class ShesFreakyRipper extends AbstractHTMLRipper {
         }
         throw new MalformedURLException("Expected shesfreaky.com URL format: "
                 + "shesfreaky.com/gallery/... - got " + url + "instead");
-    }
-
-    @Override
-    public Document getFirstPage() throws IOException {
-        return Http.url(url).get();
     }
 
     @Override

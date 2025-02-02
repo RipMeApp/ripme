@@ -8,14 +8,16 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.rarchives.ripme.ripper.AbstractSingleFileRipper;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
 
-import com.rarchives.ripme.ripper.VideoRipper;
-import com.rarchives.ripme.utils.Http;
+import com.rarchives.ripme.ripper.AbstractSingleFileRipper;
 
 public class SpankbangRipper extends AbstractSingleFileRipper {
+
+    private static final Logger logger = LogManager.getLogger(SpankbangRipper.class);
 
     private static final String HOST = "spankbang";
 
@@ -29,16 +31,11 @@ public class SpankbangRipper extends AbstractSingleFileRipper {
     }
 
     @Override
-    public Document getFirstPage() throws IOException {
-        return Http.url(url).get();
-    }
-
-    @Override
     public List<String> getURLsFromPage(Document doc) {
         List<String> result = new ArrayList<>();
         Elements videos = doc.select(".video-js > source");
         if (videos.isEmpty()) {
-            LOGGER.error("Could not find Embed code at " + url);
+            logger.error("Could not find Embed code at " + url);
             return null;
         }
         result.add(videos.attr("src"));

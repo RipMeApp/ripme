@@ -11,9 +11,6 @@ import java.util.regex.Pattern;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
-import com.rarchives.ripme.ripper.AbstractHTMLRipper;
-import com.rarchives.ripme.utils.Http;
-
 public class ReadcomicRipper extends  ViewcomicRipper {
 
     public ReadcomicRipper(URL url) throws IOException {

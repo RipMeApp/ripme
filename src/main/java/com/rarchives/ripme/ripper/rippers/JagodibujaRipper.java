@@ -2,12 +2,16 @@ package com.rarchives.ripme.ripper.rippers;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
@@ -15,6 +19,8 @@ import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 import com.rarchives.ripme.utils.Http;
 
 public class JagodibujaRipper extends AbstractHTMLRipper {
+
+    private static final Logger logger = LogManager.getLogger(JagodibujaRipper.class);
 
     public JagodibujaRipper(URL url) throws IOException {
         super(url);
@@ -41,12 +47,6 @@ public class JagodibujaRipper extends AbstractHTMLRipper {
     }
 
     @Override
-    public Document getFirstPage() throws IOException {
-        // "url" is an instance field of the superclass
-        return Http.url(url).get();
-    }
-
-    @Override
     public List<String> getURLsFromPage(Document doc) {
         List<String> result = new ArrayList<>();
         for (Element comicPageUrl : doc.select("div.gallery-icon > a")) {
@@ -60,16 +60,16 @@ public class JagodibujaRipper extends AbstractHTMLRipper {
                 sleep(500);
                 Document comicPage = Http.url(comicPageUrl.attr("href")).get();
                 Element elem = comicPage.select("span.full-size-link > a").first();
-                LOGGER.info("Got link " + elem.attr("href"));
+                logger.info("Got link " + elem.attr("href"));
                 try {
-                    addURLToDownload(new URL(elem.attr("href")), "");
-                } catch (MalformedURLException e) {
-                    LOGGER.warn("Malformed URL");
+                    addURLToDownload(new URI(elem.attr("href")).toURL(), "");
+                } catch (MalformedURLException | URISyntaxException e) {
+                    logger.warn("Malformed URL");
                     e.printStackTrace();
                 }
                 result.add(elem.attr("href"));
             } catch (IOException e) {
-                LOGGER.info("Error loading " + comicPageUrl);
+                logger.info("Error loading " + comicPageUrl);
             }
         }
         return result;

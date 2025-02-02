@@ -2,6 +2,8 @@ package com.rarchives.ripme.ripper.rippers;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -37,7 +39,7 @@ public class DerpiRipper extends AbstractJSONRipper {
     }
 
     @Override
-    public URL sanitizeURL(URL url) throws MalformedURLException {
+    public URL sanitizeURL(URL url) throws MalformedURLException, URISyntaxException {
         String u = url.toExternalForm();
         String[] uu = u.split("\\?", 2);
         String newU = uu[0];
@@ -54,7 +56,7 @@ public class DerpiRipper extends AbstractJSONRipper {
             newU += "&key=" + key;
         }
 
-        return new URL(newU);
+        return new URI(newU).toURL();
     }
 
     @Override
@@ -99,10 +101,10 @@ public class DerpiRipper extends AbstractJSONRipper {
     }
 
     @Override
-    public JSONObject getNextPage(JSONObject doc) throws IOException {
+    public JSONObject getNextPage(JSONObject doc) throws IOException, URISyntaxException {
         currPage++;
         String u = currUrl.toExternalForm() + "&page=" + Integer.toString(currPage);
-        JSONObject json = Http.url(new URL(u)).getJSON();
+        JSONObject json = Http.url(new URI(u).toURL()).getJSON();
         JSONArray arr;
         if (json.has("images")) {
             arr = json.getJSONArray("images");

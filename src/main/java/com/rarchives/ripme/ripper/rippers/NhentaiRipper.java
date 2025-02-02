@@ -1,15 +1,5 @@
 package com.rarchives.ripme.ripper.rippers;
 
-import com.rarchives.ripme.ripper.AbstractHTMLRipper;
-import com.rarchives.ripme.ripper.DownloadThreadPool;
-import com.rarchives.ripme.ui.RipStatusMessage;
-import com.rarchives.ripme.utils.Http;
-import com.rarchives.ripme.utils.RipUtils;
-import com.rarchives.ripme.utils.Utils;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -18,9 +8,23 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
+import com.rarchives.ripme.ripper.AbstractHTMLRipper;
+import com.rarchives.ripme.ripper.DownloadThreadPool;
+import com.rarchives.ripme.ui.RipStatusMessage;
+import com.rarchives.ripme.utils.Http;
+import com.rarchives.ripme.utils.RipUtils;
+import com.rarchives.ripme.utils.Utils;
+
 public class NhentaiRipper extends AbstractHTMLRipper {
 
-    private String albumTitle;
+    private static final Logger logger = LogManager.getLogger(NhentaiRipper.class);
+
     private Document firstPage;
 
     // Thread pool for finding direct image links from "image" pages (html)
@@ -87,7 +91,7 @@ public class NhentaiRipper extends AbstractHTMLRipper {
         List<String> tags = new ArrayList<>();
         for (Element tag : doc.select("a.tag")) {
             String tagString = tag.attr("href").replaceAll("/tag/", "").replaceAll("/", "");
-            LOGGER.info("Found tag: " + tagString);
+            logger.info("Found tag: " + tagString);
             tags.add(tagString);
         }
         return tags;
@@ -126,7 +130,7 @@ public class NhentaiRipper extends AbstractHTMLRipper {
         List<String> imageURLs = new ArrayList<>();
         Elements thumbs = page.select("a.gallerythumb > img");
         for (Element el : thumbs) {
-            imageURLs.add(el.attr("data-src").replaceAll("t\\.n", "i.n").replaceAll("t\\.", "."));
+            imageURLs.add(el.attr("data-src").replaceAll("://t", "://i").replaceAll("t\\.", "."));
         }
         return imageURLs;
     }

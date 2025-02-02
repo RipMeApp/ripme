@@ -13,9 +13,6 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import com.rarchives.ripme.ripper.VideoRipper;
-import com.rarchives.ripme.utils.Http;
-
 public class YoupornRipper extends AbstractSingleFileRipper {
 
 
@@ -38,11 +35,6 @@ public class YoupornRipper extends AbstractSingleFileRipper {
         Pattern p = Pattern.compile("^https?://[wm.]*youporn\\.com/watch/[0-9]+.*$");
         Matcher m = p.matcher(url.toExternalForm());
         return m.matches();
-    }
-
-    @Override
-    public Document getFirstPage() throws IOException {
-        return Http.url(this.url).get();
     }
 
     @Override

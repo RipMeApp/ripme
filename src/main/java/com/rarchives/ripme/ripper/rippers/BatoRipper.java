@@ -2,20 +2,24 @@ package com.rarchives.ripme.ripper.rippers;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
 import com.rarchives.ripme.ripper.AbstractHTMLRipper;
-import com.rarchives.ripme.utils.Http;
 
 public class BatoRipper extends AbstractHTMLRipper {
+
+    private static final Logger logger = LogManager.getLogger(BatoRipper.class);
 
     public BatoRipper(URL url) throws IOException {
         super(url);
@@ -70,13 +74,13 @@ public class BatoRipper extends AbstractHTMLRipper {
     }
 
     @Override
-    public String getAlbumTitle(URL url) throws MalformedURLException {
+    public String getAlbumTitle(URL url) throws MalformedURLException, URISyntaxException {
         try {
             // Attempt to use album title as GID
-            return getHost() + "_" + getGID(url) + "_" + getFirstPage().select("title").first().text().replaceAll(" ", "_");
+            return getHost() + "_" + getGID(url) + "_" + getCachedFirstPage().select("title").first().text().replaceAll(" ", "_");
         } catch (IOException e) {
             // Fall back to default album naming convention
-            LOGGER.info("Unable to find title at " + url);
+            logger.info("Unable to find title at " + url);
         }
         return super.getAlbumTitle(url);
     }
@@ -94,11 +98,6 @@ public class BatoRipper extends AbstractHTMLRipper {
         return m.matches();
     }
 
-    @Override
-    public Document getFirstPage() throws IOException {
-        // "url" is an instance field of the superclass
-        return Http.url(url).get();
-    }
 
     @Override
     public List<String> getURLsFromPage(Document doc) {

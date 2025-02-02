@@ -2,19 +2,28 @@ package com.rarchives.ripme.ripper.rippers;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
 import org.jsoup.Connection;
 import org.jsoup.Connection.Method;
 import org.jsoup.Connection.Response;
+
 import com.rarchives.ripme.ripper.AbstractJSONRipper;
 import com.rarchives.ripme.utils.Http;
 
 public class ArtStationRipper extends AbstractJSONRipper {
+
+    private static final Logger logger = LogManager.getLogger(ArtStationRipper.class);
+
     enum URL_TYPE {
         SINGLE_PROJECT, USER_PORTFOLIO, UNKNOWN
     }
@@ -50,7 +59,7 @@ public class ArtStationRipper extends AbstractJSONRipper {
             try {
                 // groupData = Http.url(albumURL.getLocation()).getJSON();
                 groupData = getJson(albumURL.getLocation());
-            } catch (IOException e) {
+            } catch (IOException | URISyntaxException e) {
                 throw new MalformedURLException("Couldn't load JSON from " + albumURL.getLocation());
             }
             return groupData.getString("title");
@@ -62,7 +71,7 @@ public class ArtStationRipper extends AbstractJSONRipper {
             try {
 //                 groupData = Http.url(userInfoURL).getJSON();
                 groupData = getJson(userInfoURL);
-            } catch (IOException e) {
+            } catch (IOException | URISyntaxException e) {
                 throw new MalformedURLException("Couldn't load JSON from " + userInfoURL);
             }
             return groupData.getString("full_name");
@@ -74,7 +83,7 @@ public class ArtStationRipper extends AbstractJSONRipper {
     }
 
     @Override
-    protected JSONObject getFirstPage() throws IOException {
+    protected JSONObject getFirstPage() throws IOException, URISyntaxException {
         if (albumURL.getType() == URL_TYPE.SINGLE_PROJECT) {
             // URL points to JSON of a single project, just return it
             // return Http.url(albumURL.getLocation()).getJSON();
@@ -90,7 +99,7 @@ public class ArtStationRipper extends AbstractJSONRipper {
             if (albumContent.getInt("total_count") > 0) {
                 // Get JSON of the first project and return it
                 JSONObject projectInfo = albumContent.getJSONArray("data").getJSONObject(0);
-                ParsedURL projectURL = parseURL(new URL(projectInfo.getString("permalink")));
+                ParsedURL projectURL = parseURL(new URI(projectInfo.getString("permalink")).toURL());
                 // return Http.url(projectURL.getLocation()).getJSON();
                 return getJson(projectURL.getLocation());
             }
@@ -100,7 +109,7 @@ public class ArtStationRipper extends AbstractJSONRipper {
     }
 
     @Override
-    protected JSONObject getNextPage(JSONObject doc) throws IOException {
+    protected JSONObject getNextPage(JSONObject doc) throws IOException, URISyntaxException {
         if (albumURL.getType() == URL_TYPE.USER_PORTFOLIO) {
             // Initialize the page number if it hasn't been initialized already
             if (projectPageNumber == null) {
@@ -117,7 +126,7 @@ public class ArtStationRipper extends AbstractJSONRipper {
                 projectIndex = 0;
             }
 
-            Integer currentProject = ((projectPageNumber - 1) * 50) + (projectIndex + 1);
+            int currentProject = ((projectPageNumber - 1) * 50) + (projectIndex + 1);
             // JSONObject albumContent = Http.url(albumURL.getLocation() + "?page=" +
             // projectPageNumber).getJSON();
             JSONObject albumContent = getJson(albumURL.getLocation() + "?page=" + projectPageNumber);
@@ -125,7 +134,7 @@ public class ArtStationRipper extends AbstractJSONRipper {
             if (albumContent.getInt("total_count") > currentProject) {
                 // Get JSON of the next project and return it
                 JSONObject projectInfo = albumContent.getJSONArray("data").getJSONObject(projectIndex);
-                ParsedURL projectURL = parseURL(new URL(projectInfo.getString("permalink")));
+                ParsedURL projectURL = parseURL(new URI(projectInfo.getString("permalink")).toURL());
                 projectIndex++;
                 // return Http.url(projectURL.getLocation()).getJSON();
                 return getJson(projectURL.getLocation());
@@ -189,11 +198,11 @@ public class ArtStationRipper extends AbstractJSONRipper {
 
         /**
          * Construct a new ParsedURL object.
-         * 
+         *
          * @param urlType URL_TYPE enum containing the URL type
          * @param jsonURL String containing the JSON URL location
          * @param urlID   String containing the ID of this URL
-         * 
+         *
          */
         ParsedURL(URL_TYPE urlType, String jsonURL, String urlID) {
             this.urlType = urlType;
@@ -203,9 +212,9 @@ public class ArtStationRipper extends AbstractJSONRipper {
 
         /**
          * Get URL Type of this ParsedURL object.
-         * 
+         *
          * @return URL_TYPE enum containing this object type
-         * 
+         *
          */
         URL_TYPE getType() {
             return this.urlType;
@@ -213,9 +222,9 @@ public class ArtStationRipper extends AbstractJSONRipper {
 
         /**
          * Get JSON location of this ParsedURL object.
-         * 
+         *
          * @return String containing the JSON URL
-         * 
+         *
          */
         String getLocation() {
             return this.jsonURL;
@@ -223,7 +232,7 @@ public class ArtStationRipper extends AbstractJSONRipper {
 
         /**
          * Get ID of this ParsedURL object.
-         * 
+         *
          * @return For URL_TYPE.SINGLE_PROJECT, returns the project hash. For
          *         URL_TYPE.USER_PORTFOLIO, returns the account name
          */
@@ -234,13 +243,13 @@ public class ArtStationRipper extends AbstractJSONRipper {
 
     /**
      * Parses an ArtStation URL.
-     * 
+     *
      * @param url URL to an ArtStation user profile
      *            (https://www.artstation.com/username) or single project
      *            (https://www.artstation.com/artwork/projectid)
      * @return ParsedURL object containing URL type, JSON location and ID (stores
      *         account name or project hash, depending of the URL type identified)
-     * 
+     *
      */
     private ParsedURL parseURL(URL url) {
         String htmlSource;
@@ -269,7 +278,7 @@ public class ArtStationRipper extends AbstractJSONRipper {
                 parsedURL = new ParsedURL(URL_TYPE.SINGLE_PROJECT, jsonURL, urlId);
                 return parsedURL;
             } else {
-                LOGGER.error("Couldnt fetch URL: " + url);
+                logger.error("Couldnt fetch URL: " + url);
                 throw new IOException("Error fetching URL: " + url + " Status Code: " + status);
             }
         } catch (IOException e) {
@@ -320,8 +329,8 @@ public class ArtStationRipper extends AbstractJSONRipper {
         throw new IOException("Error fetching json. Status code:" + status);
     }
 
-    private JSONObject getJson(String url) throws IOException {
-        return getJson(new URL(url));
+    private JSONObject getJson(String url) throws IOException, URISyntaxException {
+        return getJson(new URI(url).toURL());
     }
 
 }

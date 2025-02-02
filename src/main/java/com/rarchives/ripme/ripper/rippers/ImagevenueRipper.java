@@ -2,12 +2,16 @@ package com.rarchives.ripme.ripper.rippers;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -18,6 +22,8 @@ import com.rarchives.ripme.utils.Http;
 import com.rarchives.ripme.utils.Utils;
 
 public class ImagevenueRipper extends AbstractHTMLRipper {
+
+    private static final Logger logger = LogManager.getLogger(ImagevenueRipper.class);
 
     // Thread pool for finding direct image links from "image" pages (html)
     private DownloadThreadPool imagevenueThreadPool = new DownloadThreadPool("imagevenue");
@@ -56,11 +62,6 @@ public class ImagevenueRipper extends AbstractHTMLRipper {
                         + " Got: " + url);
     }
 
-    @Override
-    public Document getFirstPage() throws IOException {
-        return Http.url(url).get();
-    }
-
     public List<String> getURLsFromPage(Document doc) {
         List<String> imageURLs = new ArrayList<>();
         for (Element thumb : doc.select("a[target=_blank]")) {
@@ -79,9 +80,9 @@ public class ImagevenueRipper extends AbstractHTMLRipper {
      *
      * Handles case when site has IP-banned the user.
      */
-    private class ImagevenueImageThread extends Thread {
-        private URL url;
-        private int index;
+    private class ImagevenueImageThread implements Runnable {
+        private final URL url;
+        private final int index;
 
         ImagevenueImageThread(URL url, int index) {
             super();
@@ -102,7 +103,7 @@ public class ImagevenueRipper extends AbstractHTMLRipper {
                 // Find image
                 Elements images = doc.select("a > img");
                 if (images.isEmpty()) {
-                    LOGGER.warn("Image not found at " + this.url);
+                    logger.warn("Image not found at " + this.url);
                     return;
                 }
                 Element image = images.first();
@@ -113,9 +114,9 @@ public class ImagevenueRipper extends AbstractHTMLRipper {
                 if (Utils.getConfigBoolean("download.save_order", true)) {
                     prefix = String.format("%03d_", index);
                 }
-                addURLToDownload(new URL(imgsrc), prefix);
-            } catch (IOException e) {
-                LOGGER.error("[!] Exception while loading/parsing " + this.url, e);
+                addURLToDownload(new URI(imgsrc).toURL(), prefix);
+            } catch (IOException | URISyntaxException e) {
+                logger.error("[!] Exception while loading/parsing " + this.url, e);
             }
         }
     }
