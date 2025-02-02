@@ -43,8 +43,6 @@ public class PorncomixinfoRipper extends AbstractHTMLRipper {
 
     @Override
     public Document getNextPage(Document doc) throws IOException {
-        
-       
         // We use comic-nav-next to the find the next page
         Element elem = doc.select("a.next_page").first();
         if (elem == null) {
