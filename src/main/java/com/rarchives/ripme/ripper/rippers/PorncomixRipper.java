@@ -13,9 +13,6 @@ import org.jsoup.nodes.Element;
 
 import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 
-
- 
-
 public class PorncomixRipper extends AbstractHTMLRipper {
 
     public PorncomixRipper(URL url) throws IOException {
