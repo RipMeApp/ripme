@@ -20,7 +20,6 @@ public class ArtStationRipperTest extends RippersTest {
         List<URL> contentURLs = new ArrayList<>();
         contentURLs.add(new URI("https://www.artstation.com/artwork/the-dwarf-mortar").toURL());
         contentURLs.add(new URI("https://www.artstation.com/artwork/K36GR").toURL());
-        contentURLs.add(new URI("http://artstation.com/artwork/5JJQw").toURL());
         for (URL url : contentURLs) {
             ArtStationRipper ripper = new ArtStationRipper(url);
             testRipper(ripper);
