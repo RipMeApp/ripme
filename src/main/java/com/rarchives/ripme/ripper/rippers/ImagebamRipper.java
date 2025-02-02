@@ -143,9 +143,6 @@ public class ImagebamRipper extends AbstractHTMLRipper {
                         .get();
 
                 // Find image
-                @SuppressWarnings("unused")
-                Elements metaTags = doc.getElementsByTag("meta");
-
                 String imgsrc = "";//initialize, so no NullPointerExceptions should ever happen.
                 Elements elem = doc.select("img[class*=main-image]");
                 if ((elem != null) && (elem.size() > 0)) {
