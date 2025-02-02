@@ -60,7 +60,6 @@ public class HentaiNexusRipper extends AbstractJSONRipper {
         addURLToDownload(url, getPrefix(index));
     }
 
-
     @Override
     protected List<String> getURLsFromJSON(JSONObject json) throws JSONException {
 
@@ -110,7 +109,6 @@ public class HentaiNexusRipper extends AbstractJSONRipper {
         return "";
     }
 
-    @SuppressWarnings("unchecked")
     public String decodeJsonString(String jsonEncodedString)
     {
         /*
@@ -121,8 +119,7 @@ public class HentaiNexusRipper extends AbstractJSONRipper {
 
         byte[] jsonBytes = Base64.getDecoder().decode(jsonEncodedString);
 
-        @SuppressWarnings("rawtypes")
-        ArrayList unknownArray = new ArrayList();
+        ArrayList<Integer> unknownArray = new ArrayList<>();
         ArrayList<Integer> indexesToUse = new ArrayList<>();
 
         for (int i = 0x2; unknownArray.size() < 0x10; ++i) {
@@ -178,9 +175,7 @@ public class HentaiNexusRipper extends AbstractJSONRipper {
         return decodedJsonString;
     }
 
-
     private static long signedToUnsigned(int signed) {
         return (byte) signed & 0xFF;
     }
-
 }
