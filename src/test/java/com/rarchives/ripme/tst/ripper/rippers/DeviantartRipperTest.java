@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.rarchives.ripme.ripper.rippers.DeviantartRipper;
+import com.rarchives.ripme.utils.Http;
+import org.jsoup.nodes.Document;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
