@@ -224,7 +224,6 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 		logger.info("DA Cookies: " + getDACookie());
 	}
 
-
 	/**
 	 * Returns next page Document using offset.
 	 */
@@ -246,7 +245,6 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 		}
 
 		return Http.url(urlWithParams(this.offset)).referrer(referer).userAgent(userAgent).cookies(getDACookie()).get();
-
 	}
 
 	/**
@@ -258,7 +256,6 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 	 */
 	@Override
 	protected List<String> getURLsFromPage(Document page) {
-
 		List<String> result = new ArrayList<String>();
 
 		Element div;
@@ -293,6 +290,11 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 		logger.info("Downloading URL Number " + this.downloadCount);
 		logger.info("Deviant Art URL: " + url.toExternalForm());
 		try {
+			// Suppress this warning because it is part of code that was temporarily
+			// commented out to disable the behavior.
+			// We know there's a lot about this ripper that needs to be fixed so
+			// we're not too worried about warnings in this file.
+			@SuppressWarnings("unused")
 			Response re = Http.url(urlWithParams(this.offset)).cookies(getDACookie()).referrer(referer)
 					.userAgent(userAgent).response();
 			//updateCookie(re.cookies());
@@ -319,7 +321,6 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 	 */
 	@Override
 	public String getGID(URL url) throws MalformedURLException {
-
 		String s = url.toExternalForm();
 		String artist = "unknown";
 		String what = "unknown";
@@ -366,7 +367,6 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 		logger.info("Album Name: " + artist + "_" + what + "_" + albumname);
 
 		return artist + "_" + what + "_" + albumname;
-
 	}
 
 	/**
@@ -413,7 +413,6 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 	 * @param m new Cookies
 	 */
 	private void updateCookie(Map<String, String> m) {
-
 		if (m == null) {
 			return;
 		}
@@ -439,7 +438,6 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-
 	}
 
 	/**
@@ -470,8 +468,13 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 	private Map<String, String> deserialize(String s) throws IOException, ClassNotFoundException {
 		byte[] data = Base64.getDecoder().decode(s);
 		ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(data));
-		HashMap<String, String> o = (HashMap<String, String>) ois.readObject(); // Unchecked cast here but should never
-																				// be something else
+
+		// Suppress this warning because it's part of the legacy implementation.
+		// We know there's a lot about this ripper that needs to be fixed so
+		// we're not too worried about warnings in this file.
+		// Unchecked cast here but should never be something else.
+		@SuppressWarnings("unchecked")
+		HashMap<String, String> o = (HashMap<String, String>) ois.readObject();
 		ois.close();
 		return o;
 	}
