@@ -113,13 +113,58 @@ If you're a developer, you can add your own Ripper by following the wiki guide:
 
 # Compiling & Building
 
-The project uses [Gradle](https://gradle.org). To build the .jar file,
-navigate to the root project directory and run at least the test you
-change, e.g. Xhamster. test execution can also excluded completely:
+The project uses [Gradle](https://gradle.org).
+
+In particular, we use the `gradlew` script (`gradlew.bat` on Windows) 
+to build the app and run tests.
+
+To build the .jar file and run the appropriate tests, navigate to the
+root project directory and run `gradlew` with the appropriate commands
+(see below). Ensure that you manually test that your change works,
+add or update the corresponding test, and run at least the test(s)
+that are relevant to your change.
+
+For example, if you modify the Xhamster ripper, you might run this or
+a similar command:
+
+```
+./gradlew clean build testAll --tests XhamsterRipperTest.testXhamster2Album
+```
+
+Here's a breakdown of the functionality of the `gradlew` scripts:
+
+The `build` verb will build the `.jar`, the tests, and will also *run*
+the tests ,except for disabled and flaky tests.
+
+Thus `build` and `build test` are actually synonymous.
+
+```bash
+./gradlew build
+./gradlew build test
+```
+
+You can get more specific with your test commands:
 
 ```bash
 ./gradlew clean build testAll --tests XhamsterRipperTest.testXhamster2Album
 ./gradlew clean build -x test --warning-mode all
+```
+
+To perform a clean rebuild, which is only necessary to see warnings for
+unchanged files or if you believe that the incremental build is interfering
+with the build picking up your changes, for example. That shouldn't be an issue
+for gradle, so you should check for easier explanations like  whether you saved
+your changes. :)
+
+```bash
+./gradlew clean
+```
+
+To build ("assemble") the .jar without running the tests, which is useful for 
+manual verification of functionality of a work in progress, run the following:
+
+```bash
+./gradlew assemble
 ```
 
 The generated JAR (java archive) in build/libs will include all
