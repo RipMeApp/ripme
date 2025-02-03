@@ -7,6 +7,7 @@ import java.net.URL;
 
 import org.jsoup.nodes.Document;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import com.rarchives.ripme.ripper.AbstractRipper;
@@ -16,6 +17,7 @@ import com.rarchives.ripme.utils.Utils;
 
 public class FapwizRipperTest extends RippersTest {
     @Test
+    @Tag("flaky") // It seems like fetching the document within the test can be flaky.
     public void testGetNextPage_NoNextPage() throws IOException, URISyntaxException {
         URL url = new URI("https://fapwiz.com/alison-esha/").toURL();
         FapwizRipper ripper = new FapwizRipper(url);
@@ -32,6 +34,7 @@ public class FapwizRipperTest extends RippersTest {
     }
 
     @Test
+    @Tag("flaky") // It seems like fetching the document within the test can be flaky.
     public void testGetNextPage_HasNextPage() throws IOException, URISyntaxException {
         URL url = new URI("https://fapwiz.com/miaipanema/").toURL();
         FapwizRipper ripper = new FapwizRipper(url);
