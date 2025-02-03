@@ -2,7 +2,7 @@
     "latestVersion": "2.1.17-32-8f58eb41",
     "currentHash": "dc9a91f9b4928ed03611808200deaf027a3910e4fe6c9ceeda7aeed363750758",
     "changeList": [
-        "2.1.17-32-8f58eb41: copy does not break flickr links, +nude-gals. ",
+        "2.1.17-32-8f58eb41: Remove lots of rippers for permanently offline sites; add Nude-Gals video support; fixed BatoRipper & FitnakedgirlsRipper; clipboard auto-rip does not break flickr links",
         "2.1.16-4-02372e85: Republishing the build with an updated version number",
         "2.1.14-33-c275bbf6: Java-17 is now minimum version requirement, down from java-21; User Agent updated; fix Xvideos, add FapDungeon, add NsfwAlbum; added rate limiting to Coomer, E621, Redgifs, and RedditRipper's handling of Redgifs; rate limit sleep()s now include jitter; code cleanup; removed several rippers for site that are permanently offline",
         "2.1.13-7-fac3f8ea, luscious, xvideos fixed",
