@@ -27,6 +27,7 @@ public class ChanRipperTest extends RippersTest {
         passURLs.add(new URI("https://boards.4chan.org/hr/thread/3015701").toURL());
         passURLs.add(new URI("http://7chan.org/gif/res/25873.html").toURL());
         passURLs.add(new URI("https://rbt.asia/g/thread/70643087/").toURL()); // must work with TLDs with len of 4
+        passURLs.add(new URI("https://4archive.org/board/hr/thread/2770629").toURL());
         for (URL url : passURLs) {
             ChanRipper ripper = new ChanRipper(url);
             // Use CompletableFuture to run setup() asynchronously
