@@ -15,6 +15,7 @@ import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.junit.jupiter.api.Assertions;
 
 import com.rarchives.ripme.ripper.AbstractRipper;
+import com.rarchives.ripme.ripper.AbstractRipper2;
 import com.rarchives.ripme.utils.Utils;
 
 /**
@@ -25,6 +26,44 @@ public class RippersTest {
     private final Logger logger = LogManager.getLogger(RippersTest.class);
 
     void testRipper(AbstractRipper ripper) {
+        try {
+            // Turn on Debug logging
+            LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
+            Configuration config = ctx.getConfiguration();
+            LoggerConfig loggerConfig = config.getLoggerConfig(LogManager.ROOT_LOGGER_NAME);
+            loggerConfig.setLevel(Level.DEBUG);
+            ctx.updateLoggers();  // This causes all Loggers to refetch information from their LoggerConfig.
+
+            // Decrease timeout
+            Utils.setConfigInteger("page.timeout", 20 * 1000);
+
+            ripper.setup();
+            ripper.markAsTest();
+            ripper.rip();
+            if (logger.isTraceEnabled()) {
+                logger.trace("working dir: " + ripper.getWorkingDir());
+                logger.trace("list files: " + ripper.getWorkingDir().listFiles().length);
+                for (int i = 0; i < ripper.getWorkingDir().listFiles().length; i++) {
+                    logger.trace("   " + ripper.getWorkingDir().listFiles()[i]);
+                }
+            }
+            Assertions.assertTrue(ripper.getWorkingDir().listFiles().length >= 1,
+                    "Failed to download a single file from " + ripper.getURL());
+        } catch (IOException e) {
+            if (e.getMessage().contains("Ripping interrupted")) {
+                // We expect some rips to get interrupted
+            } else {
+                e.printStackTrace();
+                Assertions.fail("Failed to rip " + ripper.getURL() + " : " + e.getMessage());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            Assertions.fail("Failed to rip " + ripper.getURL() + " : " + e.getMessage());
+        } finally {
+            deleteDir(ripper.getWorkingDir());
+        }
+    }
+    void testRipper1(AbstractRipper2 ripper) {
         try {
             // Turn on Debug logging
             LoggerContext ctx = (LoggerContext) LogManager.getContext(false);

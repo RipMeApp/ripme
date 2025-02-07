@@ -38,6 +38,7 @@ import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.config.LoggerConfig;
 
 import com.rarchives.ripme.ripper.AbstractRipper;
+import com.rarchives.ripme.ripper.AbstractRipper2;
 import com.rarchives.ripme.uiUtils.ContextActionProtections;
 import com.rarchives.ripme.utils.RipUtils;
 import com.rarchives.ripme.utils.Utils;
@@ -1728,5 +1729,11 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public void update(AbstractRipper2 ripper, RipStatusMessage message) {
+    
+        throw new UnsupportedOperationException("Unimplemented method 'update'");
     }
 }
