@@ -287,7 +287,7 @@ public class ChanRipper extends AbstractHTMLRipper {
     @Override
     public void downloadURL(URL url, int index) {
         if (isVideo(url)) {
-            sleep(1000);
+            sleep(5000);
         }
         addURLToDownload(url, getPrefix(index));
     }
