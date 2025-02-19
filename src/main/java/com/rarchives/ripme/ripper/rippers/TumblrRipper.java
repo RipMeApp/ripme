@@ -144,7 +144,7 @@ public class TumblrRipper extends AlbumRipper {
         if (albumType == ALBUM_TYPE.POST) {
             mediaTypes = new String[] { "post" };
         } else {
-            mediaTypes = new String[] { "photo", "video" };
+            mediaTypes = new String[] { "photo", "video", "audio" };
         }
 
         int offset;
@@ -293,6 +293,23 @@ public class TumblrRipper extends AlbumRipper {
                 } catch (Exception e) {
                     logger.error("[!] Error while parsing video in " + post, e);
                     return true;
+                }
+            } else if (post.has("audio_url")) {
+                try {
+                    fileURL = new URI(post.getString("audio_url").replaceAll("http:", "https:")).toURL();
+                    downloadURL(fileURL, date);
+                } catch (Exception e) {
+                    logger.error("[!] Error while parsing audio in " + post, e);
+                    return true;
+                }
+                if (post.has("album_art")) {
+                    try {
+                        fileURL = new URI(post.getString("album_art").replaceAll("http:", "https:")).toURL();
+                        downloadURL(fileURL, date);
+                    } catch (Exception e) {
+                        logger.error("[!] Error while parsing album art in " + post, e);
+                        return true;
+                    }
                 }
             } else if (post.has("body")) {
                 Document d = Jsoup.parse(post.getString("body"));
