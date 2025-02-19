@@ -39,4 +39,9 @@ public class TumblrRipperTest extends RippersTest {
                 new URI("https://these-are-my-b-sides.tumblr.com/post/178225921524/this-was-fun").toURL());
         testRipper(ripper);
     }
+    @Test
+    public void testTumblrAudioRip() throws IOException, URISyntaxException {
+        TumblrRipper ripper = new TumblrRipper(new URI("https://pilotredsun.tumblr.com/post/117939380846/march-2015").toURL());
+        testRipper(ripper);
+    }
 }
