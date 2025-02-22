@@ -6,6 +6,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.*;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -21,6 +22,7 @@ import org.apache.logging.log4j.Logger;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
 
 public class RipUtils {
@@ -78,11 +80,7 @@ public class RipUtils {
         } else if (url.toExternalForm().contains("erome.com")) {
             try {
                 logger.info("Getting eroshare album " + url);
-                EromeRipper r = new EromeRipper(url);
-                Document tempDoc = r.getFirstPage();
-                for (String u : r.getURLsFromPage(tempDoc)) {
-                    result.add(new URI(u).toURL());
-                }
+                result.addAll(new EromeRipper(url).getURLsFromFirstPage());
             } catch (IOException | URISyntaxException e) {
                 // Do nothing
                 logger.warn("Exception while retrieving eroshare page:", e);
@@ -91,11 +89,7 @@ public class RipUtils {
         } else if (url.toExternalForm().contains("soundgasm.net")) {
             try {
                 logger.info("Getting soundgasm page " + url);
-                SoundgasmRipper r = new SoundgasmRipper(url);
-                Document tempDoc = r.getFirstPage();
-                for (String u : r.getURLsFromPage(tempDoc)) {
-                    result.add(new URI(u).toURL());
-                }
+                result.addAll(new SoundgasmRipper(url).getURLsFromFirstPage());
             } catch (IOException | URISyntaxException e) {
                 // Do nothing
                 logger.warn("Exception while retrieving soundgasm page:", e);
@@ -314,6 +308,77 @@ public class RipUtils {
                     return tag.toLowerCase();
                 }
             }
+        }
+        return null;
+    }
+
+    /**
+     * Create a new URL from the string, if it's a correctly formatted absolute url, returns null otherwise.
+     * @param href
+     * @return
+     */
+    public static URL createFromAbsoluteUrl(final String href) {
+        if (href != null && !href.isBlank()) {
+            try {
+                return new URI(href).toURL();
+            } catch (final MalformedURLException|URISyntaxException ex) {
+                logger.error("Malformed URL: " + href, ex);
+            }
+        }
+        return null;
+    }
+
+    public static void addUrl(List<URL> urls, String absoluteUrl) {
+        final var url = createFromAbsoluteUrl(absoluteUrl);
+        if (url != null) {
+            urls.add(url);
+        }
+    }
+
+    public static List<URL> toURLList(List<String> urlStrings) {
+        final var correctUrls = new ArrayList<URL>();
+        for (var url: urlStrings) {
+            try {
+                correctUrls.add(new URI(url).toURL());
+            } catch (MalformedURLException | URISyntaxException ex) {
+                logger.error("Malformed URL: " + url, ex);
+            }
+        }
+        return correctUrls;
+    }
+
+    public static List<URL> extractUrl(final Elements elements, String attributeName) {
+        return extractUrl(elements, attributeName, Function.identity());
+    }
+
+    public static List<URL> extractUrl(final Elements elements, String attributeName, Function<String, String> urlBuilder) {
+        final var result = new ArrayList<URL>();
+        for (final var elem : elements) {
+            final var href = elem.attr(attributeName);
+            final var absoluteUrl = urlBuilder.apply(href);
+            final var url = createFromAbsoluteUrl(absoluteUrl);
+            if (url != null) {
+                result.add(url);
+            }
+        }
+        return result;
+    }
+
+    public static List<String> extractUrlAsString(final Elements elements, String attributeName, Function<String, String> urlBuilder) {
+        return extractUrl(elements, attributeName, urlBuilder).stream().map(URL::toExternalForm).toList();
+    }
+
+    public static String cutEverythingAfter(String string, String start) {
+        var pos = string.indexOf(start);
+        if (pos >= 0) {
+            return string.substring(0, pos);
+        }
+        return string;
+    }
+
+    public static String removeIfStartsWith(String string, String prefix) {
+        if (string.startsWith(prefix)) {
+            return string.substring(prefix.length());
         }
         return null;
     }

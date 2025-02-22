@@ -58,7 +58,7 @@ public class MyhentaicomicsRipper extends AbstractHTMLRipper {
     }
 
     @Override
-    public boolean pageContainsAlbums(URL url) {
+    public boolean pageContainsAlbums() {
         Pattern pa = Pattern.compile("^https?://myhentaicomics.com/index.php/search\\?q=([a-zA-Z0-9-]*)([a-zA-Z0-9=&]*)?$");
         Matcher ma = pa.matcher(url.toExternalForm());
         if (ma.matches()) {

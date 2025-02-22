@@ -110,7 +110,7 @@ public class XvideosRipper extends AbstractSingleFileRipper {
     }
 
     @Override
-    public String getAlbumTitle(URL url) throws MalformedURLException, URISyntaxException {
+    public String getAlbumTitle() throws MalformedURLException, URISyntaxException {
         Pattern p;
         Matcher m;
 
@@ -126,6 +126,6 @@ public class XvideosRipper extends AbstractSingleFileRipper {
             return getHost() + "_" + m.group(1) + "_" + m.group(2) + "_" + m.group(4) + "_" + m.group(3);
         }
 
-        return super.getAlbumTitle(url);
+        return super.getAlbumTitle();
     }
 }
