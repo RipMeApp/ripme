@@ -215,7 +215,13 @@ public abstract class AbstractRipper
         // ctx.reconfigure();
         // ctx.updateLoggers();
 
-        this.threadPool = new DownloadThreadPool();
+        initThreadPool();
+    }
+
+    public synchronized void initThreadPool() {
+        if (threadPool == null) {
+            this.threadPool = new DownloadThreadPool();
+        }
     }
 
     public void setObserver(RipStatusHandler obs) {
@@ -481,7 +487,9 @@ public abstract class AbstractRipper
     protected void waitForThreads() {
         logger.debug("Waiting for threads to finish");
         completed = false;
-        threadPool.waitForThreads();
+        if (threadPool != null) {
+            threadPool.waitForThreads();
+        }
         checkIfComplete();
     }
 
@@ -576,17 +584,20 @@ public abstract class AbstractRipper
         return workingDir;
     }
 
+    public void setWorkingDir(File dir) {
+        this.workingDir = dir;
+    }
+
     @Override
     public abstract void setWorkingDir(URL url) throws IOException, URISyntaxException;
 
     /**
-     * @param url The URL you want to get the title of.
      * @return host_URLid
      *         e.g. (for a reddit post)
      *         reddit_post_7mg2ur
      * @throws MalformedURLException If any of those damned URLs gets malformed.
      */
-    public String getAlbumTitle(URL url) throws MalformedURLException, URISyntaxException {
+    public String getAlbumTitle() throws MalformedURLException, URISyntaxException {
         try {
             return getHost() + "_" + getGID(url);
         } catch (URISyntaxException e) {

@@ -1536,6 +1536,8 @@ public final class MainWindow implements Runnable, RipStatusHandler {
             }
             break;
 
+        case DOWNLOAD_PROGRESSED:
+            break;
         case RIP_ERRORED:
             if (LOGGER.isEnabled(Level.ERROR)) {
                 appendLog((String) msg.getObject(), Color.RED);
@@ -1562,7 +1564,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
                 entry.dir = rsc.getDir();
                 entry.count = rsc.count;
                 try {
-                    entry.title = ripper.getAlbumTitle(ripper.getURL());
+                    entry.title = ripper.getAlbumTitle();
                 } catch (MalformedURLException | URISyntaxException e) {
                     LOGGER.warn(e.getMessage());
                 }

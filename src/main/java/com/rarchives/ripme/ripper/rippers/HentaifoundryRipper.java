@@ -12,8 +12,7 @@ import java.util.regex.Pattern;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jsoup.Connection.Method;
-import org.jsoup.Connection.Response;
+import com.rarchives.ripme.utils.Utils;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -55,17 +54,15 @@ public class HentaifoundryRipper extends AbstractHTMLRipper {
 
     @Override
     public Document getFirstPage() throws IOException {
-        Response resp;
         Document doc;
 
-        resp = Http.url("https://www.hentai-foundry.com/?enterAgree=1&size=1500")
+        doc = Http.url("https://www.hentai-foundry.com/?enterAgree=1&size=1500")
                 .referrer("https://www.hentai-foundry.com/")
                 .cookies(cookies)
-                .response();
-        // The only cookie that seems to matter in getting around the age wall is the phpsession cookie
-        cookies.putAll(resp.cookies());
+                // The only cookie that seems to matter in getting around the age wall is the phpsession cookie
+                .collectCookiesInto(cookies)
+                .get();
 
-        doc = resp.parse();
         String csrf_token = doc.select("input[name=YII_CSRF_TOKEN]")
                                .first().attr("value");
         if (csrf_token != null) {
@@ -94,24 +91,22 @@ public class HentaifoundryRipper extends AbstractHTMLRipper {
             data.put("filter_order"    , Utils.getConfigString("hentai-foundry.filter_order","date_old"));
             data.put("filter_type"     , "0");
 
-            resp = Http.url("https://www.hentai-foundry.com/site/filters")
+            doc = Http.url("https://www.hentai-foundry.com/site/filters")
                        .referrer("https://www.hentai-foundry.com/")
                        .cookies(cookies)
+                       .collectCookiesInto(cookies)
                        .data(data)
-                       .method(Method.POST)
-                       .response();
-            cookies.putAll(resp.cookies());
+                       .post();
         }
         else {
             logger.info("unable to find csrf_token and set filter");
         }
 
-        resp = Http.url(url)
+        return Http.url(url)
                 .referrer("https://www.hentai-foundry.com/")
                 .cookies(cookies)
-                .response();
-        cookies.putAll(resp.cookies());
-        return resp.parse();
+                .collectCookiesInto(cookies)
+                .get();
     }
 
     @Override

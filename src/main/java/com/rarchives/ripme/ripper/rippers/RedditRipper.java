@@ -141,7 +141,6 @@ public class RedditRipper extends AlbumRipper {
                             children.getJSONObject(j).getJSONObject("data").getBoolean("is_self")
                     ) {
                         URL selfPostURL = new URI(children.getJSONObject(j).getJSONObject("data").getString("url")).toURL();
-                        System.out.println(selfPostURL.toExternalForm());
                         saveText(getJsonArrayFromURL(getJsonURL(selfPostURL)));
                     }
                 } catch (Exception e) {

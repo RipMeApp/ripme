@@ -57,7 +57,7 @@ public class EromeRipper extends AbstractHTMLRipper {
     }
 
     @Override
-    public boolean pageContainsAlbums(URL url) {
+    public boolean pageContainsAlbums() {
         Pattern pa = Pattern.compile("https?://www.erome.com/([a-zA-Z0-9_\\-?=]*)/?");
         Matcher ma = pa.matcher(url.toExternalForm());
         return ma.matches();
@@ -73,7 +73,7 @@ public class EromeRipper extends AbstractHTMLRipper {
     }
 
     @Override
-    public String getAlbumTitle(URL url) throws MalformedURLException, URISyntaxException {
+    public String getAlbumTitle() throws MalformedURLException, URISyntaxException {
         try {
             // Attempt to use album title as GID
             Element titleElement = getCachedFirstPage().select("meta[property=og:title]").first();
@@ -86,7 +86,7 @@ public class EromeRipper extends AbstractHTMLRipper {
         } catch (NullPointerException e) {
             return getHost() + "_" + getGID(url);
         }
-        return super.getAlbumTitle(url);
+        return super.getAlbumTitle();
     }
 
     @Override
