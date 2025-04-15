@@ -1,7 +1,8 @@
 {
-    "latestVersion": "2.1.17-32-8f58eb41",
-    "currentHash": "dc9a91f9b4928ed03611808200deaf027a3910e4fe6c9ceeda7aeed363750758",
+    "latestVersion": "2.1.18-16-1342b621",
+    "currentHash": "204ebb7fb4f822d503f9dd1350a5703eb1f62aaf4a280da37cf3310472170afc",
     "changeList": [
+        "2.1.18-16-1342b621: Implement FapwizRipper; fix ChanRipper video/gif download rate limit issue; new boolean config twitter.exclude_replies; added audio post downloading support for tumblr",
         "2.1.17-32-8f58eb41: Remove lots of rippers for permanently offline sites; add Nude-Gals video support; fixed BatoRipper & FitnakedgirlsRipper; clipboard auto-rip does not break flickr links",
         "2.1.16-4-02372e85: Republishing the build with an updated version number",
         "2.1.14-33-c275bbf6: Java-17 is now minimum version requirement, down from java-21; User Agent updated; fix Xvideos, add FapDungeon, add NsfwAlbum; added rate limiting to Coomer, E621, Redgifs, and RedditRipper's handling of Redgifs; rate limit sleep()s now include jitter; code cleanup; removed several rippers for site that are permanently offline",
