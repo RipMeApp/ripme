@@ -279,8 +279,16 @@ public class ChanRipper extends AbstractHTMLRipper {
         return imageURLs;
     }
 
+    private boolean isVideo(URL url) {
+        String urlString = url.toExternalForm();
+        return urlString.endsWith(".webm") || urlString.endsWith(".mp4");
+    }
+
     @Override
     public void downloadURL(URL url, int index) {
+        if (isVideo(url)) {
+            sleep(5000);
+        }
         addURLToDownload(url, getPrefix(index));
     }
 }
