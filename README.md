@@ -31,24 +31,24 @@ Jump to:
 
 ## Recent development updates
 
-- For a while, the ripmeapp/ripme repo was inactive, but development continued at ripmeapp2/ripme.
+- The current active development repo for RipMe is located at [ripmeapp/ripme](https://github.com/ripmeapp/ripme/).
+- Note: For a while, the ripmeapp/ripme repo was inactive, but development continued at ripmeapp2/ripme.
 - Now, maintainers have been updated and development has been rejoined with ripmeapp/ripme where it will continue.
 - You may find a number of stale issues on ripmeapp/ripme and/or on ripmeapp2/ripme until everything is merged back together and statuses are updated.
-- The current active development repo for RipMe is located at [ripmeapp/ripme](https://github.com/ripmeapp/ripme/).
 
 ## Maintainers
 
 RipMe has been maintained with ♥️ and in our limited free time by the following
-people, roughly in order from most recent primary developer, with current
-activity marked by color of the indicator:
+people, with current expected activity level marked by color of the indicator:
 
-- **[@soloturn](https://github.com/soloturn)** 🟢,
-- **[@cyian-1756](https://github.com/cyian-1756)** 🟥,
-- **[@kevin51jiang](https://github.com/kevin51jiang)** 🟥,
-- **[@MetaPrime](https://github.com/metaprime)** 🟡,
-- and its original creator, **[@4pr0n](https://github.com/4pr0n)** 🟥.
+- **[@MetaPrime](https://github.com/metaprime)** 🟡 (2025–present)
+- **[@soloturn](https://github.com/soloturn)** 🟡 (2021–present)
+- **[@cyian-1756](https://github.com/cyian-1756)** 🟥 (2017–2020)
+- **[@kevin51jiang](https://github.com/kevin51jiang)** 🟥 (2017–2018)
+- **[@MetaPrime](https://github.com/metaprime)** 🟡 (2016–2017)
+- and its original creator, **[@4pr0n](https://github.com/4pr0n)** 🟥 (2014–2016)
 
-If you'd like to become a maintainer, ask an active maintainer to be added to the team.
+If you'd like to become a maintainer, reach out on https://gitter.im/RipMeApp/Lobby and ask an active maintainer to be added to the team.
 
 ## Contact
 
