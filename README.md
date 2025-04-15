@@ -6,10 +6,22 @@
 ![alt Badge Status](https://github.com/ripmeapp/ripme/actions/workflows/gradle.yml/badge.svg)
 [![Coverage Status](https://coveralls.io/repos/github/RipMeApp/ripme/badge.svg?branch=main)](https://coveralls.io/github/RipMeApp/ripme?branch=main)
 
+## About
+
+RipMe is an album downloader (or "ripper") for various websites. This is a cross-platform tool that runs on *your* computer. Works on Windows, Linux, and Mac.
+
+![Screenshot](https://i.imgur.com/UCQNjeg.png)
+
 ## Download
 
 Download `ripme.jar` from the [latest release](https://github.com/ripmeapp/ripme/releases/latest). For information about running the `.jar` file, see
 [the How To Run wiki](https://github.com/ripmeapp/ripme/wiki/How-To-Run-RipMe).
+
+## Minimum Requirements
+
+Requires Java 17 or later to run. RipMe has been tested on and is confirmed working on Windows, Linux, and Mac.
+
+Java 17 is the most modern possible Java version that allows us to support the most platforms. See [thread](https://github.com/RipMeApp/ripme/pull/2057#issuecomment-2571472016).
 
 ## Supported Sites
 
@@ -41,13 +53,6 @@ If you'd like to become a maintainer, ask an active maintainer to be added to th
 ## Contact
 
 Chat with the team and community on [gitter](https://gitter.im/RipMeApp/Lobby) and [reddit.com/r/ripme](https://www.reddit.com/r/ripme/)
-
-# About
-
-RipMe is an album ripper for various websites. It is a cross-platform tool that runs on your computer, and
-requires Java 21 or later to run. RipMe has been tested and is confirmed working on Windows, Linux, and MacOS.
-
-![Screenshot](https://i.imgur.com/UCQNjeg.png)
 
 ## Version Numbers
 
@@ -115,7 +120,9 @@ Request support for more sites by adding a comment to [this Github issue](https:
 If you're a developer, you can add your own Ripper by following the wiki guide:
 [How To Create A Ripper for HTML Websites](https://github.com/ripmeapp/ripme/wiki/How-To-Create-A-Ripper-for-HTML-websites).
 
-# Compiling & Building
+# Maintainers
+
+## Compiling & Building
 
 The project uses [Gradle](https://gradle.org).
 
@@ -174,7 +181,7 @@ manual verification of functionality of a work in progress, run the following:
 The generated JAR (java archive) in build/libs will include all
 dependencies.
 
-# Running Tests
+## Running Tests
 
 Tests can be tagged as beeing slow, or flaky. The gradle build reacts to
 the following combinations of tags:
@@ -202,6 +209,6 @@ become out of date. Start by building and testing a released version
 of RipMe and then ensure that any changes you make do not cause more
 tests to break.
 
-# Maintainers: How to Publish a New Release
+## Maintainers: How to Publish a New Release
 
 See wiki: [How to Make a New Ripme Release](https://github.com/RipMeApp/ripme/wiki/How-to-make-a-new-ripme-release)
