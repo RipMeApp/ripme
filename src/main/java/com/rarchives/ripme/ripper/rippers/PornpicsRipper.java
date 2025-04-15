@@ -1,7 +1,6 @@
 package com.rarchives.ripme.ripper.rippers;
 
 import com.rarchives.ripme.ripper.AbstractHTMLRipper;
-import com.rarchives.ripme.utils.Http;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
@@ -39,12 +38,6 @@ public class PornpicsRipper extends AbstractHTMLRipper {
         }
         throw new MalformedURLException("Expected pornpics URL format: " +
                 "www.pornpics.com/galleries/ID - got " + url + " instead");
-    }
-
-    @Override
-    public Document getFirstPage() throws IOException {
-        // "url" is an instance field of the superclass
-        return Http.url(url).get();
     }
 
     @Override

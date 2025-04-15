@@ -45,12 +45,6 @@ public class FreeComicOnlineRipper extends AbstractHTMLRipper {
     }
 
     @Override
-    public Document getFirstPage() throws IOException {
-        // "url" is an instance field of the superclass
-        return Http.url(url).get();
-    }
-    
-    @Override
     public Document getNextPage(Document doc) throws IOException {
         String nextPage = doc.select("div.select-pagination a").get(1).attr("href");
 	String nextUrl = "";

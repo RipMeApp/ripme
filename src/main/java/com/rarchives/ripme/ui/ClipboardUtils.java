@@ -1,8 +1,8 @@
 package com.rarchives.ripme.ui;
 
-import java.awt.HeadlessException;
 import java.awt.Toolkit;
 import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.IOException;
 import java.util.HashSet;
@@ -10,9 +10,13 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static com.rarchives.ripme.App.logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 class ClipboardUtils {
+
+    private static final Logger logger = LogManager.getLogger(ClipboardUtils.class);
+
     private static AutoripThread autoripThread = new AutoripThread();
 
     public static void setClipboardAutoRip(boolean enabled) {
@@ -30,16 +34,13 @@ class ClipboardUtils {
     }
 
     public static String getClipboardString() {
-        try {
-            return (String) Toolkit
-                    .getDefaultToolkit()
-                    .getSystemClipboard()
-                    .getData(DataFlavor.stringFlavor);
-        } catch (IllegalStateException e) {
-            e.printStackTrace();
-            logger.error("Caught and recovered from IllegalStateException: " + e.getMessage());
-        } catch (HeadlessException | IOException | UnsupportedFlavorException e) {
-            e.printStackTrace();
+        Transferable contents = Toolkit.getDefaultToolkit().getSystemClipboard().getContents(null);
+        if (contents.isDataFlavorSupported(DataFlavor.stringFlavor)) {
+            try {
+                return (String) contents.getTransferData(DataFlavor.stringFlavor);
+            } catch (UnsupportedFlavorException | IOException e) {
+                logger.debug("ignore this one" + e.getMessage());
+            }
         }
         return null;
     }
@@ -47,7 +48,7 @@ class ClipboardUtils {
 
 class AutoripThread extends Thread {
     volatile boolean isRunning = false;
-    private Set<String> rippedURLs = new HashSet<>();
+    private final Set<String> rippedURLs = new HashSet<>();
 
     public void run() {
         isRunning = true;
@@ -56,18 +57,7 @@ class AutoripThread extends Thread {
                 // Check clipboard
                 String clipboard = ClipboardUtils.getClipboardString();
                 if (clipboard != null) {
-                    Pattern p = Pattern.compile(
-                            // TODO: This regex is a monster and doesn't match all links; It needs to be rewritten
-                            "\\b(((ht|f)tp(s?)://|~/|/)|www.)" +
-                            "(\\w+:\\w+@)?(([-\\w]+\\.)+(com|org|net|gov" +
-                            "|mil|biz|info|mobi|name|aero|jobs|museum" +
-                            "|travel|cafe|[a-z]{2}))(:[\\d]{1,5})?" +
-                            "(((/([-\\w~!$+|.,=]|%[a-f\\d]{2})+)+|/)+|\\?|#)?" +
-                            "((\\?([-\\w~!$+|.,*:]|%[a-f\\d{2}])+=?" +
-                            "([-\\w~!$+|.,*:=]|%[a-f\\d]{2})*)" +
-                            "(&(?:[-\\w~!$+|.,*:]|%[a-f\\d{2}])+=?" +
-                            "([-\\w~!$+|.,*:=]|%[a-f\\d]{2})*)*)*" +
-                            "(#([-\\w~!$+|.,*:=]|%[a-f\\d]{2})*)?\\b");
+                    Pattern p = Pattern.compile("^(https?|ftp|file)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]");
                     Matcher m = p.matcher(clipboard);
                     while (m.find()) {
                         String url = m.group();

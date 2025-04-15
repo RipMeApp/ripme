@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
@@ -16,13 +18,15 @@ import com.rarchives.ripme.utils.Http;
 
 public class PicstatioRipper extends AbstractHTMLRipper {
 
+    private static final Logger logger = LogManager.getLogger(PicstatioRipper.class);
+
     public PicstatioRipper(URL url) throws IOException {
         super(url);
     }
 
     private String getFullSizedImageFromURL(String fileName) {
         try {
-            LOGGER.info("https://www.picstatio.com/wallpaper/" + fileName + "/download");
+            logger.info("https://www.picstatio.com/wallpaper/" + fileName + "/download");
             return Http.url("https://www.picstatio.com/wallpaper/" + fileName + "/download").get().select("p.text-center > span > a").attr("href");
         } catch (IOException e) {
             e.printStackTrace();
@@ -52,12 +56,6 @@ public class PicstatioRipper extends AbstractHTMLRipper {
     }
 
     @Override
-    public Document getFirstPage() throws IOException {
-        // "url" is an instance field of the superclass
-        return Http.url(url).get();
-    }
-
-    @Override
     public Document getNextPage(Document doc) throws IOException {
         if (doc.select("a.next_page") != null) {
             return Http.url("https://www.picstatio.com" + doc.select("a.next_page").attr("href")).get();
@@ -70,7 +68,7 @@ public class PicstatioRipper extends AbstractHTMLRipper {
         List<String> result = new ArrayList<>();
         for (Element e : doc.select("img.img")) {
             String imageName = e.parent().attr("href");
-            LOGGER.info(getFullSizedImageFromURL(imageName.split("/")[2]));
+            logger.info(getFullSizedImageFromURL(imageName.split("/")[2]));
             result.add(getFullSizedImageFromURL(imageName.split("/")[2]));
         }
         return result;

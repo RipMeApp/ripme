@@ -12,7 +12,6 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
 import com.rarchives.ripme.ripper.AbstractHTMLRipper;
-import com.rarchives.ripme.utils.Http;
 
 public class ImgboxRipper extends AbstractHTMLRipper {
 
@@ -40,10 +39,6 @@ public class ImgboxRipper extends AbstractHTMLRipper {
                         "imgbox.com/g/albumid - got " + url + "instead");
     }
 
-    @Override
-    public Document getFirstPage() throws IOException {
-        return Http.url(url).get();
-    }
     @Override
     public List<String> getURLsFromPage(Document doc) {
         List<String> imageURLs = new ArrayList<>();

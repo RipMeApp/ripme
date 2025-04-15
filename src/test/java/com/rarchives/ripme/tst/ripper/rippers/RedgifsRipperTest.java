@@ -1,60 +1,66 @@
 package com.rarchives.ripme.tst.ripper.rippers;
 
+import com.rarchives.ripme.ripper.rippers.RedditRipper;
 import com.rarchives.ripme.ripper.rippers.RedgifsRipper;
-import org.jsoup.nodes.Document;
 import org.junit.jupiter.api.*;
 
 import java.io.IOException;
-import java.net.URL;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 public class RedgifsRipperTest extends RippersTest {
 
     /**
      * Rips correctly formatted URL directly from Redgifs
-     * @throws IOException
      */
     @Test
-    @Disabled("test or ripper broken")
-    public void testRedgifsGoodURL() throws IOException{
-        RedgifsRipper ripper = new RedgifsRipper(new URL("https://www.redgifs.com/watch/talkativewarpeddragon-petite"));
+    public void testRedgifsGoodURL() throws IOException, URISyntaxException {
+        RedgifsRipper ripper = new RedgifsRipper(new URI("https://www.redgifs.com/watch/ashamedselfishcoypu").toURL());
         testRipper(ripper);
     }
 
     /**
      * Rips gifdeliverynetwork URL's by redirecting them to proper redgifs url
-     * @throws IOException
      */
     @Test
-    @Tag("flaky")
-    public void testRedgifsBadRL() throws IOException{
-        RedgifsRipper ripper = new RedgifsRipper(new URL("https://www.gifdeliverynetwork.com/foolishelasticchimpanzee"));
+    public void testRedgifsBadRL() throws IOException, URISyntaxException {
+        RedgifsRipper ripper = new RedgifsRipper(new URI("https://www.gifdeliverynetwork.com/consideratetrustworthypigeon").toURL());
         testRipper(ripper);
     }
 
     /**
-     * Rips a Redifs profile
-     * @throws IOException
+     * Rips a Redgifs profile
      */
     @Test
-    @Tag("flaky")
-    public void testRedgifsProfile() throws IOException {
-        RedgifsRipper ripper  = new RedgifsRipper(new URL("https://redgifs.com/users/margo_monty"));
+    public void testRedgifsProfile() throws IOException, URISyntaxException {
+        RedgifsRipper ripper  = new RedgifsRipper(new URI("https://www.redgifs.com/users/ra-kunv2").toURL());
         testRipper(ripper);
     }
 
     /**
-     * Rips a Redifs category/search
+     * Rips a Redgif search
      * @throws IOException
      */
     @Test
-    @Disabled("test or ripper broken")
-    public void testRedgifsSearch() throws IOException {
-        RedgifsRipper ripper  = new RedgifsRipper(new URL("https://redgifs.com/gifs/browse/little-caprice"));
-        Document doc = ripper.getFirstPage();
+    public void testRedgifsSearch() throws IOException, URISyntaxException {
+        RedgifsRipper ripper  = new RedgifsRipper(new URI("https://www.redgifs.com/search?query=take+a+shot+every+time").toURL());
+        testRipper(ripper);
+    }
 
-        doc = ripper.getNextPage(doc);
-        Assertions.assertTrue("https://napi.redgifs.com/v1/gfycats/search?search_text=little%20caprice&count=150&start=150".equalsIgnoreCase(doc.location()));
-        doc = ripper.getNextPage(doc);
-        Assertions.assertTrue("https://napi.redgifs.com/v1/gfycats/search?search_text=little%20caprice&count=150&start=300".equalsIgnoreCase(doc.location()));
+    /**
+     * Rips Redgif tags
+     * @throws IOException
+     */
+    @Test
+    public void testRedgifsTags() throws IOException, URISyntaxException {
+        RedgifsRipper ripper  = new RedgifsRipper(new URI("https://www.redgifs.com/gifs/animation,sfw,funny?order=best&tab=gifs").toURL());
+        testRipper(ripper);
+    }
+
+    @Test
+    @Tag("flaky")
+    public void testRedditRedgifs() throws IOException, URISyntaxException {
+        RedditRipper ripper = new RedditRipper(new URI("https://www.reddit.com/r/nsfwhardcore/comments/ouz5bw/me_cumming_on_his_face/").toURL());
+        testRipper(ripper);
     }
 }

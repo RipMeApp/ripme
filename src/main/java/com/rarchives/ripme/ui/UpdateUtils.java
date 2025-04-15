@@ -1,48 +1,60 @@
 package com.rarchives.ripme.ui;
 
-import java.awt.Dimension;
-import java.io.*;
-import java.net.URISyntaxException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-
-import javax.swing.JEditorPane;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JScrollPane;
-
-import org.apache.log4j.Logger;
+import com.rarchives.ripme.utils.Utils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.jsoup.Connection.Response;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
-import com.rarchives.ripme.utils.Utils;
+import javax.swing.*;
+import java.awt.*;
+import java.io.BufferedWriter;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 public class UpdateUtils {
 
-    private static final Logger logger = Logger.getLogger(UpdateUtils.class);
-    private static final String DEFAULT_VERSION = "1.7.95";
+    private static final Logger logger = LogManager.getLogger(UpdateUtils.class);
+    // do not update the default version without adjusting the unit test. the real version comes from METAINF.MF
+    private static final String DEFAULT_VERSION = "1.7.94-10-b6345398";
     private static final String REPO_NAME = "ripmeapp/ripme";
-    private static final String updateJsonURL = "https://raw.githubusercontent.com/" + REPO_NAME + "/master/ripme.json";
-    private static String mainFileName;
+    private static final String updateJsonURL = "https://raw.githubusercontent.com/" + REPO_NAME + "/main/ripme.json";
+    private static final Path newFile = Paths.get("ripme.jar.new");
+    private static Path mainFile;
+    private static JSONObject ripmeJson;
 
     static {
         try {
-            mainFileName = new File(UpdateUtils.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getAbsolutePath();
+            mainFile = Paths.get(UpdateUtils.class.getProtectionDomain().getCodeSource().getLocation().toURI());
         } catch (URISyntaxException | IllegalArgumentException e) {
-            mainFileName = "ripme.jar";
+            mainFile = Paths.get("ripme.jar");
             logger.error("Unable to get path of jar");
             e.printStackTrace();
         }
     }
 
-    private static final String updateFileName = "ripme.jar.update";
-    private static JSONObject ripmeJson;
-
     private static String getUpdateJarURL(String latestVersion) {
-        return "https://github.com/" + REPO_NAME + "/releases/download/" + latestVersion + "/ripme.jar";
+        // this works with a tag created in github, and thus download URLs like:
+        // https://github.com/ripmeapp2/ripme/releases/download/2.0.4/ripme-2.0.4-12-487e38cc.jar
+        return "https://github.com/"
+                + REPO_NAME
+                + "/releases/download/"
+                + latestVersion
+                + "/ripme-"
+                + latestVersion + ".jar";
     }
 
     public static String getThisJarVersion() {
@@ -70,7 +82,7 @@ public class UpdateUtils {
     public static void updateProgramCLI() {
         logger.info("Checking for update...");
 
-        Document doc = null;
+        Document doc;
         try {
             logger.debug("Retrieving " + UpdateUtils.updateJsonURL);
             doc = Jsoup.connect(UpdateUtils.updateJsonURL).timeout(10 * 1000).ignoreContentType(true).get();
@@ -93,25 +105,22 @@ public class UpdateUtils {
         String latestVersion = ripmeJson.getString("latestVersion");
         if (UpdateUtils.isNewerVersion(latestVersion)) {
             logger.info("Found newer version: " + latestVersion);
-            logger.info("Downloading new version...");
-            logger.info("New version found, downloading...");
+            logger.info("Downloading" +getUpdateJarURL(latestVersion) + " ...");
             try {
                 UpdateUtils.downloadJarAndLaunch(getUpdateJarURL(latestVersion), false);
             } catch (IOException e) {
                 logger.error("Error while updating: ", e);
             }
         } else {
-            logger.debug("This version (" + UpdateUtils.getThisJarVersion()
-                    + ") is the same or newer than the website's version (" + latestVersion + ")");
-            logger.info("v" + UpdateUtils.getThisJarVersion() + " is the latest version");
-            logger.debug("Running latest version: " + UpdateUtils.getThisJarVersion());
+            logger.info("Running version (" + UpdateUtils.getThisJarVersion()
+                    + ") is not older than release (" + latestVersion + ")");
         }
     }
 
     public static void updateProgramGUI(JLabel configUpdateLabel) {
         configUpdateLabel.setText("Checking for update...");
 
-        Document doc = null;
+        Document doc;
         try {
             logger.debug("Retrieving " + UpdateUtils.updateJsonURL);
             doc = Jsoup.connect(UpdateUtils.updateJsonURL).timeout(10 * 1000).ignoreContentType(true).get();
@@ -147,7 +156,7 @@ public class UpdateUtils {
                 return;
             }
             configUpdateLabel.setText("<html><font color=\"green\">Downloading new version...</font></html>");
-            logger.info("New version found, downloading...");
+            logger.info("New version found, downloading " + getUpdateJarURL(latestVersion));
             try {
                 UpdateUtils.downloadJarAndLaunch(getUpdateJarURL(latestVersion), true);
             } catch (IOException e) {
@@ -157,15 +166,14 @@ public class UpdateUtils {
                 logger.error("Error while updating: ", e);
             }
         } else {
-            logger.debug("This version (" + UpdateUtils.getThisJarVersion()
-                    + ") is the same or newer than the website's version (" + latestVersion + ")");
+            logger.info("Running version (" + UpdateUtils.getThisJarVersion()
+                    + ") is not older than release (" + latestVersion + ")");
             configUpdateLabel.setText("<html><font color=\"green\">v" + UpdateUtils.getThisJarVersion()
                     + " is the latest version</font></html>");
-            logger.debug("Running latest version: " + UpdateUtils.getThisJarVersion());
         }
     }
 
-    private static boolean isNewerVersion(String latestVersion) {
+    static boolean isNewerVersion(String latestVersion) {
         // If we're testing the update utils we want the program to always try to update
         if (Utils.getConfigBoolean("testing.always_try_to_update", false)) {
             logger.info("isNewerVersion is returning true because the key \"testing.always_try_to_update\" is true");
@@ -180,7 +188,7 @@ public class UpdateUtils {
 
         for (int i = 0; i < oldVersions.length; i++) {
             if (newVersions[i] > oldVersions[i]) {
-                logger.debug("oldVersion " + getThisJarVersion() + " < latestVersion" + latestVersion);
+                logger.debug("oldVersion " + getThisJarVersion() + " < latestVersion " + latestVersion);
                 return true;
             } else if (newVersions[i] < oldVersions[i]) {
                 logger.debug("oldVersion " + getThisJarVersion() + " > latestVersion " + latestVersion);
@@ -194,26 +202,34 @@ public class UpdateUtils {
     }
 
     private static int[] versionStringToInt(String version) {
-        String strippedVersion = version.split("-")[0];
-        String[] strVersions = strippedVersion.split("\\.");
-        int[] intVersions = new int[strVersions.length];
-        for (int i = 0; i < strVersions.length; i++) {
-            intVersions[i] = Integer.parseInt(strVersions[i]);
+        // a version string looks like 1.7.94, 1.7.94-10-something
+        // 10 is the number of commits since the 1.7.94 tag, so newer
+        // the int array returned then contains e.g. 1.7.94.0 or 1.7.94.10
+        String[] strVersions = version.split("[.-]");
+        // not consider more than 4 components of version, loop only the real number
+        // of components or maximum 4 components of the version string
+        int[] intVersions = new int[4];
+        for (int i = 0; i < Math.min(4, strVersions.length); i++) {
+            // if it is an integer, set it, otherwise leave default 0
+            if (strVersions[i].matches("\\d+")) {
+                intVersions[i] = Integer.parseInt(strVersions[i]);
+            }
         }
         return intVersions;
     }
 
     // Code take from https://stackoverflow.com/a/30925550
-    public static String createSha256(File file) {
+    public static String createSha256(Path file) {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            InputStream fis = new FileInputStream(file);
-            int n = 0;
-            byte[] buffer = new byte[8192];
-            while (n != -1) {
-                n = fis.read(buffer);
-                if (n > 0) {
-                    digest.update(buffer, 0, n);
+            try (InputStream fis = Files.newInputStream(file)) {
+                int n = 0;
+                byte[] buffer = new byte[8192];
+                while (n != -1) {
+                    n = fis.read(buffer);
+                    if (n > 0) {
+                        digest.update(buffer, 0, n);
+                    }
                 }
             }
             byte[] hash = digest.digest();
@@ -225,11 +241,9 @@ public class UpdateUtils {
             // As patch.py writes the hash in lowercase this must return the has in
             // lowercase
             return sb.toString().toLowerCase();
-        } catch (NoSuchAlgorithmException e) {
-            logger.error("Got error getting file hash " + e.getMessage());
         } catch (FileNotFoundException e) {
-            logger.error("Could not find file: " + file.getName());
-        } catch (IOException e) {
+            logger.error("Could not find file: " + file);
+        } catch (NoSuchAlgorithmException | IOException e) {
             logger.error("Got error getting file hash " + e.getMessage());
         }
         return null;
@@ -241,13 +255,13 @@ public class UpdateUtils {
                 .timeout(Utils.getConfigInteger("download.timeout", 60 * 1000)).maxBodySize(1024 * 1024 * 100)
                 .execute();
 
-        try (FileOutputStream out = new FileOutputStream(updateFileName)) {
+        try (OutputStream out = Files.newOutputStream(newFile)) {
             out.write(response.bodyAsBytes());
         }
         // Only check the hash if the user hasn't disabled hash checking
         if (Utils.getConfigBoolean("security.check_update_hash", true)) {
-            String updateHash = createSha256(new File(updateFileName));
-            logger.info("Download of new version complete; saved to " + updateFileName);
+            String updateHash = createSha256(newFile);
+            logger.info("Download of new version complete; saved to " + newFile);
             logger.info("Checking hash of update");
 
             if (!ripmeJson.getString("currentHash").equals(updateHash)) {
@@ -262,19 +276,17 @@ public class UpdateUtils {
 
         if (System.getProperty("os.name").toLowerCase().contains("win")) {
             // Windows
-            final String batchFile = "update_ripme.bat";
-            final String batchPath = new File(batchFile).getAbsolutePath();
-            String script = "@echo off\r\n" + "timeout 1\r\n" 
-                    + "copy \"" + updateFileName + "\" \"" + mainFileName + "\"\r\n"
-                    + "del \"" + updateFileName + "\"\r\n";
-            
-            if (shouldLaunch) 
-                script += "\"" + mainFileName + "\"\r\n";
-            script += "del \"" + batchPath + "\"\r\n";
-            
-            final String[] batchExec = new String[] { batchPath };
+            final Path batchFile = Paths.get("update_ripme.bat");
+            String script = "@echo off\r\n" + "timeout 1\r\n"
+                    + "copy \"" + newFile + "\" \"" + mainFile + "\"\r\n"
+                    + "del \"" + newFile + "\"\r\n";
+
+            if (shouldLaunch)
+                script += "\"" + mainFile + "\"\r\n";
+            script += "del \"" + batchFile + "\"\r\n";
+
             // Create updater script
-            try (BufferedWriter bw = new BufferedWriter(new FileWriter(batchFile))) {
+            try (BufferedWriter bw = Files.newBufferedWriter(batchFile)) {
                 bw.write(script);
                 bw.flush();
             }
@@ -284,10 +296,9 @@ public class UpdateUtils {
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {
                 try {
                     logger.info("Executing: " + batchFile);
-                    Runtime.getRuntime().exec(batchExec);
+                    ProcessBuilder processBuilder = new ProcessBuilder(String.valueOf(batchFile));
+                    processBuilder.start();
                 } catch (IOException e) {
-                    // TODO implement proper stack trace handling this is really just intented as a
-                    // placeholder until you implement proper error handling
                     e.printStackTrace();
                 }
             }));
@@ -298,13 +309,11 @@ public class UpdateUtils {
             // Modifying file and launching it: *nix distributions don't have any issues
             // with modifying/deleting files
             // while they are being run
-            File mainFile = new File(mainFileName);
-            String mainFilePath = mainFile.getAbsolutePath();
-            mainFile.delete();
-            new File(updateFileName).renameTo(new File(mainFilePath));
+            Files.move(newFile, mainFile, REPLACE_EXISTING);
             if (shouldLaunch) {
                 // No need to do it during shutdown: the file used will indeed be the new one
-                Runtime.getRuntime().exec("java -jar " + mainFileName);
+                logger.info("Executing: " + mainFile);
+                Runtime.getRuntime().exec(new String[]{"java", "-jar", mainFile.toString()});
             }
             logger.info("Update installed, newer version should be executed upon relaunch");
             System.exit(0);

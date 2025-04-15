@@ -6,36 +6,38 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 
 public class HqpornerRipperTest extends RippersTest {
 
-    public void testRip() throws IOException {
+    public void testRip() throws IOException, URISyntaxException {
         if (Utils.getConfigBoolean("test.run_flaky_tests", false)) {
             HqpornerRipper ripper = new HqpornerRipper(
-                    new URL("https://hqporner.com/hdporn/84636-pool_lesson_with_a_cheating_husband.html"));
+                    new URI("https://hqporner.com/hdporn/84636-pool_lesson_with_a_cheating_husband.html").toURL());
             testRipper(ripper);
         }
     }
 
-    public void testGetGID() throws IOException {
-        URL poolURL = new URL("https://hqporner.com/hdporn/84636-pool_lesson_with_a_cheating_husband.html");
+    public void testGetGID() throws IOException, URISyntaxException {
+        URL poolURL = new URI("https://hqporner.com/hdporn/84636-pool_lesson_with_a_cheating_husband.html").toURL();
         HqpornerRipper ripper = new HqpornerRipper(poolURL);
         Assertions.assertEquals("84636-pool_lesson_with_a_cheating_husband", ripper.getGID(poolURL));
     }
     @Test
-    public void testGetURLsFromPage() throws IOException {
-        URL actressUrl = new URL("https://hqporner.com/actress/kali-roses");
+    public void testGetURLsFromPage() throws IOException, URISyntaxException {
+        URL actressUrl = new URI("https://hqporner.com/actress/kali-roses").toURL();
         HqpornerRipper ripper = new HqpornerRipper(actressUrl);
         assert (ripper.getURLsFromPage(ripper.getFirstPage()).size() >= 2);
     }
     @Test
-    public void testGetNextPage() throws IOException {
-        URL multiPageUrl = new URL("https://hqporner.com/category/tattooed");
+    public void testGetNextPage() throws IOException, URISyntaxException {
+        URL multiPageUrl = new URI("https://hqporner.com/category/tattooed").toURL();
         HqpornerRipper multiPageRipper = new HqpornerRipper(multiPageUrl);
         assert (multiPageRipper.getNextPage(multiPageRipper.getFirstPage()) != null);
 
-        URL singlePageUrl = new URL("https://hqporner.com/actress/amy-reid");
+        URL singlePageUrl = new URI("https://hqporner.com/actress/amy-reid").toURL();
         HqpornerRipper ripper = new HqpornerRipper(singlePageUrl);
         try {
             ripper.getNextPage(ripper.getFirstPage());
@@ -44,26 +46,26 @@ public class HqpornerRipperTest extends RippersTest {
         }
     }
     @Test
-    public void testMyDaddyVideoHost() throws IOException {
+    public void testMyDaddyVideoHost() throws IOException, URISyntaxException {
         if (Utils.getConfigBoolean("test.run_flaky_tests", false)) {
-            URL myDaddyUrl = new URL("https://hqporner.com/hdporn/84636-pool_lesson_with_a_cheating_husband.html");
+            URL myDaddyUrl = new URI("https://hqporner.com/hdporn/84636-pool_lesson_with_a_cheating_husband.html").toURL();
             HqpornerRipper myDaddyRipper = new HqpornerRipper(myDaddyUrl);
             testRipper(myDaddyRipper);
         }
     }
     @Test
-    public void testFlyFlvVideoHost() throws IOException {
+    public void testFlyFlvVideoHost() throws IOException, URISyntaxException {
         if (Utils.getConfigBoolean("test.run_flaky_tests", false)) {
-            URL flyFlvUrl = new URL(
-                    "https://hqporner.com/hdporn/69862-bangbros_-_amy_reid_taking_off_a_tight_sexy_swimsuit.html");
+            URL flyFlvUrl = new URI(
+                    "https://hqporner.com/hdporn/69862-bangbros_-_amy_reid_taking_off_a_tight_sexy_swimsuit.html").toURL();
             HqpornerRipper flyFlvRipper = new HqpornerRipper(flyFlvUrl);
             testRipper(flyFlvRipper);
         }
     }
     @Test
-    public void testUnknownVideoHost() throws IOException {
+    public void testUnknownVideoHost() throws IOException, URISyntaxException {
         if (Utils.getConfigBoolean("test.run_flaky_tests", false)) {
-            URL unknownHostUrl = new URL("https://hqporner.com/hdporn/79528-Kayden_Kross_-_Serious_Masturbation.html"); // howq.cc
+            URL unknownHostUrl = new URI("https://hqporner.com/hdporn/79528-Kayden_Kross_-_Serious_Masturbation.html").toURL(); // howq.cc
             HqpornerRipper unknownHostRipper = new HqpornerRipper(unknownHostUrl);
             testRipper(unknownHostRipper);
         }

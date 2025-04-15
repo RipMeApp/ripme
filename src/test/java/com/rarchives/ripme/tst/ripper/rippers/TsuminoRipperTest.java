@@ -1,7 +1,8 @@
 package com.rarchives.ripme.tst.ripper.rippers;
 
 import java.io.IOException;
-import java.net.URL;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.List;
 
 import com.rarchives.ripme.ripper.rippers.TsuminoRipper;
@@ -15,14 +16,14 @@ import org.junit.jupiter.api.Test;
 public class TsuminoRipperTest extends RippersTest {
     @Test
     @Disabled("Broken ripper")
-    public void testTsuminoRipper() throws IOException {
-        TsuminoRipper ripper = new TsuminoRipper(new URL("http://www.tsumino.com/Book/Info/43528/sore-wa-kurokute-suketeita-what-s-tight-and-black-and-sheer-all-over-"));
+    public void testTsuminoRipper() throws IOException, URISyntaxException {
+        TsuminoRipper ripper = new TsuminoRipper(new URI("http://www.tsumino.com/Book/Info/43528/sore-wa-kurokute-suketeita-what-s-tight-and-black-and-sheer-all-over-").toURL());
         testRipper(ripper);
     }
     @Test
     @Disabled("Broken ripper")
-    public void testTagBlackList() throws IOException {
-        TsuminoRipper ripper = new TsuminoRipper(new URL("http://www.tsumino.com/Book/Info/43528/sore-wa-kurokute-suketeita-what-s-tight-and-black-and-sheer-all-over-"));
+    public void testTagBlackList() throws IOException, URISyntaxException {
+        TsuminoRipper ripper = new TsuminoRipper(new URI("http://www.tsumino.com/Book/Info/43528/sore-wa-kurokute-suketeita-what-s-tight-and-black-and-sheer-all-over-").toURL());
         Document doc = ripper.getFirstPage();
         List<String> tagsOnPage = ripper.getTags(doc);
         String[] tags1 = {"test", "one", "Smell"};

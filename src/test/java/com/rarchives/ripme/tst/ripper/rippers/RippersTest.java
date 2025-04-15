@@ -6,9 +6,12 @@ import java.util.List;
 
 import com.rarchives.ripme.ripper.rippers.ChanRipper;
 
-import org.apache.log4j.ConsoleAppender;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.config.Configuration;
+import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.junit.jupiter.api.Assertions;
 
 import com.rarchives.ripme.ripper.AbstractRipper;
@@ -19,12 +22,16 @@ import com.rarchives.ripme.utils.Utils;
  */
 public class RippersTest {
 
-    private final Logger logger = Logger.getLogger(RippersTest.class);
+    private final Logger logger = LogManager.getLogger(RippersTest.class);
 
     void testRipper(AbstractRipper ripper) {
         try {
             // Turn on Debug logging
-            ((ConsoleAppender) Logger.getRootLogger().getAppender("stdout")).setThreshold(Level.DEBUG);
+            LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
+            Configuration config = ctx.getConfiguration();
+            LoggerConfig loggerConfig = config.getLoggerConfig(LogManager.ROOT_LOGGER_NAME);
+            loggerConfig.setLevel(Level.DEBUG);
+            ctx.updateLoggers();  // This causes all Loggers to refetch information from their LoggerConfig.
 
             // Decrease timeout
             Utils.setConfigInteger("page.timeout", 20 * 1000);
@@ -32,6 +39,13 @@ public class RippersTest {
             ripper.setup();
             ripper.markAsTest();
             ripper.rip();
+            if (logger.isTraceEnabled()) {
+                logger.trace("working dir: " + ripper.getWorkingDir());
+                logger.trace("list files: " + ripper.getWorkingDir().listFiles().length);
+                for (int i = 0; i < ripper.getWorkingDir().listFiles().length; i++) {
+                    logger.trace("   " + ripper.getWorkingDir().listFiles()[i]);
+                }
+            }
             Assertions.assertTrue(ripper.getWorkingDir().listFiles().length >= 1,
                     "Failed to download a single file from " + ripper.getURL());
         } catch (IOException e) {
@@ -56,9 +70,6 @@ public class RippersTest {
     // that we found links to it
     void testChanRipper(ChanRipper ripper) {
         try {
-            // Turn on Debug logging
-            ((ConsoleAppender) Logger.getRootLogger().getAppender("stdout")).setThreshold(Level.DEBUG);
-
             // Decrease timeout
             Utils.setConfigInteger("page.timeout", 20 * 1000);
 

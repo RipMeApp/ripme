@@ -41,7 +41,7 @@ Please include enough information that we can easily confirm the problem and ver
 
 ## Rippers / Website Support
 
-Request support for more sites by adding a comment to [this Github issue](https://github.com/4pr0n/ripme/issues/502).
+Request support for more sites by adding a comment to [this Github issue](https://github.com/RipMeApp/ripme/issues/2068).
 
 If you're a developer, you can add your own Ripper by following the wiki guide
 [How To Create A Ripper for HTML Websites](https://github.com/ripmeapp/ripme/wiki/How-To-Create-A-Ripper-for-HTML-websites).
@@ -55,13 +55,13 @@ Before you open your pull request, please consider the following:
   * Please do `git pull` on the `master` branch before starting work on your bug fix.
   * This helps avoid merge conflicts.
 * Please ensure your change includes only the minimum changes needed to fix a single issue. These are easiest to review and tend to get merged more quickly. If the scope of your PR is wider than a single issue, you may be asked to reopen your PR as multiple separate PRs.
-* Are you fixing an issue from one of the issue trackers ([RipMeApp](https://github.com/RipMeApp/ripme/issues) or [4pr0n](https://github.com/4pr0n/ripme/issues))? If so, please ensure that you reference the issue you are fixing in your commit message so that it will be [automatically closed](https://help.github.com/articles/closing-issues-via-commit-messages/).
+* Are you fixing an issue from one of the issue trackers ([RipMeApp](https://github.com/RipMeApp/ripme/issues) or ([RipMeApp2](https://github.com/RipMeApp2/ripme/issues) or [4pr0n](https://github.com/4pr0n/ripme/issues))? If so, please ensure that you reference the issue you are fixing in your commit message so that it will be [automatically closed](https://help.github.com/articles/closing-issues-via-commit-messages/).
 * Please ensure you verify that you did not break any functionality outside of your change or feature
-  * The CI might be broken, so please ensure that `mvn test` shows no new errors since before your change.
+  * The CI might be broken, so please ensure that `gradlew test` shows no new errors since before your change.
   * Keep in mind each Ripper likely supports multiple URL formats for each website, which have different content layouts (users, galleries, etc.)
   * We deal with live websites, so things might break while we aren't looking. Websites can change and content can be deleted at any time. Our code and/or tests may need to be rewritten to fix issues.
 * Please consider adding a test to check for regressions to the Ripper you added or the bug you fixed.
-  * See e.g. src/test/java/com/rarchives/ripme/tst/ripper/rippers/ImgurRipperTest.java
+  * See e.g. `src/test/java/com/rarchives/ripme/tst/ripper/rippers/ImgurRipperTest.java`
 
 
 ## Style
@@ -91,3 +91,4 @@ Some recommendations:
 * Do not use `lower_snake_case`
 * Place spaces around binary operators: `1 + 2` not `1+2`
 * Do not place spaces inside of parens: `(a + b)` not `( a + b )`
+* Use a function like VS Code's "Organize Imports" to ensure imports are committed to the repo in a consistent order no matter who writes the code.

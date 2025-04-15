@@ -10,7 +10,8 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.rarchives.ripme.utils.Utils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jsoup.Connection.Method;
 import org.jsoup.Connection.Response;
 import org.jsoup.nodes.Document;
@@ -19,8 +20,11 @@ import org.jsoup.select.Elements;
 
 import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 import com.rarchives.ripme.utils.Http;
+import com.rarchives.ripme.utils.Utils;
 
 public class HentaifoundryRipper extends AbstractHTMLRipper {
+
+    private static final Logger logger = LogManager.getLogger(HentaifoundryRipper.class);
 
     private Map<String,String> cookies = new HashMap<>();
     public HentaifoundryRipper(URL url) throws IOException {
@@ -99,7 +103,7 @@ public class HentaifoundryRipper extends AbstractHTMLRipper {
             cookies.putAll(resp.cookies());
         }
         else {
-            LOGGER.info("unable to find csrf_token and set filter");
+            logger.info("unable to find csrf_token and set filter");
         }
 
         resp = Http.url(url)
@@ -136,7 +140,7 @@ public class HentaifoundryRipper extends AbstractHTMLRipper {
         // this if is for ripping pdf stories
         if (url.toExternalForm().contains("/stories/")) {
             for (Element pdflink : doc.select("a.pdfLink")) {
-                LOGGER.info("grabbing " + "https://www.hentai-foundry.com" + pdflink.attr("href"));
+                logger.info("grabbing " + "https://www.hentai-foundry.com" + pdflink.attr("href"));
                 imageURLs.add("https://www.hentai-foundry.com" + pdflink.attr("href"));
             }
             return imageURLs;
@@ -148,19 +152,19 @@ public class HentaifoundryRipper extends AbstractHTMLRipper {
             }
             Matcher imgMatcher = imgRegex.matcher(thumb.attr("href"));
             if (!imgMatcher.matches()) {
-                LOGGER.info("Couldn't find user & image ID in " + thumb.attr("href"));
+                logger.info("Couldn't find user & image ID in " + thumb.attr("href"));
                 continue;
             }
             Document imagePage;
             try {
 
-                LOGGER.info("grabbing " + "https://www.hentai-foundry.com" + thumb.attr("href"));
+                logger.info("grabbing " + "https://www.hentai-foundry.com" + thumb.attr("href"));
                 imagePage = Http.url("https://www.hentai-foundry.com" + thumb.attr("href")).cookies(cookies).get();
             }
 
             catch (IOException e) {
-                LOGGER.debug(e.getMessage());
-                LOGGER.debug("Warning: imagePage is null!");
+                logger.debug(e.getMessage());
+                logger.debug("Warning: imagePage is null!");
                 imagePage = null;
             }
             // This is here for when the image is resized to a thumbnail because ripme doesn't report a screensize

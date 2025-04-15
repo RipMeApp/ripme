@@ -12,7 +12,6 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
 import com.rarchives.ripme.ripper.AbstractHTMLRipper;
-import com.rarchives.ripme.utils.Http;
 
 public class YuvutuRipper extends AbstractHTMLRipper {
     
@@ -50,10 +49,6 @@ public class YuvutuRipper extends AbstractHTMLRipper {
                         "yuvutu.com/modules.php?name=YuGallery&action=view&set_id=albumid - got " + url + "instead");
     }
 
-    @Override
-    public Document getFirstPage() throws IOException {
-        return Http.url(url).get();
-    }
     @Override
     public List<String> getURLsFromPage(Document doc) {
         List<String> imageURLs = new ArrayList<>();

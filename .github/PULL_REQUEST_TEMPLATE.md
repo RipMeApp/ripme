@@ -16,7 +16,7 @@ Please add details about your change here.
 # Testing
 
 Required verification:
-* [ ] I've verified that there are no regressions in `mvn test` (there are no new failures or errors).
+* [ ] I've verified that there are no regressions in `gradlew test` (there are no new failures or errors).
 * [ ] I've verified that this change works as intended.
   * [ ] Downloads all relevant content.
   * [ ] Downloads content from multiple pages (as necessary or appropriate).

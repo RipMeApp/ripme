@@ -2,10 +2,14 @@ package com.rarchives.ripme.ripper.rippers.video;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
 
@@ -13,6 +17,8 @@ import com.rarchives.ripme.ripper.VideoRipper;
 import com.rarchives.ripme.utils.Http;
 
 public class ViddmeRipper extends VideoRipper {
+
+    private static final Logger logger = LogManager.getLogger(ViddmeRipper.class);
 
     private static final String HOST = "vid";
 
@@ -52,8 +58,8 @@ public class ViddmeRipper extends VideoRipper {
     }
 
     @Override
-    public void rip() throws IOException {
-        LOGGER.info("    Retrieving " + this.url.toExternalForm());
+    public void rip() throws IOException, URISyntaxException {
+        logger.info("    Retrieving " + this.url.toExternalForm());
         Document doc = Http.url(this.url).get();
         Elements videos = doc.select("meta[name=twitter:player:stream]");
         if (videos.isEmpty()) {
@@ -61,7 +67,7 @@ public class ViddmeRipper extends VideoRipper {
         }
         String vidUrl = videos.first().attr("content");
         vidUrl = vidUrl.replaceAll("&amp;", "&");
-        addURLToDownload(new URL(vidUrl), HOST + "_" + getGID(this.url));
+        addURLToDownload(new URI(vidUrl).toURL(), HOST + "_" + getGID(this.url));
         waitForThreads();
     }
 }

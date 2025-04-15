@@ -1,25 +1,26 @@
 package com.rarchives.ripme.tst.ripper.rippers;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.List;
 
 import com.rarchives.ripme.ripper.rippers.EHentaiRipper;
 import com.rarchives.ripme.utils.RipUtils;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 
 public class EhentaiRipperTest extends RippersTest {
     @Test
-    public void testEHentaiAlbum() throws IOException {
-        EHentaiRipper ripper = new EHentaiRipper(new URL("https://e-hentai.org/g/1144492/e823bdf9a5/"));
+    public void testEHentaiAlbum() throws IOException, URISyntaxException {
+        EHentaiRipper ripper = new EHentaiRipper(new URI("https://e-hentai.org/g/1144492/e823bdf9a5/").toURL());
         testRipper(ripper);
     }
 
     // Test the tag black listing
     @Test
-    public void testTagBlackList()  throws IOException {
-        URL url = new URL("https://e-hentai.org/g/1228503/1a2f455f96/");
+    public void testTagBlackList() throws IOException, URISyntaxException {
+        URL url = new URI("https://e-hentai.org/g/1228503/1a2f455f96/").toURL();
         EHentaiRipper ripper = new EHentaiRipper(url);
         List<String> tagsOnPage = ripper.getTags(ripper.getFirstPage());
         // Test multiple blacklisted tags

@@ -2,12 +2,16 @@ package com.rarchives.ripme.ripper.rippers;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.jsoup.nodes.Document;
@@ -18,19 +22,20 @@ import com.rarchives.ripme.utils.Http;
 import com.rarchives.ripme.utils.Utils;
 
 class TapasticEpisode {
-    int id;
-    String filename;
+    public int id;
+    public String filename;
+
     public TapasticEpisode(int index, int id, String title) {
-        int index1 = index;
-        this.id    = id;
-        String title1 = title;
+        this.id = id;
         this.filename = Utils.filesystemSafe(title);
     }
 }
 
 public class TapasticRipper extends AbstractHTMLRipper {
 
-    private List<TapasticEpisode> episodes= new ArrayList<>();
+    private static final Logger logger = LogManager.getLogger(TapasticRipper.class);
+
+    private List<TapasticEpisode> episodes = new ArrayList<>();
 
     public TapasticRipper(URL url) throws IOException {
         super(url);
@@ -47,16 +52,11 @@ public class TapasticRipper extends AbstractHTMLRipper {
     }
 
     @Override
-    public Document getFirstPage() throws IOException {
-        return Http.url(url).get();
-    }
-
-    @Override
     public List<String> getURLsFromPage(Document page) {
         List<String> urls = new ArrayList<>();
         String html = page.data();
         if (!html.contains("episodeList : ")) {
-            LOGGER.error("No 'episodeList' found at " + this.url);
+            logger.error("No 'episodeList' found at " + this.url);
             return urls;
         }
         String jsonString = Utils.between(html, "episodeList : ", ",\n").get(0);
@@ -87,15 +87,14 @@ public class TapasticRipper extends AbstractHTMLRipper {
                 prefix.append(String.format("-%0" + imgLog + "dof%0" + imgLog + "d-", i + 1, images.size()));
                 prefix.append(episode.filename.replace(" ", "-"));
                 prefix.append("-");
-                addURLToDownload(new URL(link), prefix.toString());
+                addURLToDownload(new URI(link).toURL(), prefix.toString());
                 if (isThisATest()) {
                     break;
                 }
             }
-        } catch (IOException e) {
-            LOGGER.error("[!] Exception while downloading " + url, e);
+        } catch (IOException | URISyntaxException e) {
+            logger.error("[!] Exception while downloading " + url, e);
         }
-
     }
 
     @Override

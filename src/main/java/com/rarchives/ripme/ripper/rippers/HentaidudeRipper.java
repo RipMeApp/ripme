@@ -10,6 +10,7 @@ import org.jsoup.nodes.Document;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -17,8 +18,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class HentaidudeRipper extends AbstractSingleFileRipper {
+
+    private static final Logger logger = LogManager.getLogger(HentaidudeRipper.class);
 
     private Pattern p1 = Pattern.compile("https?://hentaidude\\.com/([a-zA-Z0-9_-]*)/?$"); // to match URLs.
     private Pattern p2 = Pattern.compile("data:\\s?(\\{.*?\\})", Pattern.DOTALL);
@@ -51,12 +56,6 @@ public class HentaidudeRipper extends AbstractSingleFileRipper {
     }
 
     @Override
-    public Document getFirstPage() throws IOException {
-        // "url" is an instance field of the superclass
-        return Http.url(url).get();
-    }
-
-    @Override
     public List<String> getURLsFromPage(Document doc) {
         List<String> result = new ArrayList<>();
         Matcher m1 = p1.matcher(url.toString());
@@ -84,7 +83,7 @@ public class HentaidudeRipper extends AbstractSingleFileRipper {
         return hentaidudeThreadPool;
     }
 
-    private class HentaidudeDownloadThread extends Thread {
+    private class HentaidudeDownloadThread implements Runnable {
 
         private URL url;
 
@@ -97,10 +96,10 @@ public class HentaidudeRipper extends AbstractSingleFileRipper {
         public void run() {
             try {
                 Document doc = Http.url(url).get();
-                URL videoSourceUrl = new URL(getVideoUrl(doc));
+                URL videoSourceUrl = new URI(getVideoUrl(doc)).toURL();
                 addURLToDownload(videoSourceUrl, "", "", "", null, getVideoName(), "mp4");
             } catch (Exception e) {
-                LOGGER.error("Could not get video url for " + getVideoName(), e);
+                logger.error("Could not get video url for " + getVideoName(), e);
             }
         }
 
@@ -108,7 +107,7 @@ public class HentaidudeRipper extends AbstractSingleFileRipper {
             try {
                 return getGID(url);
             } catch (MalformedURLException e) {
-                LOGGER.error("Unable to get video title from " + url.toExternalForm());
+                logger.error("Unable to get video title from " + url.toExternalForm());
                 e.printStackTrace();
             }
             return "unknown";

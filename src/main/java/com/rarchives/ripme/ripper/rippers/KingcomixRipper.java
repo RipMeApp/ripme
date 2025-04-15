@@ -12,7 +12,6 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
 import com.rarchives.ripme.ripper.AbstractHTMLRipper;
-import com.rarchives.ripme.utils.Http;
 
 public class KingcomixRipper extends AbstractHTMLRipper {
 
@@ -40,13 +39,6 @@ public class KingcomixRipper extends AbstractHTMLRipper {
         throw new MalformedURLException("Expected kingcomix URL format: " +
                 "kingcomix.com/COMIX - got " + url + " instead");
     }
-
-    @Override
-    public Document getFirstPage() throws IOException {
-        // "url" is an instance field of the superclass
-        return Http.url(url).get();
-    }
-
 
     @Override
     public List<String> getURLsFromPage(Document doc) {

@@ -1,15 +1,16 @@
 package com.rarchives.ripme.ui;
 
-import java.awt.Toolkit;
-import java.awt.datatransfer.DataFlavor;
-import java.awt.event.ActionEvent;
-import java.awt.event.InputEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import com.rarchives.ripme.uiUtils.ContextActionProtections;
 
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.JPopupMenu;
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.event.*;
+import java.io.IOException;
+
+import javax.swing.*;
 import javax.swing.text.JTextComponent;
 
 /**
@@ -20,27 +21,72 @@ import javax.swing.text.JTextComponent;
 public class ContextMenuMouseListener extends MouseAdapter {
     private JPopupMenu popup = new JPopupMenu();
 
+    public String getDebugSavedString() {
+        return debugSavedString;
+    }
+
+    private String debugSavedString;
+
+    public Action getCutAction() {
+        return cutAction;
+    }
+
     private Action cutAction;
     private Action copyAction;
     private Action pasteAction;
+
+    public Action getCopyAction() {
+        return copyAction;
+    }
+
+    public Action getPasteAction() {
+        return pasteAction;
+    }
+
+    public Action getUndoAction() {
+        return undoAction;
+    }
+
+    public Action getSelectAllAction() {
+        return selectAllAction;
+    }
+
     private Action undoAction;
     private Action selectAllAction;
 
+    public JTextComponent getTextComponent() {
+        return textComponent;
+    }
+
     private JTextComponent textComponent;
+
+    public String getSavedString() {
+        return savedString;
+    }
+
     private String savedString = "";
     private Actions lastActionSelected;
 
     private enum Actions { UNDO, CUT, COPY, PASTE, SELECT_ALL }
 
+
     @SuppressWarnings("serial")
-    public ContextMenuMouseListener() {
+    public ContextMenuMouseListener(JTextField ripTextfield) {
+        this.textComponent = ripTextfield;
+
+        //Add protection for cntl+v
+
+        generate_popup();
+    }
+
+    private void generate_popup() {
         undoAction = new AbstractAction("Undo") {
 
             @Override
             public void actionPerformed(ActionEvent ae) {
                 textComponent.setText("");
                 textComponent.replaceSelection(savedString);
-
+                debugSavedString = textComponent.getText();
                 lastActionSelected = Actions.UNDO;
             }
         };
@@ -54,6 +100,7 @@ public class ContextMenuMouseListener extends MouseAdapter {
             public void actionPerformed(ActionEvent ae) {
                 lastActionSelected = Actions.CUT;
                 savedString = textComponent.getText();
+                debugSavedString = savedString;
                 textComponent.cut();
             }
         };
@@ -65,6 +112,7 @@ public class ContextMenuMouseListener extends MouseAdapter {
             @Override
             public void actionPerformed(ActionEvent ae) {
                 lastActionSelected = Actions.COPY;
+                debugSavedString = textComponent.getText();
                 textComponent.copy();
             }
         };
@@ -77,7 +125,8 @@ public class ContextMenuMouseListener extends MouseAdapter {
             public void actionPerformed(ActionEvent ae) {
                 lastActionSelected = Actions.PASTE;
                 savedString = textComponent.getText();
-                textComponent.paste();
+                debugSavedString = savedString;
+                ContextActionProtections.pasteFromClipboard(textComponent);
             }
         };
 
@@ -89,6 +138,7 @@ public class ContextMenuMouseListener extends MouseAdapter {
             @Override
             public void actionPerformed(ActionEvent ae) {
                 lastActionSelected = Actions.SELECT_ALL;
+                debugSavedString = textComponent.getText();
                 textComponent.selectAll();
             }
         };
@@ -96,9 +146,30 @@ public class ContextMenuMouseListener extends MouseAdapter {
         popup.add(selectAllAction);
     }
 
+
+    @Override
+    public void mousePressed(MouseEvent e) {
+        showPopup(e);
+    }
+
+    @Override
+    public void mouseReleased(MouseEvent e) {
+        showPopup(e);
+    }
+
+    private void showPopup(MouseEvent e) {
+        if (e.isPopupTrigger()) {
+            if(this.popup == null) {
+                popup = new JPopupMenu();
+                generate_popup();
+            }
+            popup.show(e.getComponent(), e.getX(), e.getY());
+        }
+    }
+
     @Override
     public void mouseClicked(MouseEvent e) {
-        if (e.getModifiers() == InputEvent.BUTTON3_MASK) {
+        if (e.getModifiersEx() == InputEvent.BUTTON3_DOWN_MASK) {
             if (!(e.getSource() instanceof JTextComponent)) {
                 return;
             }

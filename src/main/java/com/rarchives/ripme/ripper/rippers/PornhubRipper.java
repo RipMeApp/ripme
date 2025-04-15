@@ -1,24 +1,31 @@
 package com.rarchives.ripme.ripper.rippers;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.rarchives.ripme.ripper.AbstractHTMLRipper;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 import com.rarchives.ripme.ripper.DownloadThreadPool;
 import com.rarchives.ripme.utils.Http;
 import com.rarchives.ripme.utils.Utils;
 
 public class PornhubRipper extends AbstractHTMLRipper {
+
+    private static final Logger logger = LogManager.getLogger(PornhubRipper.class);
+
     // All sleep times are in milliseconds
     private static final int IMAGE_SLEEP_TIME    = 1000;
 
@@ -47,12 +54,12 @@ public class PornhubRipper extends AbstractHTMLRipper {
     }
 
     @Override
-    public Document getNextPage(Document page) throws IOException {
+    public Document getNextPage(Document page) throws IOException, URISyntaxException {
         Elements nextPageLink = page.select("li.page_next > a");
         if (nextPageLink.isEmpty()){
             throw new IOException("No more pages");
         } else {
-            URL nextURL = new URL(this.url, nextPageLink.first().attr("href"));
+            URL nextURL = this.url.toURI().resolve(nextPageLink.first().attr("href")).toURL();
             return Http.url(nextURL).get();
         }
     }
@@ -74,22 +81,22 @@ public class PornhubRipper extends AbstractHTMLRipper {
 
     @Override
     protected void downloadURL(URL url, int index) {
-        PornhubImageThread t = new PornhubImageThread(url, index, this.workingDir);
+        PornhubImageThread t = new PornhubImageThread(url, index, this.workingDir.toPath());
         pornhubThreadPool.addThread(t);
         try {
             Thread.sleep(IMAGE_SLEEP_TIME);
         } catch (InterruptedException e) {
-            LOGGER.warn("Interrupted while waiting to load next image", e);
+            logger.warn("Interrupted while waiting to load next image", e);
         }
     }
 
-    public URL sanitizeURL(URL url) throws MalformedURLException {
+    public URL sanitizeURL(URL url) throws MalformedURLException, URISyntaxException {
         // always start on the first page of an album
         // (strip the options after the '?')
         String u = url.toExternalForm();
         if (u.contains("?")) {
             u = u.substring(0, u.indexOf("?"));
-            return new URL(u);
+            return new URI(u).toURL();
         } else {
             return url;
         }
@@ -126,11 +133,11 @@ public class PornhubRipper extends AbstractHTMLRipper {
      *
      * Handles case when site has IP-banned the user.
      */
-    private class PornhubImageThread extends Thread {
-        private URL url;
-        private int index;
+    private class PornhubImageThread implements Runnable {
+        private final URL url;
+        private final int index;
 
-        PornhubImageThread(URL url, int index, File workingDir) {
+        PornhubImageThread(URL url, int index, Path workingDir) {
             super();
             this.url = url;
             this.index = index;
@@ -151,7 +158,7 @@ public class PornhubRipper extends AbstractHTMLRipper {
                 Elements images = doc.select("#photoImageSection img");
                 Element image = images.first();
                 String imgsrc = image.attr("src");
-                LOGGER.info("Found URL " + imgsrc + " via " + images.get(0));
+                logger.info("Found URL " + imgsrc + " via " + images.get(0));
 
                 // Provide prefix and let the AbstractRipper "guess" the filename
                 String prefix = "";
@@ -159,11 +166,11 @@ public class PornhubRipper extends AbstractHTMLRipper {
                     prefix = String.format("%03d_", index);
                 }
 
-                URL imgurl = new URL(url, imgsrc);
+                URL imgurl = url.toURI().resolve(imgsrc).toURL();
                 addURLToDownload(imgurl, prefix);
 
-            } catch (IOException e) {
-                LOGGER.error("[!] Exception while loading/parsing " + this.url, e);
+            } catch (IOException | URISyntaxException e) {
+                logger.error("[!] Exception while loading/parsing " + this.url, e);
             }
         }
     }

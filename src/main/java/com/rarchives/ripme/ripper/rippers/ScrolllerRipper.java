@@ -4,17 +4,22 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.net.*;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.java_websocket.client.WebSocketClient;
-
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -23,6 +28,8 @@ import org.json.JSONObject;
 import com.rarchives.ripme.ripper.AbstractJSONRipper;
 
 public class ScrolllerRipper extends AbstractJSONRipper {
+
+    private static final Logger logger = LogManager.getLogger(ScrolllerRipper.class);
 
     public ScrolllerRipper(URL url) throws IOException {
         super(url);
@@ -92,7 +99,7 @@ public class ScrolllerRipper extends AbstractJSONRipper {
             case "":
                 return "NOFILTER";
             default:
-                LOGGER.error(String.format("Invalid filter %s using no filter",filterParameter));
+                logger.error(String.format("Invalid filter %s using no filter",filterParameter));
                 return "";
         }
     }
@@ -120,7 +127,7 @@ public class ScrolllerRipper extends AbstractJSONRipper {
         try {
             String url = "https://api.scrolller.com/api/v2/graphql";
 
-            URL obj = new URL(url);
+            URL obj = new URI(url).toURL();
             HttpURLConnection conn = (HttpURLConnection) obj.openConnection();
             conn.setReadTimeout(5000);
             conn.addRequestProperty("Accept-Language", "en-US,en;q=0.8");
@@ -182,7 +189,7 @@ public class ScrolllerRipper extends AbstractJSONRipper {
 
                 @Override
                 public void onError(Exception e) {
-                    LOGGER.error(String.format("WebSocket error, server reported %s", e.getMessage()));
+                    logger.error(String.format("WebSocket error, server reported %s", e.getMessage()));
                 }
             };
             wsc.connect();
@@ -260,7 +267,7 @@ public class ScrolllerRipper extends AbstractJSONRipper {
         try {
             return prepareQuery(null, this.getGID(url), getParameter(url,"sort"));
         } catch (URISyntaxException e) {
-            LOGGER.error(String.format("Error obtaining first page: %s", e.getMessage()));
+            logger.error(String.format("Error obtaining first page: %s", e.getMessage()));
             return null;
         }
     }
@@ -283,7 +290,7 @@ public class ScrolllerRipper extends AbstractJSONRipper {
             try {
                 return prepareQuery(iterator.toString(), this.getGID(url), getParameter(url,"sort"));
             } catch (URISyntaxException e) {
-                LOGGER.error(String.format("Error changing page: %s", e.getMessage()));
+                logger.error(String.format("Error changing page: %s", e.getMessage()));
                 return null;
             }
         } else {

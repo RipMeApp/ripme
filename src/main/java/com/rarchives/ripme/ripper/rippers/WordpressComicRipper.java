@@ -2,6 +2,7 @@ package com.rarchives.ripme.ripper.rippers;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -220,7 +221,7 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
     }
 
     @Override
-    public String getAlbumTitle(URL url) throws MalformedURLException {
+    public String getAlbumTitle(URL url) throws MalformedURLException, URISyntaxException {
         Pattern totempole666Pat = Pattern.compile("(?:https?://)?(?:www\\.)?totempole666.com/comic/([a-zA-Z0-9_-]*)/?$");
         Matcher totempole666Mat = totempole666Pat.matcher(url.toExternalForm());
         if (totempole666Mat.matches()) {
@@ -420,11 +421,5 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
         addURLToDownload(url, getPrefix(index));
 
 
-    }
-
-    @Override
-    public Document getFirstPage() throws IOException {
-        // "url" is an instance field of the superclass
-        return Http.url(url).get();
     }
 }

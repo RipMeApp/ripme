@@ -2,6 +2,8 @@ package com.rarchives.ripme.ripper.rippers;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -9,6 +11,8 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.jsoup.Connection.Method;
@@ -19,6 +23,8 @@ import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 import com.rarchives.ripme.utils.Http;
 
 public class FuskatorRipper extends AbstractHTMLRipper {
+
+    private static final Logger logger = LogManager.getLogger(FuskatorRipper.class);
 
     private String jsonurl = "https://fuskator.com/ajax/gal.aspx";
     private String xAuthUrl = "https://fuskator.com/ajax/auth.aspx";
@@ -40,7 +46,7 @@ public class FuskatorRipper extends AbstractHTMLRipper {
     }
 
     @Override
-    public URL sanitizeURL(URL url) throws MalformedURLException {
+    public URL sanitizeURL(URL url) throws MalformedURLException, URISyntaxException {
         String u = url.toExternalForm();
         if (u.contains("/thumbs/")) {
             u = u.replace("/thumbs/", "/full/");
@@ -48,7 +54,7 @@ public class FuskatorRipper extends AbstractHTMLRipper {
         if (u.contains("/expanded/")) {
             u = u.replaceAll("/expanded/", "/full/");
         }
-        return new URL(u);
+        return new URI(u).toURL();
     }
 
     @Override
@@ -85,7 +91,7 @@ public class FuskatorRipper extends AbstractHTMLRipper {
             json = Http.url(jsonurl).cookies(cookies).data("X-Auth", xAuthToken).data("hash", getGID(url))
                     .data("_", Long.toString(System.currentTimeMillis())).getJSON();
         } catch (IOException e) {
-            LOGGER.error("Couldnt fetch images.", e.getCause());
+            logger.error("Couldnt fetch images.", e.getCause());
             return imageURLs;
         }
 

@@ -1,6 +1,29 @@
 {
-    "currentHash": "008201e406f401b27248277a4188f26203bb9da0170872de900125f8a6c8b558",
+    "latestVersion": "2.1.17-32-8f58eb41",
+    "currentHash": "dc9a91f9b4928ed03611808200deaf027a3910e4fe6c9ceeda7aeed363750758",
     "changeList": [
+        "2.1.17-32-8f58eb41: Remove lots of rippers for permanently offline sites; add Nude-Gals video support; fixed BatoRipper & FitnakedgirlsRipper; clipboard auto-rip does not break flickr links",
+        "2.1.16-4-02372e85: Republishing the build with an updated version number",
+        "2.1.14-33-c275bbf6: Java-17 is now minimum version requirement, down from java-21; User Agent updated; fix Xvideos, add FapDungeon, add NsfwAlbum; added rate limiting to Coomer, E621, Redgifs, and RedditRipper's handling of Redgifs; rate limit sleep()s now include jitter; code cleanup; removed several rippers for site that are permanently offline",
+        "2.1.13-7-fac3f8ea, luscious, xvideos fixed",
+        "2.1.12-7-d0b97acd, ripme now instead of ripme2 on github, ignore SSL verification option added",
+        "2.1.11-20-ca96ce88, Commer.party next page, Imgur, E-hentai fixed, set recent language.",
+        "2.1.10-21-c94a9543, Imagebam, Unify colons in UI, Motherless, right click menu, rgif fixed",
+        "2.1.9-7-22e915df, HistoryMenuMouseListener right click menu, Imagefap retry logic for getFullSizedImage(), EightmusesRipper fixed",
+        "2.1.8-1-f5153de8: jpg3 add, java-21 adjustments.",
+        "2.1.7-29-b080faae: luciousripper fix, java-21 adjustments.",
+        "2.1.6-1-68189f27: erome fix.",
+        "2.1.5-8-ba51d7b: ripme running with java-17.",
+        "2.1.4-38-836a7494: fixed imagefap ripper.",
+        "2.1.3-15-1b83dc68: relative path now from working dir to subfolder, allowing images to be put in subfolder with same filename, sanatize reddit titles saved as files, additional logging in AbstractHTMLRipper.",
+        "2.1.2-23-e5438e85: caching of first page, retry sleep time, nhentai fixed",
+        "2.1.2-3-ea90b172: better sanitize filenames for windows, save config on update value. reddit, print exceptions in loops and continue.",
+        "2.1.1-3-536339dd: java-11+ necessary to run, work around non existing working directory.",
+        "2.0.4-13-03e32cb7: fix vsco, add danbooru.",
+        "2.0.3: Check new version against ripme2app.",
+        "2.0.2: Add greek translation, fixed reddit, redgif.",
+        "2.0.1: Fixed reddit, tujigu, xhamster, imagebam, erome; marked some tests as flaky.",
+        "2.0.0: Fixed Zizki, WordpressComics, Imagebam; marked some tests as flaky ",
         "1.7.95: Added porncomixinfo.net; Fixed ripper for HentaiNexus; move l option to before r and R; marked some tests as flaky ",
         "1.7.94: Added reddit gallery support; Fixed AllporncomicRipper; Fix imagefap ripper; instagramRipper, replaced Nashorn with GraalVM.js",
         "1.7.93: Fixed Motherless ripper; Fixed e621 ripper; Updated pt_PT translation; Implemented redgifs Ripper; added missing translation to Korean/KR; Fixed elecx ripper; Added ripper for HentaiNexus",
@@ -266,6 +289,5 @@
         "1.0.4: Fixed spaces-in-directory bug",
         "1.0.3: Added VK.com ripper",
         "1.0.1: Added auto-update functionality"
-    ],
-    "latestVersion": "1.7.95"
+    ]
 }

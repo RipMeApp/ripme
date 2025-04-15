@@ -1,38 +1,42 @@
 package com.rarchives.ripme.utils;
 
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
-
+import com.rarchives.ripme.ripper.AbstractRipper;
 import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.jsoup.Connection;
 import org.jsoup.Connection.Method;
 import org.jsoup.Connection.Response;
-import org.jsoup.helper.StringUtil;
-import org.jsoup.Jsoup;
 import org.jsoup.HttpStatusException;
+import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
-import com.rarchives.ripme.ripper.AbstractRipper;
+import javax.net.ssl.*;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.security.SecureRandom;
+import java.security.cert.X509Certificate;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Wrapper around the Jsoup connection methods.
- *
+ * <p>
  * Benefit is retry logic.
  */
 public class Http {
 
     private static final int TIMEOUT = Utils.getConfigInteger("page.timeout", 5 * 1000);
-    private static final Logger logger = Logger.getLogger(Http.class);
+    private static final Logger logger = LogManager.getLogger(Http.class);
 
     private int retries;
-    private String url;
+    private int retrySleep = 0;
+    private final String url;
     private Connection connection;
 
     // Constructors
@@ -40,6 +44,7 @@ public class Http {
         this.url = url;
         defaultSettings();
     }
+
     private Http(URL url) {
         this.url = url.toExternalForm();
         defaultSettings();
@@ -48,12 +53,14 @@ public class Http {
     public static Http url(String url) {
         return new Http(url);
     }
+
     public static Http url(URL url) {
         return new Http(url);
     }
 
     private void defaultSettings() {
-        this.retries = Utils.getConfigInteger("download.retries", 1);
+        this.retries = Utils.getConfigInteger("download.retries", 3);
+        this.retrySleep = Utils.getConfigInteger("download.retry.sleep", 5000);
         connection = Jsoup.connect(this.url);
         connection.userAgent(AbstractRipper.USER_AGENT);
         connection.method(Method.GET);
@@ -69,9 +76,9 @@ public class Http {
     private Map<String, String> cookiesForURL(String u) {
         Map<String, String> cookiesParsed = new HashMap<>();
 
-        String cookieDomain = ""; 
+        String cookieDomain = "";
         try {
-            URL parsed = new URL(u);
+            URL parsed = new URI(u).toURL();
             String cookieStr = "";
 
             String[] parts = parsed.getHost().split("\\.");
@@ -85,7 +92,7 @@ public class Http {
                 logger.info("Trying to load cookies from config for " + domain);
                 cookieStr = Utils.getConfigString("cookies." + domain, "");
                 if (!cookieStr.equals("")) {
-                    cookieDomain = domain; 
+                    cookieDomain = domain;
                     // we found something, start parsing
                     break;
                 }
@@ -95,7 +102,7 @@ public class Http {
             if (!cookieStr.equals("")) {
                 cookiesParsed = RipUtils.getCookiesFromString(cookieStr.trim());
             }
-        } catch (MalformedURLException e) {
+        } catch (MalformedURLException | URISyntaxException e) {
             logger.warn("Parsing url " + u + " while getting cookies", e);
         }
 
@@ -111,42 +118,52 @@ public class Http {
         connection.timeout(timeout);
         return this;
     }
+
     public Http ignoreContentType() {
         connection.ignoreContentType(true);
         return this;
     }
-    public Http referrer(String ref)  {
+
+    public Http referrer(String ref) {
         connection.referrer(ref);
         return this;
     }
+
     public Http referrer(URL ref) {
         return referrer(ref.toExternalForm());
     }
-    public Http userAgent(String ua)  {
+
+    public Http userAgent(String ua) {
         connection.userAgent(ua);
         return this;
     }
+
     public Http retries(int tries) {
         this.retries = tries;
         return this;
     }
+
     public Http header(String name, String value) {
-        connection.header(name,  value);
+        connection.header(name, value);
         return this;
     }
-    public Http cookies(Map<String,String> cookies) {
+
+    public Http cookies(Map<String, String> cookies) {
         connection.cookies(cookies);
         return this;
     }
-    public Http data(Map<String,String> data) {
+
+    public Http data(Map<String, String> data) {
         connection.data(data);
         return this;
     }
+
     public Http data(String name, String value) {
-        Map<String,String> data = new HashMap<>();
+        Map<String, String> data = new HashMap<>();
         data.put(name, value);
         return data(data);
     }
+
     public Http method(Method method) {
         connection.method(method);
         return this;
@@ -156,6 +173,7 @@ public class Http {
     public Connection connection() {
         return connection;
     }
+
     public Document get() throws IOException {
         connection.method(Method.GET);
         return response().parse();
@@ -179,7 +197,7 @@ public class Http {
     }
 
     public Response response() throws IOException {
-        Response response = null;
+        Response response;
         IOException lastException = null;
         int retries = this.retries;
         while (--retries >= 0) {
@@ -189,22 +207,69 @@ public class Http {
             } catch (IOException e) {
                 // Warn users about possibly fixable permission error
                 if (e instanceof org.jsoup.HttpStatusException) {
-                    HttpStatusException ex = (HttpStatusException)e;
-                    
+                    HttpStatusException ex = (HttpStatusException) e;
+
                     // These status codes might indicate missing cookies
                     //     401 Unauthorized
                     //     403 Forbidden
 
-                    int status =  ex.getStatusCode();
+                    int status = ex.getStatusCode();
                     if (status == 401 || status == 403) {
-                        throw new IOException("Failed to load " + url + ": Status Code " +  Integer.toString(status) + ". You might be able to circumvent this error by setting cookies for this domain" , e);
+                        throw new IOException("Failed to load " + url + ": Status Code " + status + ". You might be able to circumvent this error by setting cookies for this domain", e);
+                    }
+                    if (status == 404) {
+                        throw new IOException("File not found " + url + ": Status Code " + status + ". ", e);
                     }
                 }
 
-                logger.warn("Error while loading " + url, e);
+                if (retrySleep > 0 && retries >= 0) {
+                    logger.warn("Error while loading " + url + " waiting "+ retrySleep + " ms before retrying.", e);
+                    Utils.sleep(retrySleep);
+                } else {
+                    logger.warn("Error while loading " + url, e);
+                }
                 lastException = e;
             }
         }
         throw new IOException("Failed to load " + url + " after " + this.retries + " attempts", lastException);
+    }
+
+    public static void SSLVerifyOff() {
+        try {
+            TrustManager[] trustAllCerts = new TrustManager[]{
+                    new X509TrustManager() {
+                        public X509Certificate[] getAcceptedIssuers() {
+                            return null;
+                        }
+
+                        public void checkClientTrusted(X509Certificate[] certs, String authType) {
+                        }
+
+                        public void checkServerTrusted(X509Certificate[] certs, String authType) {
+                        }
+                    }
+            };
+            SSLContext sslContext = SSLContext.getInstance("SSL");
+            sslContext.init(null, trustAllCerts, new SecureRandom());
+            HttpsURLConnection.setDefaultSSLSocketFactory(sslContext.getSocketFactory());
+            HostnameVerifier allHostsValid = (hostname, session) -> true;
+            HttpsURLConnection.setDefaultHostnameVerifier(allHostsValid);
+        } catch (Exception e) {
+            logger.error("ignoreSSLVerification() failed.");
+            logger.error(e.getMessage());
+        }
+    }
+
+    public static void undoSSLVerifyOff() {
+        try {
+            // Reset to the default SSL socket factory and hostname verifier
+            SSLContext sslContext = SSLContext.getInstance("SSL");
+            sslContext.init(null, null, new SecureRandom());
+            HttpsURLConnection.setDefaultSSLSocketFactory(sslContext.getSocketFactory());
+            HttpsURLConnection.setDefaultHostnameVerifier(HttpsURLConnection.getDefaultHostnameVerifier());
+        } catch (Exception e) {
+            logger.error("undoSSLVerificationIgnore() failed.");
+            logger.error(e.getMessage());
+        }
     }
 }

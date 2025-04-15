@@ -1,7 +1,6 @@
 package com.rarchives.ripme.ripper.rippers;
 
 import com.rarchives.ripme.ripper.AbstractHTMLRipper;
-import com.rarchives.ripme.utils.Http;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -42,11 +41,6 @@ public class XcartxRipper extends AbstractHTMLRipper {
         }
         throw new MalformedURLException("Expected URL format: http://xcartx.com/comic, got: " + url);
 
-    }
-
-    @Override
-    public Document getFirstPage() throws IOException {
-        return Http.url(url).get();
     }
 
     @Override

@@ -2,19 +2,24 @@ package com.rarchives.ripme.ripper.rippers;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jsoup.Connection.Response;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
 
 import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 import com.rarchives.ripme.utils.Http;
+import com.rarchives.ripme.utils.Utils;
 
 /**
  *
@@ -22,10 +27,10 @@ import com.rarchives.ripme.utils.Http;
  */
 public class EromeRipper extends AbstractHTMLRipper {
 
-    private static final String EROME_REFERER = "https://www.erome.com/";
+    private static final Logger logger = LogManager.getLogger(EromeRipper.class);
 
     boolean rippingProfile;
-
+    private HashMap<String, String> cookies = new HashMap<>();
 
     public EromeRipper (URL url) throws IOException {
         super(url);
@@ -33,17 +38,17 @@ public class EromeRipper extends AbstractHTMLRipper {
 
     @Override
     public String getDomain() {
-            return "erome.com";
+        return "erome.com";
     }
 
     @Override
     public String getHost() {
-            return "erome";
+        return "erome";
     }
 
     @Override
     public void downloadURL(URL url, int index) {
-        addURLToDownload(url, getPrefix(index), "", EROME_REFERER, null, null);
+        addURLToDownload(url, getPrefix(index), "", "erome.com", this.cookies);
     }
 
     @Override
@@ -68,39 +73,40 @@ public class EromeRipper extends AbstractHTMLRipper {
     }
 
     @Override
-    public String getAlbumTitle(URL url) throws MalformedURLException {
-            try {
-                // Attempt to use album title as GID
-                Element titleElement = getFirstPage().select("meta[property=og:title]").first();
-                String title = titleElement.attr("content");
-                title = title.substring(title.lastIndexOf('/') + 1);
-                return getHost() + "_" + getGID(url) + "_" + title.trim();
-            } catch (IOException e) {
-                // Fall back to default album naming convention
-                LOGGER.info("Unable to find title at " + url);
-            } catch (NullPointerException e) {
-                return getHost() + "_" + getGID(url);
-            }
-            return super.getAlbumTitle(url);
+    public String getAlbumTitle(URL url) throws MalformedURLException, URISyntaxException {
+        try {
+            // Attempt to use album title as GID
+            Element titleElement = getCachedFirstPage().select("meta[property=og:title]").first();
+            String title = titleElement.attr("content");
+            title = title.substring(title.lastIndexOf('/') + 1);
+            return getHost() + "_" + getGID(url) + "_" + title.trim();
+        } catch (IOException e) {
+            // Fall back to default album naming convention
+            logger.info("Unable to find title at " + url);
+        } catch (NullPointerException e) {
+            return getHost() + "_" + getGID(url);
+        }
+        return super.getAlbumTitle(url);
     }
 
     @Override
-    public URL sanitizeURL(URL url) throws MalformedURLException {
-        return new URL(url.toExternalForm().replaceAll("https?://erome.com", "https://www.erome.com"));
+    public URL sanitizeURL(URL url) throws MalformedURLException, URISyntaxException {
+        return new URI(url.toExternalForm().replaceAll("https?://erome.com", "https://www.erome.com")).toURL();
     }
 
 
     @Override
     public List<String> getURLsFromPage(Document doc) {
-        List<String> URLs = new ArrayList<>();
         return getMediaFromPage(doc);
     }
 
     @Override
     public Document getFirstPage() throws IOException {
+        this.setAuthCookie();
         Response resp = Http.url(this.url)
-                            .ignoreContentType()
-                            .response();
+                .cookies(cookies)
+                .ignoreContentType()
+                .response();
 
         return resp.parse();
     }
@@ -126,18 +132,17 @@ public class EromeRipper extends AbstractHTMLRipper {
     private List<String> getMediaFromPage(Document doc) {
         List<String> results = new ArrayList<>();
         for (Element el : doc.select("img.img-front")) {
-			if (el.hasAttr("src")) {
-				if (el.attr("src").startsWith("https:")) {
-					results.add(el.attr("src"));
-				} else {
-					results.add("https:" + el.attr("src"));
-				}
-			} else if (el.hasAttr("data-src")) {
-				//to add images that are not loaded( as all images are lasyloaded as we scroll).
-				results.add(el.attr("data-src"));
-			}
-
-		}
+            if (el.hasAttr("data-src")) {
+                //to add images that are not loaded( as all images are lasyloaded as we scroll).
+                results.add(el.attr("data-src"));
+            } else if (el.hasAttr("src")) {
+                if (el.attr("src").startsWith("https:")) {
+                    results.add(el.attr("src"));
+                } else {
+                    results.add("https:" + el.attr("src"));
+                }
+            }
+        }
         for (Element el : doc.select("source[label=HD]")) {
             if (el.attr("src").startsWith("https:")) {
                 results.add(el.attr("src"));
@@ -154,7 +159,22 @@ public class EromeRipper extends AbstractHTMLRipper {
                 results.add("https:" + el.attr("src"));
             }
         }
+
+        if (results.size() == 0) {
+            if (cookies.isEmpty()) {
+                logger.warn("You might try setting erome.laravel_session manually " +
+                        "if you think this page definitely contains media.");
+            }
+        }
+
         return results;
+    }
+
+    private void setAuthCookie() {
+        String sessionId = Utils.getConfigString("erome.laravel_session", null);
+        if (sessionId != null) {
+            cookies.put("laravel_session", sessionId);
+        }
     }
 
 }

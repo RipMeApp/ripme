@@ -2,23 +2,29 @@ package com.rarchives.ripme.ripper.rippers;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
 import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 import com.rarchives.ripme.ripper.DownloadThreadPool;
-import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
 import com.rarchives.ripme.utils.Http;
 import com.rarchives.ripme.utils.Utils;
-import org.jsoup.select.Elements;
 
 public class MotherlessRipper extends AbstractHTMLRipper {
+
+    private static final Logger logger = LogManager.getLogger(MotherlessRipper.class);
+
     // All sleep times are in milliseconds
     private static final int IMAGE_SLEEP_TIME    = 1000;
 
@@ -59,20 +65,21 @@ public class MotherlessRipper extends AbstractHTMLRipper {
         if (!notHome) {
             StringBuilder newPath = new StringBuilder(path);
             newPath.insert(2, "M");
-            firstURL = new URL(this.url, "https://" + DOMAIN + newPath);
-            LOGGER.info("Changed URL to " + firstURL);
+            firstURL = URI.create("https://" + DOMAIN + newPath).toURL();
+            logger.info("Changed URL to " + firstURL);
         }
         return Http.url(firstURL).referrer("https://motherless.com").get();
     }
 
     @Override
-    public Document getNextPage(Document doc) throws IOException {
+    public Document getNextPage(Document doc) throws IOException, URISyntaxException {
+
         Elements nextPageLink = doc.head().select("link[rel=next]");
         if (nextPageLink.isEmpty()) {
             throw new IOException("Last page reached");
         } else {
             String referrerLink = doc.head().select("link[rel=canonical]").first().attr("href");
-            URL nextURL = new URL(this.url, nextPageLink.first().attr("href"));
+            URL nextURL = this.url.toURI().resolve(nextPageLink.first().attr("href")).toURL();
             return Http.url(nextURL).referrer(referrerLink).get();
         }
     }
@@ -109,12 +116,12 @@ public class MotherlessRipper extends AbstractHTMLRipper {
     @Override
     protected void downloadURL(URL url, int index) {
         // Create thread for finding image at "url" page
-        MotherlessImageThread mit = new MotherlessImageThread(url, index);
+        MotherlessImageRunnable mit = new MotherlessImageRunnable(url, index);
         motherlessThreadPool.addThread(mit);
         try {
             Thread.sleep(IMAGE_SLEEP_TIME);
         } catch (InterruptedException e) {
-            LOGGER.warn("Interrupted while waiting to load next image", e);
+            logger.warn("Interrupted while waiting to load next image", e);
         }
     }
 
@@ -148,15 +155,19 @@ public class MotherlessRipper extends AbstractHTMLRipper {
         throw new MalformedURLException("Expected URL format: https://motherless.com/GIXXXXXXX, got: " + url);
     }
 
+    @Override
+    protected DownloadThreadPool getThreadPool() {
+        return motherlessThreadPool;
+    }
 
     /**
      * Helper class to find and download images found on "image" pages
      */
-    private class MotherlessImageThread extends Thread {
-        private URL url;
-        private int index;
+    private class MotherlessImageRunnable implements Runnable {
+        private final URL url;
+        private final int index;
 
-        MotherlessImageThread(URL url, int index) {
+        MotherlessImageRunnable(URL url, int index) {
             super();
             this.url = url;
             this.index = index;
@@ -180,12 +191,12 @@ public class MotherlessRipper extends AbstractHTMLRipper {
                     if (Utils.getConfigBoolean("download.save_order", true)) {
                         prefix = String.format("%03d_", index);
                     }
-                    addURLToDownload(new URL(file), prefix);
+                    addURLToDownload(new URI(file).toURL(), prefix);
                 } else {
-                    LOGGER.warn("[!] could not find '__fileurl' at " + url);
+                    logger.warn("[!] could not find '__fileurl' at " + url);
                 }
-            } catch (IOException e) {
-                LOGGER.error("[!] Exception while loading/parsing " + this.url, e);
+            } catch (IOException | URISyntaxException e) {
+                logger.error("[!] Exception while loading/parsing " + this.url, e);
             }
         }
     }

@@ -2,6 +2,7 @@ package com.rarchives.ripme.ripper.rippers;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -12,12 +13,14 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import com.rarchives.ripme.ripper.AbstractHTMLRipper;
-import com.rarchives.ripme.utils.Http;
 
 public class GirlsOfDesireRipper extends AbstractHTMLRipper {
-    // Current HTML document
-    private Document albumDoc = null;
+
+    private static final Logger logger = LogManager.getLogger(EromeRipper.class);
 
     public GirlsOfDesireRipper(URL url) throws IOException {
         super(url);
@@ -32,15 +35,15 @@ public class GirlsOfDesireRipper extends AbstractHTMLRipper {
         return "girlsofdesire.org";
     }
 
-    public String getAlbumTitle(URL url) throws MalformedURLException {
+    public String getAlbumTitle(URL url) throws MalformedURLException, URISyntaxException {
         try {
             // Attempt to use album title as GID
-            Document doc = getFirstPage();
+            Document doc = getCachedFirstPage();
             Elements elems = doc.select(".albumName");
             return getHost() + "_" + elems.first().text();
         } catch (Exception e) {
             // Fall back to default album naming convention
-            LOGGER.warn("Failed to get album title from " + url, e);
+            logger.warn("Failed to get album title from " + url, e);
         }
         return super.getAlbumTitle(url);
     }
@@ -60,14 +63,6 @@ public class GirlsOfDesireRipper extends AbstractHTMLRipper {
                 "Expected girlsofdesire.org gallery format: "
                         + "http://www.girlsofdesire.org/galleries/<name>/"
                         + " Got: " + url);
-    }
-
-    @Override
-    public Document getFirstPage() throws IOException {
-        if (albumDoc == null) {
-            albumDoc = Http.url(url).get();
-        }
-        return albumDoc;
     }
 
     @Override

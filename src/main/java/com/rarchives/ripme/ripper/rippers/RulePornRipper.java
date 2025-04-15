@@ -41,11 +41,6 @@ public class RulePornRipper extends AbstractSingleFileRipper {
     }
 
     @Override
-    public Document getFirstPage() throws IOException {
-        return Http.url(url).get();
-    }
-
-    @Override
     public List<String> getURLsFromPage(Document doc) {
         List<String> result = new ArrayList<>();
         result.add(doc.select("source[type=video/mp4]").attr("src"));
