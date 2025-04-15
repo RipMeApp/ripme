@@ -3,8 +3,15 @@
 [![Licensed under the MIT License](https://img.shields.io/badge/License-MIT-blue.svg)](/LICENSE.txt)
 [![Join the chat at https://gitter.im/RipMeApp/Lobby](https://badges.gitter.im/RipMeApp/Lobby.svg)](https://gitter.im/RipMeApp/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Subreddit](https://img.shields.io/badge/discuss-on%20reddit-blue.svg)](https://www.reddit.com/r/ripme/)
-![alt Badge Status](https://github.com/ripmeapp2/ripme/actions/workflows/gradle.yml/badge.svg)
+![alt Badge Status](https://github.com/ripmeapp/ripme/actions/workflows/gradle.yml/badge.svg)
 [![Coverage Status](https://coveralls.io/repos/github/RipMeApp/ripme/badge.svg?branch=main)](https://coveralls.io/github/RipMeApp/ripme?branch=main)
+
+## Download
+
+Download `ripme.jar` from the [latest release](https://github.com/ripmeapp/ripme/releases). For information about running the `.jar` file, see
+[the How To Run wiki](https://github.com/ripmeapp/ripme/wiki/How-To-Run-RipMe).
+
+## Supported Sites
 
 Jump to:
 - [List of Supported Sites](https://github.com/RipMeApp/ripme?tab=readme-ov-file#list-of-supported-sites)
@@ -42,10 +49,7 @@ requires Java 21 or later to run. RipMe has been tested and is confirmed working
 
 ![Screenshot](https://i.imgur.com/UCQNjeg.png)
 
-## Downloads
-
-Download `ripme.jar` from the [latest release](https://github.com/ripmeapp2/ripme/releases). For information about running the `.jar` file, see
-[the How To Run wiki](https://github.com/ripmeapp/ripme/wiki/How-To-Run-RipMe).
+## Version Numbers
 
 The version number like `ripme-1.7.94-17-2167aa34-feature_auto_release.jar` contains a release number (`1.7.94`), given by
 a person, the number of commits since this version (`17`). The commit SHA (`2167aa34`) uniquely references the
