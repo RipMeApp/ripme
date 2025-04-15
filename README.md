@@ -8,7 +8,7 @@
 
 ## Download
 
-Download `ripme.jar` from the [latest release](https://github.com/ripmeapp/ripme/releases). For information about running the `.jar` file, see
+Download `ripme.jar` from the [latest release](https://github.com/ripmeapp/ripme/releases/latest). For information about running the `.jar` file, see
 [the How To Run wiki](https://github.com/ripmeapp/ripme/wiki/How-To-Run-RipMe).
 
 ## Supported Sites
