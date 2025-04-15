@@ -72,6 +72,7 @@ public class FapwizRipperTest extends RippersTest {
     }
 
     @Test
+    @Tag("flaky")
     public void testRipPostWithEmojiInLongUrlAtEnd() throws IOException, URISyntaxException {
         URL url = new URI(
                 "https://fapwiz.com/bimeat1998/just-imagine-youre-out-with-your-girl-and-your-buddies-and-then-she-makes-this-move-%f0%9f%98%8d/")

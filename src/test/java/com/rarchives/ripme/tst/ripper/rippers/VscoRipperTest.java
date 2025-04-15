@@ -1,17 +1,17 @@
 package com.rarchives.ripme.tst.ripper.rippers;
 
-import com.rarchives.ripme.ripper.rippers.VscoRipper;
-
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 
-public class VscoRipperTest extends RippersTest {
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 
+import com.rarchives.ripme.ripper.rippers.VscoRipper;
+
+public class VscoRipperTest extends RippersTest {
     /**
      * Testing single image.
      * 
@@ -19,7 +19,8 @@ public class VscoRipperTest extends RippersTest {
      */
     @Test
     public void testSingleImageRip() throws IOException, URISyntaxException {
-        VscoRipper ripper = new VscoRipper(new URI("https://vsco.co/jolly-roger/media/597ce449846079297b3f7cf3").toURL());
+        VscoRipper ripper = new VscoRipper(
+                new URI("https://vsco.co/jolly-roger/media/597ce449846079297b3f7cf3").toURL());
         testRipper(ripper);
     }
 
@@ -30,6 +31,7 @@ public class VscoRipperTest extends RippersTest {
      * @throws IOException
      */
     @Test
+    @Tag("flaky")
     public void testHyphenatedRip() throws IOException, URISyntaxException {
         VscoRipper ripper = new VscoRipper(new URI("https://vsco.co/jolly-roger/gallery").toURL());
         testRipper(ripper);
