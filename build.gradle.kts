@@ -1,10 +1,11 @@
 //    the build derives a version with the jgitver plugin out of a tag in the git history. when there is no
 // git repo, the jgitver default would be 0.0.0. one can override this version with a parameter. also, permit
 // to start the build setting the javac release parameter, no parameter means build for java-17:
+// gradle clean build -PjavacRelease=17
 // gradle clean build -PjavacRelease=21
 // gradle clean build -PcustomVersion=1.0.0-10-asdf
 val customVersion = (project.findProperty("customVersion") ?: "") as String
-val javacRelease = (project.findProperty("javacRelease") ?: "21") as String
+val javacRelease = (project.findProperty("javacRelease") ?: "17") as String
 
 plugins {
   id("fr.brouillard.oss.gradle.jgitver") version "0.9.1"
