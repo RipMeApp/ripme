@@ -111,7 +111,7 @@ public class App {
             entry.url = u;
             entry.dir = ripper.getWorkingDir().getAbsolutePath();
             try {
-                entry.title = ripper.getAlbumTitle(ripper.getURL());
+                entry.title = ripper.getAlbumTitle();
             } catch (MalformedURLException ignored) { }
             HISTORY.add(entry);
         }

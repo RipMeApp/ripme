@@ -71,7 +71,7 @@ public class WordpressComicRipperTest extends RippersTest {
     public void test_konradokonski_getAlbumTitle() throws IOException, URISyntaxException {
         URL url = new URI("http://www.konradokonski.com/sawdust/comic/get-up/").toURL();
         WordpressComicRipper ripper = new WordpressComicRipper(url);
-        Assertions.assertEquals("konradokonski.com_sawdust", ripper.getAlbumTitle(url));
+        Assertions.assertEquals("konradokonski.com_sawdust", ripper.getAlbumTitle());
 
     }
 
@@ -99,7 +99,7 @@ public class WordpressComicRipperTest extends RippersTest {
     public void test_Eightmuses_getAlbumTitle() throws IOException, URISyntaxException {
         URL url = new URI("https://8muses.download/lustomic-playkittens-josh-samuel-porn-comics-8-muses/").toURL();
         WordpressComicRipper ripper = new WordpressComicRipper(url);
-        Assertions.assertEquals("8muses.download_lustomic-playkittens-josh-samuel-porn-comics-8-muses", ripper.getAlbumTitle(url));
+        Assertions.assertEquals("8muses.download_lustomic-playkittens-josh-samuel-porn-comics-8-muses", ripper.getAlbumTitle());
     }
     @Test
     @Tag("flaky")
@@ -112,7 +112,7 @@ public class WordpressComicRipperTest extends RippersTest {
     public void test_spyingwithlana_getAlbumTitle() throws IOException, URISyntaxException {
         URL url = new URI("http://spyingwithlana.com/comic/the-big-hookup/").toURL();
         WordpressComicRipper ripper = new WordpressComicRipper(url);
-        Assertions.assertEquals("spyingwithlana_the-big-hookup", ripper.getAlbumTitle(url));
+        Assertions.assertEquals("spyingwithlana_the-big-hookup", ripper.getAlbumTitle());
     }
 
     @Test

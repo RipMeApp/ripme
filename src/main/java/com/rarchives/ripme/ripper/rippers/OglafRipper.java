@@ -42,7 +42,7 @@ public class OglafRipper extends AbstractHTMLRipper {
     }
 
     @Override
-    public String getAlbumTitle(URL url) throws MalformedURLException {
+    public String getAlbumTitle() throws MalformedURLException {
         return getDomain();
     }
 

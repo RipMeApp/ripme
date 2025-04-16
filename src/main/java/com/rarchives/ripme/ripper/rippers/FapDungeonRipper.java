@@ -136,12 +136,12 @@ public class FapDungeonRipper extends AbstractHTMLRipper {
     }
 
     @Override
-    public String getAlbumTitle(URL url) throws MalformedURLException, URISyntaxException {
+    public String getAlbumTitle() throws MalformedURLException, URISyntaxException {
         Matcher m = pagePattern.matcher(url.toExternalForm());
         if (m.matches()) {
             return getHost() + "_" + m.group(1) + "_" + m.group(2);
         } else {
-            return super.getAlbumTitle(url);
+            return super.getAlbumTitle();
         }
     }
 }
