@@ -1167,7 +1167,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
                 aboutPanel.add(titleLabel, BorderLayout.NORTH);
                 aboutPanel.add(scrollPane, BorderLayout.CENTER);
 
-                JLabel footerLabel = new JLabel("Do you want to visit the project homepage on Github?", JLabel.CENTER);
+                JLabel footerLabel = new JLabel("Do you want to visit the project homepage on GitHub?", JLabel.CENTER);
                 aboutPanel.add(footerLabel, BorderLayout.SOUTH);
 
                 int response = JOptionPane.showConfirmDialog(null, aboutPanel, mainFrame.getTitle(),
