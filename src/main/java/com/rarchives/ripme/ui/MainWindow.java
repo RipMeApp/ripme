@@ -1156,7 +1156,6 @@ public final class MainWindow implements Runnable, RipStatusHandler {
                     aboutContent.append("- ").append(ripper).append("\n");
                 }
 
-                aboutContent.append("\nDo you want to visit the project homepage on Github?");
                 aboutTextArea.setText(aboutContent.toString());
 
                 // Ensure the scroll pane starts at the top
@@ -1167,6 +1166,9 @@ public final class MainWindow implements Runnable, RipStatusHandler {
                 titleLabel.setFont(titleLabel.getFont().deriveFont(Font.BOLD, 16));
                 aboutPanel.add(titleLabel, BorderLayout.NORTH);
                 aboutPanel.add(scrollPane, BorderLayout.CENTER);
+
+                JLabel footerLabel = new JLabel("Do you want to visit the project homepage on Github?", JLabel.CENTER);
+                aboutPanel.add(footerLabel, BorderLayout.SOUTH);
 
                 int response = JOptionPane.showConfirmDialog(null, aboutPanel, mainFrame.getTitle(),
                         JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE, new ImageIcon(mainIcon));
