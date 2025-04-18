@@ -1127,21 +1127,29 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         trayMenuAbout.addActionListener(arg0 -> {
             StringBuilder about = new StringBuilder();
 
-            about.append("<html><h1>").append(mainFrame.getTitle()).append("</h1>");
-            about.append("Download albums from various websites:");
             try {
                 List<String> rippers = Utils.getListOfAlbumRippers();
-                about.append("<ul>");
+
+                JTextArea aboutTextArea = new JTextArea();
+                aboutTextArea.setEditable(false);
+                aboutTextArea.setLineWrap(true);
+                aboutTextArea.setWrapStyleWord(true);
+
+                JScrollPane scrollPane = new JScrollPane(aboutTextArea);
+                scrollPane.setPreferredSize(new Dimension(400, 300));
+
+                StringBuilder aboutContent = new StringBuilder();
+                aboutContent.append("Download albums from various websites:\n");
                 for (String ripper : rippers) {
-                    about.append("<li>");
                     ripper = ripper.substring(ripper.lastIndexOf('.') + 1);
                     if (ripper.contains("Ripper")) {
                         ripper = ripper.substring(0, ripper.indexOf("Ripper"));
                     }
-                    about.append(ripper);
-                    about.append("</li>");
+                    aboutContent.append("- ").append(ripper).append("\n");
                 }
-                about.append("</ul>");
+
+                aboutTextArea.setText(aboutContent.toString());
+                JOptionPane.showMessageDialog(null, scrollPane, "Supported Rippers", JOptionPane.INFORMATION_MESSAGE);
             } catch (Exception e) {
                 LOGGER.warn(e.getMessage());
             }
