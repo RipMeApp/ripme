@@ -1125,10 +1125,9 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         trayMenuMain.addActionListener(arg0 -> toggleTrayClick());
         MenuItem trayMenuAbout = new MenuItem("About " + mainFrame.getTitle());
         trayMenuAbout.addActionListener(arg0 -> {
-            StringBuilder about = new StringBuilder();
-
             try {
-                List<String> rippers = Utils.getListOfAlbumRippers();
+                List<String> albumRippers = Utils.getListOfAlbumRippers();
+                List<String> videoRippers = Utils.getListOfVideoRippers();
 
                 JTextArea aboutTextArea = new JTextArea();
                 aboutTextArea.setEditable(false);
@@ -1140,7 +1139,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
 
                 StringBuilder aboutContent = new StringBuilder();
                 aboutContent.append("Download albums from various websites:\n");
-                for (String ripper : rippers) {
+                for (String ripper : albumRippers) {
                     ripper = ripper.substring(ripper.lastIndexOf('.') + 1);
                     if (ripper.contains("Ripper")) {
                         ripper = ripper.substring(0, ripper.indexOf("Ripper"));
@@ -1148,40 +1147,29 @@ public final class MainWindow implements Runnable, RipStatusHandler {
                     aboutContent.append("- ").append(ripper).append("\n");
                 }
 
-                aboutTextArea.setText(aboutContent.toString());
-                JOptionPane.showMessageDialog(null, scrollPane, "Supported Rippers", JOptionPane.INFORMATION_MESSAGE);
-            } catch (Exception e) {
-                LOGGER.warn(e.getMessage());
-            }
-
-            about.append("<br>And download videos from video sites:");
-            try {
-                List<String> rippers = Utils.getListOfVideoRippers();
-                about.append("<ul>");
-                for (String ripper : rippers) {
-                    about.append("<li>");
+                aboutContent.append("\nDownload videos from video sites:\n");
+                for (String ripper : videoRippers) {
                     ripper = ripper.substring(ripper.lastIndexOf('.') + 1);
                     if (ripper.contains("Ripper")) {
                         ripper = ripper.substring(0, ripper.indexOf("Ripper"));
                     }
-                    about.append(ripper);
-                    about.append("</li>");
+                    aboutContent.append("- ").append(ripper).append("\n");
                 }
-                about.append("</ul>");
+
+                aboutContent.append("\nDo you want to visit the project homepage on Github?");
+                aboutTextArea.setText(aboutContent.toString());
+
+                int response = JOptionPane.showConfirmDialog(null, scrollPane, mainFrame.getTitle(),
+                        JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE, new ImageIcon(mainIcon));
+                if (response == JOptionPane.YES_OPTION) {
+                    try {
+                        Desktop.getDesktop().browse(URI.create("http://github.com/ripmeapp/ripme"));
+                    } catch (IOException e) {
+                        LOGGER.error("Exception while opening project home page", e);
+                    }
+                }
             } catch (Exception e) {
                 LOGGER.warn(e.getMessage());
-            }
-
-            about.append("Do you want to visit the project homepage on Github?");
-            about.append("</html>");
-            int response = JOptionPane.showConfirmDialog(null, about.toString(), mainFrame.getTitle(),
-                    JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE, new ImageIcon(mainIcon));
-            if (response == JOptionPane.YES_OPTION) {
-                try {
-                    Desktop.getDesktop().browse(URI.create("http://github.com/ripmeapp/ripme"));
-                } catch (IOException e) {
-                    LOGGER.error("Exception while opening project home page", e);
-                }
             }
         });
 
