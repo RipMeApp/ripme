@@ -1159,7 +1159,16 @@ public final class MainWindow implements Runnable, RipStatusHandler {
                 aboutContent.append("\nDo you want to visit the project homepage on Github?");
                 aboutTextArea.setText(aboutContent.toString());
 
-                int response = JOptionPane.showConfirmDialog(null, scrollPane, mainFrame.getTitle(),
+                // Ensure the scroll pane starts at the top
+                SwingUtilities.invokeLater(() -> scrollPane.getVerticalScrollBar().setValue(0));
+
+                JPanel aboutPanel = new JPanel(new BorderLayout());
+                JLabel titleLabel = new JLabel("Download albums and videos from various websites", JLabel.CENTER);
+                titleLabel.setFont(titleLabel.getFont().deriveFont(Font.BOLD, 16));
+                aboutPanel.add(titleLabel, BorderLayout.NORTH);
+                aboutPanel.add(scrollPane, BorderLayout.CENTER);
+
+                int response = JOptionPane.showConfirmDialog(null, aboutPanel, mainFrame.getTitle(),
                         JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE, new ImageIcon(mainIcon));
                 if (response == JOptionPane.YES_OPTION) {
                     try {
