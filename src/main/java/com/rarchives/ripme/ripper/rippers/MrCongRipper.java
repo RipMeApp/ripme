@@ -34,6 +34,8 @@ public class MrCongRipper extends AbstractHTMLRipper {
 
     @Override
     public String getDomain() {
+        // NOTE: This was previous mrcong.com, and some resources still
+        // refer to that domain, but all the top level URLs are now misskon.com
         return "misskon.com";
     }
 
@@ -54,7 +56,7 @@ public class MrCongRipper extends AbstractHTMLRipper {
         }
 
         throw new MalformedURLException("Expected misskon.com URL format: "
-                + "misskon.com/GALLERY_NAME(-anh OR -anh/ OR -anh/PAGE_NUMBER OR -anh/PAGE_NUMBER/) - got " + url
+                + "misskon.com/GALLERY_NAME (or /PAGE_NUMBER/) - got " + url
                 + " instead");
     }
 
