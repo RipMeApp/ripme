@@ -73,7 +73,7 @@ public class CfakeRipper extends AbstractHTMLRipper {
         if (nextPage.equals("")) {
             return null;
         } else {
-            return Http.url("http://cfake.com" + nextPage).get();
+            return Http.url("https://cfake.com" + nextPage).get();
         }
     }
 
@@ -86,7 +86,7 @@ public class CfakeRipper extends AbstractHTMLRipper {
             // https://cfake.com/medias/photos/2025/17358722979850276d_cfake.jpg
             String imageSource = el.attr("src");
             imageSource = imageSource.replace("thumbs", "photos");
-            result.add("http://cfake.com" + imageSource);
+            result.add("https://cfake.com" + imageSource);
         }
 
         return result;
