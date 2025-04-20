@@ -1,10 +1,5 @@
 package com.rarchives.ripme.ripper.rippers;
 
-import com.rarchives.ripme.ripper.AbstractHTMLRipper;
-import com.rarchives.ripme.utils.Http;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -13,10 +8,13 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+
+import com.rarchives.ripme.ripper.AbstractHTMLRipper;
+import com.rarchives.ripme.utils.Http;
 
 public class HentaiimageRipper extends AbstractHTMLRipper {
-
-
     public HentaiimageRipper(URL url) throws IOException {
         super(url);
     }
@@ -43,13 +41,13 @@ public class HentaiimageRipper extends AbstractHTMLRipper {
 
     @Override
     public String getGID(URL url) throws MalformedURLException {
-        Pattern p = Pattern.compile("https://(?:\\w\\w\\.)?hentai-(image|comic).com/image/([a-zA-Z0-9_-]+)/?");
+        Pattern p = Pattern.compile("https://(?:\\w\\w\\.)?hentai-(image|comic|img-xxx).com/image/([a-zA-Z0-9_-]+)/?");
         Matcher m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             return m.group(1);
         }
         throw new MalformedURLException("Expected hitomi URL format: " +
-                "https://hentai-image.com/image/ID - got " + url + " instead");
+                "https://hentai-img-xxx.com/image/ID - got " + url + " instead");
     }
 
     @Override
