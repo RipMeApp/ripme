@@ -4,16 +4,22 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import com.rarchives.ripme.ripper.rippers.MotherlessRipper;
-
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
+import com.rarchives.ripme.ripper.rippers.MotherlessRipper;
+
 public class MotherlessRipperTest extends RippersTest {
     @Test
-    @Tag("flaky")
     public void testMotherlessAlbumRip() throws IOException, URISyntaxException {
-        MotherlessRipper ripper = new MotherlessRipper(new URI("https://motherless.com/G1168D90").toURL());
+        MotherlessRipper ripper = new MotherlessRipper(new URI("https://motherless.com/GI471FFFF").toURL());
+        testRipper(ripper);
+    }
+
+    @Test
+    @Tag("flaky")
+    public void testMotherlessVideoRip() throws IOException, URISyntaxException {
+        MotherlessRipper ripper = new MotherlessRipper(new URI("https://motherless.com/0D2D897").toURL());
         testRipper(ripper);
     }
 }
