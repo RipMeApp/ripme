@@ -49,7 +49,6 @@ public class CfakeRipper extends AbstractHTMLRipper {
 
     @Override
     public Document getNextPage(Document doc) throws IOException {
-        // We use comic-nav-next to the find the next page
         Element elem = doc.select("div#wrapper_path div#content_path div#num_page").last();
         if (elem == null) {
             throw new IOException("No more pages (cannot find nav)");
