@@ -164,7 +164,9 @@ public class MrCongRipper extends AbstractHTMLRipper {
         if (!tagPage) {
             for (Element el : doc.select("p > img")) {
                 String imageSource = el.attr("data-src");
-                result.add(imageSource);
+                if (imageSource == null || imageSource.isEmpty()) {
+                    imageSource = el.attr("src");
+                }
             }
 
             System.out.println("\n1.)Printing List: " + result + "\n");
