@@ -34,8 +34,9 @@ public class MrCongRipper extends AbstractHTMLRipper {
 
     @Override
     public String getDomain() {
-        // NOTE: This was previous mrcong.com, and some resources still
-        // refer to that domain, but all the top level URLs are now misskon.com
+        // NOTE: This was previously mrcong.com, which now redirects to
+        // misskon.com. Some resources still refer to mrcong.com
+        // but all the top level URLs are now misskon.com
         return "misskon.com";
     }
 
