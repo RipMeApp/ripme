@@ -41,13 +41,13 @@ public class MrCongRipper extends AbstractHTMLRipper {
     public String getGID(URL url) throws MalformedURLException {
         System.out.println(url.toExternalForm());
         Pattern p = Pattern.compile(
-                "^https?://misskon\\.com/(\\S*)[0-9]+[-0-9a-zA-Z](-[0-9]+-(?:photos?|ahn)?(-[0-9]+-videos?)?(|/|/[0-9]+)$");
-        Pattern p2 = Pattern.compile("^https?://misskon\\.com/tag/(\\S*)/$"); // Added 6-10-21
+                "^https?://misskon\\.com/(\\S*)[0-9]+[-0-9a-zA-Z](-[0-9]+-(?:photos?|ahn))?(-[0-9]+-videos?)?(|/|/[0-9]+)$");
+        Pattern p2 = Pattern.compile("^https?://misskon\\.com/tag/(\\S*)/$");
         Matcher m = p.matcher(url.toExternalForm());
-        Matcher m2 = p2.matcher(url.toExternalForm()); // 6-10-21
+        Matcher m2 = p2.matcher(url.toExternalForm());
         if (m.matches()) {
             return m.group(1);
-        } else if (m2.matches()) { // Added 6-10-21
+        } else if (m2.matches()) {
             tagPage = true;
             System.out.println("tagPage = TRUE");
             return m2.group(1);
@@ -59,8 +59,8 @@ public class MrCongRipper extends AbstractHTMLRipper {
     }
 
     @Override
-    public Document getFirstPage() throws IOException { // returns the root gallery page regardless of actual page
-                                                        // number
+    public Document getFirstPage() throws IOException {
+        // returns the root gallery page regardless of actual page number
         // "url" is an instance field of the superclass
         String rootUrlStr;
         URL rootUrl;
