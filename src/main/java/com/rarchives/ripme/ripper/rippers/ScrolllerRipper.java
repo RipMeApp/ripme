@@ -26,6 +26,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.rarchives.ripme.ripper.AbstractJSONRipper;
+import com.rarchives.ripme.ripper.AbstractRipper;
 
 public class ScrolllerRipper extends AbstractJSONRipper {
 
@@ -131,7 +132,7 @@ public class ScrolllerRipper extends AbstractJSONRipper {
             HttpURLConnection conn = (HttpURLConnection) obj.openConnection();
             conn.setReadTimeout(5000);
             conn.addRequestProperty("Accept-Language", "en-US,en;q=0.8");
-            conn.addRequestProperty("User-Agent", "Mozilla");
+            conn.addRequestProperty("User-Agent", AbstractRipper.USER_AGENT);
             conn.addRequestProperty("Referer", "scrolller.com");
 
             conn.setDoOutput(true);
