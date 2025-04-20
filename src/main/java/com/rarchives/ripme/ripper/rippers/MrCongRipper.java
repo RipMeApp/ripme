@@ -41,7 +41,7 @@ public class MrCongRipper extends AbstractHTMLRipper {
     public String getGID(URL url) throws MalformedURLException {
         System.out.println(url.toExternalForm());
         Pattern p = Pattern.compile(
-                "^https?://misskon\\.com/(\\S*)[0-9]+[-0-9a-zA-Z](-[0-9]+-(?:photos?|ahn))?(-[0-9]+-videos?)?(|/|/[0-9]+)$");
+                "^https?://(?:[a-z]+\\.)?misskon\\.com/([-0-9a-zA-Z]+)(?:/?|/[0-9]+/?)?$");
         Pattern p2 = Pattern.compile("^https?://misskon\\.com/tag/(\\S*)/$");
         Matcher m = p.matcher(url.toExternalForm());
         Matcher m2 = p2.matcher(url.toExternalForm());
