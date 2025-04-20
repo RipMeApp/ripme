@@ -26,8 +26,6 @@ public class DerpiRipper extends AbstractJSONRipper {
         super(url);
     }
 
-    private String apiUrl;
-
     @Override
     public String getHost() {
         return "DerpiBooru";
