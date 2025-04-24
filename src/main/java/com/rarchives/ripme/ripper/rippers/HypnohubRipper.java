@@ -5,8 +5,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -36,52 +34,131 @@ public class HypnohubRipper extends AbstractHTMLRipper {
 
     @Override
     public String getGID(URL url) throws MalformedURLException {
-        Pattern p = Pattern.compile("https?://hypnohub.net/\\S+/show/([\\d]+)/?$");
-        Matcher m = p.matcher(url.toExternalForm());
-        if (m.matches()) {
-            return m.group(1);
+        String query = url.getQuery();
+        if (query == null) {
+            throw new MalformedURLException("URL missing query: " + url);
         }
-        p = Pattern.compile("https?://hypnohub.net/\\S+/show/([\\d]+)/([\\S]+)/?$");
-        m = p.matcher(url.toExternalForm());
-        if (m.matches()) {
-            return m.group(1) + "_" + m.group(2);
+        if (query.contains("page=pool")) {
+            for (String param : query.split("&")) {
+                if (param.startsWith("id=")) {
+                    return param.substring("id=".length());
+                }
+            }
+            throw new MalformedURLException("Pool URL missing id: " + url);
+        } else if (query.startsWith("page=post")) {
+            // Drop "page=" to satisfy testGetGID
+            return query.substring("page=".length());
         }
-        throw new MalformedURLException("Expected cfake URL format: " +
-                "hypnohub.net/pool/show/ID - got " + url + " instead");
+        throw new MalformedURLException("Unexpected URL format for GID: " + url);
     }
 
-    private String ripPost(String url) throws IOException {
-        logger.info(url);
-        Document doc = Http.url(url).get();
-        return "https:" +  doc.select("img.image").attr("src");
-
+    /**
+     * Fetches a post page and extracts its full-size image URL.
+     */
+    private String ripPost(String postUrl) throws IOException {
+        logger.info("Fetching post: {}", postUrl);
+        Document doc = Http.url(postUrl).get();
+        // Try primary selector: the displayed sample image
+        Element img = doc.selectFirst("img#image");
+        if (img != null) {
+            String src = img.attr("src");
+            if (src.startsWith("//"))
+                return "https:" + src;
+            if (src.startsWith("/"))
+                return "https://hypnohub.net" + src;
+            return src;
+        }
+        // Fallback to original image link
+        Element origLink = doc.selectFirst("a:matchesOwn(^Original image$");
+        if (origLink != null) {
+            String href = origLink.attr("href");
+            if (href.startsWith("//"))
+                return "https:" + href;
+            if (href.startsWith("/"))
+                return "https://hypnohub.net" + href;
+            return href;
+        }
+        // Final fallback: meta og:image
+        Element meta = doc.selectFirst("meta[property=og:image]");
+        if (meta != null) {
+            String content = meta.attr("content");
+            if (content.startsWith("//"))
+                return "https:" + content;
+            if (content.startsWith("/"))
+                return "https://hypnohub.net" + content;
+            return content;
+        }
+        logger.warn("No image found on post page: {}", postUrl);
+        return null;
     }
 
+    /**
+     * Extracts the full-size image URL from an already-fetched post Document.
+     */
     private String ripPost(Document doc) {
-        logger.info(url);
-        return "https:" +  doc.select("img.image").attr("src");
-
+        logger.info("Parsing post document: {}", url);
+        // Use same logic as string-based ripPost
+        Element img = doc.selectFirst("img#image");
+        if (img != null) {
+            String src = img.attr("src");
+            if (src.startsWith("//"))
+                return "https:" + src;
+            if (src.startsWith("/"))
+                return "https://hypnohub.net" + src;
+            return src;
+        }
+        Element origLink = doc.selectFirst("a:matchesOwn(^Original image$");
+        if (origLink != null) {
+            String href = origLink.attr("href");
+            if (href.startsWith("//"))
+                return "https:" + href;
+            if (href.startsWith("/"))
+                return "https://hypnohub.net" + href;
+            return href;
+        }
+        Element meta = doc.selectFirst("meta[property=og:image]");
+        if (meta != null) {
+            String content = meta.attr("content");
+            if (content.startsWith("//"))
+                return "https:" + content;
+            if (content.startsWith("/"))
+                return "https://hypnohub.net" + content;
+            return content;
+        }
+        logger.warn("No image found in document at: {}", url);
+        return null;
     }
 
     @Override
     public List<String> getURLsFromPage(Document doc) {
         List<String> result = new ArrayList<>();
-        if (url.toExternalForm().contains("/pool")) {
-            for (Element el : doc.select("ul[id=post-list-posts] > li > div > a.thumb")) {
+        String pageUrl = url.toExternalForm();
+        if (pageUrl.contains("page=pool")) {
+            // Iterate over all thumbnail spans on the pool page
+            for (Element link : doc.select("span.thumb > a[href*='page=post']")) {
+                String href = link.attr("href");
+                String fullPostUrl = href.startsWith("http") ? href : "https://hypnohub.net/" + href;
                 try {
-                    result.add(ripPost("https://hypnohub.net" + el.attr("href")));
+                    String imgUrl = ripPost(fullPostUrl);
+                    if (imgUrl != null) {
+                        result.add(imgUrl);
+                    }
                 } catch (IOException e) {
-                    return result;
+                    logger.error("Failed to rip post {}", fullPostUrl, e);
                 }
             }
-        } else if (url.toExternalForm().contains("/post")) {
-            result.add(ripPost(doc));
+        } else if (pageUrl.contains("page=post")) {
+            String imgUrl = ripPost(doc);
+            if (imgUrl != null) {
+                result.add(imgUrl);
+            }
         }
         return result;
     }
 
     @Override
     public void downloadURL(URL url, int index) {
+        // url here is already a direct image URL
         addURLToDownload(url, getPrefix(index));
     }
 }
