@@ -14,7 +14,6 @@ import java.util.regex.Pattern;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jsoup.Connection.Response;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
@@ -25,7 +24,6 @@ public class SankakuComplexRipper extends AbstractHTMLRipper {
 
     private static final Logger logger = LogManager.getLogger(SankakuComplexRipper.class);
 
-    private Document albumDoc = null;
     private Map<String,String> cookies = new HashMap<>();
 
     public SankakuComplexRipper(URL url) throws IOException {
@@ -74,12 +72,7 @@ public class SankakuComplexRipper extends AbstractHTMLRipper {
 
     @Override
     public Document getFirstPage() throws IOException {
-        if (albumDoc == null) {
-            Response resp = Http.url(url).response();
-            cookies.putAll(resp.cookies());
-            albumDoc = resp.parse();
-        }
-        return albumDoc;
+        return Http.url(url).collectCookiesInto(cookies).get();
     }
 
     @Override
