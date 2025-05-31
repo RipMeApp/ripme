@@ -56,7 +56,7 @@ public class RedditRipper extends AlbumRipper {
     private static final String HOST   = "reddit";
     private static final String DOMAIN = "reddit.com";
 
-    private static final String REDDIT_USER_AGENT = "RipMe:github.com/RipMeApp/ripme:" + UpdateUtils.getThisJarVersion() + " (by /u/metaprime and /u/ineedmorealts)";
+    private static final String REDDIT_USER_AGENT = "RipMe:github.com/laziassdev/ripme:" + UpdateUtils.getThisJarVersion() + " (by /u/metaprime and /u/ineedmorealts)";
 
     private static final int SLEEP_TIME = 2000;
 
