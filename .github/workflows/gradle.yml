@@ -53,14 +53,25 @@ jobs:
             "url": "https://github.com/${{ github.repository }}/releases/download/${{ steps.rename.outputs.version_tag }}/${{ steps.rename.outputs.version_tag }}.jar"
           }' > dist/ripme.json
 
-      - name: Commit ripme.json to main
+      - name: Commit and tag version
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@users.noreply.github.com"
-          git pull --rebase
+
+          # Avoid rebase conflict by resetting to origin/main
+          git fetch origin main
+          git reset --hard origin/main
+
+          # Commit version update
           git add dist/ripme.json
-          git commit -m "Update ripme.json for ${{ steps.get_version.outputs.next_version }}"
+          git commit -m "Update ripme.json for ${{ steps.get_version.outputs.next_version }} || echo "No changes to commit"
+
+          # Push to main
           git push origin main
+
+          # Tag current commit
+          git tag v${{ steps.get_version.outputs.next_version }}
+          git push origin v${{ steps.get_version.outputs.next_version }}
 
       - name: Publish release
         uses: marvinpinto/action-automatic-releases@latest
