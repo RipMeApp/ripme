@@ -48,13 +48,20 @@ jobs:
       - name: Generate ripme.json
         run: |
           version="${{ steps.get_version.outputs.next_version }}"
-          hash=$(sha256sum dist/$version.jar | awk '{ print $1 }')
-          change=$(git log -1 --pretty=format:"%s")
+          file="ripme-${version}.jar"
+          hash=$(sha256sum dist/$file | awk '{ print $1 }')
+          # Collect commit messages since the last tag
+          commit_messages=$(git log "$(git describe --tags --abbrev=0)"..HEAD --pretty=format:"%s" | sed 's/"/\\"/g')
+
+          # Format the changeList as a JSON array of strings
+          changes_json=$(printf '%s\n' "$commit_messages" | sed "s/^/\"${version}: /; s/$/\",/" | sed '$ s/,$//')
 
           echo "{
             \"latestVersion\": \"${version}\",
             \"currentHash\": \"${hash}\",
-            \"changeList\": [\"${version}: ${change}\"]
+            \"changeList\": [
+              ${changes_json}
+            ]
           }" > ripme.json
 
 
