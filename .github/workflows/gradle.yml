@@ -84,4 +84,4 @@ jobs:
           title: "${{ steps.get_version.outputs.next_version }}"
           files: |
             dist/*.jar
-            dist/ripme.json
+            ripme.json
