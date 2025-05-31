@@ -203,6 +203,8 @@ public class Http {
 
     public static String getWith429Retry(URL url, int maxRetries, int baseDelaySeconds, String userAgent) throws IOException {
         int retries = 0;
+        int maxDelaySeconds = 600; // Cap max wait to 10 minutes
+        Random random = new Random();
         Logger logger = LogManager.getLogger(Http.class);
 
         while (retries <= maxRetries) {
@@ -211,16 +213,30 @@ public class Http {
                 connection = (HttpURLConnection) url.openConnection();
                 connection.setRequestProperty("User-Agent", userAgent);
                 connection.setRequestProperty("Accept", "application/json");
-                connection.setConnectTimeout(100000);
-                connection.setReadTimeout(100000);
+                connection.setConnectTimeout(10000);
+                connection.setReadTimeout(10000);
 
                 int responseCode = connection.getResponseCode();
 
                 if (responseCode == 429) {
                     String retryAfter = connection.getHeaderField("Retry-After");
-                    long waitTime = retryAfter != null ? Long.parseLong(retryAfter) : (long) Math.pow(baseDelaySeconds, retries);
-                    logger.warn("[!] 429 Too Many Requests - retrying in " + waitTime + "s (attempt " + (retries + 1) + ")"
-                                + (retryAfter != null ? " (using Retry-After)" : " (no Retry-After header)"));
+                    long waitTime;
+
+                    if (retryAfter != null) {
+                        try {
+                            waitTime = Long.parseLong(retryAfter);
+                            logger.warn("[!] 429 Too Many Requests - retrying in " + waitTime + "s (attempt " + (retries + 1) + ") (using Retry-After)");
+                        } catch (NumberFormatException e) {
+                            waitTime = Math.min(baseDelaySeconds * (1L << retries), maxDelaySeconds);
+                            logger.warn("[!] Invalid Retry-After format - fallback retrying in " + waitTime + "s (attempt " + (retries + 1) + ")");
+                        }
+                    } else {
+                        waitTime = Math.min(baseDelaySeconds * (1L << retries), maxDelaySeconds);
+                        int jitter = random.nextInt(5); // 0–4s jitter
+                        waitTime += jitter;
+                        logger.warn("[!] 429 Too Many Requests - retrying in " + waitTime + "s (attempt " + (retries + 1) + ") (no Retry-After header)");
+                    }
+
                     Utils.sleep(waitTime * 1000L);
                     retries++;
                     continue;
@@ -230,7 +246,6 @@ public class Http {
                     throw new IOException("HTTP error: " + responseCode);
                 }
 
-                // Read response
                 try (InputStream inputStream = connection.getInputStream();
                     BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
                     StringBuilder response = new StringBuilder();
@@ -242,8 +257,10 @@ public class Http {
                 }
 
             } catch (IOException e) {
-                if (e.getMessage().contains("429")) {
-                    long waitTime = (long) Math.pow(baseDelaySeconds, retries);
+                if (e.getMessage() != null && e.getMessage().contains("429")) {
+                    long waitTime = Math.min(baseDelaySeconds * (1L << retries), maxDelaySeconds);
+                    int jitter = random.nextInt(5);
+                    waitTime += jitter;
                     logger.warn("[!] IOException suggests 429 - retrying in " + waitTime + "s (attempt " + (retries + 1) + ")");
                     Utils.sleep(waitTime * 1000L);
                     retries++;
@@ -259,7 +276,6 @@ public class Http {
 
         throw new IOException("Exceeded max retries for GET " + url);
     }
-
 
     public Response response() throws IOException {
         Response response;

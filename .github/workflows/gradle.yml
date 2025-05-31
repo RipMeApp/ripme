@@ -1,89 +1,73 @@
 name: CI + release
 
 on:
-  pull_request:
   push:
     branches:
-      - '**'
-    tags:
-      - '!**'
+      - main
 
 jobs:
   build:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest, windows-latest]
-        java: [23]
-        include:
-          - os: ubuntu-latest
-            java: 17
-            upload: true
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v4
 
       - name: Set environment CI_ variables
         id: ci-env
         uses: FranzDiebold/github-env-vars-action@v2
 
+      - name: Get next version tag
+        id: get_version
+        run: |
+          current_version=$(grep 'version' ripme.json | cut -d '"' -f4)
+          version_base=$(echo $current_version | cut -d '-' -f1)
+          commit_count=$(git rev-list --count HEAD)
+          commit_sha=$(git rev-parse --short HEAD)
+          echo "next_version=$version_base-$commit_count-$commit_sha" >> $GITHUB_OUTPUT
+
       - name: Set up Java
         uses: actions/setup-java@v4.2.1
         with:
-          java-version: ${{ matrix.java }}
+          java-version: 17
           distribution: zulu
           cache: gradle
 
       - name: Build with Gradle
-        run: gradle clean assemble -PjavacRelease=${{ matrix.java }}
+        run: gradle clean assemble -PjavacRelease=17
 
-      - name: Generate version info and rename JAR
-        if: matrix.upload
-        id: versioning
+      - name: Rename JAR
+        id: rename
         run: |
-          version="1.7.94"
-          commits_since=$(git rev-list --count $(git describe --tags --abbrev=0)..HEAD || echo 0)
-          sha_short=$(git rev-parse --short=8 HEAD)
-          branch="${CI_REF_NAME_SLUG}"
-          filename="ripme-${version}-${commits_since}-${sha_short}-${branch}.jar"
-          mv build/libs/ripme*.jar build/libs/"$filename"
-          echo "release_tag=$filename" >> $GITHUB_OUTPUT
-          echo "release_title=$filename" >> $GITHUB_OUTPUT
-          echo "filename=$filename" >> $GITHUB_OUTPUT
-        env:
-          CI_REF_NAME_SLUG: ${{ steps.ci-env.outputs.CI_REF_NAME_SLUG }}
+          mkdir -p dist
+          new_name="ripme-${{ steps.get_version.outputs.next_version }}.jar"
+          cp build/libs/*.jar dist/$new_name
+          echo "version_tag=${{ steps.get_version.outputs.next_version }}" >> $GITHUB_OUTPUT
 
-      - name: SHA256
-        if: matrix.upload
-        run: shasum -a 256 "build/libs/${{ steps.versioning.outputs.filename }}"
+      - name: Generate ripme.json
+        run: |
+          echo '{
+            "version": "${{ steps.get_version.outputs.next_version }}",
+            "url": "https://github.com/${{ github.repository }}/releases/download/${{ steps.rename.outputs.version_tag }}/${{ steps.rename.outputs.version_tag }}.jar"
+          }' > dist/ripme.json
 
-      - name: Upload renamed JAR as artifact
-        if: matrix.upload
-        uses: actions/upload-artifact@v4
+      - name: Commit ripme.json to main
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git pull --rebase
+          git add dist/ripme.json
+          git commit -m "Update ripme.json for ${{ steps.rename.outputs.version_tag }}"
+          git push origin main
+
+      - name: Publish release
+        uses: marvinpinto/action-automatic-releases@latest
         with:
-          name: ${{ steps.versioning.outputs.filename }}
-          path: build/libs/${{ steps.versioning.outputs.filename }}
-
-      - name: Create release with notes
-        if: matrix.upload
-        uses: ncipollo/release-action@v1
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          tag: ${{ steps.versioning.outputs.release_tag }}
-          name: ${{ steps.versioning.outputs.release_title }}
-          body: |
-            ## Automated Development Build
-
-            This build was generated from branch `${{ steps.ci-env.outputs.CI_REF_NAME_SLUG }}`.
-
-            **Version components**:
-            - SemVer: `1.7.94`
-            - Filename: `${{ steps.versioning.outputs.filename }}`
-            - Triggered by: `${{ github.actor }}`
-
-            ---
-            _Release notes are auto-generated. Please update manually if needed._
-
-          artifacts: build/libs/${{ steps.versioning.outputs.filename }}
-          prerelease: true
-          draft: false
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          automatic_release_tag: "${{ steps.rename.outputs.version_tag }}"
+          prerelease: false
+          title: "${{ steps.rename.outputs.version_tag }}"
+          files: |
+            dist/*.jar
+            dist/ripme.json
