@@ -203,23 +203,24 @@ public class Http {
     }
 
     public static String getWith429Retry(URL url, int maxRetries, int baseDelaySeconds, String userAgent) throws IOException {
-        int retries = 0;
-        int maxDelaySeconds = 600; // Cap max wait to 10 minutes
-        Random random = new Random();
-        Logger logger = LogManager.getLogger(Http.class);
+    int retries = 0;
+    int maxDelaySeconds = 600; // Cap max wait to 10 minutes
+    Random random = new Random();
+    Logger logger = LogManager.getLogger(Http.class);
 
-        while (retries <= maxRetries) {
-            HttpURLConnection connection = null;
-            try {
-                connection = (HttpURLConnection) url.openConnection();
-                connection.setRequestProperty("User-Agent", userAgent);
-                connection.setRequestProperty("Accept", "application/json");
-                connection.setConnectTimeout(10000);
-                connection.setReadTimeout(10000);
+    while (retries <= maxRetries) {
+        HttpURLConnection connection = null;
+        try {
+            connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestProperty("User-Agent", userAgent);
+            connection.setRequestProperty("Accept", "application/json");
+            connection.setConnectTimeout(10000);
+            connection.setReadTimeout(10000);
 
-                int responseCode = connection.getResponseCode();
+            int responseCode = connection.getResponseCode();
 
-                if (responseCode == 429) {
+            if (responseCode == 429) {
+                if (retries < maxRetries) {
                     String retryAfter = connection.getHeaderField("Retry-After");
                     long waitTime;
 
@@ -241,24 +242,32 @@ public class Http {
                     Utils.sleep(waitTime * 1000L);
                     retries++;
                     continue;
+                } else {
+                    // After final normal retry, wait 10 minutes and try once more
+                    logger.warn("[!] Max retries reached. Waiting 10 minutes before one final attempt...");
+                    Utils.sleep(600_000); // 10 minutes in ms
+                    retries++; // Ensure we exit loop if this fails
+                    continue;
                 }
+            }
 
-                if (responseCode >= 400) {
-                    throw new IOException("HTTP error: " + responseCode);
+            if (responseCode >= 400) {
+                throw new IOException("HTTP error: " + responseCode);
+            }
+
+            try (InputStream inputStream = connection.getInputStream();
+                 BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
+                StringBuilder response = new StringBuilder();
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    response.append(line);
                 }
+                return response.toString();
+            }
 
-                try (InputStream inputStream = connection.getInputStream();
-                    BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
-                    StringBuilder response = new StringBuilder();
-                    String line;
-                    while ((line = reader.readLine()) != null) {
-                        response.append(line);
-                    }
-                    return response.toString();
-                }
-
-            } catch (IOException e) {
-                if (e.getMessage() != null && e.getMessage().contains("429")) {
+        } catch (IOException e) {
+            if (e.getMessage() != null && e.getMessage().contains("429")) {
+                if (retries < maxRetries) {
                     long waitTime = Math.min(baseDelaySeconds * (1L << retries), maxDelaySeconds);
                     int jitter = random.nextInt(5);
                     waitTime += jitter;
@@ -266,16 +275,21 @@ public class Http {
                     Utils.sleep(waitTime * 1000L);
                     retries++;
                 } else {
-                    throw e;
+                    logger.warn("[!] Max retries hit from IOException. Waiting 10 minutes before final attempt...");
+                    Utils.sleep(600_000);
+                    retries++;
                 }
-            } finally {
-                if (connection != null) {
-                    connection.disconnect();
-                }
+            } else {
+                throw e;
+            }
+        } finally {
+            if (connection != null) {
+                connection.disconnect();
             }
         }
+    }
 
-        throw new IOException("Exceeded max retries for GET " + url);
+    throw new IOException("Exceeded max retries (including final attempt) for GET " + url);
     }
 
     public Response response() throws IOException {
