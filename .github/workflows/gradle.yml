@@ -87,7 +87,8 @@ jobs:
           git reset --hard origin/main
 
           # Commit version update
-          git add ripme.json
+          # git add ripme.json
+          git add .
           git commit -m "Update ripme.json for ${{ steps.get_version.outputs.next_version }}" || echo "No changes to commit"
 
           # Push to main
