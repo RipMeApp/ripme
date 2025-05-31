@@ -26,6 +26,7 @@ jobs:
           commit_count=$(git rev-list --count HEAD)
           commit_sha=$(git rev-parse --short HEAD)
           next_version="$version_base-$commit_count-$commit_sha"
+          echo "next_version=$next_version"
           echo "next_version=$next_version" >> $GITHUB_OUTPUT
 
       - name: Set up Java
@@ -48,10 +49,13 @@ jobs:
 
       - name: Generate ripme.json
         run: |
-          echo '{
-            "version": "${{ steps.get_version.outputs.next_version }}",
-            "url": "https://github.com/${{ github.repository }}/releases/download/${{ steps.rename.outputs.version_tag }}/${{ steps.rename.outputs.version_tag }}.jar"
-          }' > dist/ripme.json
+          cat <<EOF > ripme.json
+          {
+            "latestVersion": "${{ steps.get_version.outputs.next_version }}",
+            "currentHash": "$(sha256sum dist/${{ steps.rename.outputs.version_tag }}.jar | awk '{ print $1 }')",
+            "changeList": []
+          }
+          EOF
 
       - name: Commit and tag version
         run: |
@@ -63,7 +67,7 @@ jobs:
           git reset --hard origin/main
 
           # Commit version update
-          git add dist/ripme.json
+          git add ripme.json
           git commit -m "Update ripme.json for ${{ steps.get_version.outputs.next_version }}" || echo "No changes to commit"
 
           # Push to main
