@@ -50,6 +50,7 @@ jobs:
           version="${{ steps.get_version.outputs.next_version }}"
           file="ripme-${version}.jar"
           hash=$(sha256sum dist/$file | awk '{ print $1 }')
+          timestamp=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 
           # Try to get the latest tag, fallback to initial commit if none exist
           last_tag=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
@@ -62,6 +63,7 @@ jobs:
 
           # Format the changeList as a JSON array of strings
           changes_json=$(printf '%s\n' "$commit_messages" | sed "s/^/\"${version}: /; s/$/\",/" | sed '$ s/,$//')
+          changes_json="${changes_json}, \"${version}: Built at ${timestamp}\""
 
           # Write ripme.json
           echo "{
@@ -71,6 +73,8 @@ jobs:
               ${changes_json}
             ]
           }" > ripme.json
+          echo "Generated ripme.json content:"
+          cat ripme.json
 
 
       - name: Commit and tag version
