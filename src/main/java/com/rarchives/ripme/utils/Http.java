@@ -209,7 +209,23 @@ public class Http {
                         .body();
             } catch (IOException e) {
                 if (e.getMessage().contains("429")) {
-                    int waitTime = (int) Math.pow(baseDelaySeconds, retries);
+                    int waitTime = (int) Math.pow(baseDelaySeconds, retries);  // fallback
+
+                    try {
+                        // Try to get the response to extract Retry-After
+                        Connection.Response resp = Http.url(url)
+                                                    .ignoreContentType()
+                                                    .userAgent(userAgent)
+                                                    .execute();
+                        String retryAfter = resp.header("Retry-After");
+                        if (retryAfter != null) {
+                            waitTime = Integer.parseInt(retryAfter);
+                            logger.info("[!] Using Retry-After header: " + waitTime + "s");
+                        }
+                    } catch (Exception ex) {
+                        logger.warn("Could not fetch Retry-After header, using exponential backoff instead.");
+                    }
+
                     logger.warn("[!] 429 Too Many Requests - retrying in " + waitTime + "s (attempt " + (retries + 1) + ")");
                     Utils.sleep(waitTime * 1000L);
                     retries++;
@@ -221,6 +237,7 @@ public class Http {
 
         throw new IOException("Exceeded max retries for GET " + url);
     }
+
 
 
     public Response response() throws IOException {
