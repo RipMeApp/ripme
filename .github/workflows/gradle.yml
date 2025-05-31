@@ -47,13 +47,16 @@ jobs:
 
       - name: Generate ripme.json
         run: |
-          cat <<EOF > ripme.json
-          {
-            "latestVersion": "${{ steps.get_version.outputs.next_version }}",
-            "currentHash": "$(sha256sum dist/ripme-${{ steps.get_version.outputs.next_version }}.jar | awk '{ print $1 }')",
-            "changeList": []
-          }
-          EOF
+          version="ripme-${{ steps.get_version.outputs.next_version }}"
+          hash=$(sha256sum dist/$version.jar | awk '{ print $1 }')
+          change=$(git log -1 --pretty=format:"%s")
+
+          echo "{
+            \"latestVersion\": \"${version}\",
+            \"currentHash\": \"${hash}\",
+            \"changeList\": [\"${version}: ${change}\"]
+          }" > ripme.json
+
 
       - name: Commit and tag version
         run: |
