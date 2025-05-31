@@ -40,19 +40,17 @@ jobs:
         run: gradle clean assemble -PjavacRelease=17
 
       - name: Rename JAR
-        id: rename
         run: |
           mkdir -p dist
           new_name="ripme-${{ steps.get_version.outputs.next_version }}.jar"
           cp build/libs/*.jar dist/$new_name
-          echo "version_tag=${{ steps.get_version.outputs.next_version }}" >> $GITHUB_OUTPUT
 
       - name: Generate ripme.json
         run: |
           cat <<EOF > ripme.json
           {
             "latestVersion": "${{ steps.get_version.outputs.next_version }}",
-            "currentHash": "$(sha256sum dist/${{ steps.rename.outputs.version_tag }}.jar | awk '{ print $1 }')",
+            "currentHash": "$(sha256sum dist/ripme-${{ steps.get_version.outputs.next_version }}.jar | awk '{ print $1 }')",
             "changeList": []
           }
           EOF
