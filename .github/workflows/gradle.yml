@@ -56,9 +56,9 @@ jobs:
       uses: "marvinpinto/action-automatic-releases@latest"
       with:
         repo_token: "${{ secrets.GITHUB_TOKEN }}"
-        automatic_release_tag: "latest-${{ env.CI_REF_NAME_SLUG  }}"
+        automatic_release_tag: "latest-${{ steps.ci-env.outputs.CI_REF_NAME_SLUG }}"
         prerelease: true
-        title: "development build ${{ env.CI_REF_NAME }}"
+        title: "development build ${{ steps.ci-env.outputs.CI_REF_NAME }}"
         files: |
             build/libs/*.jar
 
