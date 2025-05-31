@@ -197,44 +197,64 @@ public class Http {
     }
 
     public static String getWith429Retry(URL url, int maxRetries, int baseDelaySeconds, String userAgent) throws IOException {
-    int retries = 0;
-    Logger logger = LogManager.getLogger(Http.class);
+        int retries = 0;
+        Logger logger = LogManager.getLogger(Http.class);
 
-    while (retries <= maxRetries) {
-        try {
-            return Http.url(url)
-                       .ignoreContentType()
-                       .userAgent(userAgent)
-                       .response()
-                       .body();
-        } catch (IOException e) {
-            if (e.getMessage().contains("429")) {
-                int waitTime = (int) Math.pow(baseDelaySeconds, retries);  // fallback
+        while (retries <= maxRetries) {
+            HttpURLConnection connection = null;
+            try {
+                connection = (HttpURLConnection) url.openConnection();
+                connection.setRequestMethod("GET");
+                connection.setRequestProperty("User-Agent", userAgent);
+                connection.setConnectTimeout(10000);
+                connection.setReadTimeout(10000);
 
-                try {
-                    // Use Jsoup directly to access raw response headers
-                    Connection.Response retryResp = org.jsoup.Jsoup.connect(url.toExternalForm())
-                        .ignoreContentType(true)
-                        .userAgent(userAgent)
-                        .execute();
+                int status = connection.getResponseCode();
 
-                    String retryAfter = retryResp.header("Retry-After");
+                if (status == 429) {
+                    int waitTime = (int) Math.pow(baseDelaySeconds, retries); // fallback
+                    String retryAfter = connection.getHeaderField("Retry-After");
                     if (retryAfter != null) {
-                        waitTime = Integer.parseInt(retryAfter);
-                        logger.info("[!] Using Retry-After header: " + waitTime + "s");
+                        try {
+                            waitTime = Integer.parseInt(retryAfter.trim());
+                            logger.info("[!] Server sent Retry-After: " + waitTime + "s");
+                        } catch (NumberFormatException ex) {
+                            logger.warn("[!] Could not parse Retry-After value: " + retryAfter);
+                        }
                     }
-                } catch (Exception ex) {
-                    logger.warn("Could not fetch Retry-After header, using exponential backoff instead.");
+
+                    logger.warn("[!] 429 Too Many Requests - retrying in " + waitTime + "s (attempt " + (retries + 1) + ")");
+                    Utils.sleep(waitTime * 1000L);
+                    retries++;
+                    continue;
                 }
 
-                logger.warn("[!] 429 Too Many Requests - retrying in " + waitTime + "s (attempt " + (retries + 1) + ")");
-                Utils.sleep(waitTime * 1000L);
-                retries++;
-            } else {
-                throw e;
+                if (status >= 400) {
+                    throw new IOException("HTTP error " + status + " while accessing " + url);
+                }
+
+                InputStream inputStream = connection.getInputStream();
+                BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+                StringBuilder responseBody = new StringBuilder();
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    responseBody.append(line).append("\n");
+                }
+                reader.close();
+                return responseBody.toString();
+
+            } catch (IOException e) {
+                throw new IOException("Request failed: " + url, e);
+            } finally {
+                if (connection != null) {
+                    connection.disconnect();
+                }
             }
         }
+
+        throw new IOException("Exceeded max retries for GET " + url);
     }
+
 
     throw new IOException("Exceeded max retries for GET " + url);
     }
