@@ -44,7 +44,7 @@ import com.rarchives.ripme.utils.LoggingConfig;
  */
 public class App {
 
-    private static final Logger logger = Logger.getLogger(App.class.getName());
+    private static final Logger logger = LogManager.getLogger(App.class);
     public static String stringToAppendToFoldername = null;
     private static final History HISTORY = new History();
     /**
