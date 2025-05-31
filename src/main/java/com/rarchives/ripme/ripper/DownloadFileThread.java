@@ -61,6 +61,7 @@ class DownloadFileThread implements Runnable {
      * Attempts to download the file. Retries as needed. Notifies observers upon
      * completion/error/warn.
      */
+    
     @Override
     public void run() {
         // First thing we make sure the file name doesn't have any illegal chars in it
