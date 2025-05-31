@@ -111,6 +111,7 @@ public class RedditRipper extends AlbumRipper {
 
                 if (maxDownloads > 0 && downloadCounter >= maxDownloads) {
                     sendUpdate(RipStatusMessage.STATUS.DOWNLOAD_COMPLETE_HISTORY, "Reached maxdownloads limit of " + maxDownloads + ". Stopping.");
+                    logger.info("Reached maxdownloads limit of " + maxDownloads + ". Stopping.");
                     break;
                 }
 
