@@ -50,12 +50,20 @@ jobs:
           version="${{ steps.get_version.outputs.next_version }}"
           file="ripme-${version}.jar"
           hash=$(sha256sum dist/$file | awk '{ print $1 }')
-          # Collect commit messages since the last tag
-          commit_messages=$(git log "$(git describe --tags --abbrev=0)"..HEAD --pretty=format:"%s" | sed 's/"/\\"/g')
+
+          # Try to get the latest tag, fallback to initial commit if none exist
+          last_tag=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+
+          if [[ -n "$last_tag" ]]; then
+            commit_messages=$(git log "$last_tag"..HEAD --pretty=format:"%s" | sed 's/"/\\"/g')
+          else
+            commit_messages=$(git log --pretty=format:"%s" | sed 's/"/\\"/g')
+          fi
 
           # Format the changeList as a JSON array of strings
           changes_json=$(printf '%s\n' "$commit_messages" | sed "s/^/\"${version}: /; s/$/\",/" | sed '$ s/,$//')
 
+          # Write ripme.json
           echo "{
             \"latestVersion\": \"${version}\",
             \"currentHash\": \"${hash}\",
