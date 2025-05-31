@@ -37,7 +37,7 @@ jobs:
         cache: gradle
 
     - name: Build with Gradle
-      run: gradle clean build -PjavacRelease=${{ matrix.java }}
+      run: gradle clean assemble -PjavacRelease=${{ matrix.java }}
 
     - name: SHA256
       if: matrix.upload
