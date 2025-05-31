@@ -99,25 +99,38 @@ public class RedditRipper extends AlbumRipper {
     }
 
     @Override
-    public void rip() throws IOException {
-        try {
-            URL jsonURL = getJsonURL(this.url);
-            while (true) {
-                if (shouldAddURL()) {
-                    sendUpdate(RipStatusMessage.STATUS.DOWNLOAD_COMPLETE_HISTORY, "Already seen the last " + alreadyDownloadedUrls + " images ending rip");
-                    break;
-                }
-                jsonURL = getAndParseAndReturnNext(jsonURL);
-                if (jsonURL == null || isThisATest() || isStopped()) {
-                    break;
-                }
-            }
-        } catch (URISyntaxException e) {
-            new IOException(e.getMessage());
-        }
-        waitForThreads();
-    }
+        public void rip() throws IOException {
+            int maxDownloads = Utils.getConfigInteger("maxdownloads", -1); // -1 means no limit
+            int downloadedCount = 0;
 
+            try {
+                URL jsonURL = getJsonURL(this.url);
+                while (true) {
+                    if (shouldAddURL()) {
+                        sendUpdate(RipStatusMessage.STATUS.DOWNLOAD_COMPLETE_HISTORY, "Already seen the last " + alreadyDownloadedUrls + " images ending rip");
+                        break;
+                    }
+
+                    // Get next page and download images
+                    jsonURL = getAndParseAndReturnNext(jsonURL);
+
+                    if (maxDownloads > 0 && this.urlList != null) {
+                        downloadedCount = this.urlList.size();
+                        if (downloadedCount >= maxDownloads) {
+                            sendUpdate(RipStatusMessage.STATUS.DOWNLOAD_COMPLETE_HISTORY, "Reached maxdownloads limit of " + maxDownloads + ". Stopping.");
+                            break;
+                        }
+                    }
+
+                    if (jsonURL == null || isThisATest() || isStopped()) {
+                        break;
+                    }
+                }
+            } catch (URISyntaxException e) {
+                new IOException(e.getMessage());
+            }
+            waitForThreads();
+        }
 
 
     private URL getAndParseAndReturnNext(URL url) throws IOException, URISyntaxException {

@@ -82,13 +82,12 @@ jobs:
           git config user.name "github-actions"
           git config user.email "github-actions@users.noreply.github.com"
 
-          # Avoid rebase conflict by resetting to origin/main
-          git fetch origin main
-          git reset --hard origin/main
+          # # Avoid rebase conflict by resetting to origin/main
+          # git fetch origin main
+          # git reset --hard origin/main
 
           # Commit version update
-          # git add ripme.json
-          git add .
+          git add ripme.json
           git commit -m "Update ripme.json for ${{ steps.get_version.outputs.next_version }}" || echo "No changes to commit"
 
           # Push to main
