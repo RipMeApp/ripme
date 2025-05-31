@@ -24,7 +24,7 @@ jobs:
           current_version=$(jq -r '.latestVersion' ripme.json)
           version_base=$(echo "$current_version" | cut -d '-' -f1)
           commit_count=$(git rev-list --count HEAD)
-          commit_sha=$(git rev-parse --short HEAD)
+          commit_sha=${{ steps.ci-env.outputs.CI_SHA_SHORT }}
           next_version="$version_base-$commit_count-$commit_sha"
           echo "next_version=$next_version"
           echo "next_version=$next_version" >> $GITHUB_OUTPUT
