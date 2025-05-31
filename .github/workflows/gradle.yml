@@ -72,7 +72,7 @@ jobs:
 
           # Build metadata
           commit_count=$(git rev-list --count HEAD)
-          commit_sha=$CI_SHA
+          commit_sha=$CI_SHA_SHORT
 
           # Final version: 2.1.19-123-abc123
           next_version="$version_base-$commit_count-$commit_sha"
