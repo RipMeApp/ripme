@@ -64,7 +64,7 @@ jobs:
 
           # Commit version update
           git add dist/ripme.json
-          git commit -m "Update ripme.json for ${{ steps.get_version.outputs.next_version }} || echo "No changes to commit"
+          git commit -m "Update ripme.json for ${{ steps.get_version.outputs.next_version }}" || echo "No changes to commit"
 
           # Push to main
           git push origin main
