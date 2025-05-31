@@ -21,11 +21,12 @@ jobs:
       - name: Get next version tag
         id: get_version
         run: |
-          current_version=$(grep 'version' ripme.json | cut -d '"' -f4)
-          version_base=$(echo $current_version | cut -d '-' -f1)
+          current_version=$(jq -r '.latestVersion' ripme.json)
+          version_base=$(echo "$current_version" | cut -d '-' -f1)
           commit_count=$(git rev-list --count HEAD)
           commit_sha=$(git rev-parse --short HEAD)
-          echo "next_version=$version_base-$commit_count-$commit_sha" >> $GITHUB_OUTPUT
+          next_version="$version_base-$commit_count-$commit_sha"
+          echo "next_version=$next_version" >> $GITHUB_OUTPUT
 
       - name: Set up Java
         uses: actions/setup-java@v4.2.1
@@ -58,16 +59,16 @@ jobs:
           git config user.email "github-actions@users.noreply.github.com"
           git pull --rebase
           git add dist/ripme.json
-          git commit -m "Update ripme.json for ${{ steps.rename.outputs.version_tag }}"
+          git commit -m "Update ripme.json for ${{ steps.get_version.outputs.next_version }}"
           git push origin main
 
       - name: Publish release
         uses: marvinpinto/action-automatic-releases@latest
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          automatic_release_tag: "${{ steps.rename.outputs.version_tag }}"
+          automatic_release_tag: "${{ steps.get_version.outputs.next_version }}"
           prerelease: false
-          title: "${{ steps.rename.outputs.version_tag }}"
+          title: "${{ steps.get_version.outputs.next_version }}"
           files: |
             dist/*.jar
             dist/ripme.json
