@@ -33,6 +33,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.stream.Stream;
+import com.rarchives.ripme.utils.LoggingConfig;
+import java.util.logging.Logger;
 
 /**
  * Entry point to application.
@@ -43,10 +45,9 @@ import java.util.stream.Stream;
  */
 public class App {
 
-    private static final Logger logger = LogManager.getLogger(App.class);
+    private static final Logger logger = Logger.getLogger(App.class.getName());
     public static String stringToAppendToFoldername = null;
     private static final History HISTORY = new History();
-
     /**
      * Where everything starts. Takes in, and tries to parse as many commandline arguments as possible.
      * Otherwise, it launches a GUI.
@@ -54,6 +55,9 @@ public class App {
      * @param args Array of command line arguments.
      */
     public static void main(String[] args) throws IOException {
+        LoggingConfig.setup();  // <-- Enable logging format with timestamp
+        
+        logger.info("RipMe starting...");
         CommandLine cl = getArgs(args);
 
         if (args.length > 0 && cl.hasOption('v')){
