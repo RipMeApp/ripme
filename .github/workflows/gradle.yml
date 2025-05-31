@@ -19,6 +19,7 @@ jobs:
         uses: FranzDiebold/github-env-vars-action@v2
 
       - name: Print environment variables
+        if: env.DEBUG == 'true'
         run: |
           echo "CI_REPOSITORY_SLUG=$CI_REPOSITORY_SLUG"
           echo "CI_REPOSITORY_OWNER=$CI_REPOSITORY_OWNER"
