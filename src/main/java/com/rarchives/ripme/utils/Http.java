@@ -196,6 +196,26 @@ public class Http {
         return new JSONArray(jsonArray);
     }
 
+    public static org.jsoup.nodes.Document getWith429Retry(URL url, int maxRetries, int baseDelaySeconds) throws IOException, URISyntaxException {
+        int retries = 0;
+        Logger logger = LogManager.getLogger(Http.class);
+
+        while (retries <= maxRetries) {
+            try {
+                return Http.url(url).get();
+            } catch (IOException e) {
+                if (e.getMessage().contains("429")) {
+                    int waitTime = (int) Math.pow(baseDelaySeconds, retries);
+                    logger.warn("[!] 429 Too Many Requests - retrying in " + waitTime + "s (attempt " + (retries + 1) + ")");
+                    Utils.sleep(waitTime * 1000L);
+                    retries++;
+                } else {
+                    throw e;
+                }
+            }
+        }
+        throw new IOException("Exceeded max retries for GET request to " + url);
+    }
     public Response response() throws IOException {
         Response response;
         IOException lastException = null;

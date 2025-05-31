@@ -188,11 +188,7 @@ public class RedditRipper extends AlbumRipper {
         }
         lastRequestTime = System.currentTimeMillis();
 
-        String jsonString = Http.url(url)
-                                .ignoreContentType()
-                                .userAgent(REDDIT_USER_AGENT)
-                                .response()
-                                .body();
+        String jsonString = Http.getWith429Retry(url, 5, 2, REDDIT_USER_AGENT);
 
         Object jsonObj = new JSONTokener(jsonString).nextValue();
         JSONArray jsonArray = new JSONArray();
