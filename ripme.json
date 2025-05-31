@@ -1,7 +1,7 @@
 {
-  "latestVersion": "2.1.18-1-",
-  "currentHash": "5981ddc5b4c5c1b9e9634a8a3655d3c63dc49191ccbc1bdbdb2884c44c02b1c1",
+  "latestVersion": "2.1.18-1-3e05a90",
+  "currentHash": "5779a2a6a2531eb6f672c367f6a9f01261cf9f1b72d37a0acdce682d291dca17",
   "changeList": [
-    "2.1.18-1-: change sha", "2.1.18-1-: Built at 2025-05-31T16:48:24Z"
+    "2.1.18-1-3e05a90: revert sha", "2.1.18-1-3e05a90: Built at 2025-05-31T17:01:48Z"
   ]
 }
