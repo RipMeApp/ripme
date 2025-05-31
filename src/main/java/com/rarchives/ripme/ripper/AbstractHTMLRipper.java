@@ -54,7 +54,7 @@ public abstract class AbstractHTMLRipper extends AbstractRipper {
     public abstract String getHost();
 
     protected Document getFirstPage() throws IOException, URISyntaxException {
-        return Http.getWith429Retry(url, 5, 2);
+        return Http.getWith429Retry(url, 5, 2, AbstractRipper.USER_AGENT);
 
     }
 
