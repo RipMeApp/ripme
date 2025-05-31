@@ -1,7 +1,7 @@
 {
-  "latestVersion": "2.1.18-1-c35b9bd",
-  "currentHash": "332b7222df2ce4494534bfc2763f2cbe1086ed140c5317b64ae15bd3238fcd42",
+  "latestVersion": "2.1.18-1-",
+  "currentHash": "5981ddc5b4c5c1b9e9634a8a3655d3c63dc49191ccbc1bdbdb2884c44c02b1c1",
   "changeList": [
-    "2.1.18-1-c35b9bd: correct maxDownloads", "2.1.18-1-c35b9bd: Built at 2025-05-31T16:41:18Z"
+    "2.1.18-1-: change sha", "2.1.18-1-: Built at 2025-05-31T16:48:24Z"
   ]
 }
