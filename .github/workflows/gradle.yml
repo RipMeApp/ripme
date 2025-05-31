@@ -10,56 +10,80 @@ on:
 
 jobs:
   build:
-
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]
         java: [23]
-        include: # test old java on one os only, upload from ubuntu java-17
+        include:
           - os: ubuntu-latest
             java: 17
             upload: true
 
     steps:
+      - uses: actions/checkout@v1
 
-    - uses: actions/checkout@v1
+      - name: Set environment CI_ variables
+        id: ci-env
+        uses: FranzDiebold/github-env-vars-action@v2
 
-    - name: Set environment CI_ variables
-      id: ci-env
-      uses: FranzDiebold/github-env-vars-action@v2
+      - name: Set up Java
+        uses: actions/setup-java@v4.2.1
+        with:
+          java-version: ${{ matrix.java }}
+          distribution: zulu
+          cache: gradle
 
-    - name: Set up java
-      uses: actions/setup-java@v4.2.1
-      with:
-        java-version: ${{ matrix.java }}
-        distribution: zulu
-        cache: gradle
+      - name: Build with Gradle
+        run: gradle clean assemble -PjavacRelease=${{ matrix.java }}
 
-    - name: Build with Gradle
-      run: gradle clean assemble -PjavacRelease=${{ matrix.java }}
+      - name: Generate version info and rename JAR
+        if: matrix.upload
+        id: versioning
+        run: |
+          version="1.7.94"
+          commits_since=$(git rev-list --count $(git describe --tags --abbrev=0)..HEAD || echo 0)
+          sha_short=$(git rev-parse --short=8 HEAD)
+          branch="${CI_REF_NAME_SLUG}"
+          filename="ripme-${version}-${commits_since}-${sha_short}-${branch}.jar"
+          mv build/libs/ripme*.jar build/libs/"$filename"
+          echo "release_tag=$filename" >> $GITHUB_OUTPUT
+          echo "release_title=$filename" >> $GITHUB_OUTPUT
+          echo "filename=$filename" >> $GITHUB_OUTPUT
+        env:
+          CI_REF_NAME_SLUG: ${{ steps.ci-env.outputs.CI_REF_NAME_SLUG }}
 
-    - name: SHA256
-      if: matrix.upload
-      run: shasum -a 256 build/libs/*.jar
+      - name: SHA256
+        if: matrix.upload
+        run: shasum -a 256 "build/libs/${{ steps.versioning.outputs.filename }}"
 
-    - name: upload jar as asset
-      if: matrix.upload
-      uses: actions/upload-artifact@v4
-      with:
-        name: zipped-ripme-jar
-        path: build/libs/*.jar
+      - name: Upload renamed JAR as artifact
+        if: matrix.upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.versioning.outputs.filename }}
+          path: build/libs/${{ steps.versioning.outputs.filename }}
 
-    - name: create pre-release
-      id: create-pre-release
-      if: matrix.upload
-      uses: "marvinpinto/action-automatic-releases@latest"
-      with:
-        repo_token: "${{ secrets.GITHUB_TOKEN }}"
-        automatic_release_tag: "latest-${{ steps.ci-env.outputs.CI_REF_NAME_SLUG }}"
-        prerelease: true
-        title: "development build ${{ steps.ci-env.outputs.CI_REF_NAME }}"
-        files: |
-            build/libs/*.jar
+      - name: Create release with notes
+        if: matrix.upload
+        uses: ncipollo/release-action@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          tag: ${{ steps.versioning.outputs.release_tag }}
+          name: ${{ steps.versioning.outputs.release_title }}
+          body: |
+            ## Automated Development Build
 
-# vim:set ts=2 sw=2 et:
+            This build was generated from branch `${{ steps.ci-env.outputs.CI_REF_NAME_SLUG }}`.
+
+            **Version components**:
+            - SemVer: `1.7.94`
+            - Filename: `${{ steps.versioning.outputs.filename }}`
+            - Triggered by: `${{ github.actor }}`
+
+            ---
+            _Release notes are auto-generated. Please update manually if needed._
+
+          artifacts: build/libs/${{ steps.versioning.outputs.filename }}
+          prerelease: true
+          draft: false
