@@ -63,6 +63,7 @@ public class RedditRipper extends AlbumRipper {
 
     private long lastRequestTime = 0;
     private int downloadCounter = 0;
+    private int maxDownloads = -1;
 
     private Boolean shouldAddURL() {
         return (alreadyDownloadedUrls >= Utils.getConfigInteger("history.end_rip_after_already_seen", 1000000000) && !isThisATest());
@@ -96,7 +97,7 @@ public class RedditRipper extends AlbumRipper {
 
     @Override
     public void rip() throws IOException {
-        int maxDownloads = Utils.getConfigInteger("maxdownloads", -1);
+        maxDownloads = Utils.getConfigInteger("maxdownloads", -1);
 
         try {
             URL jsonURL = getJsonURL(this.url);
