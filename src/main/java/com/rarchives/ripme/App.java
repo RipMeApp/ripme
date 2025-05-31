@@ -34,7 +34,6 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.stream.Stream;
 import com.rarchives.ripme.utils.LoggingConfig;
-import java.util.logging.Logger;
 
 /**
  * Entry point to application.
