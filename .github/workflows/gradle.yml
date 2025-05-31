@@ -47,7 +47,7 @@ jobs:
 
       - name: Generate ripme.json
         run: |
-          version="ripme-${{ steps.get_version.outputs.next_version }}"
+          version="${{ steps.get_version.outputs.next_version }}"
           hash=$(sha256sum dist/$version.jar | awk '{ print $1 }')
           change=$(git log -1 --pretty=format:"%s")
 
