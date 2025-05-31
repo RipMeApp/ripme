@@ -153,7 +153,26 @@ class DownloadFileThread implements Runnable {
                     // Throw exception so download can be retried
                     throw new IOException("Redirect status code " + statusCode + " - redirect to " + location);
                 }
-                if (statusCode / 100 == 4) { // 4xx errors
+                if (statusCode == 429) { // Too Many Requests
+                    logger.warn("[!] Received 429 Too Many Requests for " + url);
+                    String retryAfterHeader = huc.getHeaderField("Retry-After");
+                    int waitTimeSeconds = 5; // Default wait time
+
+                    if (retryAfterHeader != null) {
+                        try {
+                            waitTimeSeconds = Integer.parseInt(retryAfterHeader);
+                        } catch (NumberFormatException e) {
+                            logger.warn("Retry-After header not a number: " + retryAfterHeader);
+                        }
+                    } else {
+                        // Basic exponential backoff
+                        waitTimeSeconds = (int) Math.pow(2, tries);
+                    }
+
+                    logger.info("Waiting for " + waitTimeSeconds + " seconds before retrying...");
+                    Utils.sleep(waitTimeSeconds * 1000L);
+                    continue; // Retry the loop
+                } else if (statusCode / 100 == 4) {
                     logger.error("[!] " + Utils.getLocalizedString("nonretriable.status.code") + " " + statusCode
                             + " while downloading from " + url);
                     observer.downloadErrored(url, Utils.getLocalizedString("nonretriable.status.code") + " "
