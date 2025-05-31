@@ -282,7 +282,7 @@ public class Http {
                     if (status == 401 || status == 403) {
                         throw new IOException("Failed to load " + url + ": Status Code " + status + ". You might be able to circumvent this error by setting cookies for this domain", e);
                     }
-                    if (status == 404) {
+                    if (status == 404 || status == 410) {
                         throw new IOException("File not found " + url + ": Status Code " + status + ". ", e);
                     }
                 }

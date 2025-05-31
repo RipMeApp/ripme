@@ -296,7 +296,8 @@ class DownloadFileThread implements Runnable {
             } catch (HttpStatusException hse) {
                 logger.debug(Utils.getLocalizedString("http.status.exception"), hse);
                 logger.error("[!] HTTP status " + hse.getStatusCode() + " while downloading from " + urlToDownload);
-                if (hse.getStatusCode() == 404 && Utils.getConfigBoolean("errors.skip404", false)) {
+                Set<Integer> skipStatusCodes = Set.of(404, 410);
+                if (skipStatusCodes.contains(hse.getStatusCode()) && Utils.getConfigBoolean("errors.skip404", false)) {
                     observer.downloadErrored(url,
                             "HTTP status code " + hse.getStatusCode() + " while downloading " + url.toExternalForm());
                     return;
