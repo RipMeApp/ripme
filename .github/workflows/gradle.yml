@@ -18,14 +18,62 @@ jobs:
         id: ci-env
         uses: FranzDiebold/github-env-vars-action@v2
 
+      - name: Print environment variables
+        run: |
+          echo "CI_REPOSITORY_SLUG=$CI_REPOSITORY_SLUG"
+          echo "CI_REPOSITORY_OWNER=$CI_REPOSITORY_OWNER"
+          echo "CI_REPOSITORY_OWNER_SLUG=$CI_REPOSITORY_OWNER_SLUG"
+          echo "CI_REPOSITORY_NAME=$CI_REPOSITORY_NAME"
+          echo "CI_REPOSITORY_NAME_SLUG=$CI_REPOSITORY_NAME_SLUG"
+          echo "CI_REPOSITORY=$CI_REPOSITORY"
+          echo "CI_REF_SLUG=$CI_REF_SLUG"
+          echo "CI_ACTION_REF_NAME=$CI_ACTION_REF_NAME"
+          echo "CI_ACTION_REF_NAME_SLUG=$CI_ACTION_REF_NAME_SLUG"
+          echo "CI_REF_NAME=$CI_REF_NAME"
+          echo "CI_REF_NAME_SLUG=$CI_REF_NAME_SLUG"
+          echo "CI_REF=$CI_REF"
+          echo "CI_HEAD_REF_SLUG=$CI_HEAD_REF_SLUG"
+          echo "CI_HEAD_REF=$CI_HEAD_REF"
+          echo "CI_BASE_REF_SLUG=$CI_BASE_REF_SLUG"
+          echo "CI_BASE_REF=$CI_BASE_REF"
+          echo "CI_SHA_SHORT=$CI_SHA_SHORT"
+          echo "CI_SHA=$CI_SHA"
+          echo "CI_PR_SHA_SHORT=$CI_PR_SHA_SHORT"
+          echo "CI_PR_SHA=$CI_PR_SHA"
+          echo "CI_PR_NUMBER=$CI_PR_NUMBER"
+          echo "CI_PR_ID=$CI_PR_ID"
+          echo "CI_PR_TITLE=$CI_PR_TITLE"
+          echo "CI_PR_DESCRIPTION=$CI_PR_DESCRIPTION"
+          echo "CI_ACTOR=$CI_ACTOR"
+          echo "CI_EVENT_NAME=$CI_EVENT_NAME"
+          echo "CI_RUN_ID=$CI_RUN_ID"
+          echo "CI_RUN_NUMBER=$CI_RUN_NUMBER"
+          echo "CI_WORKFLOW=$CI_WORKFLOW"
+          echo "CI_ACTION=$CI_ACTION"
+
       - name: Get next version tag
         id: get_version
         run: |
-          current_version=$(jq -r '.latestVersion' ripme.json)
-          version_base=$(echo "$current_version" | cut -d '-' -f1)
+          # Get current version, e.g., "2.1.18"
+          current_version=$(jq -r '.latestVersion' ripme.json | cut -d '-' -f1)
+
+          # Split into major, minor, patch
+          IFS='.' read -r major minor patch <<< "$current_version"
+
+          # Increment the patch version
+          patch=$((patch + 1))
+
+          # Reconstruct base version
+          version_base="${major}.${minor}.${patch}"
+
+          # Build metadata
           commit_count=$(git rev-list --count HEAD)
-          commit_sha=$(git rev-parse --short HEAD)
+          commit_sha=${CI_SHA:-$(git rev-parse --short HEAD)}
+
+          # Final version: 2.1.19-123-abc123
           next_version="$version_base-$commit_count-$commit_sha"
+
+          # Output to GitHub Actions
           echo "next_version=$next_version"
           echo "next_version=$next_version" >> $GITHUB_OUTPUT
 
