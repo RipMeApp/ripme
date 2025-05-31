@@ -256,11 +256,6 @@ public class Http {
     }
 
 
-    throw new IOException("Exceeded max retries for GET " + url);
-    }
-
-
-
     public Response response() throws IOException {
         Response response;
         IOException lastException = null;
