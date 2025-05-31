@@ -197,45 +197,46 @@ public class Http {
     }
 
     public static String getWith429Retry(URL url, int maxRetries, int baseDelaySeconds, String userAgent) throws IOException {
-        int retries = 0;
-        Logger logger = LogManager.getLogger(Http.class);
+    int retries = 0;
+    Logger logger = LogManager.getLogger(Http.class);
 
-        while (retries <= maxRetries) {
-            try {
-                return Http.url(url)
-                        .ignoreContentType()
+    while (retries <= maxRetries) {
+        try {
+            return Http.url(url)
+                       .ignoreContentType()
+                       .userAgent(userAgent)
+                       .response()
+                       .body();
+        } catch (IOException e) {
+            if (e.getMessage().contains("429")) {
+                int waitTime = (int) Math.pow(baseDelaySeconds, retries);  // fallback
+
+                try {
+                    // Use Jsoup directly to access raw response headers
+                    Connection.Response retryResp = org.jsoup.Jsoup.connect(url.toExternalForm())
+                        .ignoreContentType(true)
                         .userAgent(userAgent)
-                        .response()
-                        .body();
-            } catch (IOException e) {
-                if (e.getMessage().contains("429")) {
-                    int waitTime = (int) Math.pow(baseDelaySeconds, retries);  // fallback
+                        .execute();
 
-                    try {
-                        // Try to get the response to extract Retry-After
-                        Connection.Response resp = Http.url(url)
-                                                    .ignoreContentType()
-                                                    .userAgent(userAgent)
-                                                    .execute();
-                        String retryAfter = resp.header("Retry-After");
-                        if (retryAfter != null) {
-                            waitTime = Integer.parseInt(retryAfter);
-                            logger.info("[!] Using Retry-After header: " + waitTime + "s");
-                        }
-                    } catch (Exception ex) {
-                        logger.warn("Could not fetch Retry-After header, using exponential backoff instead.");
+                    String retryAfter = retryResp.header("Retry-After");
+                    if (retryAfter != null) {
+                        waitTime = Integer.parseInt(retryAfter);
+                        logger.info("[!] Using Retry-After header: " + waitTime + "s");
                     }
-
-                    logger.warn("[!] 429 Too Many Requests - retrying in " + waitTime + "s (attempt " + (retries + 1) + ")");
-                    Utils.sleep(waitTime * 1000L);
-                    retries++;
-                } else {
-                    throw e;
+                } catch (Exception ex) {
+                    logger.warn("Could not fetch Retry-After header, using exponential backoff instead.");
                 }
+
+                logger.warn("[!] 429 Too Many Requests - retrying in " + waitTime + "s (attempt " + (retries + 1) + ")");
+                Utils.sleep(waitTime * 1000L);
+                retries++;
+            } else {
+                throw e;
             }
         }
+    }
 
-        throw new IOException("Exceeded max retries for GET " + url);
+    throw new IOException("Exceeded max retries for GET " + url);
     }
 
 
