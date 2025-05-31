@@ -209,47 +209,47 @@ public class Http {
             HttpURLConnection connection = null;
             try {
                 connection = (HttpURLConnection) url.openConnection();
-                connection.setRequestMethod("GET");
                 connection.setRequestProperty("User-Agent", userAgent);
+                connection.setRequestProperty("Accept", "application/json");
                 connection.setConnectTimeout(10000);
                 connection.setReadTimeout(10000);
 
-                int status = connection.getResponseCode();
+                int responseCode = connection.getResponseCode();
 
-                if (status == 429) {
-                    int waitTime = (int) Math.pow(baseDelaySeconds, retries); // fallback
+                if (responseCode == 429) {
                     String retryAfter = connection.getHeaderField("Retry-After");
-                    if (retryAfter != null) {
-                        try {
-                            waitTime = Integer.parseInt(retryAfter.trim());
-                            logger.info("[!] Server sent Retry-After: " + waitTime + "s");
-                        } catch (NumberFormatException ex) {
-                            logger.warn("[!] Could not parse Retry-After value: " + retryAfter);
-                        }
-                    }
-
-                    logger.warn("[!] 429 Too Many Requests - retrying in " + waitTime + "s (attempt " + (retries + 1) + ")");
+                    long waitTime = retryAfter != null ? Long.parseLong(retryAfter) : (long) Math.pow(baseDelaySeconds, retries);
+                    logger.warn("[!] 429 Too Many Requests - retrying in " + waitTime + "s (attempt " + (retries + 1) + ")"
+                                + (retryAfter != null ? " (using Retry-After)" : " (no Retry-After header)"));
                     Utils.sleep(waitTime * 1000L);
                     retries++;
                     continue;
                 }
 
-                if (status >= 400) {
-                    throw new IOException("HTTP error " + status + " while accessing " + url);
+                if (responseCode >= 400) {
+                    throw new IOException("HTTP error: " + responseCode);
                 }
 
-                InputStream inputStream = connection.getInputStream();
-                BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-                StringBuilder responseBody = new StringBuilder();
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    responseBody.append(line).append("\n");
+                // Read response
+                try (InputStream inputStream = connection.getInputStream();
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
+                    StringBuilder response = new StringBuilder();
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        response.append(line);
+                    }
+                    return response.toString();
                 }
-                reader.close();
-                return responseBody.toString();
 
             } catch (IOException e) {
-                throw new IOException("Request failed: " + url, e);
+                if (e.getMessage().contains("429")) {
+                    long waitTime = (long) Math.pow(baseDelaySeconds, retries);
+                    logger.warn("[!] IOException suggests 429 - retrying in " + waitTime + "s (attempt " + (retries + 1) + ")");
+                    Utils.sleep(waitTime * 1000L);
+                    retries++;
+                } else {
+                    throw e;
+                }
             } finally {
                 if (connection != null) {
                     connection.disconnect();
