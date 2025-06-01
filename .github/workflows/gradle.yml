@@ -79,6 +79,7 @@ jobs:
 
           # Output to GitHub Actions
           echo "next_version=$next_version"
+          git tag "v$next_version"
           echo "next_version=$next_version" >> $GITHUB_OUTPUT
 
       - name: Set up Java
@@ -146,7 +147,7 @@ jobs:
           git push origin main
 
           # Tag current commit
-          git tag v${{ steps.get_version.outputs.next_version }}
+          # git tag v${{ steps.get_version.outputs.next_version }}
           git push origin v${{ steps.get_version.outputs.next_version }}
 
       - name: Publish release
