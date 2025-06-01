@@ -67,20 +67,31 @@ jobs:
           # Increment the patch version
           patch=$((patch + 1))
 
+          # Extract base version from ripme.json (e.g., "2.1.18-123-abc123" -> "2.1.18")
+          current_version=$(jq -r '.latestVersion' ripme.json | cut -d '-' -f1)
+
+          # Split into major, minor, patch
+          IFS='.' read -r major minor patch <<< "$current_version"
+
+          # Increment patch version
+          patch=$((patch + 1))
+
           # Reconstruct base version
           version_base="${major}.${minor}.${patch}"
 
-          # Build metadata
+          # Get commit count and short SHA
           commit_count=$(git rev-list --count HEAD)
-          commit_sha=$CI_SHA_SHORT
+          commit_sha=$(git rev-parse --short HEAD)
 
-          # Final version: 2.1.19-123-abc123
-          next_version="$version_base-$commit_count-$commit_sha"
+          # Construct full next version: e.g., 2.1.19-456-abcd123
+          next_version="${version_base}-${commit_count}-${commit_sha}"
 
-          # Output to GitHub Actions
-          echo "next_version=$next_version"
+          # Tag the commit (but don't push here — do that later explicitly)
           git tag "v$next_version"
-          echo "next_version=$next_version" >> $GITHUB_OUTPUT
+
+          # Output for GitHub Actions
+          echo "next_version=$next_version" >> "$GITHUB_OUTPUT"
+
 
       - name: Set up Java
         uses: actions/setup-java@v4.2.1
