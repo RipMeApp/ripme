@@ -158,7 +158,7 @@ jobs:
           git push origin main
 
           # Tag current commit
-          # git tag v${{ steps.get_version.outputs.next_version }}
+          git tag v${{ steps.get_version.outputs.next_version }}
           git push origin v${{ steps.get_version.outputs.next_version }}
 
       - name: Publish release
