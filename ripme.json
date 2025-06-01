@@ -1,7 +1,7 @@
 {
-  "latestVersion": "2.1.20-1-3daf641e6c590002c5394742451e08b1eef5f3ba",
-  "currentHash": "9ac41b0454452d481a44d44286e3a3450fa155f8ae5b3ff89e23197acbf99871",
+  "latestVersion": "2.1.21-1-171c8798",
+  "currentHash": "63dcedfc2ddbbfd2d31348dc03e17f7076f5d8655c09ee3f94b6d296abce1aa4",
   "changeList": [
-    "2.1.20-1-3daf641e6c590002c5394742451e08b1eef5f3ba: revert sha", "2.1.20-1-3daf641e6c590002c5394742451e08b1eef5f3ba: Built at 2025-05-31T17:46:08Z"
+    "2.1.21-1-171c8798: downloadCounter only updated if downloaded", "2.1.21-1-171c8798: Built at 2025-06-01T12:16:22Z"
   ]
 }
