@@ -59,7 +59,7 @@ public class SpankbangPlaylistRipper extends AbstractHTMLRipper {
             try {
                 Document pageDoc = Http.url(pageUrl).get();
 
-                Elements links = pageDoc.select("a[href^="/"][href*="/video/"]");
+                Elements links = pageDoc.select("a[href^=\"/\"][href*=\"/video/\"]");
                 int foundOnPage = 0;
 
                 for (var el : links) {
