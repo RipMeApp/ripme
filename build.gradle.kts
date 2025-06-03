@@ -54,9 +54,14 @@ jgitver {
 }
 
 afterEvaluate {
-  if (customVersion != "") {
-    project.version = customVersion
-  }
+    if (customVersion.isNotBlank()) {
+        project.version = customVersion
+    } else {
+        val jgitverVersion = project.version.toString()
+        if (jgitverVersion.endsWith("-0")) {
+            project.version = jgitverVersion.removeSuffix("-0")
+        }
+    }
 }
 
 tasks.compileJava {
