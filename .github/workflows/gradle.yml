@@ -159,7 +159,7 @@ jobs:
           # Tag current commit
           git tag v${{ steps.get_version.outputs.next_version }}
           git push origin v${{ steps.get_version.outputs.next_version }}
-
+          
       - name: Publish release
         uses: marvinpinto/action-automatic-releases@latest
         with:
@@ -170,3 +170,11 @@ jobs:
           files: |
             dist/*.jar
             ripme.json
+
+      - name: Delete previous releases except latest
+        run: |
+          gh release list --limit 100 --json tagName,createdAt --jq '.[].tagName' |
+          grep -v "^${{ steps.get_version.outputs.next_version }}$" |
+          xargs -I {} gh release delete {} -y
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
