@@ -90,7 +90,7 @@ jobs:
           next_version="${version_base}-${commit_count}-${commit_sha}"
 
           # Tag the commit (but don't push here — do that later explicitly)
-          git tag "$next_version" -m "$(git log -n 10 --pretty=format:'%h %s')"
+          git tag "$next_version"
 
           # Output for GitHub Actions
           echo "next_version=$next_version" >> "$GITHUB_OUTPUT"

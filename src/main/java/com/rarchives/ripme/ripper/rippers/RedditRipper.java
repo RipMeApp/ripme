@@ -120,9 +120,15 @@ public class RedditRipper extends AlbumRipper {
             }
         } catch (URISyntaxException e) {
             throw new IOException(e.getMessage());
+        } catch (IOException e) {
+            // Show error in UI
+            sendUpdate(RipStatusMessage.STATUS.DOWNLOAD_ERRORED, "Failed to retrieve content: " + e.getMessage());
+            throw e;  // Still propagate it for the log
         }
+
         waitForThreads();
     }
+
 
     @Override
     public void downloadCompleted(URL url, Path saveAs) {
