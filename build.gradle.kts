@@ -71,6 +71,13 @@ tasks.compileJava {
 
 tasks.withType<Jar> {
   duplicatesStrategy = DuplicatesStrategy.INCLUDE
+
+  from({
+      layout.buildDirectory.dir("classes/java/main/META-INF")
+  }) {
+      include("**/Log4j2Plugins.dat")
+  }
+  
   manifest {
     attributes["Main-Class"] = "com.rarchives.ripme.App"
     attributes["Implementation-Version"] =  archiveVersion
