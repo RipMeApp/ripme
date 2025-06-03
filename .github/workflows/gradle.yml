@@ -58,6 +58,9 @@ jobs:
       - name: Get next version tag
         id: get_version
         run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+
           # Get current version, e.g., "2.1.18"
           current_version=$(jq -r '.latestVersion' ripme.json | cut -d '-' -f1)
 
@@ -87,7 +90,7 @@ jobs:
           next_version="${version_base}-${commit_count}-${commit_sha}"
 
           # Tag the commit (but don't push here — do that later explicitly)
-          git tag "$next_version" -m "$(git log -n 5 --pretty=format:'%h %s')"
+          git tag "$next_version" -m "$(git log -n 10 --pretty=format:'%h %s')"
 
           # Output for GitHub Actions
           echo "next_version=$next_version" >> "$GITHUB_OUTPUT"
@@ -143,12 +146,8 @@ jobs:
 
       - name: Commit and tag version
         run: |
-          git config user.name "github-actions"
-          git config user.email "github-actions@users.noreply.github.com"
-
-          # # Avoid rebase conflict by resetting to origin/main
-          # git fetch origin main
-          # git reset --hard origin/main
+          #git config user.name "github-actions"
+          #git config user.email "github-actions@users.noreply.github.com"
 
           # Commit version update
           git add ripme.json
