@@ -157,8 +157,8 @@ jobs:
           git push origin main
 
           # Tag current commit
-          git tag v${{ steps.get_version.outputs.next_version }} -m "$(git log -n 10 --pretty=format:'%h %s')"
-          git push origin v${{ steps.get_version.outputs.next_version }}
+          # git tag v${{ steps.get_version.outputs.next_version }} -m "$(git log -n 10 --pretty=format:'%h %s')"
+          git push origin ${{ steps.get_version.outputs.next_version }}
           
       - name: Publish release
         uses: marvinpinto/action-automatic-releases@latest
