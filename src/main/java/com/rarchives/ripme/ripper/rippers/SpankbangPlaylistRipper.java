@@ -35,7 +35,7 @@ public class SpankbangPlaylistRipper extends AbstractHTMLRipper {
 
     @Override
     public String getGID(URL url) throws MalformedURLException {
-        Pattern p = Pattern.compile("^https?://(?:www\.)?spankbang\.com/([a-zA-Z0-9]+)/playlist/.*");
+        Pattern p = Pattern.compile("^https?://(?:www\\.)?spankbang\\.com/([a-zA-Z0-9]+)/playlist/.*");
         Matcher m = p.matcher(url.toExternalForm());
         if (m.find()) {
             return m.group(1);
@@ -51,7 +51,7 @@ public class SpankbangPlaylistRipper extends AbstractHTMLRipper {
         while (true) {
             String pageUrl = url.toExternalForm();
             if (page > 1) {
-                pageUrl = pageUrl.replaceAll("\?p=\d+", "") + "?p=" + page;
+                pageUrl = pageUrl.replaceAll("\\?p=\\d+", "") + "?p=" + page;
             }
 
             logger.info("Fetching playlist page: " + pageUrl);

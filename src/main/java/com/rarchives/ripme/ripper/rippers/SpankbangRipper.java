@@ -43,10 +43,10 @@ public class SpankbangRipper extends AbstractSingleFileRipper {
                     .get();
 
             String json = apiDoc.text();
-            Pattern pattern = Pattern.compile(""video_url"\s*:\s*"(https:[^"]+)"");
+            Pattern pattern = Pattern.compile("\"video_url\"\\s*:\\s*\"(https:[^\"]+)\"");
             Matcher matcher = pattern.matcher(json);
             if (matcher.find()) {
-                String videoUrl = matcher.group(1).replace("\/", "/");
+                String videoUrl = matcher.group(1).replace("\\/", "/");
                 logger.info("Found video URL: " + videoUrl);
                 result.add(videoUrl);
             } else {
@@ -66,7 +66,7 @@ public class SpankbangRipper extends AbstractSingleFileRipper {
 
     @Override
     public boolean canRip(URL url) {
-        return url.toExternalForm().matches("^https?://(?:www\.)?spankbang\.com/[a-zA-Z0-9]+(?:/video/.*)?$");
+        return url.toExternalForm().matches("^https?://(?:www\\.)?spankbang\\.com/[a-zA-Z0-9]+(?:/video/.*)?$");
     }
 
     @Override
@@ -76,7 +76,7 @@ public class SpankbangRipper extends AbstractSingleFileRipper {
 
     @Override
     public String getGID(URL url) throws MalformedURLException {
-        Pattern p = Pattern.compile("^https?://(?:www\.)?spankbang\.com/([a-zA-Z0-9]+)");
+        Pattern p = Pattern.compile("^https?://(?:www\\.)?spankbang\\.com/([a-zA-Z0-9]+)");
         Matcher m = p.matcher(url.toExternalForm());
         if (m.find()) {
             return m.group(1);
