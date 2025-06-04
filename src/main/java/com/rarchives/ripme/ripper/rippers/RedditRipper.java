@@ -110,6 +110,7 @@ public class RedditRipper extends AlbumRipper {
                 jsonURL = getAndParseAndReturnNext(jsonURL);
 
                 if (maxDownloads > 0 && downloadCounter >= maxDownloads) {
+                    logger.info("Completed {} of max {} downloads.", downloadCounter, maxDownloads);
                     sendUpdate(RipStatusMessage.STATUS.DOWNLOAD_COMPLETE_HISTORY, "Reached maxdownloads limit of " + maxDownloads + ". Stopping.");
                     break;
                 }
