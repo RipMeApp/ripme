@@ -1,7 +1,7 @@
 {
-  "latestVersion": "2.1.37-1-de540ae",
-  "currentHash": "ba9c8f464e018c8c083c6292001aff7f81ec650be319397133b359c34a872603",
+  "latestVersion": "2.1.38-1-7a4081b",
+  "currentHash": "050f337b9c7fc8ece9c71f1d64cb5f21d918e2a3a5c740b98eec804acc88f612",
   "changeList": [
-    "2.1.37-1-de540ae: fix incorrect hard stop", "2.1.37-1-de540ae: Built at 2025-06-04T11:14:11Z"
+    "2.1.38-1-7a4081b: fix user agent error", "2.1.38-1-7a4081b: Built at 2025-06-04T12:32:40Z"
   ]
 }
