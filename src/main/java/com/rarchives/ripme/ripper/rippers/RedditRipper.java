@@ -134,6 +134,11 @@ public class RedditRipper extends AlbumRipper {
     public void downloadCompleted(URL url, Path saveAs) {
         super.downloadCompleted(url, saveAs);
         downloadCounter++;
+
+        if (maxDownloads > 0 && downloadCounter >= maxDownloads) {
+            logger.info("Hit hard download cap of {}. Stopping rip.", maxDownloads);
+            stop();
+        }
     }
 
 
