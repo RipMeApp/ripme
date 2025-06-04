@@ -52,6 +52,10 @@ public class CoomerPartyRipper extends AbstractJSONRipper {
     // Username of the page to be ripped
     private final String user;
 
+    private final int maxDownloads = Utils.getConfigInteger("maxdownloads", -1);
+    private int downloadCounter = 0;
+    private int queuedDownloadCounter = 0;
+
 
 
     public CoomerPartyRipper(URL url) throws IOException {
@@ -121,22 +125,47 @@ public class CoomerPartyRipper extends AbstractJSONRipper {
 
     @Override
     protected List<String> getURLsFromJSON(JSONObject json) {
-        // extract the array from our wrapper JSONObject
         JSONArray posts = json.getJSONArray(KEY_WRAPPER_JSON_ARRAY);
         ArrayList<String> urls = new ArrayList<>();
         for (int i = 0; i < posts.length(); i++) {
+            if (maxDownloads > 0 && queuedDownloadCounter >= maxDownloads) {
+                logger.info("Reached maxDownloads (" + maxDownloads + "), stopping URL collection");
+                break;
+            }
+
+            int initialSize = urls.size();
+
             JSONObject post = posts.getJSONObject(i);
             pullFileUrl(post, urls);
             pullAttachmentUrls(post, urls);
+
+            // Increment queued counter only by how many new URLs we added
+            int newUrls = urls.size() - initialSize;
+            queuedDownloadCounter += newUrls;
         }
         logger.debug("Pulled " + urls.size() + " URLs from " + posts.length() + " posts");
         return urls;
     }
 
+
+
+
     @Override
     protected void downloadURL(URL url, int index) {
         sleep(5000);
         addURLToDownload(url, getPrefix(index));
+    }
+
+    @Override
+    public void downloadCompleted(URL url, java.nio.file.Path saveAs) {
+        super.downloadCompleted(url, saveAs);
+        downloadCounter++;
+
+        if (maxDownloads > 0 && downloadCounter >= maxDownloads) {
+            logger.info("Completed {} of max {} downloads. Stopping rip.", downloadCounter, maxDownloads);
+
+            stop(); // Gracefully ends the rip
+        }
     }
 
     private void pullFileUrl(JSONObject post, ArrayList<String> results) {
