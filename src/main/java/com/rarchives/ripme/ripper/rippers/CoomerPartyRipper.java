@@ -117,6 +117,10 @@ public class CoomerPartyRipper extends AbstractJSONRipper {
 
     @Override
     protected JSONObject getNextPage(JSONObject doc) throws IOException, URISyntaxException {
+        if (maxDownloads > 0 && queuedDownloadCounter >= maxDownloads) {
+            logger.info("Max queued downloads reached, not fetching next page.");
+            return null;
+        }
         pageCount++;
         Integer offset = postCount * pageCount;
         return getJsonPostsForOffset(offset);
@@ -164,7 +168,6 @@ public class CoomerPartyRipper extends AbstractJSONRipper {
         if (maxDownloads > 0 && downloadCounter >= maxDownloads) {
             logger.info("Completed {} of max {} downloads. Stopping rip.", downloadCounter, maxDownloads);
 
-            stop(); // Gracefully ends the rip
         }
     }
 
