@@ -356,6 +356,21 @@ public class Http {
         }
     }
 
+    public static URL followRedirects(URL originalUrl) throws IOException {
+        HttpURLConnection conn = (HttpURLConnection) originalUrl.openConnection();
+        conn.setInstanceFollowRedirects(false);
+        conn.setRequestProperty("User-Agent", AbstractRipper.USER_AGENT);
+        conn.connect();
+        int status = conn.getResponseCode();
+        if (status == 308 || status == 301 || status == 302) {
+            String location = conn.getHeaderField("Location");
+            if (location != null) {
+                return new URL(location);
+            }
+        }
+        return originalUrl;
+    }
+
     public static void undoSSLVerifyOff() {
         try {
             // Reset to the default SSL socket factory and hostname verifier

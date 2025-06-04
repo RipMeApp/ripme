@@ -113,7 +113,13 @@ public class CoomerPartyRipper extends AbstractJSONRipper {
 
     @Override
     protected JSONObject getFirstPage() throws IOException {
-        return getJsonPostsForOffset(0);
+        JSONObject page = getJsonPostsForOffset(0);
+        JSONArray posts = page.getJSONArray(KEY_WRAPPER_JSON_ARRAY);
+        if (posts.length() == 0) {
+            logger.warn("No posts returned for " + getURL());
+            return null; // graceful exit
+        }
+        return page;
     }
 
     @Override
@@ -161,7 +167,12 @@ protected void downloadURL(URL url, int index) {
     try {
         // Just try HEAD to trigger the download behavior, not to read the file
         if (url.toString().endsWith(".mp4") || url.toString().endsWith(".webm")) {
-            Http.getWith429Retry(url, 5, 5, AbstractRipper.USER_AGENT);
+            try {
+                URL resolvedUrl = Http.followRedirects(url);
+                addURLToDownload(resolvedUrl, getPrefix(index));
+            } catch (IOException e) {
+                logger.error("Failed to resolve or download redirect URL {}: {}", url, e.getMessage());
+            }
         }
 
         // Proceed with normal RipMe download queue logic
@@ -186,20 +197,27 @@ protected void downloadURL(URL url, int index) {
 
     private void pullFileUrl(JSONObject post, ArrayList<String> results) {
         try {
+            if (!post.has(KEY_FILE)) {
+                logger.warn("Post missing 'file' key, skipping");
+                return;
+            }
+
             JSONObject file = post.getJSONObject(KEY_FILE);
+            if (!file.has(KEY_PATH)) {
+                logger.warn("File object missing 'path' key, skipping");
+                return;
+            }
+
             String path = file.getString(KEY_PATH);
             if (isImage(path)) {
-                String url = IMG_URL_BASE + path;
-                results.add(url);
+                results.add(IMG_URL_BASE + path);
             } else if (isVideo(path)) {
-                String url = VID_URL_BASE + path;
-                results.add(url);
+                results.add(VID_URL_BASE + path);
             } else {
-                logger.error("Unknown extension for coomer.su path: " + path);
+                logger.warn("Unrecognized media type for path: " + path);
             }
         } catch (JSONException e) {
-            /* No-op */
-            logger.error("Unable to Parse FileURL " + e.getMessage());
+            logger.error("Error parsing file URL: " + e.getMessage());
         }
     }
 
