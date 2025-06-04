@@ -104,9 +104,15 @@ public class CoomerPartyRipper extends AbstractJSONRipper {
                 .ignoreContentType()
                 .response()
                 .body();
+
+        logger.debug("Raw JSON from API for offset " + offset + ": " + jsonArrayString);
+
         JSONArray jsonArray = new JSONArray(jsonArrayString);
 
-        // Ideally we'd just return the JSONArray from here, but we have to wrap it in a JSONObject
+        if (jsonArray.isEmpty()) {
+            logger.warn("No posts found at offset " + offset + " for user: " + user);
+        }
+
         JSONObject wrapperObject = new JSONObject();
         wrapperObject.put(KEY_WRAPPER_JSON_ARRAY, jsonArray);
         return wrapperObject;
@@ -126,20 +132,30 @@ public class CoomerPartyRipper extends AbstractJSONRipper {
     @Override
     protected JSONObject getNextPage(JSONObject doc) throws IOException, URISyntaxException {
         if (maxDownloads > 0 && queuedDownloadCounter >= maxDownloads) {
-            logger.info("Completed {} of max {} downloads.", downloadCounter, maxDownloads);
+            logger.info("Reached maxdownloads limit of " + maxDownloads + ". Stopping.");
             sendUpdate(RipStatusMessage.STATUS.DOWNLOAD_COMPLETE_HISTORY, "Reached maxdownloads limit of " + maxDownloads + ". Stopping.");
             return null;
         }
-        pageCount++;
-        Integer offset = postCount * pageCount;
-        return getJsonPostsForOffset(offset);
-    }
 
+        pageCount++;
+        int offset = pageCount * postCount;
+
+        JSONObject nextPage = getJsonPostsForOffset(offset);
+        JSONArray posts = nextPage.getJSONArray(KEY_WRAPPER_JSON_ARRAY);
+
+        if (posts.isEmpty()) {
+            logger.info("No more posts found at offset " + offset + ", ending rip.");
+            return null;
+        }
+
+        return nextPage;
+    }
 
     @Override
     protected List<String> getURLsFromJSON(JSONObject json) {
         JSONArray posts = json.getJSONArray(KEY_WRAPPER_JSON_ARRAY);
         ArrayList<String> urls = new ArrayList<>();
+
         for (int i = 0; i < posts.length(); i++) {
             if (maxDownloads > 0 && queuedDownloadCounter >= maxDownloads) {
                 logger.info("Reached maxDownloads (" + maxDownloads + "), stopping URL collection");
@@ -149,16 +165,23 @@ public class CoomerPartyRipper extends AbstractJSONRipper {
             int initialSize = urls.size();
 
             JSONObject post = posts.getJSONObject(i);
+
+            if (!post.has(KEY_FILE) && !post.has(KEY_ATTACHMENTS)) {
+                logger.debug("Post has no media: " + post.optString("id", "unknown ID"));
+                continue;
+            }
+
             pullFileUrl(post, urls);
             pullAttachmentUrls(post, urls);
 
-            // Increment queued counter only by how many new URLs we added
             int newUrls = urls.size() - initialSize;
             queuedDownloadCounter += newUrls;
         }
+
         logger.debug("Pulled " + urls.size() + " URLs from " + posts.length() + " posts");
         return urls;
     }
+
 
     @Override
     protected void downloadURL(URL url, int index) {
@@ -183,41 +206,70 @@ public class CoomerPartyRipper extends AbstractJSONRipper {
     }
 
     private void pullFileUrl(JSONObject post, ArrayList<String> results) {
+        if (post == null) {
+            logger.warn("Attempted to parse null post object");
+            return;
+        }
+
+        if (!post.has(KEY_FILE)) {
+            logger.debug("Post missing 'file' object, skipping.");
+            return;
+        }
+
         try {
-            if (!post.has(KEY_FILE)) {
-                logger.warn("Post missing 'file' key, skipping");
-                return;
-            }
-
             JSONObject file = post.getJSONObject(KEY_FILE);
+
             if (!file.has(KEY_PATH)) {
-                logger.warn("File object missing 'path' key, skipping");
+                logger.debug("File object missing 'path', skipping.");
                 return;
             }
 
-            String path = file.getString(KEY_PATH);
-            if (isImage(path)) {
-                results.add(IMG_URL_BASE + path);
-            } else if (isVideo(path)) {
-                results.add(VID_URL_BASE + path);
-            } else {
-                logger.warn("Unrecognized media type for path: " + path);
+            String path = file.getString(KEY_PATH).trim();
+
+            if (path.isEmpty()) {
+                logger.debug("File path is empty, skipping.");
+                return;
             }
+
+            String url;
+            if (isImage(path)) {
+                url = IMG_URL_BASE + path;
+                results.add(url);
+            } else if (isVideo(path)) {
+                url = VID_URL_BASE + path;
+                results.add(url);
+            } else {
+                logger.warn("Unsupported media extension in path: " + path);
+            }
+
         } catch (JSONException e) {
-            logger.error("Error parsing file URL: " + e.getMessage());
+            logger.error("Error parsing 'file' object from post: " + e.getMessage());
+        } catch (Exception e) {
+            logger.error("Unexpected error in pullFileUrl: " + e.getMessage(), e);
         }
     }
 
     private void pullAttachmentUrls(JSONObject post, ArrayList<String> results) {
+        if (post == null || !post.has(KEY_ATTACHMENTS)) {
+            return;
+        }
+
         try {
             JSONArray attachments = post.getJSONArray(KEY_ATTACHMENTS);
+
             for (int i = 0; i < attachments.length(); i++) {
-                JSONObject attachment = attachments.getJSONObject(i);
-                pullFileUrl(attachment, results);
+                JSONObject attachment = attachments.optJSONObject(i);
+                if (attachment != null) {
+                    pullFileUrl(attachment, results);
+                } else {
+                    logger.debug("Attachment at index " + i + " is not a valid JSONObject");
+                }
             }
+
         } catch (JSONException e) {
-             /* No-op */
-            logger.error("Unable to Parse AttachmentURL " + e.getMessage());
+            logger.error("Error parsing 'attachments' array: " + e.getMessage());
+        } catch (Exception e) {
+            logger.error("Unexpected error in pullAttachmentUrls: " + e.getMessage(), e);
         }
     }
 
