@@ -1,7 +1,7 @@
 {
-  "latestVersion": "2.1.36-1-9dbefd0",
-  "currentHash": "ad368670110427725b08900632be224230671c48619fda7c02d62517dc2cd8d5",
+  "latestVersion": "2.1.37-1-de540ae",
+  "currentHash": "ba9c8f464e018c8c083c6292001aff7f81ec650be319397133b359c34a872603",
   "changeList": [
-    "2.1.36-1-9dbefd0: add messages to tag", "2.1.36-1-9dbefd0: Built at 2025-06-04T10:38:06Z"
+    "2.1.37-1-de540ae: fix incorrect hard stop", "2.1.37-1-de540ae: Built at 2025-06-04T11:14:11Z"
   ]
 }
