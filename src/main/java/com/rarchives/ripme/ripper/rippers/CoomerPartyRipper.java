@@ -19,6 +19,7 @@ import org.json.JSONObject;
 import com.rarchives.ripme.ripper.AbstractJSONRipper;
 import com.rarchives.ripme.utils.Http;
 import com.rarchives.ripme.utils.Utils;
+import com.rarchives.ripme.ui.RipStatusMessage;
 
 /**
  * <a href="https://coomer.su/api/schema">See this link for the API schema</a>.
