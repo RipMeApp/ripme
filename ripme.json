@@ -1,7 +1,7 @@
 {
-  "latestVersion": "2.1.35-1-b222606",
-  "currentHash": "44a5a624465682a6d43781dfe1c8c8c0d05661515909d26d3bfd79c8a83e1ac2",
+  "latestVersion": "2.1.36-1-9dbefd0",
+  "currentHash": "ad368670110427725b08900632be224230671c48619fda7c02d62517dc2cd8d5",
   "changeList": [
-    "2.1.35-1-b222606: ", "2.1.35-1-b222606: Built at 2025-06-04T10:18:09Z"
+    "2.1.36-1-9dbefd0: add messages to tag", "2.1.36-1-9dbefd0: Built at 2025-06-04T10:38:06Z"
   ]
 }
