@@ -159,29 +159,15 @@ public class CoomerPartyRipper extends AbstractJSONRipper {
         return urls;
     }
 
-
-
-
-@Override
-protected void downloadURL(URL url, int index) {
-    try {
-        // Just try HEAD to trigger the download behavior, not to read the file
-        if (url.toString().endsWith(".mp4") || url.toString().endsWith(".webm")) {
-            try {
-                URL resolvedUrl = Http.followRedirects(url);
-                addURLToDownload(resolvedUrl, getPrefix(index));
-            } catch (IOException e) {
-                logger.error("Failed to resolve or download redirect URL {}: {}", url, e.getMessage());
-            }
+    @Override
+    protected void downloadURL(URL url, int index) {
+        try {
+            URL resolvedUrl = Http.followRedirectsWithRetry(url, 5, 5, AbstractRipper.USER_AGENT);
+            addURLToDownload(resolvedUrl, getPrefix(index));
+        } catch (IOException e) {
+            logger.error("Failed to resolve or download redirect URL {}: {}", url, e.getMessage());
         }
-
-        // Proceed with normal RipMe download queue logic
-        addURLToDownload(url, getPrefix(index));
-
-    } catch (IOException e) {
-        logger.error("Failed to download {} after retries: {}", url, e.getMessage());
     }
-}
 
     @Override
     public void downloadCompleted(URL url, java.nio.file.Path saveAs) {

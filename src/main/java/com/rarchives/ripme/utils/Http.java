@@ -356,19 +356,78 @@ public class Http {
         }
     }
 
-    public static URL followRedirects(URL originalUrl) throws IOException {
-        HttpURLConnection conn = (HttpURLConnection) originalUrl.openConnection();
-        conn.setInstanceFollowRedirects(false);
-        conn.setRequestProperty("User-Agent", AbstractRipper.USER_AGENT);
-        conn.connect();
-        int status = conn.getResponseCode();
-        if (status == 308 || status == 301 || status == 302) {
-            String location = conn.getHeaderField("Location");
-            if (location != null) {
-                return new URL(location);
+    public static URL followRedirectsWithRetry(URL originalUrl, int maxRetries, int baseDelaySeconds, String userAgent) throws IOException {
+        int retries = 0;
+        int maxDelaySeconds = 600;
+        Random random = new Random();
+        URL currentUrl = originalUrl;
+
+        while (retries <= maxRetries) {
+            HttpURLConnection connection = null;
+            try {
+                connection = (HttpURLConnection) currentUrl.openConnection();
+                connection.setInstanceFollowRedirects(false);
+                connection.setRequestProperty("User-Agent", userAgent);
+                connection.setRequestProperty("Accept", "application/json");
+                connection.setConnectTimeout(10000);
+                connection.setReadTimeout(10000);
+
+                int responseCode = connection.getResponseCode();
+
+                if (responseCode == 429) {
+                    String retryAfter = connection.getHeaderField("Retry-After");
+                    long waitTime;
+
+                    if (retryAfter != null) {
+                        try {
+                            waitTime = Long.parseLong(retryAfter);
+                        } catch (NumberFormatException e) {
+                            waitTime = Math.min(baseDelaySeconds * (1L << retries), maxDelaySeconds);
+                        }
+                    } else {
+                        waitTime = Math.min(baseDelaySeconds * (1L << retries), maxDelaySeconds);
+                        waitTime += random.nextInt(5); // jitter
+                    }
+
+                    logger.warn("[429] Too Many Requests - waiting {}s before retry (attempt {}/{})", waitTime, retries + 1, maxRetries);
+                    Utils.sleep(waitTime * 1000L);
+                    retries++;
+                    continue;
+                }
+
+                if (responseCode == 301 || responseCode == 302 || responseCode == 308) {
+                    String location = connection.getHeaderField("Location");
+                    if (location != null) {
+                        currentUrl = new URL(location);
+                        logger.debug("Redirected to {}", currentUrl);
+                        continue; // follow the next redirect
+                    }
+                }
+
+                if (responseCode >= 400) {
+                    throw new IOException("HTTP error: " + responseCode);
+                }
+
+                return currentUrl;
+
+            } catch (IOException e) {
+                if (e.getMessage() != null && e.getMessage().contains("429") && retries < maxRetries) {
+                    long waitTime = Math.min(baseDelaySeconds * (1L << retries), maxDelaySeconds);
+                    waitTime += random.nextInt(5);
+                    logger.warn("IOException suggests 429 - retrying in {}s (attempt {}/{})", waitTime, retries + 1, maxRetries);
+                    Utils.sleep(waitTime * 1000L);
+                    retries++;
+                } else {
+                    throw e;
+                }
+            } finally {
+                if (connection != null) {
+                    connection.disconnect();
+                }
             }
         }
-        return originalUrl;
+
+        throw new IOException("Exceeded max retries while resolving redirects for " + originalUrl);
     }
 
     public static void undoSSLVerifyOff() {
