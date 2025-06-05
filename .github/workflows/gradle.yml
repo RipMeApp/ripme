@@ -104,7 +104,7 @@ jobs:
           cache: gradle
 
       - name: Build with Gradle
-        run: gradle clean assemble -PjavacRelease=17
+        run: gradle clean build -PjavacRelease=17
 
       - name: Rename JAR
         run: |
