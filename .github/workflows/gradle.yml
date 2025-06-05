@@ -2,9 +2,10 @@ name: CI + release
 
 on:
   push:
-    branches:
-      - main
-
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:  # Manual trigger support
 env:
   DEBUG: false
 
@@ -113,6 +114,7 @@ jobs:
           cp build/libs/*.jar dist/$new_name
 
       - name: Generate ripme.json
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         run: |
           version="${{ steps.get_version.outputs.next_version }}"
           file="ripme-${version}.jar"
@@ -145,6 +147,7 @@ jobs:
 
 
       - name: Commit and tag version
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         run: |
           #git config user.name "github-actions"
           #git config user.email "github-actions@users.noreply.github.com"
@@ -161,6 +164,7 @@ jobs:
           git push origin ${{ steps.get_version.outputs.next_version }}
           
       - name: Publish release
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         uses: marvinpinto/action-automatic-releases@latest
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
@@ -172,6 +176,7 @@ jobs:
             ripme.json
 
       - name: Delete previous releases except latest
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         run: |
           gh release list --limit 100 --json tagName,createdAt --jq '.[].tagName' |
           grep -v "^${{ steps.get_version.outputs.next_version }}$" |
