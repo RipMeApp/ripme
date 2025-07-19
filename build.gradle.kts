@@ -27,7 +27,7 @@ dependencies {
   implementation("com.j2html:j2html:1.6.0")
   implementation("commons-configuration:commons-configuration:1.10")
   implementation("commons-cli:commons-cli:1.5.0")
-  implementation("commons-io:commons-io:2.13.0")
+  implementation("commons-io:commons-io:2.14.0")
   implementation("org.apache.httpcomponents:httpclient:4.5.14")
   implementation("org.apache.httpcomponents:httpmime:4.5.14")
   implementation("org.apache.logging.log4j:log4j-api:2.20.0")
