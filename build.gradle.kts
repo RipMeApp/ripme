@@ -12,6 +12,7 @@ plugins {
   id("jacoco")
   id("java")
   id("maven-publish")
+  id("com.gradleup.shadow") version "9.0.0-rc1"
 }
 
 repositories {
@@ -78,6 +79,10 @@ tasks.withType<Jar> {
   from({
     configurations.runtimeClasspath.get().filter { it.name.endsWith("jar") }.map { zipTree(it) }
   })
+}
+
+tasks.shadowJar {
+  transform<com.github.jengelman.gradle.plugins.shadow.transformers.Log4j2PluginsCacheFileTransformer>()
 }
 
 publishing {
