@@ -15,8 +15,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Collections;
-import java.util.Date;
+import java.util.*;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -69,6 +68,8 @@ public final class MainWindow implements Runnable, RipStatusHandler {
     private static JButton optionLog;
     private static JPanel logPanel;
     private static JTextPane logText;
+    private static final Queue<Integer> logLineLengths = new LinkedList<>();
+    private static final int MAX_LOG_PANE_LINES = 1000;
 
     // History
     private static JButton optionHistory;
@@ -1247,7 +1248,11 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         StyledDocument sd = logText.getStyledDocument();
         try {
             synchronized (this) {
+                if (logLineLengths.size() > MAX_LOG_PANE_LINES) {
+                    sd.remove(0, logLineLengths.remove());
+                }
                 sd.insertString(sd.getLength(), text + "\n", sas);
+                logLineLengths.add(text.length() + 1);
             }
         } catch (BadLocationException e) {
             LOGGER.warn(e.getMessage());
