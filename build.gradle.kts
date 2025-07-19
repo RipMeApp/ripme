@@ -23,7 +23,7 @@ dependencies {
   implementation("com.lmax:disruptor:3.4.4")
   implementation("org.java-websocket:Java-WebSocket:1.5.3")
   implementation("org.jsoup:jsoup:1.16.1")
-  implementation("org.json:json:20211205")
+  implementation("org.json:json:20231013")
   implementation("com.j2html:j2html:1.6.0")
   implementation("commons-configuration:commons-configuration:1.10")
   implementation("commons-cli:commons-cli:1.5.0")
