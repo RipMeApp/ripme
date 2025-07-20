@@ -48,6 +48,7 @@ class DownloadVideoThread implements Runnable {
         try {
             observer.stopCheck();
         } catch (IOException e) {
+            // TODO create status for gracefully-stopped download
             observer.downloadErrored(url, "Download interrupted");
             return;
         }
@@ -107,9 +108,7 @@ class DownloadVideoThread implements Runnable {
                 bis = new BufferedInputStream(huc.getInputStream());
                 fos = Files.newOutputStream(saveAs);
                 while ( (bytesRead = bis.read(data)) != -1) {
-                    try {
-                        observer.stopCheck();
-                    } catch (IOException e) {
+                    if (observer.isPanicked()) {
                         observer.downloadErrored(url, "Download interrupted");
                         return;
                     }

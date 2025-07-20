@@ -56,7 +56,7 @@ public abstract class AbstractRipper
     DownloadThreadPool threadPool;
     RipStatusHandler observer = null;
 
-    private boolean completed = true;
+    private final AtomicBoolean completed = new AtomicBoolean(false);
 
     public abstract void rip() throws IOException, URISyntaxException;
 
@@ -71,6 +71,7 @@ public abstract class AbstractRipper
     // Everytime addUrlToDownload skips a already downloaded url this increases by 1
     public int alreadyDownloadedUrls = 0;
     private final AtomicBoolean shouldStop = new AtomicBoolean(false);
+    private final AtomicBoolean shouldPanic = new AtomicBoolean(false);
     private static boolean thisIsATest = false;
 
     public void stop() {
@@ -78,8 +79,22 @@ public abstract class AbstractRipper
         shouldStop.set(true);
     }
 
+    public void panic() {
+        logger.trace("panic()");
+        shouldStop.set(true);
+        shouldPanic.set(true);
+    }
+
+    public boolean isPanicked() {
+        return shouldPanic.get();
+    }
+
     public boolean isStopped() {
         return shouldStop.get();
+    }
+
+    public boolean isCompleted() {
+        return completed.get();
     }
 
     protected void stopCheck() throws IOException {
@@ -480,7 +495,7 @@ public abstract class AbstractRipper
      */
     protected void waitForThreads() {
         logger.debug("Waiting for threads to finish");
-        completed = false;
+        completed.set(false);
         threadPool.waitForThreads();
         checkIfComplete();
     }
@@ -532,8 +547,7 @@ public abstract class AbstractRipper
             return;
         }
 
-        if (!completed) {
-            completed = true;
+        if (!completed.getAndSet(true)) {
             logger.info("   Rip completed!");
 
             RipStatusComplete rsc = new RipStatusComplete(workingDir.toPath(), getCount());
