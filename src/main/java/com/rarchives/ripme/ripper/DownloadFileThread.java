@@ -290,7 +290,16 @@ class DownloadFileThread implements Runnable {
                             "HTTP status code " + hse.getStatusCode() + " while downloading " + url.toExternalForm());
                     return;
                 }
-            } catch (IOException | URISyntaxException e) {
+            } catch (IOException e) {
+                if (e.getMessage().matches("No space left on device")) {
+                    logger.debug("IOException", e);
+                    observer.downloadErrored(url, "No space left on device"); // TODO localize; TODO cancel all rips
+                    return;
+                }
+                logger.debug("IOException", e);
+                logger.error("[!] " + Utils.getLocalizedString("exception.while.downloading.file") + ": " + url + " - "
+                        + e.getMessage());
+            } catch (URISyntaxException e) {
                 logger.debug("IOException", e);
                 logger.error("[!] " + Utils.getLocalizedString("exception.while.downloading.file") + ": " + url + " - "
                         + e.getMessage());
