@@ -798,7 +798,7 @@ public class Utils {
     }
 
     public static String getLocalizedString(String key) {
-        LOGGER.debug(String.format("Key %s in %s is: %s", key, getSelectedLanguage(),
+        LOGGER.trace(String.format("Key %s in %s is: %s", key, getSelectedLanguage(),
                 resourceBundle.getString(key)));
         return resourceBundle.getString(key);
     }
