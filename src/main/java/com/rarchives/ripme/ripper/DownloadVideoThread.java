@@ -113,6 +113,7 @@ class DownloadVideoThread implements Runnable {
                         return;
                     }
                     fos.write(data, 0, bytesRead);
+                    observer.sendUpdate(STATUS.CHUNK_BYTES, bytesRead);
                     bytesDownloaded += bytesRead;
                     observer.setBytesCompleted(bytesDownloaded);
                     observer.sendUpdate(STATUS.COMPLETED_BYTES, bytesDownloaded);

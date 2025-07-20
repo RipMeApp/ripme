@@ -258,6 +258,7 @@ class DownloadFileThread implements Runnable {
                             return;
                         }
                         fos.write(data, 0, bytesRead);
+                        observer.sendUpdate(STATUS.CHUNK_BYTES, bytesRead);
                         if (observer.useByteProgessBar()) {
                             bytesDownloaded += bytesRead;
                             observer.setBytesCompleted(bytesDownloaded);
