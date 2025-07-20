@@ -63,6 +63,13 @@ class DownloadFileThread implements Runnable {
      */
     @Override
     public void run() {
+
+        if (observer.isStopped()) {
+            // TODO add handler for graceful stop
+            observer.downloadErrored(url, Utils.getLocalizedString("download.interrupted"));
+            return;
+        }
+
         // First thing we make sure the file name doesn't have any illegal chars in it
         saveAs = new File(
                 saveAs.getParentFile().getAbsolutePath() + File.separator + Utils.sanitizeSaveAs(saveAs.getName()));
@@ -72,12 +79,7 @@ class DownloadFileThread implements Runnable {
         if (saveAs.exists() && observer.tryResumeDownload()) {
             fileSize = saveAs.length();
         }
-        try {
-            observer.stopCheck();
-        } catch (IOException e) {
-            observer.downloadErrored(url, Utils.getLocalizedString("download.interrupted"));
-            return;
-        }
+
         if (saveAs.exists() && !observer.tryResumeDownload() && !getFileExtFromMIME
                 || Utils.fuzzyExists(Paths.get(saveAs.getParent()), saveAs.getName()) && getFileExtFromMIME
                         && !observer.tryResumeDownload()) {
@@ -251,9 +253,7 @@ class DownloadFileThread implements Runnable {
                     logger.debug("Not downloading whole file because it is over 10mb and this is a test");
                 } else {
                     while ((bytesRead = bis.read(data)) != -1) {
-                        try {
-                            observer.stopCheck();
-                        } catch (IOException e) {
+                        if (observer.isPanicked()) {
                             observer.downloadErrored(url, Utils.getLocalizedString("download.interrupted"));
                             return;
                         }
