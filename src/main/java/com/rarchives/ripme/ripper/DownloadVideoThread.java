@@ -67,7 +67,7 @@ class DownloadVideoThread implements Runnable {
             // Strip token query parameters
             filename = Path.of(url.getPath()).getFileName().toString();
         }
-        if (AbstractRipper.shouldIgnoreURL(url)) {
+        if (AbstractRipper.shouldIgnoreExtension(url)) {
             observer.sendUpdate(STATUS.DOWNLOAD_SKIP, "Skipping " + url.toExternalForm() + " - ignored extension");
             return;
         }

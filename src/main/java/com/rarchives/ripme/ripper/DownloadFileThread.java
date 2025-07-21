@@ -92,7 +92,7 @@ class DownloadFileThread implements Runnable {
         }
         // First thing we make sure the file name doesn't have any illegal chars in it
         filename = Utils.sanitizeSaveAs(filename);
-        if (AbstractRipper.shouldIgnoreURL(url)) {
+        if (AbstractRipper.shouldIgnoreExtension(url)) {
             observer.sendUpdate(STATUS.DOWNLOAD_SKIP, "Skipping " + url.toExternalForm() + " - ignored extension");
             return;
         }

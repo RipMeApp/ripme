@@ -819,7 +819,7 @@ public abstract class AbstractRipper
         return false;
     }
 
-    protected static boolean shouldIgnoreURL(URL url) { // TODO change to "shouldIgnoreExtension"
+    protected static boolean shouldIgnoreExtension(URL url) {
         final String[] ignoredExtensions = Utils.getConfigStringArray("download.ignore_extensions");
         if (ignoredExtensions == null || ignoredExtensions.length == 0)
             return false; // nothing ignored

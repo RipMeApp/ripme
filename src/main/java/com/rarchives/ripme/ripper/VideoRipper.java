@@ -60,7 +60,7 @@ public abstract class VideoRipper extends AbstractRipper {
                 logger.error("Unable to get URL for {}", ripUrlId, e);
                 return false;
             }
-            if (AbstractRipper.shouldIgnoreURL(url)) {
+            if (AbstractRipper.shouldIgnoreExtension(url)) {
                 sendUpdate(STATUS.DOWNLOAD_SKIP, "Skipping " + url.toExternalForm() + " - ignored extension");
                 return false;
             }
