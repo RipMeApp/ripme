@@ -299,10 +299,14 @@ class DownloadFileThread implements Runnable {
                 logger.debug("IOException", e);
                 logger.error("[!] " + Utils.getLocalizedString("exception.while.downloading.file") + ": " + url + " - "
                         + e.getMessage());
+                observer.downloadErrored(url, e.getMessage());
+                return;
             } catch (URISyntaxException e) {
                 logger.debug("IOException", e);
                 logger.error("[!] " + Utils.getLocalizedString("exception.while.downloading.file") + ": " + url + " - "
                         + e.getMessage());
+                observer.downloadErrored(url, Utils.getLocalizedString("exception.while.downloading.file"));
+                return;
             } catch (NullPointerException npe){
 
                 logger.error("[!] " + Utils.getLocalizedString("failed.to.download") + " for URL " + url);
