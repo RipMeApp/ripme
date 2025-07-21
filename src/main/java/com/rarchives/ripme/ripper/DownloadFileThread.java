@@ -99,7 +99,7 @@ class DownloadFileThread implements Runnable {
         do {
             tries += 1;
             try {
-                logger.info("    Downloading file: " + urlToDownload + (tries > 0 ? " Retry #" + tries : ""));
+                logger.info("    Downloading file: " + urlToDownload + (tries > 0 ? " Try #" + tries : ""));
                 observer.sendUpdate(STATUS.DOWNLOAD_STARTED, url.toExternalForm());
 
                 // Setup HTTP request
