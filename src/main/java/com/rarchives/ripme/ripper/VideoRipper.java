@@ -12,8 +12,6 @@ import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.rarchives.ripme.ui.RipStatusMessage;
-import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
 import com.rarchives.ripme.utils.Utils;
 
 public abstract class VideoRipper extends AbstractRipper {
@@ -54,50 +52,8 @@ public abstract class VideoRipper extends AbstractRipper {
     }
 
     @Override
-    public boolean addURLToDownload(TokenedUrlGetter tug, RipUrlId ripUrlId, Path directory, String filename, String referrer, Map<String,String> cookies, Boolean getFileExtFromMIME) {
-        if (Utils.getConfigBoolean("urls_only.save", false)) {
-            // Output URL to file
-            String urlFile = this.workingDir + "/urls.txt";
-            URL url = null;
-            try {
-                url = tug.getTokenedUrl();
-            } catch (IOException | URISyntaxException e) {
-                logger.error("Unable to get URL for {}", ripUrlId, e);
-                return false;
-            }
-            if (AbstractRipper.shouldIgnoreExtension(url)) {
-                sendUpdate(STATUS.DOWNLOAD_SKIP, "Skipping " + url.toExternalForm() + " - ignored extension");
-                return false;
-            }
-
-            try (FileWriter fw = new FileWriter(urlFile, true)) {
-                fw.write(url.toExternalForm());
-                fw.write("\n");
-
-                RipStatusMessage msg = new RipStatusMessage(STATUS.DOWNLOAD_COMPLETE, urlFile);
-                observer.update(this, msg);
-            } catch (IOException e) {
-                logger.error("Error while writing to " + urlFile, e);
-                return false;
-            }
-            return true;
-        } else {
-            if (isThisATest()) {
-                // Tests shouldn't download the whole video
-                // Just change this.url to the download URL so the test knows we found it.
-                logger.debug("Test rip, found URL: " + url);
-                try {
-                    this.url = tug.getTokenedUrl();
-                } catch (IOException | URISyntaxException e) {
-                    throw new RuntimeException(e);
-                }
-                return true;
-            }
-
-            itemsPending.add(ripUrlId);
-            threadPool.addThread(new DownloadFileThread(tug, ripUrlId, directory, filename, this, getFileExtFromMIME));
-        }
-        return true;
+    protected boolean allowDuplicates() {
+        return false;
     }
 
     /**
