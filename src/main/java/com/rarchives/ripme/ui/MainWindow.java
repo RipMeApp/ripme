@@ -1136,24 +1136,14 @@ public final class MainWindow implements Runnable, RipStatusHandler {
     }
 
     private void setLogLevel(String level) {
-        // default level is error, set in case something else is given.
-        Level newLevel = Level.ERROR;
         level = level.substring(level.lastIndexOf(' ') + 1);
-        switch (level) {
-        case "Debug":
-            newLevel = Level.DEBUG;
-            break;
-        case "Info":
-            newLevel = Level.INFO;
-            break;
-        case "Warn":
-            newLevel = Level.WARN;
-        }
-        LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
-        Configuration config = ctx.getConfiguration();
-        LoggerConfig loggerConfig = config.getLoggerConfig(LogManager.ROOT_LOGGER_NAME);
-        loggerConfig.setLevel(newLevel);
-        ctx.updateLoggers();  // This causes all Loggers to refetch information from their LoggerConfig.
+        Level newLevel = switch (level) {
+            case "Debug" -> Level.DEBUG;
+            case "Info" -> Level.INFO;
+            case "Warn" -> Level.WARN;
+            default -> Level.ERROR;
+        };
+        Utils.configureLogger(newLevel);
     }
 
     private void setupTrayIcon() {

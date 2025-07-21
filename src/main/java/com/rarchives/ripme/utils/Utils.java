@@ -38,9 +38,11 @@ import javax.sound.sampled.LineEvent;
 
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.appender.ConsoleAppender;
 import org.apache.logging.log4j.core.appender.RollingFileAppender;
 import org.apache.logging.log4j.core.appender.rolling.DefaultRolloverStrategy;
 import org.apache.logging.log4j.core.appender.rolling.SizeBasedTriggeringPolicy;
@@ -49,6 +51,10 @@ import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.config.LoggerConfig;
 
 import com.rarchives.ripme.ripper.AbstractRipper;
+import org.apache.logging.log4j.core.config.builder.api.ConfigurationBuilder;
+import org.apache.logging.log4j.core.config.builder.api.ConfigurationBuilderFactory;
+import org.apache.logging.log4j.core.config.builder.api.RootLoggerComponentBuilder;
+import org.apache.logging.log4j.core.config.builder.impl.BuiltConfiguration;
 
 /**
  * Common utility functions used in various places throughout the project.
@@ -592,36 +598,45 @@ public class Utils {
         }
     }
 
+    public static void configureLogger() {
+        configureLogger(Level.INFO); // default INFO level
+    }
+
     /**
      * Configures root logger, either for FILE output or just console.
      */
-    public static void configureLogger() {
-        LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
-        Configuration config = ctx.getConfiguration();
-        LoggerConfig loggerConfig = config.getLoggerConfig(LogManager.ROOT_LOGGER_NAME);
+    public static void configureLogger(Level level) {
+        ConfigurationBuilder<BuiltConfiguration> builder = ConfigurationBuilderFactory.newConfigurationBuilder();
+
+        //builder.setStatusLevel(Level.DEBUG);
+        final String consoleAppenderName = "stdout";
+        builder.add(builder.newAppender(consoleAppenderName, "CONSOLE")
+                .addAttribute("target", ConsoleAppender.Target.SYSTEM_OUT)
+                .add(builder.newLayout("PatternLayout").addAttribute("pattern", "%-5level %c{1}: %msg%n%xEx"))
+        );
+
+        RootLoggerComponentBuilder rootLogger = builder.newRootLogger(level);
+        rootLogger.add(builder.newAppenderRef(consoleAppenderName));
 
         // write to ripme.log file if checked in GUI
         boolean logSave = getConfigBoolean("log.save", false);
         if (logSave) {
-            LOGGER.debug("add rolling appender ripmelog");
-            TriggeringPolicy tp = SizeBasedTriggeringPolicy.createPolicy("20M");
-            DefaultRolloverStrategy rs = DefaultRolloverStrategy.newBuilder().withMax("2").build();
-            RollingFileAppender rolling = RollingFileAppender.newBuilder()
-                    .setName("ripmelog")
-                    .withFileName("ripme.log")
-                    .withFilePattern("%d{yyyy-MM-dd HH:mm:ss} %p %m%n")
-                    .withPolicy(tp)
-                    .withStrategy(rs)
-                    .build();
-            loggerConfig.addAppender(rolling, null, null);
-        } else {
-            LOGGER.debug("remove rolling appender ripmelog");
-            if (config.getAppender("ripmelog") != null) {
-                config.getAppender("ripmelog").stop();
-            }
-            loggerConfig.removeAppender("ripmelog");
+            final String fileAppenderName = "rolling";
+            builder.add(builder.newAppender(fileAppenderName, "RollingFile")
+                    .addAttribute("fileName", "ripme.log")
+                    .addAttribute("filePattern", "ripme-%d{yyyy-MM-dd}-%i.log.gz")
+                    .add(builder.newLayout("PatternLayout").addAttribute("pattern", "%d %-5level %c{1}: %msg%n%xEx"))
+                    .addComponent(builder.newComponent("Policies")
+                            .addComponent(builder.newComponent("SizeBasedTriggeringPolicy").addAttribute("size", "20M")))
+            );
+            rootLogger.add(builder.newAppenderRef(fileAppenderName));
         }
-        ctx.updateLoggers();  // This causes all Loggers to refetch information from their LoggerConfig.
+
+        builder.add(rootLogger);
+
+        Configuration configuration = builder.build();
+        LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
+        ctx.reconfigure(configuration);
     }
 
     /**
