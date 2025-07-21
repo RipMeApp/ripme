@@ -49,6 +49,11 @@ public abstract class VideoRipper extends AbstractRipper {
     }
 
     @Override
+    protected boolean useByteProgessBar() {
+        return true;
+    }
+
+    @Override
     public boolean addURLToDownload(TokenedUrlGetter tug, RipUrlId ripUrlId, Path directory, String filename, String referrer, Map<String,String> cookies, Boolean getFileExtFromMIME) {
         if (Utils.getConfigBoolean("urls_only.save", false)) {
             // Output URL to file
@@ -90,7 +95,7 @@ public abstract class VideoRipper extends AbstractRipper {
             }
 
             itemsPending.add(ripUrlId);
-            threadPool.addThread(new DownloadVideoThread(tug, ripUrlId, directory, filename, this));
+            threadPool.addThread(new DownloadFileThread(tug, ripUrlId, directory, filename, this, getFileExtFromMIME));
         }
         return true;
     }
