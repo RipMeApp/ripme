@@ -133,65 +133,6 @@ public abstract class AbstractJSONRipper extends AbstractRipper {
         return false;
     }
 
-    @Override
-    /**
-     * Queues multiple URLs of single images to download from a single Album URL
-     */
-    public boolean addURLToDownload(TokenedUrlGetter tug, RipUrlId ripUrlId, Path directory, String filename, String referrer, Map<String,String> cookies, Boolean getFileExtFromMIME) {
-        // Only download one file if this is a test.
-        if (super.isThisATest() && (itemsCompleted.size() > 0 || itemsErrored.size() > 0)) {
-            stop();
-            itemsPending.clear();
-            return false;
-        }
-        if (!allowDuplicates()
-                && ( itemsPending.contains(ripUrlId)
-                  || itemsCompleted.containsKey(ripUrlId)
-                  || itemsErrored.containsKey(ripUrlId) )) {
-            // Item is already downloaded/downloading, skip it.
-            // TODO print path if in itemsCompleted or itemsErrored
-            logger.info("[!] Skipping " + ripUrlId + " -- already attempted: " + Utils.removeCWD(directory));
-            return false;
-        }
-        if (Utils.getConfigBoolean("urls_only.save", false)) {
-            // Output URL to file
-            Path urlFile = Paths.get(this.workingDir + "/urls.txt");
-            URL url = null;
-            try {
-                url = tug.getTokenedUrl();
-            } catch (IOException | URISyntaxException e) {
-                logger.error("Unable to get URL for {}", ripUrlId, e);
-                itemsErrored.put(ripUrlId, e.getMessage());
-                return false;
-            }
-            if (AbstractRipper.shouldIgnoreExtension(url)) {
-                sendUpdate(STATUS.DOWNLOAD_SKIP, "Skipping " + url.toExternalForm() + " - ignored extension");
-                return false;
-            }
-            String text = url.toExternalForm() + System.lineSeparator();
-            try {
-                Files.write(urlFile, text.getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
-                itemsCompleted.put(ripUrlId, urlFile);
-            } catch (IOException e) {
-                logger.error("Error while writing to " + urlFile, e);
-            }
-            return true;
-        }
-        else {
-            itemsPending.add(ripUrlId);
-            DownloadFileThread dft = new DownloadFileThread(tug, ripUrlId, directory, filename, this, getFileExtFromMIME);
-            if (referrer != null) {
-                dft.setReferrer(referrer);
-            }
-            if (cookies != null) {
-                dft.setCookies(cookies);
-            }
-            threadPool.addThread(dft);
-        }
-
-        return true;
-    }
-
     /**
      * Queues image to be downloaded and saved.
      * Uses filename from URL to decide filename.
