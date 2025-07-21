@@ -116,19 +116,6 @@ public abstract class AlbumRipper extends AbstractRipper {
         return true;
     }
 
-    /**
-     * Queues image to be downloaded and saved.
-     * Uses filename from URL to decide filename.
-     * @param url
-     *      URL to download
-     * @return
-     *      True on success
-     */
-    protected boolean addURLToDownload(URL url) {
-        // Use empty prefix and empty subdirectory
-        return addURLToDownload(url, "", "");
-    }
-
     @Override
     /**
      * Cleans up & tells user about successful download
