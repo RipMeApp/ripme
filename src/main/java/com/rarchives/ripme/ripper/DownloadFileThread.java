@@ -104,7 +104,7 @@ class DownloadFileThread implements Runnable {
 
                 // Setup HTTP request
                 HttpURLConnection huc;
-                if (this.url.toString().startsWith("https")) {
+                if (url.getProtocol().equals("https")) {
                     huc = (HttpsURLConnection) urlToDownload.openConnection();
                 } else {
                     huc = (HttpURLConnection) urlToDownload.openConnection();
