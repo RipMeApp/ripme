@@ -30,10 +30,6 @@ public abstract class AlbumRipper extends AbstractRipper {
 
     private static final Logger logger = LogManager.getLogger(AlbumRipper.class);
 
-    private final Set<RipUrlId> itemsPending = Collections.synchronizedSet(new HashSet<>());
-    private final Map<RipUrlId, Path> itemsCompleted = Collections.synchronizedMap(new HashMap<>());
-    private final Map<RipUrlId, String> itemsErrored = Collections.synchronizedMap(new HashMap<>());
-
     protected AlbumRipper(URL url) throws IOException {
         super(url);
     }
@@ -46,14 +42,6 @@ public abstract class AlbumRipper extends AbstractRipper {
 
     protected boolean allowDuplicates() {
         return false;
-    }
-
-    @Override
-    /**
-     * Returns total amount of files attempted.
-     */
-    public int getCount() {
-        return itemsCompleted.size() + itemsErrored.size();
     }
 
     @Override
@@ -114,72 +102,6 @@ public abstract class AlbumRipper extends AbstractRipper {
         }
 
         return true;
-    }
-
-    @Override
-    /**
-     * Cleans up & tells user about successful download
-     */
-    public void downloadCompleted(RipUrlId ripUrlId, Path saveAs) {
-        if (observer == null) {
-            return;
-        }
-        try {
-            String path = Utils.removeCWD(saveAs);
-            RipStatusMessage msg = new RipStatusMessage(STATUS.DOWNLOAD_COMPLETE, path);
-            itemsPending.remove(ripUrlId);
-            itemsCompleted.put(ripUrlId, saveAs);
-            observer.update(this, msg);
-
-            checkIfComplete();
-        } catch (Exception e) {
-            logger.error("Exception while updating observer: ", e);
-        }
-    }
-
-    @Override
-    /**
-     * Cleans up & tells user about failed download.
-     */
-    public void downloadErrored(RipUrlId ripUrlId, String reason) {
-        if (observer == null) {
-            return;
-        }
-        itemsPending.remove(ripUrlId);
-        itemsErrored.put(ripUrlId, reason);
-        observer.update(this, new RipStatusMessage(STATUS.DOWNLOAD_ERRORED, ripUrlId + " : " + reason));
-
-        checkIfComplete();
-    }
-
-    @Override
-    /**
-     * Tells user that a single file in the album they wish to download has
-     * already been downloaded in the past.
-     */
-    public void downloadExists(RipUrlId ripUrlId, Path file) {
-        if (observer == null) {
-            return;
-        }
-
-        itemsPending.remove(ripUrlId);
-        itemsCompleted.put(ripUrlId, file);
-        observer.update(this, new RipStatusMessage(STATUS.DOWNLOAD_WARN, ripUrlId + " already saved as " + file));
-
-        checkIfComplete();
-    }
-
-    /**
-     * Notifies observers and updates state if all files have been ripped.
-     */
-    @Override
-    protected void checkIfComplete() {
-        if (observer == null) {
-            return;
-        }
-        if (itemsPending.isEmpty()) {
-            notifyComplete();
-        }
     }
 
     /**
