@@ -85,7 +85,7 @@ class DownloadVideoThread implements Runnable {
             byte[] data = new byte[1024 * 256];
             int bytesRead;
             try {
-                logger.info("    Downloading file: " + url + (tries > 0 ? " Retry #" + tries : ""));
+                logger.info("    Downloading file: " + url + (tries > 0 ? " Try #" + tries+1 : ""));
                 observer.sendUpdate(STATUS.DOWNLOAD_STARTED, url.toExternalForm());
 
                 // Setup HTTP request
