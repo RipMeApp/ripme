@@ -89,6 +89,7 @@ public abstract class VideoRipper extends AbstractRipper {
                 return true;
             }
 
+            itemsPending.add(ripUrlId);
             threadPool.addThread(new DownloadVideoThread(tug, ripUrlId, directory, filename, this));
         }
         return true;
@@ -129,61 +130,6 @@ public abstract class VideoRipper extends AbstractRipper {
     }
 
     /**
-     * Runs if download successfully completed.
-     *
-     * @param ripUrlId Target URL ID
-     * @param saveAs   Path to file, including filename.
-     */
-    @Override
-    public void downloadCompleted(RipUrlId ripUrlId, Path saveAs) {
-        if (observer == null) {
-            return;
-        }
-
-        try {
-            String path = Utils.removeCWD(saveAs);
-            RipStatusMessage msg = new RipStatusMessage(STATUS.DOWNLOAD_COMPLETE, path);
-            observer.update(this, msg);
-
-            checkIfComplete();
-        } catch (Exception e) {
-            logger.error("Exception while updating observer: ", e);
-        }
-    }
-
-    /**
-     * Runs if the download errored somewhere.
-     *
-     * @param ripUrlId Target URL ID
-     * @param reason   Reason why the download failed.
-     */
-    @Override
-    public void downloadErrored(RipUrlId ripUrlId, String reason) {
-        if (observer == null) {
-            return;
-        }
-
-        observer.update(this, new RipStatusMessage(STATUS.DOWNLOAD_ERRORED, ripUrlId + " : " + reason));
-        checkIfComplete();
-    }
-
-    /**
-     * Runs if user tries to redownload an already existing File.
-     *
-     * @param ripUrlId Target URL ID
-     * @param file     Existing file
-     */
-    @Override
-    public void downloadExists(RipUrlId ripUrlId, Path file) {
-        if (observer == null) {
-            return;
-        }
-
-        observer.update(this, new RipStatusMessage(STATUS.DOWNLOAD_WARN, ripUrlId + " already saved as " + file));
-        checkIfComplete();
-    }
-
-    /**
      * Gets the status and changes it to a human-readable form.
      *
      * @return Status of current download.
@@ -204,20 +150,6 @@ public abstract class VideoRipper extends AbstractRipper {
     @Override
     public URL sanitizeURL(URL url) throws MalformedURLException {
         return url;
-    }
-
-    /**
-     * Notifies observers and updates state if all files have been ripped.
-     */
-    @Override
-    protected void checkIfComplete() {
-        if (observer == null) {
-            return;
-        }
-
-        if (bytesCompleted >= bytesTotal) {
-            notifyComplete();
-        }
     }
 
 }

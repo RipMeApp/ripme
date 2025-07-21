@@ -14,12 +14,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Observable;
-import java.util.Random;
-import java.util.Scanner;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.logging.log4j.LogManager;
@@ -45,6 +40,11 @@ public abstract class AbstractRipper
         implements RipperInterface, Runnable {
 
     private static final Logger logger = LogManager.getLogger(AbstractRipper.class);
+
+    protected final Set<RipUrlId> itemsPending = Collections.synchronizedSet(new HashSet<>());
+    protected final Map<RipUrlId, Path> itemsCompleted = Collections.synchronizedMap(new HashMap<>());
+    protected final Map<RipUrlId, String> itemsErrored = Collections.synchronizedMap(new HashMap<>());
+
     private final String URLHistoryFile = Utils.getURLHistoryFile();
 
     public static final String USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36";
@@ -532,27 +532,68 @@ public abstract class AbstractRipper
      * @param ripUrlId The RipUrlId that was completed.
      * @param saveAs   Where the downloaded file is stored.
      */
-    public abstract void downloadCompleted(RipUrlId ripUrlId, Path saveAs);
+    protected void downloadCompleted(RipUrlId ripUrlId, Path saveAs) {
+        if (observer == null) {
+            return;
+        }
+        try {
+            String path = Utils.removeCWD(saveAs);
+            RipStatusMessage msg = new RipStatusMessage(STATUS.DOWNLOAD_COMPLETE, path);
+            itemsPending.remove(ripUrlId);
+            itemsCompleted.put(ripUrlId, saveAs);
+            observer.update(this, msg);
+
+            checkIfComplete();
+        } catch (Exception e) {
+            logger.error("Exception while updating observer: ", e);
+        }
+    }
 
     /**
      * Notifies observers that a file could not be downloaded (includes a reason).
      */
-    public abstract void downloadErrored(RipUrlId ripUrlId, String reason);
+    protected void downloadErrored(RipUrlId ripUrlId, String reason) {
+        if (observer == null) {
+            return;
+        }
+        itemsPending.remove(ripUrlId);
+        itemsErrored.put(ripUrlId, reason);
+        observer.update(this, new RipStatusMessage(STATUS.DOWNLOAD_ERRORED, ripUrlId + " : " + reason));
+
+        checkIfComplete();
+    }
 
     /**
      * Notify observers that a download could not be completed,
      * but was not technically an "error".
      */
-    public abstract void downloadExists(RipUrlId ripUrlId, Path file);
+    protected void downloadExists(RipUrlId ripUrlId, Path file) {
+        if (observer == null) {
+            return;
+        }
+
+        itemsPending.remove(ripUrlId);
+        itemsCompleted.put(ripUrlId, file);
+        observer.update(this, new RipStatusMessage(STATUS.DOWNLOAD_WARN, ripUrlId + " already saved as " + file));
+
+        checkIfComplete();
+    }
 
     /**
      * @return Number of files downloaded.
      */
-    int getCount() {
-        return 1;
+    public int getCount() {
+        return itemsCompleted.size() + itemsErrored.size();
     }
 
-    protected abstract void checkIfComplete();
+    /**
+     * Checks if complete and notifies observers if complete
+     */
+    protected void checkIfComplete() {
+        if (itemsPending.isEmpty()) {
+            notifyComplete();
+        }
+    }
 
     /**
      * Notifies observers and updates state if all files have been ripped.
