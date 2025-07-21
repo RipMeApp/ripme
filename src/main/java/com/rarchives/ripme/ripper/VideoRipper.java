@@ -49,10 +49,21 @@ public abstract class VideoRipper extends AbstractRipper {
     }
 
     @Override
-    public boolean addURLToDownload(URL url, Path saveAs) {
+    public boolean addURLToDownload(TokenedUrlGetter tug, RipUrlId ripUrlId, Path directory, String filename, String referrer, Map<String,String> cookies, Boolean getFileExtFromMIME) {
         if (Utils.getConfigBoolean("urls_only.save", false)) {
             // Output URL to file
             String urlFile = this.workingDir + "/urls.txt";
+            URL url = null;
+            try {
+                url = tug.getTokenedUrl();
+            } catch (IOException | URISyntaxException e) {
+                logger.error("Unable to get URL for {}", ripUrlId, e);
+                return false;
+            }
+            if (AbstractRipper.shouldIgnoreURL(url)) {
+                sendUpdate(STATUS.DOWNLOAD_SKIP, "Skipping " + url.toExternalForm() + " - ignored extension");
+                return false;
+            }
 
             try (FileWriter fw = new FileWriter(urlFile, true)) {
                 fw.write(url.toExternalForm());
@@ -64,26 +75,23 @@ public abstract class VideoRipper extends AbstractRipper {
                 logger.error("Error while writing to " + urlFile, e);
                 return false;
             }
+            return true;
         } else {
             if (isThisATest()) {
                 // Tests shouldn't download the whole video
                 // Just change this.url to the download URL so the test knows we found it.
                 logger.debug("Test rip, found URL: " + url);
-                this.url = url;
+                try {
+                    this.url = tug.getTokenedUrl();
+                } catch (IOException | URISyntaxException e) {
+                    throw new RuntimeException(e);
+                }
                 return true;
             }
-            if (shouldIgnoreURL(url)) {
-                sendUpdate(STATUS.DOWNLOAD_SKIP, "Skipping " + url.toExternalForm() + " - ignored extension");
-                return false;
-            }
-            threadPool.addThread(new DownloadVideoThread(url, saveAs, this));
+
+            threadPool.addThread(new DownloadVideoThread(tug, ripUrlId, directory, filename, this));
         }
         return true;
-    }
-
-    @Override
-    public boolean addURLToDownload(URL url, Path saveAs, String referrer, Map<String, String> cookies, Boolean getFileExtFromMIME) {
-        return addURLToDownload(url, saveAs);
     }
 
     /**
@@ -123,11 +131,11 @@ public abstract class VideoRipper extends AbstractRipper {
     /**
      * Runs if download successfully completed.
      *
-     * @param url    Target URL
-     * @param saveAs Path to file, including filename.
+     * @param ripUrlId Target URL ID
+     * @param saveAs   Path to file, including filename.
      */
     @Override
-    public void downloadCompleted(URL url, Path saveAs) {
+    public void downloadCompleted(RipUrlId ripUrlId, Path saveAs) {
         if (observer == null) {
             return;
         }
@@ -146,31 +154,32 @@ public abstract class VideoRipper extends AbstractRipper {
     /**
      * Runs if the download errored somewhere.
      *
-     * @param url    Target URL
-     * @param reason Reason why the download failed.
+     * @param ripUrlId Target URL ID
+     * @param reason   Reason why the download failed.
      */
     @Override
-    public void downloadErrored(URL url, String reason) {
+    public void downloadErrored(RipUrlId ripUrlId, String reason) {
         if (observer == null) {
             return;
         }
 
-        observer.update(this, new RipStatusMessage(STATUS.DOWNLOAD_ERRORED, url + " : " + reason));
+        observer.update(this, new RipStatusMessage(STATUS.DOWNLOAD_ERRORED, ripUrlId + " : " + reason));
         checkIfComplete();
     }
 
     /**
      * Runs if user tries to redownload an already existing File.
-     *  @param url  Target URL
-     * @param file Existing file
+     *
+     * @param ripUrlId Target URL ID
+     * @param file     Existing file
      */
     @Override
-    public void downloadExists(URL url, Path file) {
+    public void downloadExists(RipUrlId ripUrlId, Path file) {
         if (observer == null) {
             return;
         }
 
-        observer.update(this, new RipStatusMessage(STATUS.DOWNLOAD_WARN, url + " already saved as " + file));
+        observer.update(this, new RipStatusMessage(STATUS.DOWNLOAD_WARN, ripUrlId + " already saved as " + file));
         checkIfComplete();
     }
 

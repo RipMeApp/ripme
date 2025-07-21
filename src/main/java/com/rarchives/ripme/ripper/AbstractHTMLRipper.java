@@ -13,11 +13,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -36,9 +32,9 @@ public abstract class AbstractHTMLRipper extends AbstractRipper {
 
     private static final Logger logger = LogManager.getLogger(AbstractHTMLRipper.class);
 
-    private final Map<URL, File> itemsPending = Collections.synchronizedMap(new HashMap<>());
-    private final Map<URL, Path> itemsCompleted = Collections.synchronizedMap(new HashMap<>());
-    private final Map<URL, String> itemsErrored = Collections.synchronizedMap(new HashMap<>());
+    private final Set<RipUrlId> itemsPending = Collections.synchronizedSet(new HashSet<>());
+    private final Map<RipUrlId, Path> itemsCompleted = Collections.synchronizedMap(new HashMap<>());
+    private final Map<RipUrlId, String> itemsErrored = Collections.synchronizedMap(new HashMap<>());
     Document cachedFirstPage;
 
     protected AbstractHTMLRipper(URL url) throws IOException {
@@ -346,11 +342,10 @@ public abstract class AbstractHTMLRipper extends AbstractRipper {
         return itemsCompleted.size() + itemsErrored.size();
     }
 
-    @Override
     /*
       Queues multiple URLs of single images to download from a single Album URL
      */
-    public boolean addURLToDownload(URL url, Path saveAs, String referrer, Map<String,String> cookies, Boolean getFileExtFromMIME) {
+    public boolean addURLToDownload(TokenedUrlGetter tug, RipUrlId ripUrlId, Path directory, String filename, String referrer, Map<String,String> cookies, Boolean getFileExtFromMIME) {
         // Only download one file if this is a test.
         if (isThisATest() && (itemsCompleted.size() > 0 || itemsErrored.size() > 0)) {
             stop();
@@ -358,31 +353,42 @@ public abstract class AbstractHTMLRipper extends AbstractRipper {
             return false;
         }
         if (!allowDuplicates()
-                && ( itemsPending.containsKey(url)
-                  || itemsCompleted.containsKey(url)
-                  || itemsErrored.containsKey(url) )) {
+                && ( itemsPending.contains(ripUrlId)
+                  || itemsCompleted.containsKey(ripUrlId)
+                  || itemsErrored.containsKey(ripUrlId) )) {
             // Item is already downloaded/downloading, skip it.
-            logger.info("[!] Skipping " + url + " -- already attempted: " + Utils.removeCWD(saveAs));
+            // TODO print path if in itemsCompleted or itemsErrored
+            logger.info("[!] Skipping " + ripUrlId + " -- already attempted: " + Utils.removeCWD(directory));
             return false;
         }
-        if (shouldIgnoreURL(url)) {
-            sendUpdate(STATUS.DOWNLOAD_SKIP, "Skipping " + url.toExternalForm() + " - ignored extension");
-            return false;
-        }
+
         if (Utils.getConfigBoolean("urls_only.save", false)) {
             // Output URL to file
             Path urlFile = Paths.get(this.workingDir + "/urls.txt");
+            URL url = null;
+            try {
+                url = tug.getTokenedUrl();
+            } catch (IOException | URISyntaxException e) {
+                logger.error("Unable to get URL for {}", ripUrlId, e);
+                itemsErrored.put(ripUrlId, e.getMessage());
+                return false;
+            }
+            if (AbstractRipper.shouldIgnoreURL(url)) {
+                sendUpdate(STATUS.DOWNLOAD_SKIP, "Skipping " + url.toExternalForm() + " - ignored extension");
+                return false;
+            }
             String text = url.toExternalForm() + System.lineSeparator();
             try {
                 Files.write(urlFile, text.getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
-                itemsCompleted.put(url, urlFile);
+                itemsCompleted.put(ripUrlId, urlFile);
             } catch (IOException e) {
                 logger.error("Error while writing to " + urlFile, e);
             }
+            return true;
         }
         else {
-            itemsPending.put(url, saveAs.toFile());
-            DownloadFileThread dft = new DownloadFileThread(url,  saveAs.toFile(),  this, getFileExtFromMIME);
+            itemsPending.add(ripUrlId);
+            DownloadFileThread dft = new DownloadFileThread(tug, ripUrlId, directory, filename, this, getFileExtFromMIME);
             if (referrer != null) {
                 dft.setReferrer(referrer);
             }
@@ -393,11 +399,6 @@ public abstract class AbstractHTMLRipper extends AbstractRipper {
         }
 
         return true;
-    }
-
-    @Override
-    public boolean addURLToDownload(URL url, Path saveAs) {
-        return addURLToDownload(url, saveAs, null, null, false);
     }
 
     /**
@@ -413,19 +414,19 @@ public abstract class AbstractHTMLRipper extends AbstractRipper {
         return addURLToDownload(url, "", "");
     }
 
-    @Override
     /*
       Cleans up & tells user about successful download
      */
-    public void downloadCompleted(URL url, Path saveAs) {
+    @Override
+    public void downloadCompleted(RipUrlId ripUrlId, Path saveAs) {
         if (observer == null) {
             return;
         }
         try {
             String path = Utils.removeCWD(saveAs);
             RipStatusMessage msg = new RipStatusMessage(STATUS.DOWNLOAD_COMPLETE, path);
-            itemsPending.remove(url);
-            itemsCompleted.put(url, saveAs);
+            itemsPending.remove(ripUrlId);
+            itemsCompleted.put(ripUrlId, saveAs);
             observer.update(this, msg);
 
             checkIfComplete();
@@ -434,34 +435,34 @@ public abstract class AbstractHTMLRipper extends AbstractRipper {
         }
     }
 
-    @Override
     /*
      * Cleans up & tells user about failed download.
      */
-    public void downloadErrored(URL url, String reason) {
+    @Override
+    public void downloadErrored(RipUrlId ripUrlId, String reason) {
         if (observer == null) {
             return;
         }
-        itemsPending.remove(url);
-        itemsErrored.put(url, reason);
-        observer.update(this, new RipStatusMessage(STATUS.DOWNLOAD_ERRORED, url + " : " + reason));
+        itemsPending.remove(ripUrlId);
+        itemsErrored.put(ripUrlId, reason);
+        observer.update(this, new RipStatusMessage(STATUS.DOWNLOAD_ERRORED, ripUrlId + " : " + reason));
 
         checkIfComplete();
     }
 
-    @Override
     /*
       Tells user that a single file in the album they wish to download has
       already been downloaded in the past.
      */
-    public void downloadExists(URL url, Path file) {
+    @Override
+    public void downloadExists(RipUrlId ripUrlId, Path file) {
         if (observer == null) {
             return;
         }
 
-        itemsPending.remove(url);
-        itemsCompleted.put(url, file);
-        observer.update(this, new RipStatusMessage(STATUS.DOWNLOAD_WARN, url + " already saved as " + file));
+        itemsPending.remove(ripUrlId);
+        itemsCompleted.put(ripUrlId, file);
+        observer.update(this, new RipStatusMessage(STATUS.DOWNLOAD_WARN, ripUrlId + " already saved as " + file));
 
         checkIfComplete();
     }

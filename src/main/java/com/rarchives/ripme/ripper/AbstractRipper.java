@@ -244,7 +244,9 @@ public abstract class AbstractRipper
      * @param saveAs Path of the local file to save the content to.
      * @return True on success, false on failure.
      */
-    public abstract boolean addURLToDownload(URL url, Path saveAs);
+    public boolean addURLToDownload(URL url, Path saveAs) {
+        return addURLToDownload(url, saveAs, null, null, false);
+    }
 
     /**
      * Queues image to be downloaded and saved.
@@ -257,8 +259,20 @@ public abstract class AbstractRipper
      * @return True if downloaded successfully
      *         False if failed to download
      */
-    protected abstract boolean addURLToDownload(URL url, Path saveAs, String referrer, Map<String, String> cookies,
-            Boolean getFileExtFromMIME);
+    public boolean addURLToDownload(URL url, Path saveAs, String referrer, Map<String, String> cookies, Boolean getFileExtFromMIME) {
+        TokenedUrlGetter tug = () -> url;
+        RipUrlId ripUrlId = new RipUrlId(getClass(), getHost(), url);
+        Path directory = saveAs.getParent();
+        String filename = saveAs.getFileName().toString();
+        return addURLToDownload(tug, ripUrlId, directory, filename, referrer, cookies, getFileExtFromMIME);
+    }
+
+    protected boolean addURLToDownload(TokenedUrlGetter tug, RipUrlId ripUrlId, Path directory, String referrer, Map<String, String> cookies, Boolean getFileExtFromMIME) {
+        return addURLToDownload(tug, ripUrlId, directory, null, referrer, cookies, getFileExtFromMIME);
+    }
+
+    public abstract boolean addURLToDownload(TokenedUrlGetter tug, RipUrlId ripUrlId, Path directory, String filename, String referrer, Map<String,String> cookies, Boolean getFileExtFromMIME);
+
 
     /**
      * Queues image to be downloaded and saved.
@@ -515,21 +529,21 @@ public abstract class AbstractRipper
     /**
      * Notifies observers that a file download has completed.
      *
-     * @param url    URL that was completed.
-     * @param saveAs Where the downloaded file is stored.
+     * @param ripUrlId The RipUrlId that was completed.
+     * @param saveAs   Where the downloaded file is stored.
      */
-    public abstract void downloadCompleted(URL url, Path saveAs);
+    public abstract void downloadCompleted(RipUrlId ripUrlId, Path saveAs);
 
     /**
      * Notifies observers that a file could not be downloaded (includes a reason).
      */
-    public abstract void downloadErrored(URL url, String reason);
+    public abstract void downloadErrored(RipUrlId ripUrlId, String reason);
 
     /**
      * Notify observers that a download could not be completed,
      * but was not technically an "error".
      */
-    public abstract void downloadExists(URL url, Path file);
+    public abstract void downloadExists(RipUrlId ripUrlId, Path file);
 
     /**
      * @return Number of files downloaded.
@@ -805,7 +819,7 @@ public abstract class AbstractRipper
         return false;
     }
 
-    protected boolean shouldIgnoreURL(URL url) {
+    protected static boolean shouldIgnoreURL(URL url) { // TODO change to "shouldIgnoreExtension"
         final String[] ignoredExtensions = Utils.getConfigStringArray("download.ignore_extensions");
         if (ignoredExtensions == null || ignoredExtensions.length == 0)
             return false; // nothing ignored
