@@ -195,7 +195,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         mainFrame.setLayout(new GridBagLayout());
 
-        createUI(mainFrame.getContentPane());
+        createUI((JPanel) mainFrame.getContentPane());
         pack();
 
         loadHistory();
@@ -281,7 +281,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
                 && !configurationPanel.isVisible());
     }
 
-    private void createUI(Container pane) {
+    private void createUI(JPanel pane) {
         // If creating the tray icon fails, ignore it.
         try {
             setupTrayIcon();
@@ -289,7 +289,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
             LOGGER.warn(e.getMessage());
         }
 
-        EmptyBorder emptyBorder = new EmptyBorder(5, 5, 5, 5);
+        pane.setBorder(new EmptyBorder(5, 5, 5, 5));
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.weightx = 1;
@@ -363,7 +363,6 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         } catch (Exception ignored) {
         }
         JPanel ripPanel = new JPanel(new GridBagLayout());
-        ripPanel.setBorder(emptyBorder);
 
         gbc.fill = GridBagConstraints.BOTH;
         gbc.weightx = 0;
@@ -390,7 +389,6 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         openButton = new JButton();
         openButton.setVisible(false);
         JPanel statusPanel = new JPanel(new GridBagLayout());
-        statusPanel.setBorder(emptyBorder);
 
         gbc.gridx = 0;
         gbc.weightx = 1;
@@ -407,12 +405,10 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         gbc.gridwidth = 1;
 
         JPanel progressPanel = new JPanel(new GridBagLayout());
-        progressPanel.setBorder(emptyBorder);
         statusProgress = new JProgressBar(0, 100);
         progressPanel.add(statusProgress, gbc);
 
         JPanel optionsPanel = new JPanel(new GridBagLayout());
-        optionsPanel.setBorder(emptyBorder);
         optionLog = new JButton(Utils.getLocalizedString("Log"));
         optionHistory = new JButton(Utils.getLocalizedString("History"));
         optionQueue = new JButton(Utils.getLocalizedString("queue"));
@@ -444,7 +440,6 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         optionsPanel.add(optionConfiguration, gbc);
 
         logPanel = new JPanel(new GridBagLayout());
-        logPanel.setBorder(emptyBorder);
         logText = new JTextPane();
         logText.setEditable(false);
         JScrollPane logTextScroll = new JScrollPane(logText);
@@ -458,7 +453,6 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         gbc.weighty = 0;
 
         historyPanel = new JPanel(new GridBagLayout());
-        historyPanel.setBorder(emptyBorder);
         historyPanel.setVisible(false);
         historyPanel.setPreferredSize(new Dimension(300, 250));
 
@@ -540,7 +534,6 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         gbc.ipady = 0;
         JPanel historyButtonPanel = new JPanel(new GridBagLayout());
         historyButtonPanel.setSize(new Dimension(300, 10));
-        historyButtonPanel.setBorder(emptyBorder);
         gbc.gridx = 0;
         historyButtonPanel.add(historyButtonRemove, gbc);
         gbc.gridx = 1;
@@ -554,7 +547,6 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         historyPanel.add(historyButtonPanel, gbc);
 
         queuePanel = new JPanel(new GridBagLayout());
-        queuePanel.setBorder(emptyBorder);
         queuePanel.setVisible(false);
         queuePanel.setPreferredSize(new Dimension(300, 250));
         queueListModel = new DefaultListModel<>();
@@ -581,7 +573,6 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         gbc.ipady = 0;
 
         configurationPanel = new JPanel(new GridBagLayout());
-        configurationPanel.setBorder(emptyBorder);
         configurationPanel.setVisible(false);
 
         // TODO Configuration components
