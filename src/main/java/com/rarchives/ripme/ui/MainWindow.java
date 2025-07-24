@@ -37,9 +37,6 @@ import javax.swing.text.*;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.core.LoggerContext;
-import org.apache.logging.log4j.core.config.Configuration;
-import org.apache.logging.log4j.core.config.LoggerConfig;
 
 import com.rarchives.ripme.ripper.AbstractRipper;
 import com.rarchives.ripme.uiUtils.ContextActionProtections;
@@ -62,9 +59,14 @@ public final class MainWindow implements Runnable, RipStatusHandler {
     private static JButton panicButton;
 
     private static JLabel statusLabel;
-    private static final JLabel transferRateLabel = new JLabel();
-    private static JButton openButton;
-    private static JProgressBar statusProgress;
+    private static final ProgressTextField currentlyRippingProgress = new ProgressTextField();
+    private static final JLabel pendingValue = new JLabel("0");
+    private static final JLabel activeValue = new JLabel("0");
+    private static final JLabel completedValue = new JLabel("0");
+    private static final JLabel erroredValue = new JLabel("0");
+    private static final JLabel totalValue = new JLabel("0");
+    private static final JLabel transferRateValue = new JLabel("0.00 B/s");
+    private static final JButton openButton = new JButton();
 
     // Put an empty JPanel on the bottom of the window to keep components
     // anchored to the top when there is no open lower panel
@@ -152,10 +154,10 @@ public final class MainWindow implements Runnable, RipStatusHandler {
                 rateRefresherFuture.cancel(true);
                 rateRefresherFuture = null;
             }
-            transferRateLabel.setText("");
+            transferRateValue.setText("0.00 B/s");
             return;
         }
-        transferRateLabel.setText(transferRate.formatHumanTransferRate());
+        transferRateValue.setText(transferRate.formatHumanTransferRate());
     };
 
     private void updateQueue(DefaultListModel<Object> model) {
@@ -293,15 +295,6 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         }
 
         pane.setBorder(new EmptyBorder(5, 5, 5, 5));
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.weightx = 1;
-        gbc.ipadx = 2;
-        gbc.gridx = 0;
-        gbc.weighty = 0;
-        gbc.ipady = 2;
-        gbc.gridy = 0;
-        gbc.anchor = GridBagConstraints.PAGE_START;
 
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
@@ -365,8 +358,10 @@ public final class MainWindow implements Runnable, RipStatusHandler {
             stopButton.setIcon(new ImageIcon(stopIcon));
         } catch (Exception ignored) {
         }
-        JPanel ripPanel = new JPanel(new GridBagLayout());
 
+        GridBagConstraints gbc;
+        JPanel ripPanel = new JPanel(new GridBagLayout());
+        gbc = new GridBagConstraints();
         gbc.fill = GridBagConstraints.BOTH;
         gbc.weightx = 0;
         gbc.gridx = 0;
@@ -386,30 +381,131 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         gbc.weightx = 1;
 
         statusLabel = new JLabel(Utils.getLocalizedString("inactive"));
+        statusLabel.setFont(new Font(Font.DIALOG, Font.PLAIN, statusLabel.getFont().getSize()));
         statusLabel.setHorizontalAlignment(JLabel.CENTER);
-        transferRateLabel.setHorizontalAlignment(JLabel.RIGHT);
-        transferRateLabel.setFont(monospaced);
-        openButton = new JButton();
+
+        JPanel statusDetailPanel = new JPanel(new GridBagLayout());
+
+        pendingValue.setFont(monospaced);
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.anchor = GridBagConstraints.EAST;
+        gbc.ipadx = 5;
+        statusDetailPanel.add(pendingValue, gbc);
+        JLabel pendingLabel = new JLabel("Pending");
+        gbc = new GridBagConstraints();
+        gbc.gridx = 1;
+        gbc.gridy = 0;
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.ipadx = 5;
+        statusDetailPanel.add(pendingLabel, gbc);
+        activeValue.setFont(monospaced);
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        gbc.anchor = GridBagConstraints.EAST;
+        gbc.ipadx = 5;
+        statusDetailPanel.add(activeValue, gbc);
+        JLabel activeLabel = new JLabel("Active");
+        gbc = new GridBagConstraints();
+        gbc.gridx = 1;
+        gbc.gridy = 1;
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.ipadx = 5;
+        statusDetailPanel.add(activeLabel, gbc);
+        completedValue.setFont(monospaced);
+        gbc = new GridBagConstraints();
+        gbc.gridx = 3;
+        gbc.gridy = 0;
+        gbc.anchor = GridBagConstraints.EAST;
+        gbc.ipadx = 5;
+        statusDetailPanel.add(completedValue, gbc);
+        JLabel completedLabel = new JLabel("Completed");
+        gbc = new GridBagConstraints();
+        gbc.gridx = 4;
+        gbc.gridy = 0;
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.ipadx = 5;
+        statusDetailPanel.add(completedLabel, gbc);
+        erroredValue.setFont(monospaced);
+        gbc = new GridBagConstraints();
+        gbc.gridx = 3;
+        gbc.gridy = 1;
+        gbc.anchor = GridBagConstraints.EAST;
+        gbc.ipadx = 5;
+        statusDetailPanel.add(erroredValue, gbc);
+        JLabel erroredLabel = new JLabel("Errored");
+        gbc = new GridBagConstraints();
+        gbc.gridx = 4;
+        gbc.gridy = 1;
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.ipadx = 5;
+        statusDetailPanel.add(erroredLabel, gbc);
+        totalValue.setFont(monospaced);
+        gbc = new GridBagConstraints();
+        gbc.gridx = 6;
+        gbc.gridy = 0;
+        gbc.anchor = GridBagConstraints.EAST;
+        gbc.ipadx = 5;
+        statusDetailPanel.add(totalValue, gbc);
+        JLabel totalLabel = new JLabel("Total");
+        gbc = new GridBagConstraints();
+        gbc.gridx = 7;
+        gbc.gridy = 0;
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.ipadx = 5;
+        statusDetailPanel.add(totalLabel, gbc);
+        transferRateValue.setFont(monospaced);
+        gbc = new GridBagConstraints();
+        gbc.gridx = 6;
+        gbc.gridy = 1;
+        gbc.anchor = GridBagConstraints.EAST;
+        gbc.ipadx = 5;
+        statusDetailPanel.add(transferRateValue, gbc);
+        JLabel transferRateLabel2 = new JLabel("Speed");
+        gbc = new GridBagConstraints();
+        gbc.gridx = 7;
+        gbc.gridy = 1;
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.ipadx = 5;
+        statusDetailPanel.add(transferRateLabel2, gbc);
+
+        final JPanel spacer1 = new JPanel();
+        gbc = new GridBagConstraints();
+        gbc.gridx = 2;
+        gbc.gridy = 0;
+        gbc.weightx = 1.0;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        statusDetailPanel.add(spacer1, gbc);
+        final JPanel spacer2 = new JPanel();
+        gbc = new GridBagConstraints();
+        gbc.gridx = 5;
+        gbc.gridy = 0;
+        gbc.weightx = 1.0;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        statusDetailPanel.add(spacer2, gbc);
+
+        statusDetailPanel.setPreferredSize(new Dimension(350, statusDetailPanel.getPreferredSize().height));
+
         openButton.setVisible(false);
+
+        gbc = new GridBagConstraints();
         JPanel statusPanel = new JPanel(new GridBagLayout());
 
-        gbc.gridx = 0;
-        gbc.weightx = 1;
-        statusPanel.add(statusLabel, gbc);
-        gbc.gridx = 1;
-        gbc.weightx = 0;
-        statusPanel.add(transferRateLabel, gbc);
-        gbc.gridx = 0;
-        gbc.weightx = 1;
-        gbc.gridwidth = 2;
-        gbc.gridy = 1;
-        statusPanel.add(openButton, gbc);
+        gbc.weightx = 1.0;
         gbc.gridy = 0;
-        gbc.gridwidth = 1;
-
-        JPanel progressPanel = new JPanel(new GridBagLayout());
-        statusProgress = new JProgressBar(0, 100);
-        progressPanel.add(statusProgress, gbc);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        statusPanel.add(statusLabel, gbc);
+        gbc.gridy = 1;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        statusPanel.add(currentlyRippingProgress, gbc);
+        gbc.gridy = 2;
+        gbc.fill = GridBagConstraints.NONE;
+        statusPanel.add(statusDetailPanel, gbc);
+        gbc.gridy = 3;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        statusPanel.add(openButton, gbc);
 
         JPanel optionsPanel = new JPanel(new GridBagLayout());
         optionLog = new JToggleButton(Utils.getLocalizedString("Log"));
@@ -675,29 +771,21 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         optionQueue.putClientProperty(RIPME_PANEL, queuePanel);
         optionConfiguration.putClientProperty(RIPME_PANEL, configurationPanel);
 
-        gbc.anchor = GridBagConstraints.PAGE_START;
         gbc.gridy = 0;
+        gbc.gridx = 0;
         pane.add(ripPanel, gbc);
         gbc.gridy = 1;
         pane.add(statusPanel, gbc);
         gbc.gridy = 2;
-        pane.add(progressPanel, gbc);
-        gbc.gridy = 3;
         pane.add(optionsPanel, gbc);
         gbc.weighty = 1;
         gbc.fill = GridBagConstraints.BOTH;
-        gbc.gridy = 4;
+        gbc.gridy = 3;
         pane.add(logPanel, gbc);
-        gbc.gridy = 5;
         pane.add(historyPanel, gbc);
-        gbc.gridy = 5;
         pane.add(queuePanel, gbc);
-        gbc.gridy = 5;
         pane.add(configurationPanel, gbc);
-        gbc.gridy = 5;
         pane.add(emptyPanel, gbc);
-        gbc.weighty = 0;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
     }
 
     private JTextField configField(String key, int defaultValue) {
@@ -814,10 +902,9 @@ public final class MainWindow implements Runnable, RipStatusHandler {
                 gracefulStop.set(true);
                 queueListModel.add(0, ripper.getURL().toString());
                 stopButton.setEnabled(false);
-                statusProgress.setValue(0);
-                statusProgress.setVisible(false);
+                currentlyRippingProgress.setValue(0);
+                currentlyRippingProgress.setText("");
                 pack();
-                statusProgress.setValue(0);
                 //status(Utils.getLocalizedString("download.interrupted"));
                 status("Rip gracefully stopping");
                 appendLog("Download interrupted", Color.RED);
@@ -832,10 +919,9 @@ public final class MainWindow implements Runnable, RipStatusHandler {
                 queueListModel.add(0, ripper.getURL().toString());
                 stopButton.setEnabled(false);
                 panicButton.setEnabled(false);
-                statusProgress.setValue(0);
-                statusProgress.setVisible(false);
+                currentlyRippingProgress.setValue(0);
+                currentlyRippingProgress.setText("");
                 pack();
-                statusProgress.setValue(0);
                 status("Rip interrupted"); // TODO localize
                 appendLog("Download interrupted", Color.RED);
             }
@@ -1348,8 +1434,8 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         stopButton.setEnabled(false);
         panicButton.setEnabled(false);
         isRipperActive.set(false);
-        statusProgress.setValue(0);
-        statusProgress.setVisible(false);
+        currentlyRippingProgress.setValue(0);
+        currentlyRippingProgress.setText("");
     }
 
     private Thread ripAlbum(String urlString) {
@@ -1373,10 +1459,17 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         }
         stopButton.setEnabled(true);
         panicButton.setEnabled(true);
-        statusProgress.setValue(100);
+        currentlyRippingProgress.setValue(0);
+        currentlyRippingProgress.setText(urlString);
         openButton.setVisible(false);
         statusLabel.setVisible(true);
-        transferRateLabel.setVisible(true);
+
+        pendingValue.setText("0");
+        activeValue.setText("0");
+        completedValue.setText("0");
+        totalValue.setText("0");
+        erroredValue.setText("0");
+
         pack();
         boolean failed = false;
         try {
@@ -1412,7 +1505,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
             }
         }
         stopButton.setEnabled(false);
-        statusProgress.setValue(0);
+        currentlyRippingProgress.setValue(0);
         pack();
         return null;
     }
@@ -1509,14 +1602,30 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         // CHUNK_BYTES is noisy, so handle it before any other computation
         if (status == RipStatusMessage.STATUS.CHUNK_BYTES) {
             transferRate.addChunk((Long) msg.getObject());
-            transferRateLabel.setText(transferRate.formatHumanTransferRate());
+            transferRateValue.setText(transferRate.formatHumanTransferRate());
             return;
         }
 
-        int completedPercent = evt.ripper.getCompletionPercentage();
-        statusProgress.setValue(completedPercent);
-        statusProgress.setVisible(true);
-        status(evt.ripper.getStatusText());
+        if (evt.ripper.useByteProgessBar()) {
+            long bytesTotal = evt.ripper.getBytesTotal();
+            long bytesCompleted = evt.ripper.getBytesCompleted();
+            pendingValue.setText(Utils.bytesToHumanReadable(bytesTotal - bytesCompleted));
+            completedValue.setText(Utils.bytesToHumanReadable(bytesCompleted));
+            totalValue.setText(Utils.bytesToHumanReadable(bytesTotal));
+            currentlyRippingProgress.setValue(evt.ripper.getCompletionPercentage());
+        } else {
+            int pendingCount = evt.ripper.getPendingCount();
+            int activeCount = evt.ripper.getActiveCount(); // included in pendingCount
+            int completedCount = evt.ripper.getCompletedCount();
+            int erroredCount = evt.ripper.getErroredCount();
+            int totalCount = pendingCount + completedCount + erroredCount;
+            pendingValue.setText(String.valueOf(Math.max(0, pendingCount - activeCount))); // exclude active
+            activeValue.setText(String.valueOf(activeCount));
+            completedValue.setText(String.valueOf(completedCount));
+            erroredValue.setText(String.valueOf(erroredCount));
+            totalValue.setText(String.valueOf(totalCount));
+            currentlyRippingProgress.setValue(evt.ripper.getCompletionPercentage());
+        }
 
         switch (status) {
         case LOADING_RESOURCE:
@@ -1637,6 +1746,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
                 }
             }
             appendLog("Rip complete, saved to " + f, Color.GREEN);
+            status("");
             openButton.setActionCommand(f.toString());
             openButton.addActionListener(event -> {
                 try {

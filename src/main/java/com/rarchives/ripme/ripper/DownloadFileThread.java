@@ -112,8 +112,8 @@ class DownloadFileThread implements Runnable {
         String prettySaveAs = Utils.removeCWD(saveAs.toPath());
 
         long fileSize = 0;
-        int bytesTotal;
-        int bytesDownloaded = 0;
+        long bytesTotal = 0;
+        long bytesDownloaded = 0;
         if (saveAs.exists() && observer.tryResumeDownload()) {
             fileSize = saveAs.length();
         }
@@ -220,7 +220,7 @@ class DownloadFileThread implements Runnable {
                 // If the ripper is using the bytes progress bar set bytesTotal to
                 // huc.getContentLength()
                 if (observer.useByteProgessBar()) {
-                    bytesTotal = huc.getContentLength();
+                    bytesTotal = huc.getContentLengthLong();
                     observer.setBytesTotal(bytesTotal);
                     observer.sendUpdate(STATUS.TOTAL_BYTES, bytesTotal);
                     logger.debug("Size of file at " + url + " = " + bytesTotal + "b");

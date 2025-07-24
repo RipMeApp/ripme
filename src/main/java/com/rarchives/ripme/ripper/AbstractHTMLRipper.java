@@ -385,18 +385,13 @@ public abstract class AbstractHTMLRipper extends AbstractRipper {
         return (int) (100 * ( (total - itemsPending.size()) / total));
     }
 
-    /**
-     * @return
-     *      Human-readable information on the status of the current rip.
-     */
     @Override
-    public String getStatusText() {
-        return getCompletionPercentage() +
-                "% " +
-                "- Pending: " + itemsPending.size() +
-                ", Completed: " + itemsCompleted.size() +
-                ", Errored: " + itemsErrored.size();
+    public int getPendingCount() {
+        DownloadThreadPool threadPool = getRipperThreadPool();
+        if (threadPool != null) {
+            return threadPool.getPendingThreadCount();
+        }
+        return itemsPending.size();
     }
-
 
 }

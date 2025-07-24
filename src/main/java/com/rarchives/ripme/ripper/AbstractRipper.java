@@ -44,6 +44,7 @@ public abstract class AbstractRipper
 
     private static final Logger logger = LogManager.getLogger(AbstractRipper.class);
 
+    // For albums
     protected final Set<RipUrlId> itemsPending = Collections.synchronizedSet(new HashSet<>());
     protected final Map<RipUrlId, Path> itemsCompleted = Collections.synchronizedMap(new HashMap<>());
     protected final Map<RipUrlId, String> itemsErrored = Collections.synchronizedMap(new HashMap<>());
@@ -64,6 +65,11 @@ public abstract class AbstractRipper
      * to know that the ripper has seen each link crawled.
      */
     private final AtomicInteger itemsSeen = new AtomicInteger(0);
+
+    /** For individual files. See {@link #useByteProgessBar()} */
+    protected long bytesCompleted = 0;
+    /** For individual files. See {@link #useByteProgessBar()} */
+    protected long bytesTotal = 1; // avoid divide by 0
 
     private final String URLHistoryFile = Utils.getURLHistoryFile();
 
@@ -848,11 +854,6 @@ public abstract class AbstractRipper
     public abstract int getCompletionPercentage();
 
     /**
-     * @return Text for status
-     */
-    public abstract String getStatusText();
-
-    /**
      * Rips the album when the thread is invoked.
      */
     public void run() {
@@ -950,12 +951,12 @@ public abstract class AbstractRipper
         }
     }
 
-    public void setBytesTotal(int bytes) {
-        // Do nothing
+    protected void setBytesTotal(long bytes) {
+        this.bytesTotal = bytes;
     }
 
-    public void setBytesCompleted(int bytes) {
-        // Do nothing
+    protected void setBytesCompleted(long bytes) {
+        this.bytesCompleted = bytes;
     }
 
     /** Methods for detecting when we're running a test. */
@@ -969,7 +970,7 @@ public abstract class AbstractRipper
     }
 
     // If true ripme uses a byte progress bar
-    protected boolean useByteProgessBar() {
+    public boolean useByteProgessBar() {
         return false;
     }
 
@@ -994,9 +995,48 @@ public abstract class AbstractRipper
         return false;
     }
 
+    public int getPendingCount() {
+        DownloadThreadPool threadPool = getRipperThreadPool();
+        if (threadPool != null) {
+            return threadPool.getPendingThreadCount();
+        }
+        return itemsPending.size();
+    }
+
+    public int getCompletedCount() {
+        return itemsCompleted.size();
+    }
+
+    public int getErroredCount() {
+        return itemsErrored.size();
+    }
+
+    public int getActiveCount() {
+        return ripperThreadPool.getActiveThreadCount();
+    }
+
+    public long getBytesTotal() {
+        return bytesTotal;
+    }
+
+    public long getBytesCompleted() {
+        return bytesCompleted;
+    }
+
+    /**
+     * Gets the best estimate of total items.
+     */
+    public int getTotalCount() {
+        if (itemsTotal.get() == 0) {
+            return itemsPending.size() + itemsErrored.size() + itemsCompleted.size();
+        }
+        return itemsTotal.get();
+    }
+
     /**
      * Gets the asserted number of total items, or 0 if unknown.
      * Possibly useful in rippers.
+     * MainWindow probably wants {@link #getTotalCount()}
      */
     protected int getItemsTotal() {
         return itemsTotal.get();

@@ -538,7 +538,7 @@ public class Utils {
      * @param bytes Non-human readable integer.
      * @return Human readable interpretation of a byte.
      */
-    public static String bytesToHumanReadable(int bytes) {
+    public static String bytesToHumanReadable(long bytes) {
         float fbytes = (float) bytes;
         String[] mags = new String[]{"", "K", "M", "G", "T"};
         int magIndex = 0;

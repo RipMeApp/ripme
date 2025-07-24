@@ -89,18 +89,4 @@ public abstract class AlbumRipper extends AbstractRipper {
         return (int) (100 * ( (total - itemsPending.size()) / total));
     }
 
-    /**
-     * @return
-     *      Human-readable information on the status of the current rip.
-     */
-    @Override
-    public String getStatusText() {
-        StringBuilder sb = new StringBuilder();
-        sb.append(getCompletionPercentage())
-          .append("% ")
-          .append("- Pending: "  ).append(itemsPending.size())
-          .append(", Completed: ").append(itemsCompleted.size())
-          .append(", Errored: "  ).append(itemsErrored.size());
-        return sb.toString();
-    }
 }

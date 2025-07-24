@@ -18,9 +18,6 @@ public abstract class VideoRipper extends AbstractRipper {
 
     private static final Logger logger = LogManager.getLogger(VideoRipper.class);
 
-    private int bytesTotal = 1;
-    private int bytesCompleted = 1;
-
     protected VideoRipper(URL url) throws IOException {
         super(url);
     }
@@ -32,22 +29,12 @@ public abstract class VideoRipper extends AbstractRipper {
     public abstract String getGID(URL url) throws MalformedURLException;
 
     @Override
-    public void setBytesTotal(int bytes) {
-        this.bytesTotal = bytes;
-    }
-
-    @Override
-    public void setBytesCompleted(int bytes) {
-        this.bytesCompleted = bytes;
-    }
-
-    @Override
     public String getAlbumTitle(URL url) {
         return "videos";
     }
 
     @Override
-    protected boolean useByteProgessBar() {
+    public boolean useByteProgessBar() {
         return true;
     }
 
@@ -88,20 +75,6 @@ public abstract class VideoRipper extends AbstractRipper {
     @Override
     public int getCompletionPercentage() {
         return (int) (100 * (bytesCompleted / (float) bytesTotal));
-    }
-
-    /**
-     * Gets the status and changes it to a human-readable form.
-     *
-     * @return Status of current download.
-     */
-    @Override
-    public String getStatusText() {
-        return String.valueOf(getCompletionPercentage()) +
-                "%  - " +
-                Utils.bytesToHumanReadable(bytesCompleted) +
-                " / " +
-                Utils.bytesToHumanReadable(bytesTotal);
     }
 
     /**
