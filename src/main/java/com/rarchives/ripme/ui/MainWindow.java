@@ -53,6 +53,7 @@ import com.rarchives.ripme.utils.Utils;
 public final class MainWindow implements Runnable, RipStatusHandler {
 
     private static final Logger LOGGER = LogManager.getLogger(MainWindow.class);
+    private static final String RIPME_PANEL = "ripme.panel";
 
     private static JFrame mainFrame;
 
@@ -69,15 +70,17 @@ public final class MainWindow implements Runnable, RipStatusHandler {
     // anchored to the top when there is no open lower panel
     private static JPanel emptyPanel;
 
+    private static final ButtonGroup panelButtonGroup = new DeselectableButtonGroup();
+
     // Log
-    private static JButton optionLog;
+    private static JToggleButton optionLog;
     private static JPanel logPanel;
     private static JTextPane logText;
     private static final Queue<Integer> logLineLengths = new LinkedList<>();
     private static final int MAX_LOG_PANE_LINES = 1000;
 
     // History
-    private static JButton optionHistory;
+    private static JToggleButton optionHistory;
     private static final History HISTORY = new History();
     private static JPanel historyPanel;
     private static JTable historyTable;
@@ -85,12 +88,12 @@ public final class MainWindow implements Runnable, RipStatusHandler {
     private static JButton historyButtonRemove, historyButtonClear, historyButtonRerip;
 
     // Queue
-    public static JButton optionQueue;
+    public static JToggleButton optionQueue;
     private static JPanel queuePanel;
     private static DefaultListModel<Object> queueListModel;
 
     // Configuration
-    private static JButton optionConfiguration;
+    private static JToggleButton optionConfiguration;
     private static JPanel configurationPanel;
     private static JButton configUpdateButton;
     private static JLabel configUpdateLabel;
@@ -409,10 +412,16 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         progressPanel.add(statusProgress, gbc);
 
         JPanel optionsPanel = new JPanel(new GridBagLayout());
-        optionLog = new JButton(Utils.getLocalizedString("Log"));
-        optionHistory = new JButton(Utils.getLocalizedString("History"));
-        optionQueue = new JButton(Utils.getLocalizedString("queue"));
-        optionConfiguration = new JButton(Utils.getLocalizedString("Configuration"));
+        optionLog = new JToggleButton(Utils.getLocalizedString("Log"));
+        optionHistory = new JToggleButton(Utils.getLocalizedString("History"));
+        optionQueue = new JToggleButton(Utils.getLocalizedString("queue"));
+        optionConfiguration = new JToggleButton(Utils.getLocalizedString("Configuration"));
+
+        panelButtonGroup.add(optionLog);
+        panelButtonGroup.add(optionHistory);
+        panelButtonGroup.add(optionQueue);
+        panelButtonGroup.add(optionConfiguration);
+
         optionLog.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
         optionHistory.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
         optionQueue.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
@@ -661,6 +670,11 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         emptyPanel.setPreferredSize(new Dimension(0, 0));
         emptyPanel.setSize(0, 0);
 
+        optionLog.putClientProperty(RIPME_PANEL, logPanel);
+        optionHistory.putClientProperty(RIPME_PANEL, historyPanel);
+        optionQueue.putClientProperty(RIPME_PANEL, queuePanel);
+        optionConfiguration.putClientProperty(RIPME_PANEL, configurationPanel);
+
         gbc.anchor = GridBagConstraints.PAGE_START;
         gbc.gridy = 0;
         pane.add(ripPanel, gbc);
@@ -827,73 +841,23 @@ public final class MainWindow implements Runnable, RipStatusHandler {
             }
         });
 
-        optionLog.addActionListener(event -> {
-            logPanel.setVisible(!logPanel.isVisible());
-            emptyPanel.setVisible(!logPanel.isVisible());
-            historyPanel.setVisible(false);
-            queuePanel.setVisible(false);
-            configurationPanel.setVisible(false);
-            if (logPanel.isVisible()) {
-                optionLog.setFont(optionLog.getFont().deriveFont(Font.BOLD));
-            } else {
-                optionLog.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
+        ActionListener panelSelectListener = event -> {
+            JToggleButton source = (JToggleButton) event.getSource();
+            Enumeration<AbstractButton> buttons = panelButtonGroup.getElements();
+            while (buttons.hasMoreElements()) {
+                AbstractButton button = buttons.nextElement();
+                JPanel tabPanel = (JPanel) button.getClientProperty(RIPME_PANEL);
+                boolean visible = button == source && source.isSelected();
+                tabPanel.setVisible(visible);
             }
-            optionHistory.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
-            optionQueue.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
-            optionConfiguration.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
+            emptyPanel.setVisible(!source.isSelected());
             pack();
-        });
+        };
 
-        optionHistory.addActionListener(event -> {
-            logPanel.setVisible(false);
-            historyPanel.setVisible(!historyPanel.isVisible());
-            emptyPanel.setVisible(!historyPanel.isVisible());
-            queuePanel.setVisible(false);
-            configurationPanel.setVisible(false);
-            optionLog.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
-            if (historyPanel.isVisible()) {
-                optionHistory.setFont(optionLog.getFont().deriveFont(Font.BOLD));
-            } else {
-                optionHistory.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
-            }
-            optionQueue.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
-            optionConfiguration.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
-            pack();
-        });
-
-        optionQueue.addActionListener(event -> {
-            logPanel.setVisible(false);
-            historyPanel.setVisible(false);
-            queuePanel.setVisible(!queuePanel.isVisible());
-            emptyPanel.setVisible(!queuePanel.isVisible());
-            configurationPanel.setVisible(false);
-            optionLog.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
-            optionHistory.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
-            if (queuePanel.isVisible()) {
-                optionQueue.setFont(optionLog.getFont().deriveFont(Font.BOLD));
-            } else {
-                optionQueue.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
-            }
-            optionConfiguration.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
-            pack();
-        });
-
-        optionConfiguration.addActionListener(event -> {
-            logPanel.setVisible(false);
-            historyPanel.setVisible(false);
-            queuePanel.setVisible(false);
-            configurationPanel.setVisible(!configurationPanel.isVisible());
-            emptyPanel.setVisible(!configurationPanel.isVisible());
-            optionLog.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
-            optionHistory.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
-            optionQueue.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
-            if (configurationPanel.isVisible()) {
-                optionConfiguration.setFont(optionLog.getFont().deriveFont(Font.BOLD));
-            } else {
-                optionConfiguration.setFont(optionLog.getFont().deriveFont(Font.PLAIN));
-            }
-            pack();
-        });
+        optionLog.addActionListener(panelSelectListener);
+        optionHistory.addActionListener(panelSelectListener);
+        optionQueue.addActionListener(panelSelectListener);
+        optionConfiguration.addActionListener(panelSelectListener);
 
         historyButtonRemove.addActionListener(event -> {
             int[] indices = historyTable.getSelectedRows();
