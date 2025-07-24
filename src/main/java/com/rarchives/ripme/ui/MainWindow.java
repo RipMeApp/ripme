@@ -430,6 +430,13 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         } catch (Exception e) {
             LOGGER.warn(e.getMessage());
         }
+
+        // Prevent button sizes/positions from shifting when text bolds/unbolds
+        optionLog.setPreferredSize(optionLog.getPreferredSize());
+        optionHistory.setPreferredSize(optionHistory.getPreferredSize());
+        optionQueue.setPreferredSize(optionQueue.getPreferredSize());
+        optionConfiguration.setPreferredSize(optionConfiguration.getPreferredSize());
+
         gbc.gridx = 0;
         optionsPanel.add(optionLog, gbc);
         gbc.gridx = 1;
