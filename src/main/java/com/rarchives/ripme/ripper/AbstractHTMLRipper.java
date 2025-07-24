@@ -166,7 +166,8 @@ public abstract class AbstractHTMLRipper extends AbstractRipper {
 
                 for (String imageURL : imageURLs) {
                     imageIndex += 1;
-                    logger.debug("Found image url #" + imageIndex + ": '" + imageURL + "'");
+                    logger.debug("Found image url #{} of album {}: {}", imageIndex, this.url, imageURL);
+                    setItemsTotal(Math.max(getItemsTotal(), imageIndex));
                     downloadURL(new URI(imageURL).toURL(), imageIndex);
                     if (isStopped() || isThisATest()) {
                         break;
@@ -381,8 +382,11 @@ public abstract class AbstractHTMLRipper extends AbstractRipper {
      */
     @Override
     public int getCompletionPercentage() {
-        double total = itemsPending.size()  + itemsErrored.size() + itemsCompleted.size();
-        return (int) (100 * ( (total - itemsPending.size()) / total));
+        double total = getTotalCount();
+        if (total == 0) {
+            return 0;
+        }
+        return (int) (100 * ( (itemsCompleted.size() + itemsErrored.size()) / total));
     }
 
     @Override

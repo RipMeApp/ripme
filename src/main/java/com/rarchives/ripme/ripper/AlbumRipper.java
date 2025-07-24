@@ -85,8 +85,11 @@ public abstract class AlbumRipper extends AbstractRipper {
      */
     @Override
     public int getCompletionPercentage() {
-        double total = itemsPending.size()  + itemsErrored.size() + itemsCompleted.size();
-        return (int) (100 * ( (total - itemsPending.size()) / total));
+        double total = getTotalCount();
+        if (total == 0) {
+            return 0;
+        }
+        return (int) (100 * ( (itemsCompleted.size() + itemsErrored.size()) / total));
     }
 
 }

@@ -1618,7 +1618,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
             int activeCount = evt.ripper.getActiveCount(); // included in pendingCount
             int completedCount = evt.ripper.getCompletedCount();
             int erroredCount = evt.ripper.getErroredCount();
-            int totalCount = pendingCount + completedCount + erroredCount;
+            int totalCount = evt.ripper.getTotalCount();
             pendingValue.setText(String.valueOf(Math.max(0, pendingCount - activeCount))); // exclude active
             activeValue.setText(String.valueOf(activeCount));
             completedValue.setText(String.valueOf(completedCount));
