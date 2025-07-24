@@ -721,58 +721,13 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         return field;
     }
 
-    private void addItemToConfigGridBagConstraints(GridBagConstraints gbc, int gbcYValue, JLabel thing1ToAdd,
-            JButton thing2ToAdd) {
+    private void addItemToConfigGridBagConstraints(GridBagConstraints gbc, int gbcYValue, JComponent thing1ToAdd,
+            JComponent thing2ToAdd) {
         gbc.gridy = gbcYValue;
         gbc.gridx = 0;
         configurationPanel.add(thing1ToAdd, gbc);
         gbc.gridx = 1;
         configurationPanel.add(thing2ToAdd, gbc);
-    }
-
-    private void addItemToConfigGridBagConstraints(GridBagConstraints gbc, int gbcYValue, JLabel thing1ToAdd,
-            JTextField thing2ToAdd) {
-        gbc.gridy = gbcYValue;
-        gbc.gridx = 0;
-        configurationPanel.add(thing1ToAdd, gbc);
-        gbc.gridx = 1;
-        configurationPanel.add(thing2ToAdd, gbc);
-    }
-
-    private void addItemToConfigGridBagConstraints(GridBagConstraints gbc, int gbcYValue, JCheckBox thing1ToAdd,
-            JCheckBox thing2ToAdd) {
-        gbc.gridy = gbcYValue;
-        gbc.gridx = 0;
-        configurationPanel.add(thing1ToAdd, gbc);
-        gbc.gridx = 1;
-        configurationPanel.add(thing2ToAdd, gbc);
-    }
-
-    @SuppressWarnings("rawtypes")
-    private void addItemToConfigGridBagConstraints(GridBagConstraints gbc, int gbcYValue, JCheckBox thing1ToAdd,
-            JComboBox thing2ToAdd) {
-        gbc.gridy = gbcYValue;
-        gbc.gridx = 0;
-        configurationPanel.add(thing1ToAdd, gbc);
-        gbc.gridx = 1;
-        configurationPanel.add(thing2ToAdd, gbc);
-    }
-
-    @SuppressWarnings("rawtypes")
-    private void addItemToConfigGridBagConstraints(GridBagConstraints gbc, int gbcYValue, JComboBox thing1ToAdd,
-            JButton thing2ToAdd) {
-        gbc.gridy = gbcYValue;
-        gbc.gridx = 0;
-        configurationPanel.add(thing1ToAdd, gbc);
-        gbc.gridx = 1;
-        configurationPanel.add(thing2ToAdd, gbc);
-    }
-
-    @SuppressWarnings({ "unused", "rawtypes" })
-    private void addItemToConfigGridBagConstraints(GridBagConstraints gbc, int gbcYValue, JComboBox thing1ToAdd) {
-        gbc.gridy = gbcYValue;
-        gbc.gridx = 0;
-        configurationPanel.add(thing1ToAdd, gbc);
     }
 
     private void changeLocale() {
