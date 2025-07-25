@@ -40,6 +40,17 @@ public class DownloadThreadPool {
         threadPool.execute(t);
     }
 
+    public void setThreadPoolSize(int threads) {
+        logger.debug("Setting thread pool size to {}", threads);
+        if (threads > threadPool.getMaximumPoolSize()) {
+            threadPool.setMaximumPoolSize(threads);
+            threadPool.setCorePoolSize(threads);
+        } else {
+            threadPool.setCorePoolSize(threads);
+            threadPool.setMaximumPoolSize(threads);
+        }
+    }
+
     /**
      * Tries to shutdown threadpool.
      */

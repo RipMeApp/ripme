@@ -696,6 +696,21 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         configRetriesLabel = new JLabel(Utils.getLocalizedString("retry.download.count"), JLabel.RIGHT);
         configRetrySleepLabel = new JLabel(Utils.getLocalizedString("retry.sleep.mill"), JLabel.RIGHT);
         configThreadsText = configField("threads.size", 3);
+        configThreadsText.addActionListener(e -> {
+            Document document = configThreadsText.getDocument();
+            LOGGER.info("Updating thread pool size");
+            if (ripper != null && document != null) {
+                String text = configThreadsText.getText().trim();
+                try {
+                    int threads = Integer.parseInt(text);
+                    if (threads >= 0) {
+                        ripper.setThreadPoolSize(threads);
+                    }
+                } catch (NumberFormatException ex) {
+                    // ignore invalid input
+                }
+            }
+        });
         configTimeoutText = configField("download.timeout", 60000);
         configRetriesText = configField("download.retries", 3);
         configRetrySleepText = configField("download.retry.sleep", 5000);

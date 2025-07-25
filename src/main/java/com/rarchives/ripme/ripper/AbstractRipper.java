@@ -995,6 +995,10 @@ public abstract class AbstractRipper
         return false;
     }
 
+    public void setThreadPoolSize(int size) {
+        ripperThreadPool.setThreadPoolSize(size);
+    }
+
     public int getPendingCount() {
         DownloadThreadPool threadPool = getRipperThreadPool();
         if (threadPool != null) {
