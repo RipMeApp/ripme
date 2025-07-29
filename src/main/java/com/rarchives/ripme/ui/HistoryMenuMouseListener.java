@@ -15,6 +15,7 @@ import com.rarchives.ripme.utils.Utils;
 class HistoryMenuMouseListener extends MouseAdapter {
     private JPopupMenu popup = new JPopupMenu();
     private JTable tableComponent;
+    private final int checkboxColumn = 5;
 
     @SuppressWarnings("serial")
     public HistoryMenuMouseListener() {
@@ -22,7 +23,7 @@ class HistoryMenuMouseListener extends MouseAdapter {
             @Override
             public void actionPerformed(ActionEvent ae) {
                 for (int row = 0; row < tableComponent.getRowCount(); row++) {
-                    tableComponent.setValueAt(true, row, 4);
+                    tableComponent.setValueAt(true, row, checkboxColumn);
                 }
             }
         };
@@ -32,7 +33,7 @@ class HistoryMenuMouseListener extends MouseAdapter {
             @Override
             public void actionPerformed(ActionEvent ae) {
                 for (int row = 0; row < tableComponent.getRowCount(); row++) {
-                    tableComponent.setValueAt(false, row, 4);
+                    tableComponent.setValueAt(false, row, checkboxColumn);
                 }
             }
         };
@@ -44,7 +45,7 @@ class HistoryMenuMouseListener extends MouseAdapter {
             @Override
             public void actionPerformed(ActionEvent ae) {
                 for (int row : tableComponent.getSelectedRows()) {
-                    tableComponent.setValueAt(true, row, 4);
+                    tableComponent.setValueAt(true, row, checkboxColumn);
                 }
             }
         };
@@ -54,7 +55,7 @@ class HistoryMenuMouseListener extends MouseAdapter {
             @Override
             public void actionPerformed(ActionEvent ae) {
                 for (int row : tableComponent.getSelectedRows()) {
-                    tableComponent.setValueAt(false, row, 4);
+                    tableComponent.setValueAt(false, row, checkboxColumn);
                 }
             }
         };

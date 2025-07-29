@@ -32,6 +32,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.TableCellRenderer;
 import javax.swing.text.*;
 
 import org.apache.logging.log4j.Level;
@@ -591,12 +592,12 @@ public final class MainWindow implements Runnable, RipStatusHandler {
 
             @Override
             public boolean isCellEditable(int row, int col) {
-                return (col == 0 || col == 4);
+                return (col == 0 || col == 5);
             }
 
             @Override
             public void setValueAt(Object value, int row, int col) {
-                if (col == 4) {
+                if (col == 5) {
                     HISTORY.get(row).selected = (Boolean) value;
                     historyTableModel.fireTableDataChanged();
                 }
@@ -607,21 +608,12 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         historyTable.addMouseListener(new HistoryMenuMouseListener());
         historyTable.setAutoCreateRowSorter(true);
 
-        for (int i = 0; i < historyTable.getColumnModel().getColumnCount(); i++) {
-            int width = 130; // Default
-            switch (i) {
-            case 0: // URL
-                width = 270;
-                break;
-            case 3:
-                width = 40;
-                break;
-            case 4:
-                width = 15;
-                break;
-            }
-            historyTable.getColumnModel().getColumn(i).setPreferredWidth(width);
-        }
+        historyTable.getColumnModel().getColumn(0).setPreferredWidth(270); // URL
+        //historyTable.getColumnModel().getColumn(1).setPreferredWidth(270); // Number
+        //historyTable.getColumnModel().getColumn(2).setPreferredWidth(130); // Date
+        //historyTable.getColumnModel().getColumn(3).setPreferredWidth(130); // Date
+        historyTable.getColumnModel().getColumn(4).setPreferredWidth(40); // Count
+        historyTable.getColumnModel().getColumn(5).setPreferredWidth(15); // Selected
 
         JScrollPane historyTableScrollPane = new JScrollPane(historyTable);
         historyButtonRemove = new JButton(Utils.getLocalizedString("remove"));
@@ -1372,6 +1364,46 @@ public final class MainWindow implements Runnable, RipStatusHandler {
             // Fix "WARNING: row index is bigger than sorter's row count. Most likely this is a wrong sorter usage"
             historyTableModel.fireTableDataChanged();
         }
+
+        // Calculate preferred column widths
+        int autoResizeMode = historyTable.getAutoResizeMode();
+        historyTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        int lastRow = historyTable.getRowCount() - 1;
+        int nColumn = 1;
+        TableCellRenderer renderer;
+        renderer = historyTable.getCellRenderer(lastRow, nColumn);
+        Component comp = historyTable.prepareRenderer(renderer, lastRow, nColumn);
+        int width = Math.min(Math.max(15, comp.getMinimumSize().width + 15), 130);
+        historyTable.getColumnModel().getColumn(nColumn).setPreferredWidth(width);
+        historyTable.getColumnModel().getColumn(nColumn).setMaxWidth(130);
+
+        renderer = historyTable.getDefaultRenderer(String.class);
+        int cWidth;
+        int column;
+        column = 2; // date
+        cWidth = renderer.getTableCellRendererComponent(
+                        historyTable, "8888/88/88", false, false, 0, column)
+                .getPreferredSize().width + 15;
+        historyTable.getColumnModel().getColumn(column).setMaxWidth(cWidth);
+        column = 3; // date
+        cWidth = renderer.getTableCellRendererComponent(
+                        historyTable, "8888/88/88", false, false, 0, column)
+                .getPreferredSize().width + 15;
+        historyTable.getColumnModel().getColumn(column).setMaxWidth(cWidth);
+        column = 4; // count
+        cWidth = renderer.getTableCellRendererComponent(
+                        historyTable, "88888", false, false, 0, column)
+                .getPreferredSize().width + 15;
+        historyTable.getColumnModel().getColumn(column).setMaxWidth(cWidth);
+
+        renderer = historyTable.getDefaultRenderer(Boolean.class);
+        column = 5; // selected
+        cWidth = renderer.getTableCellRendererComponent(
+                        historyTable, true, false, false, 0, column)
+                .getPreferredSize().width;
+        historyTable.getColumnModel().getColumn(column).setMaxWidth(cWidth);
+
+        historyTable.setAutoResizeMode(autoResizeMode);
     }
 
     private void saveHistory() {

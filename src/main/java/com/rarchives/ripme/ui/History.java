@@ -19,6 +19,7 @@ public class History {
     private final List<HistoryEntry> list;
     private static final String[] COLUMNS = new String[] {
         "URL",
+        "N",
         "created",
         "modified",
         "#",
@@ -52,20 +53,15 @@ public class History {
     }
     public Object getValueAt(int row, int col) {
         HistoryEntry entry = this.list.get(row);
-        switch (col) {
-        case 0:
-            return entry.url;
-        case 1:
-            return dateToHumanReadable(entry.startDate);
-        case 2:
-            return dateToHumanReadable(entry.modifiedDate);
-        case 3:
-            return entry.count;
-        case 4:
-            return entry.selected;
-        default:
-            return null;
-        }
+        return switch (col) {
+            case 0 -> entry.url;
+            case 1 -> row;
+            case 2 -> dateToHumanReadable(entry.startDate);
+            case 3 -> dateToHumanReadable(entry.modifiedDate);
+            case 4 -> entry.count;
+            case 5 -> entry.selected;
+            default -> null;
+        };
     }
     private String dateToHumanReadable(Date date) {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd");
