@@ -253,6 +253,8 @@ public class FlickrRipper extends AbstractHTMLRipper {
                 }
 
                 int totalPages = rootData.getInt("pages");
+                int totalFiles = rootData.getInt("total");
+                setItemsTotal(totalFiles);
                 logger.info(jsonData);
                 JSONArray pictures = rootData.getJSONArray("photo");
                 for (int i = 0; i < pictures.length(); i++) {
