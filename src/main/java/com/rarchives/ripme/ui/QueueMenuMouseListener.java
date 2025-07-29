@@ -1,7 +1,6 @@
 package com.rarchives.ripme.ui;
 
 import java.awt.event.ActionEvent;
-import java.awt.event.InputEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.function.Consumer;
@@ -12,6 +11,7 @@ import javax.swing.DefaultListModel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
+import javax.swing.SwingUtilities;
 
 import com.rarchives.ripme.utils.Utils;
 
@@ -20,13 +20,14 @@ class QueueMenuMouseListener extends MouseAdapter {
     private JList<Object> queueList;
     private DefaultListModel<Object> queueListModel;
     private Consumer<DefaultListModel<Object>> updateQueue;
+    private boolean mouseDragging = false;
+    private int dragSourceIndex;
 
     public QueueMenuMouseListener(Consumer<DefaultListModel<Object>> updateQueue) {
         this.updateQueue = updateQueue;
         updateUI();
     }
 
-	@SuppressWarnings("serial")
     public void updateUI() {
         popup.removeAll();
 
@@ -61,16 +62,58 @@ class QueueMenuMouseListener extends MouseAdapter {
     @Override
     public void mousePressed(MouseEvent e) {
         checkPopupTrigger(e);
+        handleDragStart(e);
     }
 
     @Override
     public void mouseReleased(MouseEvent e) {
         checkPopupTrigger(e);
+        handleDragEnd(e);
+    }
+
+    @SuppressWarnings("unchecked")
+    public void handleDragStart(MouseEvent e) {
+        if (!(e.getSource() instanceof JList<?>)) {
+            return;
+        }
+        if (SwingUtilities.isLeftMouseButton(e)) {
+            queueList = (JList<Object>) e.getSource();
+            queueListModel = (DefaultListModel<Object>) queueList.getModel();
+
+            dragSourceIndex = queueList.getSelectedIndex();
+            mouseDragging = true;
+        }
+    }
+
+    public void handleDragEnd(MouseEvent e) {
+        mouseDragging = false;
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public void mouseDragged(MouseEvent e) {
+        if (!(e.getSource() instanceof JList<?>)) {
+            return;
+        }
+        if (mouseDragging) {
+            queueList = (JList<Object>) e.getSource();
+            queueListModel = (DefaultListModel<Object>) queueList.getModel();
+            int currentIndex = queueList.locationToIndex(e.getPoint());
+            if (currentIndex != dragSourceIndex) {
+                int dragTargetIndex = queueList.getSelectedIndex();
+                dragTargetIndex = Math.max(0, dragTargetIndex);
+                dragTargetIndex = Math.min(queueListModel.size() - 1, dragTargetIndex);
+                Object dragElement = queueListModel.get(dragSourceIndex);
+                queueListModel.remove(dragSourceIndex);
+                queueListModel.add(dragTargetIndex, dragElement);
+                dragSourceIndex = currentIndex;
+            }
+        }
     }
 
     @SuppressWarnings("unchecked")
     private void checkPopupTrigger(MouseEvent e) {
-        if (e.getModifiersEx() == InputEvent.BUTTON3_DOWN_MASK) {
+        if (SwingUtilities.isRightMouseButton(e)) {
             if (!(e.getSource() instanceof JList)) {
                 return;
             }

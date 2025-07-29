@@ -666,6 +666,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         queueList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         QueueMenuMouseListener queueMenuMouseListener = new QueueMenuMouseListener(d -> updateQueue(queueListModel));
         queueList.addMouseListener(queueMenuMouseListener);
+        queueList.addMouseMotionListener(queueMenuMouseListener);
         JScrollPane queueListScroll = new JScrollPane(queueList, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
                 JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 
