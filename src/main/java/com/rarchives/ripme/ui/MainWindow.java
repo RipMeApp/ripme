@@ -932,6 +932,14 @@ public final class MainWindow implements Runnable, RipStatusHandler {
             }
         });
 
+        openButton.addActionListener(event -> {
+            try {
+                Desktop.getDesktop().open(new File(event.getActionCommand()));
+            } catch (Exception e) {
+                LOGGER.error(e);
+            }
+        });
+
         ActionListener panelSelectListener = event -> {
             JToggleButton source = (JToggleButton) event.getSource();
             Enumeration<AbstractButton> buttons = panelButtonGroup.getElements();
@@ -1808,13 +1816,6 @@ public final class MainWindow implements Runnable, RipStatusHandler {
             appendLog("Rip complete, saved to " + f, Color.GREEN);
             status("");
             openButton.setActionCommand(f.toString());
-            openButton.addActionListener(event -> {
-                try {
-                    Desktop.getDesktop().open(new File(event.getActionCommand()));
-                } catch (Exception e) {
-                    LOGGER.error(e);
-                }
-            });
             ripFinishCleanup();
             pack();
             ripNextAlbum();
