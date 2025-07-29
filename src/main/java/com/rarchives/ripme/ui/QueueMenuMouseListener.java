@@ -3,7 +3,6 @@ package com.rarchives.ripme.ui;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.function.Consumer;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -19,12 +18,10 @@ class QueueMenuMouseListener extends MouseAdapter {
     private JPopupMenu popup = new JPopupMenu();
     private JList<Object> queueList;
     private DefaultListModel<Object> queueListModel;
-    private Consumer<DefaultListModel<Object>> updateQueue;
     private boolean mouseDragging = false;
     private int dragSourceIndex;
 
-    public QueueMenuMouseListener(Consumer<DefaultListModel<Object>> updateQueue) {
-        this.updateQueue = updateQueue;
+    public QueueMenuMouseListener() {
         updateUI();
     }
 
@@ -56,7 +53,6 @@ class QueueMenuMouseListener extends MouseAdapter {
         };
         popup.add(clearQueue);
 
-        updateQueue.accept(queueListModel);
     }
 
     @Override

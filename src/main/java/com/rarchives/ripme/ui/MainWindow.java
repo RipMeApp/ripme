@@ -40,6 +40,7 @@ import org.apache.logging.log4j.Logger;
 
 import com.rarchives.ripme.ripper.AbstractRipper;
 import com.rarchives.ripme.uiUtils.ContextActionProtections;
+import com.rarchives.ripme.utils.DebouncedRunnable;
 import com.rarchives.ripme.utils.RipUtils;
 import com.rarchives.ripme.utils.TransferRate;
 import com.rarchives.ripme.utils.Utils;
@@ -143,6 +144,8 @@ public final class MainWindow implements Runnable, RipStatusHandler {
     private static final AtomicBoolean panicStop = new AtomicBoolean(false); // Immediately stop active transfers, then stop ripping.
     private static final AtomicBoolean isRipperActive = new AtomicBoolean(false);
 
+    private final DebouncedRunnable debouncedSaveConfig = new DebouncedRunnable(Utils::saveConfig, 500);
+
     public static final int TRANSFER_RATE_REFRESH_RATE = 200;
     private static final TransferRate transferRate = new TransferRate();
 
@@ -160,21 +163,11 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         transferRateValue.setText(transferRate.formatHumanTransferRate());
     };
 
-    private void updateQueue(DefaultListModel<Object> model) {
-        if (model == null)
-            model = queueListModel;
-
-        if (model.size() > 0) {
-            Utils.setConfigList("queue", model.elements());
-            Utils.saveConfig();
-        }
-
-        MainWindow.optionQueue.setText(String.format("%s%s", Utils.getLocalizedString("queue"),
-                model.size() == 0 ? "" : "(" + model.size() + ")"));
-    }
-
     private void updateQueue() {
-        updateQueue(null);
+        Utils.setConfigList("queue", queueListModel.elements());
+        debouncedSaveConfig.run();
+        MainWindow.optionQueue.setText(String.format("%s%s", Utils.getLocalizedString("queue"),
+                queueListModel.isEmpty() ? "" : "(" + queueListModel.size() + ")"));
     }
 
     private static void addCheckboxListener(JCheckBox checkBox, String configString) {
@@ -664,7 +657,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         queueListModel = new DefaultListModel<>();
         JList<Object> queueList = new JList<>(queueListModel);
         queueList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-        QueueMenuMouseListener queueMenuMouseListener = new QueueMenuMouseListener(d -> updateQueue(queueListModel));
+        QueueMenuMouseListener queueMenuMouseListener = new QueueMenuMouseListener();
         queueList.addMouseListener(queueMenuMouseListener);
         queueList.addMouseMotionListener(queueMenuMouseListener);
         JScrollPane queueListScroll = new JScrollPane(queueList, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
@@ -1146,10 +1139,12 @@ public final class MainWindow implements Runnable, RipStatusHandler {
 
             @Override
             public void contentsChanged(ListDataEvent arg0) {
+                updateQueue();
             }
 
             @Override
             public void intervalRemoved(ListDataEvent arg0) {
+                updateQueue();
             }
         });
     }

@@ -197,7 +197,12 @@ public class Utils {
 
     public static void saveConfig() {
         try {
-            config.save(getConfigFilePath());
+            // Simple hack: saveConfig is called from debouncedSaveConfig.
+            // Clone the config so we don't get a ConcurrentModificationException
+            // on config.save() if the config is updated between the time
+            // debounceSavedConfig.run() is called and the time saveConfig() is called.
+            PropertiesConfiguration clone = (PropertiesConfiguration) config.clone();
+            clone.save(getConfigFilePath());
             LOGGER.info("Saved configuration to " + getConfigFilePath());
         } catch (ConfigurationException e) {
             LOGGER.error("Error while saving configuration: ", e);
