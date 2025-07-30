@@ -361,17 +361,16 @@ public abstract class AbstractRipper
             }
             return true;
         }
-        else {
-            itemsPending.add(ripUrlId);
-            DownloadFileThread dft = new DownloadFileThread(tug, ripUrlId, directory, filename, this, getFileExtFromMIME);
-            if (referrer != null) {
-                dft.setReferrer(referrer);
-            }
-            if (cookies != null) {
-                dft.setCookies(cookies);
-            }
-            getRipperThreadPool().addThread(dft);
+
+        itemsPending.add(ripUrlId);
+        DownloadFileThread dft = new DownloadFileThread(tug, ripUrlId, directory, filename, this, getFileExtFromMIME);
+        if (referrer != null) {
+            dft.setReferrer(referrer);
         }
+        if (cookies != null) {
+            dft.setCookies(cookies);
+        }
+        getRipperThreadPool().addThread(dft);
 
         return true;
     }
