@@ -5,7 +5,7 @@
 // gradle clean build -PjavacRelease=21
 // gradle clean build -PcustomVersion=1.0.0-10-asdf
 val customVersion = (project.findProperty("customVersion") ?: "") as String
-val javacRelease = (project.findProperty("javacRelease") ?: "17") as String
+val javacRelease = (project.findProperty("javacRelease") ?: "21") as String
 
 plugins {
   id("fr.brouillard.oss.gradle.jgitver") version "0.9.1"
@@ -43,6 +43,11 @@ dependencies {
 group = "com.rarchives.ripme"
 version = "1.7.94"
 description = "ripme"
+
+java {
+  sourceCompatibility = JavaVersion.VERSION_21
+  targetCompatibility = JavaVersion.VERSION_21
+}
 
 jacoco {
   toolVersion = "0.8.12"
