@@ -122,7 +122,7 @@ class DownloadFileThread implements Runnable {
                 || Utils.fuzzyExists(Paths.get(saveAs.getParent()), saveAs.getName()) && getFileExtFromMIME
                         && !observer.tryResumeDownload()) {
             if (Utils.getConfigBoolean("file.overwrite", false)) {
-                logger.info("[!] " + Utils.getLocalizedString("deleting.existing.file") + prettySaveAs);
+                logger.info("[!] " + Utils.getLocalizedString("deleting.existing.file") + " " + prettySaveAs);
                 if (!saveAs.delete()) logger.error("could not delete existing file: " + saveAs.getAbsolutePath());
             } else {
                 logger.info("[!] " + Utils.getLocalizedString("skipping") + " " + url + " -- "
