@@ -187,6 +187,7 @@ class DownloadFileThread implements Runnable {
                     return;
                 }
                 if (statusCode / 100 == 3) { // 3xx Redirect
+                    // FIXME Should not happen because of above line: huc.setInstanceFollowRedirects(true); ???
                     if (!redirected) {
                         // Don't increment retries on the first redirect
                         tries--;
