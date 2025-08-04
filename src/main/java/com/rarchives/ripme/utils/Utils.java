@@ -1,5 +1,6 @@
 package com.rarchives.ripme.utils;
 
+import java.awt.Desktop;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -895,5 +896,54 @@ public class Utils {
         } catch (final InterruptedException e1) {
             e1.printStackTrace();
         }
+    }
+
+    /**
+     * Open a File using the default OS handler, but not in a child process, allowing the program to exit without closing all opened windows.
+     * <br>
+     * In comparison, {@link Desktop#open(File)} opens the file manager or browser in a child process, blocking the JVM from exiting.
+     * @param file The File to open.
+     */
+    public static void open(File file) throws IOException {
+        if (isUnix() && which("nohup") && which("xdg-open")) {
+            linuxOpen(file.toURI());
+            return;
+        }
+        Desktop.getDesktop().open(file);
+    }
+
+    /**
+     * Open a URI using the default OS handler, but not in a child process, allowing the program to exit without closing all opened windows.
+     * <br>
+     * In comparison, {@link Desktop#open(File)} opens the file manager or browser in a child process, blocking the JVM from exiting.
+     * @param uri The URI to open.
+     */
+    public static void browse(URI uri) throws IOException {
+        if (isUnix() && which("nohup") && which("xdg-open")) {
+            linuxOpen(uri);
+            return;
+        }
+        Desktop.getDesktop().browse(uri);
+    }
+
+    private static void linuxOpen(URI uri) throws IOException {
+        new ProcessBuilder("nohup", "xdg-open", uri.toString())
+                .redirectOutput(ProcessBuilder.Redirect.DISCARD)
+                .redirectError(ProcessBuilder.Redirect.DISCARD)
+                .start();
+    }
+
+    public static boolean which(String command) {
+        String pathEnv = System.getenv("PATH");
+        if (isWindows()) {
+            command = command + ".exe";
+        }
+        for (String dir : pathEnv.split(File.pathSeparator)) {
+            File file = new File(dir, command);
+            if (file.isFile() && file.canExecute()) {
+                return true;
+            }
+        }
+        return false;
     }
 }

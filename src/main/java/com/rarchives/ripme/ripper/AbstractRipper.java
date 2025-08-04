@@ -1,6 +1,5 @@
 package com.rarchives.ripme.ripper;
 
-import java.awt.Desktop;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -751,7 +750,7 @@ public abstract class AbstractRipper
             if (Utils.getConfigBoolean("urls_only.save", false)) {
                 String urlFile = this.workingDir + File.separator + "urls.txt";
                 try {
-                    Desktop.getDesktop().open(new File(urlFile));
+                    Utils.open(new File(urlFile));
                 } catch (IOException e) {
                     logger.warn("Error while opening " + urlFile, e);
                 }

@@ -934,7 +934,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
 
         openButton.addActionListener(event -> {
             try {
-                Desktop.getDesktop().open(new File(event.getActionCommand()));
+                Utils.open(new File(event.getActionCommand()));
             } catch (Exception e) {
                 LOGGER.error(e);
             }
@@ -1057,8 +1057,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
                 Path file;
                 try {
                     file = Utils.getWorkingDirectory();
-                    Desktop desktop = Desktop.getDesktop();
-                    desktop.open(file.toFile());
+                    Utils.open(file.toFile());
                 } catch (IOException ex) {
                     LOGGER.warn(ex.getMessage());
                 }
@@ -1241,7 +1240,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
                         JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE, new ImageIcon(mainIcon));
                 if (response == JOptionPane.YES_OPTION) {
                     try {
-                        Desktop.getDesktop().browse(URI.create("http://github.com/ripmeapp/ripme"));
+                        Utils.browse(URI.create("http://github.com/ripmeapp/ripme"));
                     } catch (IOException e) {
                         LOGGER.error("Exception while opening project home page", e);
                     }
