@@ -1497,6 +1497,8 @@ public final class MainWindow implements Runnable, RipStatusHandler {
             optionLog.doClick();
         }
         urlString = urlString.trim();
+        LOGGER.info("Attempting to start rip for album {}", urlString);
+        appendLog("Attempting to start rip for album " + urlString, Color.GREEN);
         if (urlString.toLowerCase().startsWith("gonewild:")) {
             urlString = "http://gonewild.com/user/" + urlString.substring(urlString.indexOf(':') + 1);
         }
@@ -1813,6 +1815,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
                 }
             }
             appendLog("Rip complete, saved to " + f, Color.GREEN);
+            LOGGER.info("Rip complete: {}", url);
             status("");
             openButton.setActionCommand(f.toString());
             ripFinishCleanup();

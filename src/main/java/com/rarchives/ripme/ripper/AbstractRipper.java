@@ -732,7 +732,7 @@ public abstract class AbstractRipper
         }
 
         if (!completed.getAndSet(true)) {
-            logger.info("   Rip completed!");
+            logger.info("   Rip of {} completed!", getURL());
 
             RipStatusComplete rsc = new RipStatusComplete(workingDir.toPath(), getCount());
             RipStatusMessage msg = new RipStatusMessage(STATUS.RIP_COMPLETE, rsc);
@@ -862,6 +862,7 @@ public abstract class AbstractRipper
      */
     public void run() {
         try {
+            logger.info("Rip started: {}", getURL());
             rip();
         } catch (HttpStatusException e) {
             logger.error("Got exception while running ripper:", e);
@@ -872,6 +873,7 @@ public abstract class AbstractRipper
             waitForRipperThreads(false);
             sendUpdate(STATUS.RIP_ERRORED, e.getMessage());
         } finally {
+            logger.info("Rip ended: {}", getURL());
             cleanup();
         }
     }
