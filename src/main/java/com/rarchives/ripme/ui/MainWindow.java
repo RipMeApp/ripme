@@ -463,6 +463,11 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         gbc.ipadx = 5;
         statusDetailPanel.add(totalLabel, gbc);
         transferRateValue.setFont(monospaced);
+        transferRateValue.setText("1000.00 KiB/s"); // Maximum width value
+        // Set preferred size to maximum width value
+        transferRateValue.setPreferredSize(transferRateValue.getPreferredSize());
+        transferRateValue.setMinimumSize(transferRateValue.getPreferredSize());
+        transferRateValue.setText("0 B/s"); // Restore default value
         gbc = new GridBagConstraints();
         gbc.gridx = 6;
         gbc.gridy = 1;
