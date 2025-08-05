@@ -1403,11 +1403,13 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         cWidth = renderer.getTableCellRendererComponent(
                         historyTable, "8888/88/88", false, false, 0, column)
                 .getPreferredSize().width + 15;
+        historyTable.getColumnModel().getColumn(column).setPreferredWidth(cWidth);
         historyTable.getColumnModel().getColumn(column).setMaxWidth(cWidth);
         column = 3; // date
         cWidth = renderer.getTableCellRendererComponent(
                         historyTable, "8888/88/88", false, false, 0, column)
                 .getPreferredSize().width + 15;
+        historyTable.getColumnModel().getColumn(column).setPreferredWidth(cWidth);
         historyTable.getColumnModel().getColumn(column).setMaxWidth(cWidth);
         column = 4; // count
         cWidth = renderer.getTableCellRendererComponent(
