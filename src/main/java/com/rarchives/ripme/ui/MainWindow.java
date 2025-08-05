@@ -545,7 +545,14 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         // Prevent button sizes/positions from shifting when text bolds/unbolds
         optionLog.setPreferredSize(optionLog.getPreferredSize());
         optionHistory.setPreferredSize(optionHistory.getPreferredSize());
+
+        // Set preferred size with space for queue size string
+        optionQueue.setText(Utils.getLocalizedString("queue") + " (8888)");
         optionQueue.setPreferredSize(optionQueue.getPreferredSize());
+        // Restore original text
+        optionQueue.setText(Utils.getLocalizedString("queue"));
+        // updateQueue() is called below, which initializes the real queue button text
+
         optionConfiguration.setPreferredSize(optionConfiguration.getPreferredSize());
 
         gbc.gridx = 0;
