@@ -1359,6 +1359,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
             try {
                 LOGGER.info(Utils.getLocalizedString("loading.history.from") + " " + historyFile.getCanonicalPath());
                 HISTORY.fromFile(historyFile.getCanonicalPath());
+                LOGGER.info("Finished loading history");
             } catch (IOException e) {
                 LOGGER.error("Failed to load history from file " + historyFile, e);
                 JOptionPane.showMessageDialog(null,
