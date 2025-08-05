@@ -286,6 +286,10 @@ public final class MainWindow implements Runnable, RipStatusHandler {
     }
 
     private void createUI(JPanel pane) {
+
+        Insets buttonPadding = new Insets(2,2,2,2);
+        UIManager.getDefaults().put("Button.margin", buttonPadding);
+
         // If creating the tray icon fails, ignore it.
         try {
             setupTrayIcon();
