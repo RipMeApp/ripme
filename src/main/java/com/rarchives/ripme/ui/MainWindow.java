@@ -228,6 +228,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         pack();
         restoreWindowPosition(mainFrame);
         mainFrame.setVisible(true);
+        mainFrame.pack();
     }
 
     private void shutdownCleanup() {
