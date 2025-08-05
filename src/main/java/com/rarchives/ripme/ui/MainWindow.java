@@ -351,10 +351,10 @@ public final class MainWindow implements Runnable, RipStatusHandler {
          */
 
         ImageIcon ripIcon = new ImageIcon(mainIcon);
-        ripButton = new JButton("<html><font size=\"5\"><b>Rip</b></font></html>", ripIcon);
-        stopButton = new JButton("<html><font size=\"5\"><b>Stop</b></font></html>");
+        ripButton = new JButton("Rip", ripIcon);
+        stopButton = new JButton("Stop");
         stopButton.setEnabled(false);
-        panicButton = new JButton("<html><font size=\"5\"><b>Panic!</b></font></html>");
+        panicButton = new JButton("Panic!");
         panicButton.setEnabled(false);
         try {
             Image stopIcon = ImageIO.read(getClass().getClassLoader().getResource("stop.png"));
