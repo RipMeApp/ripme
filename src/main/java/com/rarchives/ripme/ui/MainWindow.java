@@ -265,6 +265,9 @@ public final class MainWindow implements Runnable, RipStatusHandler {
     }
 
     private void statusWithColor(String text, Color color) {
+        if (text == null || text.trim().isEmpty()) {
+            return;
+        }
         statusLabel.setForeground(color);
         statusLabel.setText(text);
         pack();
@@ -1821,7 +1824,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
             }
             appendLog("Rip complete, saved to " + f, Color.GREEN);
             LOGGER.info("Rip complete: {}", url);
-            status("");
+            status(Utils.getLocalizedString("inactive"));
             openButton.setActionCommand(f.toString());
             ripFinishCleanup();
             pack();
