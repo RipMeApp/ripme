@@ -38,7 +38,10 @@ public class ProgressTextField extends JProgressBar {
 
     @Override
     public void setString(String s) {
-        logger.warn("bug: progress bar should use setText, not setString");
+        if (s != null) {
+            // super() calls setString(null) during construction; not a problem
+            logger.warn("bug: progress bar should use setText, not setString");
+        }
     }
 
     @Override
