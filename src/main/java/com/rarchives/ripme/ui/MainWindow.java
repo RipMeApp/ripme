@@ -398,6 +398,10 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         pendingValue.setFont(monospaced);
         pendingValue.setHorizontalAlignment(JLabel.TRAILING);
         pendingValue.setBorder(valueLabelBorder);
+        pendingValue.setText("1000");
+        pendingValue.setPreferredSize(pendingValue.getPreferredSize());
+        pendingValue.setMinimumSize(pendingValue.getPreferredSize());
+        pendingValue.setText("0");
         gbc = new GridBagConstraints();
         gbc.gridx = 0;
         gbc.gridy = 0;
@@ -412,6 +416,10 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         activeValue.setFont(monospaced);
         activeValue.setHorizontalAlignment(JLabel.TRAILING);
         activeValue.setBorder(valueLabelBorder);
+        activeValue.setText("1000");
+        activeValue.setPreferredSize(activeValue.getPreferredSize());
+        activeValue.setMinimumSize(activeValue.getPreferredSize());
+        activeValue.setText("0");
         gbc = new GridBagConstraints();
         gbc.gridx = 0;
         gbc.gridy = 1;
@@ -426,6 +434,10 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         completedValue.setFont(monospaced);
         completedValue.setHorizontalAlignment(JLabel.TRAILING);
         completedValue.setBorder(valueLabelBorder);
+        completedValue.setText("1000");
+        completedValue.setPreferredSize(completedValue.getPreferredSize());
+        completedValue.setMinimumSize(completedValue.getPreferredSize());
+        completedValue.setText("0");
         gbc = new GridBagConstraints();
         gbc.gridx = 3;
         gbc.gridy = 0;
@@ -440,6 +452,10 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         erroredValue.setFont(monospaced);
         erroredValue.setHorizontalAlignment(JLabel.TRAILING);
         erroredValue.setBorder(valueLabelBorder);
+        erroredValue.setText("1000");
+        erroredValue.setPreferredSize(erroredValue.getPreferredSize());
+        erroredValue.setMinimumSize(erroredValue.getPreferredSize());
+        erroredValue.setText("0");
         gbc = new GridBagConstraints();
         gbc.gridx = 3;
         gbc.gridy = 1;
@@ -454,6 +470,10 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         totalValue.setFont(monospaced);
         totalValue.setHorizontalAlignment(JLabel.TRAILING);
         totalValue.setBorder(valueLabelBorder);
+        totalValue.setText("1000");
+        totalValue.setPreferredSize(totalValue.getPreferredSize());
+        totalValue.setMinimumSize(totalValue.getPreferredSize());
+        totalValue.setText("0");
         gbc = new GridBagConstraints();
         gbc.gridx = 6;
         gbc.gridy = 0;
