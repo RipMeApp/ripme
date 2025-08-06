@@ -1537,7 +1537,8 @@ public final class MainWindow implements Runnable, RipStatusHandler {
     }
 
     private Thread ripAlbum(String urlString) {
-        if (!logPanel.isVisible()) {
+        boolean isAnyPanelOpen = panelButtonGroup.getSelection() != null;
+        if (!isAnyPanelOpen) {
             optionLog.doClick();
         }
         urlString = urlString.trim();
