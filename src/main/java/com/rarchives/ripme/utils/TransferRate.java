@@ -40,14 +40,16 @@ public class TransferRate {
         int giB = 1024 * 1024 * 1024;
         int miB = 1024 * 1024;
         int kiB = 1024;
-        if (bps >= giB) {
-            return String.format("%.2f GiB/s", bps / giB);
-        } else if (bps >= miB) {
-            return String.format("%.2f MiB/s", bps / miB);
-        } else if (bps >= kiB) {
-            return String.format("%.2f KiB/s", bps / kiB);
-        } else {
+
+        // Format the string for less than 4 integer part digits if possible
+        if (bps < 1000) {
             return String.format("%.2f B/s", bps);
+        } else if (bps / kiB < 1000) {
+            return String.format("%.2f KiB/s", bps / kiB);
+        } else if (bps / miB < 1000) {
+            return String.format("%.2f MiB/s", bps / miB);
+        } else {
+            return String.format("%.2f GiB/s", bps / giB);
         }
     }
 

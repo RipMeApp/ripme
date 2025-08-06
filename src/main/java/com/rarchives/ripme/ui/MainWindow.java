@@ -488,7 +488,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         transferRateValue.setFont(monospaced);
         transferRateValue.setHorizontalAlignment(JLabel.TRAILING);
         transferRateValue.setBorder(valueLabelBorder);
-        transferRateValue.setText("1000.00 KiB/s"); // Maximum width value
+        transferRateValue.setText("999.00 KiB/s"); // Maximum width value
         // Set preferred size to maximum width value
         transferRateValue.setPreferredSize(transferRateValue.getPreferredSize());
         transferRateValue.setMinimumSize(transferRateValue.getPreferredSize());
