@@ -950,8 +950,6 @@ public final class MainWindow implements Runnable, RipStatusHandler {
                 gracefulStop.set(true);
                 queueListModel.add(0, ripper.getURL().toString());
                 stopButton.setEnabled(false);
-                currentlyRippingProgress.setValue(0);
-                currentlyRippingProgress.setText("");
                 pack();
                 //status(Utils.getLocalizedString("download.interrupted"));
                 status("Rip gracefully stopping");
