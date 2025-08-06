@@ -37,6 +37,7 @@ dependencies {
   implementation("org.graalvm.js:js:22.3.2")
   testImplementation(enforcedPlatform("org.junit:junit-bom:5.10.0"))
   testImplementation("org.junit.jupiter:junit-jupiter")
+  testImplementation("org.mockito:mockito-core:5.+")
   testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
@@ -115,6 +116,8 @@ tasks.test {
     includeEngines("junit-vintage")
   }
   finalizedBy(tasks.jacocoTestReport) // report is always generated after tests run
+
+  jvmArgs("-javaagent:${classpath.find { it.name.contains("mockito") }?.absolutePath}")
 }
 
 tasks.register<Test>("testAll") {
