@@ -51,7 +51,7 @@ public class EromeRipperTest extends RippersTest {
     @Test
     @Tag("slow")
     public void testVideoAlbumRip() throws IOException, URISyntaxException {
-        URL url = new URI("https://www.erome.com/a/P0x5Ambn").toURL();
+        URL url = new URI("https://www.erome.com/a/jEUFu6pi").toURL();
         EromeRipper ripper = new EromeRipper(url);
         testRipper(ripper);
     }
