@@ -1,6 +1,5 @@
 package com.rarchives.ripme.ripper;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -9,7 +8,6 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.stream.Stream;
 
 import org.json.JSONObject;
 

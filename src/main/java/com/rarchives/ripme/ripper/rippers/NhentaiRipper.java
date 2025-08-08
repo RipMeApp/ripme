@@ -2,6 +2,7 @@ package com.rarchives.ripme.ripper.rippers;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -71,7 +72,7 @@ public class NhentaiRipper extends AbstractHTMLRipper {
     }
 
     @Override
-    public String getAlbumTitle() throws MalformedURLException {
+    public String getAlbumTitle() throws MalformedURLException, URISyntaxException {
         if (firstPage == null) {
             try {
                 firstPage = Http.url(url).get();
@@ -82,7 +83,7 @@ public class NhentaiRipper extends AbstractHTMLRipper {
 
         String title = firstPage.select("#info > h1").text();
         if (title == null) {
-            return getAlbumTitle();
+            return super.getAlbumTitle();
         }
         return "nhentai" + title;
     }
