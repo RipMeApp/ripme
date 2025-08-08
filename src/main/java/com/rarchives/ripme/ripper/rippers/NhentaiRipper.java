@@ -2,6 +2,7 @@ package com.rarchives.ripme.ripper.rippers;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -36,7 +37,7 @@ public class NhentaiRipper extends AbstractHTMLRipper {
     }
 
     @Override
-    public boolean pageContainsAlbums(URL url) {
+    public boolean pageContainsAlbums() {
         Pattern pa = Pattern.compile("^https?://nhentai\\.net/tag/([a-zA-Z0-9_\\-]+)/?");
         Matcher ma = pa.matcher(url.toExternalForm());
         return ma.matches();
@@ -71,7 +72,7 @@ public class NhentaiRipper extends AbstractHTMLRipper {
     }
 
     @Override
-    public String getAlbumTitle(URL url) throws MalformedURLException {
+    public String getAlbumTitle() throws MalformedURLException, URISyntaxException {
         if (firstPage == null) {
             try {
                 firstPage = Http.url(url).get();
@@ -82,7 +83,7 @@ public class NhentaiRipper extends AbstractHTMLRipper {
 
         String title = firstPage.select("#info > h1").text();
         if (title == null) {
-            return getAlbumTitle(url);
+            return super.getAlbumTitle();
         }
         return "nhentai" + title;
     }

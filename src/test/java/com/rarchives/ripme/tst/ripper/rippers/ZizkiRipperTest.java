@@ -31,6 +31,6 @@ public class ZizkiRipperTest extends RippersTest {
     public void testAlbumTitle() throws IOException, URISyntaxException {
         URL url = new URI("http://zizki.com/dee-chorde/we-got-spirit").toURL();
         ZizkiRipper ripper = new ZizkiRipper(url);
-        Assertions.assertEquals("zizki_Dee Chorde_We Got Spirit", ripper.getAlbumTitle(url));
+        Assertions.assertEquals("zizki_Dee Chorde_We Got Spirit", ripper.getAlbumTitle());
     }
 }

@@ -61,9 +61,7 @@ public class StaRipper extends AbstractHTMLRipper {
             Document thumbPage = null;
             if (checkURL(thumbPageURL)) {
                 try {
-                    Connection.Response resp = Http.url(new URI(thumbPageURL).toURL()).response();
-                    cookies.putAll(resp.cookies());
-                    thumbPage = resp.parse();
+                    thumbPage = Http.url(new URI(thumbPageURL).toURL()).collectCookiesInto(cookies).get();
                 } catch (MalformedURLException | URISyntaxException e) {
                     logger.info(thumbPageURL + " is a malformed URL");
                 } catch (IOException e) {

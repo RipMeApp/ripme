@@ -43,7 +43,7 @@ public class Hentai2readRipper extends AbstractHTMLRipper {
     }
 
     @Override
-    public boolean pageContainsAlbums(URL url) {
+    public boolean pageContainsAlbums() {
         logger.info("Page contains albums");
         Pattern pat = Pattern.compile("https?://hentai2read\\.com/([a-zA-Z0-9_-]*)/?");
         Matcher mat = pat.matcher(url.toExternalForm());
@@ -78,7 +78,7 @@ public class Hentai2readRipper extends AbstractHTMLRipper {
             String thumbnailLink;
             try {
                 // If the page contains albums we want to load the main page
-                if (pageContainsAlbums(url)) {
+                if (pageContainsAlbums()) {
                     return Http.url(url).get();
                 }
                 Document tempDoc;
@@ -96,14 +96,14 @@ public class Hentai2readRipper extends AbstractHTMLRipper {
         }
 
         @Override
-        public String getAlbumTitle(URL url) throws MalformedURLException, URISyntaxException {
+        public String getAlbumTitle() throws MalformedURLException, URISyntaxException {
             try {
                 return getHost() + "_" + getGID(url);
             } catch (Exception e) {
                 // Fall back to default album naming convention
                 logger.warn("Failed to get album title from " + url, e);
             }
-            return super.getAlbumTitle(url);
+            return super.getAlbumTitle();
         }
 
         @Override

@@ -108,7 +108,7 @@ public class ChanRipper extends AbstractHTMLRipper {
     }
 
     @Override
-    public String getAlbumTitle(URL url) throws MalformedURLException {
+    public String getAlbumTitle() throws MalformedURLException {
         try {
             // Attempt to use album title as GID
             Document doc = getCachedFirstPage();

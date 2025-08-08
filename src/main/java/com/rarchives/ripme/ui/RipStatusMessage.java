@@ -10,6 +10,7 @@ public class RipStatusMessage {
         DOWNLOAD_STARTED("Download Started"),
         DOWNLOAD_COMPLETE("Download Complete"),
         DOWNLOAD_ERRORED("Download Errored"),
+        DOWNLOAD_PROGRESSED("Download Progressed"),
         DOWNLOAD_COMPLETE_HISTORY("Download Complete History"),
         RIP_COMPLETE("Rip Complete"),
         DOWNLOAD_WARN("Download problem"),

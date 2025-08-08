@@ -35,7 +35,7 @@ public class ViewcomicRipper extends AbstractHTMLRipper {
     }
 
     @Override
-    public String getAlbumTitle(URL url) throws MalformedURLException, URISyntaxException {
+    public String getAlbumTitle() throws MalformedURLException, URISyntaxException {
         try {
             // Attempt to use album title as GID
             String titleText = getCachedFirstPage().select("title").first().text();
@@ -49,7 +49,7 @@ public class ViewcomicRipper extends AbstractHTMLRipper {
             // Fall back to default album naming convention
             logger.info("Unable to find title at " + url);
         }
-        return super.getAlbumTitle(url);
+        return super.getAlbumTitle();
     }
 
     @Override

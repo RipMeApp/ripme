@@ -38,6 +38,7 @@ public class Http {
     private int retrySleep = 0;
     private final String url;
     private Connection connection;
+    private Map<String, String> collectedCookies;
 
     // Constructors
     public Http(String url) {
@@ -56,6 +57,11 @@ public class Http {
 
     public static Http url(URL url) {
         return new Http(url);
+    }
+
+    public Http collectCookiesInto(Map<String, String> collectedCookies) {
+        this.collectedCookies = collectedCookies;
+        return this;
     }
 
     private void defaultSettings() {
@@ -203,6 +209,9 @@ public class Http {
         while (--retries >= 0) {
             try {
                 response = connection.execute();
+                if (collectedCookies != null) {
+                    collectedCookies.putAll(response.cookies());
+                }
                 return response;
             } catch (IOException e) {
                 // Warn users about possibly fixable permission error
