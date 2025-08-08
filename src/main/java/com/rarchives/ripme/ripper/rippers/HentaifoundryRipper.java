@@ -19,7 +19,6 @@ import org.jsoup.select.Elements;
 
 import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 import com.rarchives.ripme.utils.Http;
-import com.rarchives.ripme.utils.Utils;
 
 public class HentaifoundryRipper extends AbstractHTMLRipper {
 
