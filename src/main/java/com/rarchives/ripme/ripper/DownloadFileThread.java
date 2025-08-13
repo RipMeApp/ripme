@@ -152,8 +152,8 @@ class DownloadFileThread implements Runnable {
                     }
                     String location = huc.getHeaderField("Location");
                     urlToDownload = new URI(location).toURL();
-                    // Throw exception so download can be retried
-                    throw new IOException("Redirect status code " + statusCode + " - redirect to " + location);
+                    logger.debug("Redirect status code {} - redirect to {}", statusCode, location);
+                    continue; // retry
                 }
                 if (statusCode / 100 == 4) { // 4xx errors
                     logger.error("[!] " + Utils.getLocalizedString("nonretriable.status.code") + " " + statusCode
