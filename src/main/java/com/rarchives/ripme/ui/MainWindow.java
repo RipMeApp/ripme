@@ -1667,8 +1667,12 @@ public final class MainWindow implements Runnable, RipStatusHandler {
                     }
                 }
             } else {
-                queueListModel.addElement(url);
-                urlInQueue = true;
+                if (canRip(url)) {
+                    queueListModel.addElement(url);
+                    urlInQueue = true;
+                } else {
+                    displayAndLogError("Can't find ripper for " + url, Color.RED);
+                }
             }
         } else if (url_not_empty) {
             displayAndLogError("This URL is already in queue: " + url, Color.RED);
