@@ -4,6 +4,7 @@
 // gradle clean build -PjavacRelease=17
 // gradle clean build -PjavacRelease=21
 // gradle clean build -PcustomVersion=1.0.0-10-asdf
+
 val customVersion = (project.findProperty("customVersion") ?: "") as String
 val javacRelease = (project.findProperty("javacRelease") ?: "17") as String
 
