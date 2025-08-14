@@ -16,6 +16,7 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -819,9 +820,16 @@ public class Utils {
     }
 
     public static String getLocalizedString(String key) {
-        LOGGER.trace(String.format("Key %s in %s is: %s", key, getSelectedLanguage(),
-                resourceBundle.getString(key)));
-        return resourceBundle.getString(key);
+        String message = resourceBundle.getString(key);
+        LOGGER.trace("Key {} in {} is: {}", key, getSelectedLanguage(), message);
+        return message;
+    }
+
+    @SuppressWarnings({"JavaExistingMethodCanBeUsed", "LoggingSimilarMessage"})
+    public static String getLocalizedString(String key, Object... args) {
+        String pattern = resourceBundle.getString(key);
+        LOGGER.trace("Key {} in {} is: {}", key, getSelectedLanguage(), pattern);
+        return MessageFormat.format(pattern, args);
     }
 
     /**

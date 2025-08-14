@@ -903,6 +903,9 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         optionHistory.setText(Utils.getLocalizedString("History"));
         optionQueue.setText(Utils.getLocalizedString("queue"));
         optionConfiguration.setText(Utils.getLocalizedString("Configuration"));
+        ripButton.setText(Utils.getLocalizedString("Rip"));
+        stopButton.setText(Utils.getLocalizedString("Stop"));
+        panicButton.setText(Utils.getLocalizedString("Panic"));
     }
 
     private void setupHandlers() {
@@ -951,9 +954,8 @@ public final class MainWindow implements Runnable, RipStatusHandler {
                 queueListModel.add(0, ripper.getURL().toString());
                 stopButton.setEnabled(false);
                 pack();
-                //status(Utils.getLocalizedString("download.interrupted"));
-                status("Rip gracefully stopping");
-                appendLog("Download interrupted", Color.RED);
+                status(Utils.getLocalizedString("rip.gracefully.stopping"));
+                appendLog(Utils.getLocalizedString("download.interrupted"), Color.RED);
             }
         });
 
@@ -968,8 +970,8 @@ public final class MainWindow implements Runnable, RipStatusHandler {
                 currentlyRippingProgress.setValue(0);
                 currentlyRippingProgress.setText("");
                 pack();
-                status("Rip interrupted"); // TODO localize
-                appendLog("Download interrupted", Color.RED);
+                status(Utils.getLocalizedString("rip.interrupted"));
+                appendLog(Utils.getLocalizedString("download.interrupted"), Color.RED);
             }
         });
 
@@ -1543,7 +1545,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         }
         urlString = urlString.trim();
         LOGGER.info("Attempting to start rip for album {}", urlString);
-        appendLog("Attempting to start rip for album " + urlString, Color.GREEN);
+        appendLog(Utils.getLocalizedString("attempting.to.start.rip.for.album.0", urlString), Color.GREEN);
         if (urlString.toLowerCase().startsWith("gonewild:")) {
             urlString = "http://gonewild.com/user/" + urlString.substring(urlString.indexOf(':') + 1);
         }

@@ -353,7 +353,7 @@ public abstract class AbstractRipper
                 return false;
             }
             if (AbstractRipper.shouldIgnoreExtension(url)) {
-                sendUpdate(STATUS.DOWNLOAD_SKIP, "Skipping " + url.toExternalForm() + " - ignored extension");
+                sendUpdate(STATUS.DOWNLOAD_SKIP, Utils.getLocalizedString("skipping.ignored.extension") + ": " + url.toExternalForm());
                 return false;
             }
             String text = url.toExternalForm() + System.lineSeparator();
@@ -710,7 +710,7 @@ public abstract class AbstractRipper
 
         itemsPending.remove(ripUrlId);
         itemsCompleted.put(ripUrlId, file);
-        observer.update(this, new RipStatusMessage(STATUS.DOWNLOAD_WARN, ripUrlId + " already saved as " + file));
+        observer.update(this, new RipStatusMessage(STATUS.DOWNLOAD_WARN, Utils.getLocalizedString("0.already.saved.as.1", ripUrlId, file)));
 
         //checkIfComplete();
     }

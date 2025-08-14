@@ -79,12 +79,12 @@ class DownloadFileThread implements Runnable {
         try {
             url = tokenedUrlGetter.getTokenedUrl();
         } catch (HttpStatusException e) {
-            observer.downloadErrored(ripUrlId, "Failed to get URL for " + ripUrlId);
+            observer.downloadErrored(ripUrlId, Utils.getLocalizedString("failed.to.get.url.for.0", ripUrlId));
             logger.error("[!] Failed to get URL for " + ripUrlId);
             return; // do not retry
         } catch (IOException | URISyntaxException e) {
             logger.error("[!] Failed to get URL for " + ripUrlId, e);
-            observer.downloadErrored(ripUrlId, "Failed to get URL for " + ripUrlId);
+            observer.downloadErrored(ripUrlId, Utils.getLocalizedString("failed.to.get.url.for.0", ripUrlId));
             return; // do not retry
         }
         if (filename == null) {
@@ -94,7 +94,7 @@ class DownloadFileThread implements Runnable {
         // First thing we make sure the file name doesn't have any illegal chars in it
         filename = Utils.sanitizeSaveAs(filename);
         if (AbstractRipper.shouldIgnoreExtension(url)) {
-            observer.sendUpdate(STATUS.DOWNLOAD_SKIP, "Skipping " + url.toExternalForm() + " - ignored extension");
+            observer.sendUpdate(STATUS.DOWNLOAD_SKIP, Utils.getLocalizedString("skipping.ignored.extension") + ": " + url.toExternalForm());
             return;
         }
 
@@ -104,7 +104,7 @@ class DownloadFileThread implements Runnable {
                 Files.createDirectories(directory);
             } catch (IOException e) {
                 logger.error("Error creating directory", e);
-                observer.downloadErrored(ripUrlId, "Error creating directory: " + directory + " ; " +  e.getMessage());
+                observer.downloadErrored(ripUrlId, Utils.getLocalizedString("error.creating.directory") + ": " + directory + " ; " +  e.getMessage());
                 return;
             }
         }
@@ -182,8 +182,9 @@ class DownloadFileThread implements Runnable {
                 if (statusCode != 206 && observer.tryResumeDownload() && saveAs.exists()) {
                     // TODO find a better way to handle servers that don't support resuming
                     // downloads then just erroring out
-                    observer.downloadErrored(ripUrlId, "Local file exists, resume attempted, but server does not support resuming downloads: "
-                            + statusCode + " while downloading " + url.toExternalForm());
+                    observer.downloadErrored(ripUrlId,
+                            Utils.getLocalizedString("server.doesnt.support.resuming.downloads") + ": "
+                                    + Utils.getLocalizedString("0.while.downloading.1", statusCode, url.toExternalForm()));
                     //throw new IOException(Utils.getLocalizedString("server.doesnt.support.resuming.downloads"));
                     return;
                 }
@@ -203,12 +204,12 @@ class DownloadFileThread implements Runnable {
                     logger.error("[!] " + Utils.getLocalizedString("nonretriable.status.code") + " " + statusCode
                             + " while downloading from " + url);
                     observer.downloadErrored(ripUrlId, Utils.getLocalizedString("nonretriable.status.code") + " "
-                            + statusCode + " while downloading " + url.toExternalForm());
+                            + Utils.getLocalizedString("0.while.downloading.1", statusCode, url.toExternalForm()));
                     return; // Not retriable, drop out.
                 }
                 if (statusCode / 100 == 5) { // 5xx errors
-                    observer.downloadErrored(ripUrlId, Utils.getLocalizedString("retriable.status.code") + " " + statusCode
-                            + " while downloading " + url.toExternalForm());
+                    observer.downloadErrored(ripUrlId, Utils.getLocalizedString("retriable.status.code") + " "
+                            + Utils.getLocalizedString("0.while.downloading.1", statusCode, url.toExternalForm()));
                     // Throw exception so download can be retried
                     throw new IOException(Utils.getLocalizedString("retriable.status.code") + " " + statusCode);
                 }
@@ -331,7 +332,7 @@ class DownloadFileThread implements Runnable {
                 logger.error("[!] HTTP status " + hse.getStatusCode() + " while downloading from " + hse.getUrl());
                 if (hse.getStatusCode() == 404 && Utils.getConfigBoolean("errors.skip404", false)) {
                     observer.downloadErrored(ripUrlId,
-                            "HTTP status code " + hse.getStatusCode() + " while downloading " + url.toExternalForm());
+                            Utils.getLocalizedString("0.while.downloading.1", "HTTP " + hse.getStatusCode(), url.toExternalForm()));
                     return;
                 }
             } catch (IOException e) {
@@ -375,12 +376,12 @@ class DownloadFileThread implements Runnable {
             try {
                 url = tokenedUrlGetter.getTokenedUrl();
             } catch (HttpStatusException e) {
-                observer.downloadErrored(ripUrlId, "Failed to get URL for " + ripUrlId);
+                observer.downloadErrored(ripUrlId, Utils.getLocalizedString("failed.to.get.url.for.0", ripUrlId));
                 logger.error("[!] Failed to get URL for " + ripUrlId);
                 return; // do not retry
             } catch (IOException | URISyntaxException e) {
                 logger.error("[!] Failed to get URL for " + ripUrlId, e);
-                observer.downloadErrored(ripUrlId, "Failed to get URL for " + ripUrlId);
+                observer.downloadErrored(ripUrlId, Utils.getLocalizedString("failed.to.get.url.for.0", ripUrlId));
                 return; // do not retry
             }
 
