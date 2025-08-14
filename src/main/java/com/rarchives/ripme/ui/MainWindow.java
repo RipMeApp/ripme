@@ -1298,7 +1298,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
                         JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE, new ImageIcon(mainIcon));
                 if (response == JOptionPane.YES_OPTION) {
                     try {
-                        Utils.browse(URI.create("http://github.com/ripmeapp/ripme"));
+                        Utils.browse(URI.create("https://github.com/ripmeapp/ripme"));
                     } catch (IOException e) {
                         LOGGER.error("Exception while opening project home page", e);
                     }
