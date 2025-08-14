@@ -65,11 +65,17 @@ public final class MainWindow implements Runnable, RipStatusHandler {
     private static JLabel statusLabel;
     private static final ProgressTextField currentlyRippingProgress = new ProgressTextField();
     private static final JLabel pendingValue = new JLabel("0");
+    private static final JLabel pendingLabel = new JLabel("Pending");
     private static final JLabel activeValue = new JLabel("0");
+    private static final JLabel activeLabel = new JLabel("Active");
     private static final JLabel completedValue = new JLabel("0");
+    private static final JLabel completedLabel = new JLabel("Completed");
     private static final JLabel erroredValue = new JLabel("0");
+    private static final JLabel erroredLabel = new JLabel("Errored");
     private static final JLabel totalValue = new JLabel("0");
+    private static final JLabel totalLabel = new JLabel("Total");
     private static final JLabel transferRateValue = new JLabel("0.00 B/s");
+    private static final JLabel transferRateLabel = new JLabel("Speed");
     private static final JButton openButton = new JButton();
 
     // Put an empty JPanel on the bottom of the window to keep components
@@ -407,7 +413,6 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         gbc.gridy = 0;
         gbc.anchor = GridBagConstraints.EAST;
         statusDetailPanel.add(pendingValue, gbc);
-        JLabel pendingLabel = new JLabel("Pending");
         gbc = new GridBagConstraints();
         gbc.gridx = 1;
         gbc.gridy = 0;
@@ -425,7 +430,6 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         gbc.gridy = 1;
         gbc.anchor = GridBagConstraints.EAST;
         statusDetailPanel.add(activeValue, gbc);
-        JLabel activeLabel = new JLabel("Active");
         gbc = new GridBagConstraints();
         gbc.gridx = 1;
         gbc.gridy = 1;
@@ -443,7 +447,6 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         gbc.gridy = 0;
         gbc.anchor = GridBagConstraints.EAST;
         statusDetailPanel.add(completedValue, gbc);
-        JLabel completedLabel = new JLabel("Completed");
         gbc = new GridBagConstraints();
         gbc.gridx = 4;
         gbc.gridy = 0;
@@ -461,7 +464,6 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         gbc.gridy = 1;
         gbc.anchor = GridBagConstraints.EAST;
         statusDetailPanel.add(erroredValue, gbc);
-        JLabel erroredLabel = new JLabel("Errored");
         gbc = new GridBagConstraints();
         gbc.gridx = 4;
         gbc.gridy = 1;
@@ -479,7 +481,6 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         gbc.gridy = 0;
         gbc.anchor = GridBagConstraints.EAST;
         statusDetailPanel.add(totalValue, gbc);
-        JLabel totalLabel = new JLabel("Total");
         gbc = new GridBagConstraints();
         gbc.gridx = 7;
         gbc.gridy = 0;
@@ -498,12 +499,11 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         gbc.gridy = 1;
         gbc.anchor = GridBagConstraints.EAST;
         statusDetailPanel.add(transferRateValue, gbc);
-        JLabel transferRateLabel2 = new JLabel("Speed");
         gbc = new GridBagConstraints();
         gbc.gridx = 7;
         gbc.gridy = 1;
         gbc.anchor = GridBagConstraints.WEST;
-        statusDetailPanel.add(transferRateLabel2, gbc);
+        statusDetailPanel.add(transferRateLabel, gbc);
 
         final JPanel spacer1 = new JPanel();
         gbc = new GridBagConstraints();
@@ -906,6 +906,14 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         ripButton.setText(Utils.getLocalizedString("Rip"));
         stopButton.setText(Utils.getLocalizedString("Stop"));
         panicButton.setText(Utils.getLocalizedString("Panic"));
+
+        pendingLabel.setText(Utils.getLocalizedString("Pending"));
+        activeLabel.setText(Utils.getLocalizedString("Active"));
+        completedLabel.setText(Utils.getLocalizedString("Completed"));
+        erroredLabel.setText(Utils.getLocalizedString("Errored"));
+        totalLabel.setText(Utils.getLocalizedString("Total"));
+        transferRateLabel.setText(Utils.getLocalizedString("Speed"));
+
     }
 
     private void setupHandlers() {
