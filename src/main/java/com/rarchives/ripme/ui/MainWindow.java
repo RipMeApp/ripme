@@ -570,18 +570,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
             LOGGER.warn(e.getMessage());
         }
 
-        // Prevent button sizes/positions from shifting when text bolds/unbolds
-        optionLog.setPreferredSize(optionLog.getPreferredSize());
-        optionHistory.setPreferredSize(optionHistory.getPreferredSize());
-
-        // Set preferred size with space for queue size string
-        optionQueue.setText(Utils.getLocalizedString("queue") + " (8888)");
-        optionQueue.setPreferredSize(optionQueue.getPreferredSize());
-        // Restore original text
-        optionQueue.setText(Utils.getLocalizedString("queue"));
-        // updateQueue() is called below, which initializes the real queue button text
-
-        optionConfiguration.setPreferredSize(optionConfiguration.getPreferredSize());
+        setTabButtonPreferredSizes();
 
         gbc.gridx = 0;
         optionsPanel.add(optionLog, gbc);
@@ -834,6 +823,23 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         pane.add(emptyPanel, gbc);
     }
 
+    private static void setTabButtonPreferredSizes() {
+        // Recalculate preferred size each time by using getUI()
+
+        // Prevent button sizes/positions from shifting when text bolds/unbolds
+        optionLog.setPreferredSize(optionLog.getUI().getPreferredSize(optionLog));
+        optionHistory.setPreferredSize(optionHistory.getUI().getPreferredSize(optionHistory));
+
+        // Set preferred size with space for queue size string
+        optionQueue.setText(Utils.getLocalizedString("queue") + " (8888)");
+        optionQueue.setPreferredSize(optionQueue.getUI().getPreferredSize(optionQueue));
+        // Restore original text
+        optionQueue.setText(Utils.getLocalizedString("queue"));
+        // updateQueue() is called below, which initializes the real queue button text
+
+        optionConfiguration.setPreferredSize(optionConfiguration.getUI().getPreferredSize(optionConfiguration));
+    }
+
     private JTextField configField(String key, int defaultValue) {
         final var field = new JTextField(Integer.toString(Utils.getConfigInteger(key, defaultValue)));
         field.getDocument().addDocumentListener(new DocumentListener() {
@@ -914,6 +920,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         totalLabel.setText(Utils.getLocalizedString("Total"));
         transferRateLabel.setText(Utils.getLocalizedString("Speed"));
 
+        setTabButtonPreferredSizes(); // Preferred size may change with different width labels
     }
 
     private void setupHandlers() {
