@@ -2,6 +2,7 @@ package com.rarchives.ripme.ripper;
 
 import java.io.*;
 import java.net.*;
+import java.nio.file.FileStore;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -334,9 +335,9 @@ class DownloadFileThread implements Runnable {
                     return;
                 }
             } catch (IOException e) {
-                if (e.getMessage().matches("No space left on device")) {
+                if (guessIsENOSPC(e, saveAs)) {
                     logger.debug("IOException", e);
-                    observer.downloadErrored(ripUrlId, "No space left on device"); // TODO localize; TODO cancel all rips
+                    observer.downloadErrored(ripUrlId, Utils.getLocalizedString("no.space.left.on.device")); // TODO cancel all rips
                     return;
                 }
                 logger.debug("IOException", e);
@@ -386,6 +387,25 @@ class DownloadFileThread implements Runnable {
         } while (true);
         observer.downloadCompleted(ripUrlId, saveAs.toPath());
         logger.info("[+] Saved " + url + " as " + prettySaveAs);
+    }
+
+    @SuppressWarnings("UnnecessaryLocalVariable")
+    private boolean guessIsENOSPC(IOException e, File saveAs) {
+        // The ENOSPC IOException message is localized in Java, so this only works on English locale systems.
+        if (e.getMessage().matches("No space left on device")) {
+            return true;
+        }
+        // Fallback: check usable space on the filesystem
+        try {
+            FileStore fs = Files.getFileStore(saveAs.toPath());
+            // could check for 0 bytes, but 256 kilobytes is small enough
+            int downloadBufferSizeBytes = 1024 * 256;
+            boolean notEnoughUsableBytes = fs.getUsableSpace() < downloadBufferSizeBytes;
+            return notEnoughUsableBytes;
+        } catch (IOException ex) {
+            // unable to determine if no space left on device; fall through
+        }
+        return false;
     }
 
 }
