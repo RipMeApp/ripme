@@ -44,7 +44,7 @@ class QueueMenuMouseListener extends MouseAdapter {
         Action clearQueue = new AbstractAction(Utils.getLocalizedString("queue.remove.all")) {
             @Override
             public void actionPerformed(ActionEvent ae) {
-                if (JOptionPane.showConfirmDialog(null, Utils.getLocalizedString("queue.validation"), "RipMe",
+                if (JOptionPane.showConfirmDialog(null, Utils.getLocalizedString("queue.remove.all.validation"), "RipMe",
                         JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
                     queueListModel.removeAllElements();
                     updateUI();
