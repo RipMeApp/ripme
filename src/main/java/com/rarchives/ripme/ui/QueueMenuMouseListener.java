@@ -31,12 +31,15 @@ class QueueMenuMouseListener extends MouseAdapter {
         Action removeSelected = new AbstractAction(Utils.getLocalizedString("queue.remove.selected")) {
             @Override
             public void actionPerformed(ActionEvent ae) {
-                Object o = queueList.getSelectedValue();
-                while (o != null) {
-                    queueListModel.removeElement(o);
-                    o = queueList.getSelectedValue();
+                if (JOptionPane.showConfirmDialog(null, Utils.getLocalizedString("queue.remove.selected.validation"), "RipMe",
+                        JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+                    Object o = queueList.getSelectedValue();
+                    while (o != null) {
+                        queueListModel.removeElement(o);
+                        o = queueList.getSelectedValue();
+                    }
+                    updateUI();
                 }
-                updateUI();
             }
         };
         popup.add(removeSelected);
