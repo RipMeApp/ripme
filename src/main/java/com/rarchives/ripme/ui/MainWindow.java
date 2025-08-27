@@ -22,6 +22,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 import javax.imageio.ImageIO;
@@ -138,6 +139,9 @@ public final class MainWindow implements Runnable, RipStatusHandler {
     private static CheckboxMenuItem trayMenuAutorip;
 
     private static Image mainIcon;
+
+    private static Function<String, Boolean> addUserInputUrlToQueueStatic;
+    private static Runnable ripNextAlbumStatic;
 
     private static AbstractRipper ripper;
 
@@ -859,6 +863,8 @@ public final class MainWindow implements Runnable, RipStatusHandler {
     }
 
     private void setupHandlers() {
+        addUserInputUrlToQueueStatic = this::addUserInputUrlToQueue;
+        ripNextAlbumStatic = this::ripNextAlbum;
         ripButton.addActionListener(new RipButtonHandler(this));
         ripTextfield.addActionListener(new RipButtonHandler(this));
         ripTextfield.getDocument().addDocumentListener(new DocumentListener() {
@@ -1551,7 +1557,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         return null;
     }
 
-    private boolean canRip(String urlString) {
+    private static boolean canRip(String urlString) {
         try {
             String urlText = urlString.trim();
             if (urlText.equals("")) {
@@ -1581,6 +1587,43 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         return queueListModel;
     }
 
+    /**
+     * @param url User input that might be a URL
+     * @return true if the URL is in the queue
+     */
+    private boolean addUserInputUrlToQueue(String url) {
+        boolean urlInQueue = false;
+        boolean url_not_empty = !url.equals("");
+        if (!queueListModel.contains(url) && url_not_empty) {
+            // Check if we're ripping a range of urls
+            if (url.contains("{")) {
+                // Make sure the user hasn't forgotten the closing }
+                if (url.contains("}")) {
+                    String rangeToParse = url.substring(url.indexOf("{") + 1, url.indexOf("}"));
+                    int rangeStart = Integer.parseInt(rangeToParse.split("-")[0]);
+                    int rangeEnd = Integer.parseInt(rangeToParse.split("-")[1]);
+                    for (int i = rangeStart; i < rangeEnd + 1; i++) {
+                        String realURL = url.replaceAll("\\{\\S*\\}", Integer.toString(i));
+                        if (canRip(realURL)) {
+                            queueListModel.addElement(realURL);
+                            urlInQueue = true;
+                        } else {
+                            displayAndLogError("Can't find ripper for " + realURL, Color.RED);
+                        }
+                    }
+                }
+            } else {
+                queueListModel.addElement(url);
+                urlInQueue = true;
+            }
+        } else if (url_not_empty) {
+            displayAndLogError("This URL is already in queue: " + url, Color.RED);
+            statusWithColor("This URL is already in queue: " + url, Color.ORANGE);
+            urlInQueue = true;
+        }
+        return urlInQueue;
+    }
+
     static class RipButtonHandler implements ActionListener {
         private MainWindow mainWindow;
 
@@ -1590,32 +1633,8 @@ public final class MainWindow implements Runnable, RipStatusHandler {
 
         public void actionPerformed(ActionEvent event) {
             String url = ripTextfield.getText();
-            boolean url_not_empty = !url.equals("");
-            if (!queueListModel.contains(url) && url_not_empty) {
-                // Check if we're ripping a range of urls
-                if (url.contains("{")) {
-                    // Make sure the user hasn't forgotten the closing }
-                    if (url.contains("}")) {
-                        String rangeToParse = url.substring(url.indexOf("{") + 1, url.indexOf("}"));
-                        int rangeStart = Integer.parseInt(rangeToParse.split("-")[0]);
-                        int rangeEnd = Integer.parseInt(rangeToParse.split("-")[1]);
-                        for (int i = rangeStart; i < rangeEnd + 1; i++) {
-                            String realURL = url.replaceAll("\\{\\S*\\}", Integer.toString(i));
-                            if (mainWindow.canRip(realURL)) {
-                                queueListModel.addElement(realURL);
-                                ripTextfield.setText("");
-                            } else {
-                                mainWindow.displayAndLogError("Can't find ripper for " + realURL, Color.RED);
-                            }
-                        }
-                    }
-                } else {
-                    queueListModel.addElement(url);
-                    ripTextfield.setText("");
-                }
-            } else if (url_not_empty) {
-                mainWindow.displayAndLogError("This URL is already in queue: " + url, Color.RED);
-                mainWindow.statusWithColor("This URL is already in queue: " + url, Color.ORANGE);
+            boolean urlInQueue = mainWindow.addUserInputUrlToQueue(url);
+            if (urlInQueue) {
                 ripTextfield.setText("");
             }
             mainWindow.ripNextAlbum();
@@ -1824,8 +1843,10 @@ public final class MainWindow implements Runnable, RipStatusHandler {
     }
 
     public static void ripAlbumStatic(String url) {
-        ripTextfield.setText(url.trim());
-        ripButton.doClick();
+        boolean urlInQueue = addUserInputUrlToQueueStatic.apply(url.trim());
+        if (urlInQueue) {
+            ripNextAlbumStatic.run();
+        }
     }
 
     private static boolean hasWindowPositionBug() {
