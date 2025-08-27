@@ -3,6 +3,7 @@ package com.rarchives.ripme.ui;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.List;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -56,6 +57,33 @@ class QueueMenuMouseListener extends MouseAdapter {
         };
         popup.add(clearQueue);
 
+        Action moveSelectedToTop = new AbstractAction(Utils.getLocalizedString("queue.move.selected.to.top")) {
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                List<Object> selectedElements = queueList.getSelectedValuesList();
+                for (Object selectedElement : selectedElements) {
+                    queueListModel.removeElement(selectedElement);
+                }
+                queueListModel.addAll(0, selectedElements);
+                queueList.setSelectionInterval(0, selectedElements.size() - 1);
+                updateUI();
+            }
+        };
+        popup.add(moveSelectedToTop);
+
+        Action moveSelectedToBottom = new AbstractAction(Utils.getLocalizedString("queue.move.selected.to.bottom")) {
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                List<Object> selectedElements = queueList.getSelectedValuesList();
+                for (Object selectedElement : selectedElements) {
+                    queueListModel.removeElement(selectedElement);
+                }
+                queueListModel.addAll(selectedElements);
+                queueList.setSelectionInterval(queueListModel.size() - selectedElements.size(), queueListModel.size() - 1);
+                updateUI();
+            }
+        };
+        popup.add(moveSelectedToBottom);
     }
 
     @Override
