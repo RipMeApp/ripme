@@ -655,9 +655,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         JScrollPane queueListScroll = new JScrollPane(queueList, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
                 JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 
-        for (String item : Utils.getConfigList("queue")) {
-            queueListModel.addElement(item);
-        }
+        queueListModel.addAll(Utils.getConfigList("queue"));
         updateQueue();
 
         gbc.gridx = 0;
