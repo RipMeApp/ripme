@@ -34,12 +34,8 @@ public class NfsfwRipper extends AbstractHTMLRipper {
             "https?://[wm.]*nfsfw.com/gallery/v/[^/]+/(.+)$"
     );
 
-    // threads pool for downloading images from image pages
-    private DownloadThreadPool nfsfwThreadPool;
-
     public NfsfwRipper(URL url) throws IOException {
         super(url);
-        nfsfwThreadPool = new DownloadThreadPool("NFSFW");
     }
 
     @Override
@@ -105,7 +101,7 @@ public class NfsfwRipper extends AbstractHTMLRipper {
             index = ++this.index;
         }
         NfsfwImageThread t = new NfsfwImageThread(url, currentDir, index);
-        nfsfwThreadPool.addThread(t);
+        getThreadPool().addThread(t);
     }
 
     @Override
@@ -139,11 +135,6 @@ public class NfsfwRipper extends AbstractHTMLRipper {
                 "Expected nfsfw.com gallery format: "
                         + "nfsfw.com/v/albumname"
                         + " Got: " + url);
-    }
-
-    @Override
-    public DownloadThreadPool getThreadPool() {
-        return nfsfwThreadPool;
     }
 
     @Override

@@ -31,11 +31,8 @@ public class MotherlessRipper extends AbstractHTMLRipper {
     private static final String DOMAIN = "motherless.com",
                                 HOST   = "motherless";
 
-    private DownloadThreadPool motherlessThreadPool;
-
     public MotherlessRipper(URL url) throws IOException {
         super(url);
-        motherlessThreadPool = new DownloadThreadPool();
     }
 
     @Override
@@ -117,7 +114,7 @@ public class MotherlessRipper extends AbstractHTMLRipper {
     protected void downloadURL(URL url, int index) {
         // Create thread for finding image at "url" page
         MotherlessImageRunnable mit = new MotherlessImageRunnable(url, index);
-        motherlessThreadPool.addThread(mit);
+        getThreadPool().addThread(mit);
         try {
             Thread.sleep(IMAGE_SLEEP_TIME);
         } catch (InterruptedException e) {
@@ -153,11 +150,6 @@ public class MotherlessRipper extends AbstractHTMLRipper {
             return m.group(m.groupCount());
         }
         throw new MalformedURLException("Expected URL format: https://motherless.com/GIXXXXXXX, got: " + url);
-    }
-
-    @Override
-    protected DownloadThreadPool getThreadPool() {
-        return motherlessThreadPool;
     }
 
     /**

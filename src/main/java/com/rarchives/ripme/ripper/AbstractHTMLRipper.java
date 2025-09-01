@@ -69,10 +69,6 @@ public abstract class AbstractHTMLRipper extends AbstractRipper {
 
     protected abstract void downloadURL(URL url, int index);
 
-    protected DownloadThreadPool getThreadPool() {
-        return null;
-    }
-
     protected boolean keepSortOrder() {
         return true;
     }

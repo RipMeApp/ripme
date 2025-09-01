@@ -29,13 +29,6 @@ public class ImagebamRipper extends AbstractHTMLRipper {
 
     private static final Logger logger = LogManager.getLogger(ImagebamRipper.class);
 
-    // Thread pool for finding direct image links from "image" pages (html)
-    private DownloadThreadPool imagebamThreadPool = new DownloadThreadPool("imagebam");
-    @Override
-    public DownloadThreadPool getThreadPool() {
-        return imagebamThreadPool;
-    }
-
     public ImagebamRipper(URL url) throws IOException {
         super(url);
     }
@@ -90,7 +83,7 @@ public class ImagebamRipper extends AbstractHTMLRipper {
     @Override
     public void downloadURL(URL url, int index) {
         ImagebamImageThread t = new ImagebamImageThread(url, index);
-        imagebamThreadPool.addThread(t);
+        getThreadPool().addThread(t);
         sleep(500);
     }
 

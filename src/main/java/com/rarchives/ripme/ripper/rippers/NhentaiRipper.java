@@ -27,9 +27,6 @@ public class NhentaiRipper extends AbstractHTMLRipper {
 
     private Document firstPage;
 
-    // Thread pool for finding direct image links from "image" pages (html)
-    private DownloadThreadPool nhentaiThreadPool = new DownloadThreadPool("nhentai");
-
     @Override
     public boolean hasQueueSupport() {
         return true;
@@ -49,11 +46,6 @@ public class NhentaiRipper extends AbstractHTMLRipper {
             urlsToAddToQueue.add("https://" + getDomain() + elem.attr("href"));
         }
         return urlsToAddToQueue;
-    }
-
-    @Override
-    public DownloadThreadPool getThreadPool() {
-        return nhentaiThreadPool;
     }
 
     public NhentaiRipper(URL url) throws IOException {

@@ -107,6 +107,10 @@ public abstract class AbstractRipper
         }
     }
 
+    protected DownloadThreadPool getThreadPool() {
+        return threadPool;
+    }
+
     /**
      * Adds a URL to the url history file
      *
@@ -234,7 +238,7 @@ public abstract class AbstractRipper
         // ctx.reconfigure();
         // ctx.updateLoggers();
 
-        this.threadPool = new DownloadThreadPool();
+        this.threadPool = new DownloadThreadPool(getClass().getSimpleName() + "_" + getGID(url));
     }
 
     public void setObserver(RipStatusHandler obs) {
@@ -653,7 +657,7 @@ public abstract class AbstractRipper
      * Checks if complete and notifies observers if complete
      */
     protected void checkIfComplete() {
-        if (itemsPending.isEmpty()) { // TODO add itemsActive for current transfers
+        if (itemsPending.isEmpty()  && threadPool.getActiveThreadCount() == 0 && threadPool.getPendingThreadCount() == 0) {
             notifyComplete();
         }
     }

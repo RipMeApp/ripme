@@ -38,8 +38,6 @@ public class ListalRipper extends AbstractHTMLRipper {
     private String listId = null; // listId to get more images via POST.
     private UrlType urlType = UrlType.UNKNOWN;
 
-    private DownloadThreadPool listalThreadPool = new DownloadThreadPool("listalThreadPool");
-
     public ListalRipper(URL url) throws IOException {
         super(url);
     }
@@ -77,7 +75,7 @@ public class ListalRipper extends AbstractHTMLRipper {
 
     @Override
     public void downloadURL(URL url, int index) {
-        listalThreadPool.addThread(new ListalImageDownloadThread(url, index));
+        getThreadPool().addThread(new ListalImageDownloadThread(url, index));
     }
 
     @Override
@@ -136,11 +134,6 @@ public class ListalRipper extends AbstractHTMLRipper {
         return nextPage;
     }
 
-
-    @Override
-    public DownloadThreadPool getThreadPool() {
-        return listalThreadPool;
-    }
 
     /**
      * Returns the image urls for UrlType LIST.

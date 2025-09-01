@@ -42,9 +42,6 @@ public abstract class AbstractJSONRipper extends AbstractRipper {
     }
     protected abstract List<String> getURLsFromJSON(JSONObject json);
     protected abstract void downloadURL(URL url, int index);
-    private DownloadThreadPool getThreadPool() {
-        return null;
-    }
 
     protected boolean keepSortOrder() {
         return true;

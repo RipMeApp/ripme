@@ -30,7 +30,6 @@ public class HqpornerRipper extends AbstractHTMLRipper {
 	private Pattern p1 = Pattern.compile("https?://hqporner.com/hdporn/([a-zA-Z0-9_-]*).html/?$"); // video pattern.
 	private Pattern p2 = Pattern.compile("https://hqporner.com/([a-zA-Z0-9/_-]+)"); // category/top/actress/studio pattern.
 	private Pattern p3 = Pattern.compile("https?://[A-Za-z0-9/.-_]+\\.mp4"); // to match links ending with .mp4
-	private DownloadThreadPool hqpornerThreadPool = new DownloadThreadPool("hqpornerThreadPool");
 	private String subdirectory = "";
 
 	public HqpornerRipper(URL url) throws IOException {
@@ -111,7 +110,7 @@ public class HqpornerRipper extends AbstractHTMLRipper {
 
 	@Override
 	public void downloadURL(URL url, int index) {
-		hqpornerThreadPool.addThread(new HqpornerDownloadThread(url, index, subdirectory));
+		getThreadPool().addThread(new HqpornerDownloadThread(url, index, subdirectory));
 	}
 
 	@Override
@@ -121,11 +120,6 @@ public class HqpornerRipper extends AbstractHTMLRipper {
 			return Http.url(VIDEO_URL_PREFIX + pageNumbers.last().attr("href")).get();
 		}
 		throw new IOException("No next page found.");
-	}
-
-	@Override
-	public DownloadThreadPool getThreadPool() {
-		return hqpornerThreadPool;
 	}
 
 	@Override

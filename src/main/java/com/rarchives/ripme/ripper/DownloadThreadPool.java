@@ -16,10 +16,6 @@ public class DownloadThreadPool {
     private static final Logger logger = LogManager.getLogger(DownloadThreadPool.class);
     private ThreadPoolExecutor threadPool = null;
 
-    public DownloadThreadPool() {
-        initialize("Main");
-    }
-
     public DownloadThreadPool(String threadPoolName) {
         initialize(threadPoolName);
     }
@@ -52,5 +48,13 @@ public class DownloadThreadPool {
         } catch (InterruptedException e) {
             logger.error("[!] Interrupted while waiting for threads to finish: ", e);
         }
+    }
+
+    public int getPendingThreadCount() {
+        return threadPool.getQueue().size();
+    }
+
+    public int getActiveThreadCount() {
+        return threadPool.getActiveCount();
     }
 }

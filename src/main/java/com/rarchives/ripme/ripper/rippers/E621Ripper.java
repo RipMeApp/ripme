@@ -37,8 +37,6 @@ public class E621Ripper extends AbstractHTMLRipper {
     private static Pattern gidPatternNew = null;
     private static Pattern gidPatternPoolNew = null;
 
-    private DownloadThreadPool e621ThreadPool = new DownloadThreadPool("e621");
-
     private Map<String, String> cookies = new HashMap<String, String>();
     private String userAgent = USER_AGENT;
 
@@ -76,11 +74,6 @@ public class E621Ripper extends AbstractHTMLRipper {
 
     private Document getDocument(String url) throws IOException {
         return getDocument(url, 1);
-    }
-
-    @Override
-    public DownloadThreadPool getThreadPool() {
-        return e621ThreadPool;
     }
 
     @Override
@@ -136,7 +129,7 @@ public class E621Ripper extends AbstractHTMLRipper {
         // rate limit
         sleep(3000);
         // addURLToDownload(url, getPrefix(index));
-        e621ThreadPool.addThread(new E621FileThread(url, getPrefix(index)));
+        getThreadPool().addThread(new E621FileThread(url, getPrefix(index)));
     }
 
     private String getTerm(URL url) throws MalformedURLException {
