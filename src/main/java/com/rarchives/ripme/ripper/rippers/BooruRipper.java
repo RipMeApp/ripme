@@ -99,9 +99,11 @@ public class BooruRipper extends AbstractHTMLRipper {
     @Override
     public String getGID(URL url) throws MalformedURLException {
         try {
-            return Utils.filesystemSafe(new URI(getTerm(url).replaceAll("&tags=", "")).getPath());
-        } catch (URISyntaxException ex) {
-            logger.error(ex);
+            // Get the search term and make it filesystem safe
+            String term = getTerm(url).replaceAll("&tags=", "");
+            return Utils.filesystemSafe(term);
+        } catch (Exception ex) {
+            logger.error("Error getting GID from URL: " + url, ex);
         }
 
         throw new MalformedURLException("Expected xbooru.com URL format: " + getHost() + ".com/index.php?tags=searchterm - got " + url + " instead");
