@@ -26,7 +26,7 @@ public class DownloadThreadPool {
         int threads = Utils.getConfigInteger("threads.size", 10);
         logger.debug("Initializing " + threadPoolName + " thread pool with " + threads + " threads");
         this.name = threadPoolName;
-        this.threadPool = (ThreadPoolExecutor) Executors.newFixedThreadPool(threads);
+        this.threadPool = (ThreadPoolExecutor) Executors.newFixedThreadPool(threads, Thread.ofVirtual().factory());
     }
 
     /**
