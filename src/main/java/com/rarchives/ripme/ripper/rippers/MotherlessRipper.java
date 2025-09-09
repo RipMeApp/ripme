@@ -114,7 +114,7 @@ public class MotherlessRipper extends AbstractHTMLRipper {
     protected void downloadURL(URL url, int index) {
         // Create thread for finding image at "url" page
         MotherlessImageRunnable mit = new MotherlessImageRunnable(url, index);
-        getThreadPool().addThread(mit);
+        getCrawlerThreadPool().addThread(mit);
         try {
             Thread.sleep(IMAGE_SLEEP_TIME);
         } catch (InterruptedException e) {

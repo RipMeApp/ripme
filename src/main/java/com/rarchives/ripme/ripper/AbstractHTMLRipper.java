@@ -110,7 +110,7 @@ public abstract class AbstractHTMLRipper extends AbstractRipper {
 
     @Override
     public void rip() throws IOException, URISyntaxException {
-        int index = 0;
+        int imageIndex = 0;
         int textindex = 0;
         logger.info("Retrieving " + this.url);
         sendUpdate(STATUS.LOADING_RESOURCE, this.url.toExternalForm());
@@ -165,9 +165,9 @@ public abstract class AbstractHTMLRipper extends AbstractRipper {
                 }
 
                 for (String imageURL : imageURLs) {
-                    index += 1;
-                    logger.debug("Found image url #" + index + ": '" + imageURL + "'");
-                    downloadURL(new URI(imageURL).toURL(), index);
+                    imageIndex += 1;
+                    logger.debug("Found image url #" + imageIndex + ": '" + imageURL + "'");
+                    downloadURL(new URI(imageURL).toURL(), imageIndex);
                     if (isStopped() || isThisATest()) {
                         break;
                     }
@@ -195,7 +195,7 @@ public abstract class AbstractHTMLRipper extends AbstractRipper {
                                 workingDir.getCanonicalPath()
                                         + ""
                                         + File.separator
-                                        + getPrefix(index)
+                                        + getPrefix(imageIndex)
                                         + (tempDesc.length > 1 ? tempDesc[1] : filename)
                                         + ".txt").exists();
 
@@ -225,12 +225,17 @@ public abstract class AbstractHTMLRipper extends AbstractRipper {
             }
         }
 
-        // If they're using a thread pool, wait for it.
-        if (getThreadPool() != null) {
-            logger.debug("Waiting for threadpool " + getThreadPool().getClass().getName());
-            getThreadPool().waitForThreads();
+        logger.info("All items queued; total items: {}; url: {}", imageIndex, url);
+
+        // Final total item count is now known
+        setItemsTotal(imageIndex);
+
+        if (getCrawlerThreadPool() != null) {
+            logger.debug("Waiting for crawler threadpool: {}", url);
+            getCrawlerThreadPool().waitForThreads(imageIndex, shouldStop, url);
         }
-        waitForThreads();
+
+        waitForRipperThreads();
     }
 
     /**

@@ -114,7 +114,7 @@ public class RedditRipper extends AlbumRipper {
         } catch (URISyntaxException e) {
             new IOException(e.getMessage());
         }
-        waitForThreads();
+        waitForRipperThreads();
     }
 
 

@@ -30,7 +30,6 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import com.rarchives.ripme.ripper.AbstractHTMLRipper;
-import com.rarchives.ripme.ripper.DownloadThreadPool;
 import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
 import com.rarchives.ripme.utils.Http;
 import com.rarchives.ripme.utils.Utils;
@@ -298,7 +297,7 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 
 		// Start Thread and add to pool.
 		DeviantartImageThread t = new DeviantartImageThread(url);
-		getThreadPool().addThread(t);
+		getCrawlerThreadPool().addThread(t);
 
 	}
 

@@ -1,7 +1,6 @@
 package com.rarchives.ripme.ripper.rippers;
 
 import com.rarchives.ripme.ripper.AbstractHTMLRipper;
-import com.rarchives.ripme.ripper.DownloadThreadPool;
 import com.rarchives.ripme.utils.Http;
 import com.rarchives.ripme.utils.Utils;
 import java.io.IOException;
@@ -83,7 +82,7 @@ public class ImagebamRipper extends AbstractHTMLRipper {
     @Override
     public void downloadURL(URL url, int index) {
         ImagebamImageThread t = new ImagebamImageThread(url, index);
-        getThreadPool().addThread(t);
+        getCrawlerThreadPool().addThread(t);
         sleep(500);
     }
 

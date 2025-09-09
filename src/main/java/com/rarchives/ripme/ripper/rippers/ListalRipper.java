@@ -19,7 +19,6 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import com.rarchives.ripme.ripper.AbstractHTMLRipper;
-import com.rarchives.ripme.ripper.DownloadThreadPool;
 import com.rarchives.ripme.utils.Http;
 
 /**
@@ -75,7 +74,7 @@ public class ListalRipper extends AbstractHTMLRipper {
 
     @Override
     public void downloadURL(URL url, int index) {
-        getThreadPool().addThread(new ListalImageDownloadThread(url, index));
+        getCrawlerThreadPool().addThread(new ListalImageDownloadThread(url, index));
     }
 
     @Override

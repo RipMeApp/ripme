@@ -17,7 +17,6 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import com.rarchives.ripme.ripper.AbstractHTMLRipper;
-import com.rarchives.ripme.ripper.DownloadThreadPool;
 import com.rarchives.ripme.utils.Http;
 import com.rarchives.ripme.utils.Utils;
 
@@ -65,7 +64,7 @@ public class ImagevenueRipper extends AbstractHTMLRipper {
 
     public void downloadURL(URL url, int index) {
         ImagevenueImageThread t = new ImagevenueImageThread(url, index);
-        getThreadPool().addThread(t);
+        getCrawlerThreadPool().addThread(t);
     }
 
     /**

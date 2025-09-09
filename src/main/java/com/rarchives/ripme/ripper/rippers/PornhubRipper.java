@@ -18,7 +18,6 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import com.rarchives.ripme.ripper.AbstractHTMLRipper;
-import com.rarchives.ripme.ripper.DownloadThreadPool;
 import com.rarchives.ripme.utils.Http;
 import com.rarchives.ripme.utils.Utils;
 
@@ -79,7 +78,7 @@ public class PornhubRipper extends AbstractHTMLRipper {
     @Override
     protected void downloadURL(URL url, int index) {
         PornhubImageThread t = new PornhubImageThread(url, index, this.workingDir.toPath());
-        getThreadPool().addThread(t);
+        getCrawlerThreadPool().addThread(t);
         try {
             Thread.sleep(IMAGE_SLEEP_TIME);
         } catch (InterruptedException e) {

@@ -59,7 +59,7 @@ public abstract class AbstractJSONRipper extends AbstractRipper {
 
     @Override
     public void rip() throws IOException, URISyntaxException {
-        int index = 0;
+        int imageIndex = 0;
         logger.info("Retrieving " + this.url);
         sendUpdate(STATUS.LOADING_RESOURCE, this.url.toExternalForm());
         JSONObject json = getFirstPage();
@@ -88,9 +88,9 @@ public abstract class AbstractJSONRipper extends AbstractRipper {
                     break;
                 }
 
-                index += 1;
-                logger.debug("Found image url #" + index+ ": " + imageURL);
-                downloadURL(new URI(imageURL).toURL(), index);
+                imageIndex += 1;
+                logger.debug("Found image url #" + imageIndex+ ": " + imageURL);
+                downloadURL(new URI(imageURL).toURL(), imageIndex);
             }
 
             if (isStopped() || isThisATest()) {
@@ -106,12 +106,17 @@ public abstract class AbstractJSONRipper extends AbstractRipper {
             }
         }
 
-        // If they're using a thread pool, wait for it.
-        if (getThreadPool() != null) {
-            logger.debug("Waiting for threadpool " + getThreadPool().getClass().getName());
-            getThreadPool().waitForThreads();
+        logger.info("All items queued; total items: {}; url: {}", imageIndex, url);
+
+        // Final total item count is now known
+        setItemsTotal(imageIndex);
+
+        if (getCrawlerThreadPool() != null) {
+            logger.debug("Waiting for crawler threadpool: {}", url);
+            getCrawlerThreadPool().waitForThreads(imageIndex, shouldStop, url);
         }
-        waitForThreads();
+
+        waitForRipperThreads();
     }
 
     protected String getPrefix(int index) {

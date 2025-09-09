@@ -136,6 +136,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
 
     private static final AtomicBoolean gracefulStop = new AtomicBoolean(false); // Allow active transfers to finish, then stop ripping.
     private static final AtomicBoolean panicStop = new AtomicBoolean(false); // Immediately stop active transfers, then stop ripping.
+    private static final AtomicBoolean isRipperActive = new AtomicBoolean(false);
 
     public static final int TRANSFER_RATE_REFRESH_RATE = 200;
     private static final TransferRate transferRate = new TransferRate();
@@ -143,7 +144,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
     private static final ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
     private Future<?> rateRefresherFuture = null;
     private final Runnable rateRefresher = () -> {
-        if (isHalted()) {
+        if (!isRipperActive.get()) {
             if (rateRefresherFuture != null) {
                 rateRefresherFuture.cancel(true);
                 rateRefresherFuture = null;
@@ -153,13 +154,6 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         }
         transferRateLabel.setText(transferRate.formatHumanTransferRate());
     };
-
-    /**
-     * @return true if fully halted/panic button pressed
-     */
-    public static boolean isHalted() {
-        return ripper == null || ripper.isPanicked() || ripper.isCompleted();
-    }
 
     private void updateQueue(DefaultListModel<Object> model) {
         if (model == null)
@@ -1392,6 +1386,13 @@ public final class MainWindow implements Runnable, RipStatusHandler {
     }
 
     private void ripNextAlbum() {
+        LOGGER.debug("ripNextAlbum called");
+        if (isRipperActive.getAndSet(true)) {
+            // Already ripping
+            LOGGER.debug("already ripping");
+            return;
+        }
+
         // Save current state of queue to configuration.
         Utils.setConfigList("queue", queueListModel.elements());
 
@@ -1399,6 +1400,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         boolean wasPanicStop = gracefulStop.getAndSet(false);
         if (wasGracefulStop || wasPanicStop) {
             // Stop requested
+            LOGGER.debug("wasGracefulStop or wasPanicStop");
             ripFinishCleanup();
             return;
         }
@@ -1417,16 +1419,20 @@ public final class MainWindow implements Runnable, RipStatusHandler {
 
         updateQueue();
 
+        LOGGER.debug("calling ripAlbum(\"{}\")", nextAlbum);
         Thread t = ripAlbum(nextAlbum);
         if (t == null) {
+            LOGGER.debug("ripAlbum() returned null");
             try {
                 Thread.sleep(500);
             } catch (InterruptedException ie) {
                 LOGGER.error(Utils.getLocalizedString("interrupted.while.waiting.to.rip.next.album"), ie);
             }
 
+            isRipperActive.set(false);
             ripNextAlbum();
         } else {
+            LOGGER.debug("Starting new ripper thread");
             t.start();
         }
     }
@@ -1434,6 +1440,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
     private void ripFinishCleanup() {
         stopButton.setEnabled(false);
         panicButton.setEnabled(false);
+        isRipperActive.set(false);
         statusProgress.setValue(0);
         statusProgress.setVisible(false);
     }
@@ -1466,6 +1473,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         pack();
         boolean failed = false;
         try {
+            LOGGER.debug("Creating ripper for url {}", url);
             ripper = AbstractRipper.getRipper(url);
             ripper.setup();
         } catch (Exception e) {
@@ -1641,10 +1649,11 @@ public final class MainWindow implements Runnable, RipStatusHandler {
             if (LOGGER.isEnabled(Level.ERROR)) {
                 appendLog((String) msg.getObject(), Color.RED);
             }
-            ripFinishCleanup();
             openButton.setVisible(false);
+            ripFinishCleanup();
             pack();
             statusWithColor("Error: " + msg.getObject(), Color.RED);
+            ripNextAlbum();
             break;
 
         case RIP_COMPLETE:
@@ -1673,7 +1682,6 @@ public final class MainWindow implements Runnable, RipStatusHandler {
             }
             saveHistory();
             Utils.saveConfig();
-            ripFinishCleanup();
             openButton.setVisible(true);
             Path f = rsc.dir;
             String prettyFile = Utils.shortenPath(f);
@@ -1730,6 +1738,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
                     LOGGER.error(e);
                 }
             });
+            ripFinishCleanup();
             pack();
             ripNextAlbum();
             break;
@@ -1743,8 +1752,8 @@ public final class MainWindow implements Runnable, RipStatusHandler {
             if (LOGGER.isEnabled(Level.ERROR)) {
                 appendLog((String) msg.getObject(), Color.RED);
             }
-            ripFinishCleanup();
             openButton.setVisible(false);
+            ripFinishCleanup();
             pack();
             statusWithColor("Error: " + msg.getObject(), Color.RED);
             break;
