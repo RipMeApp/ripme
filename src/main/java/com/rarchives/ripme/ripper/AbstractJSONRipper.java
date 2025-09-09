@@ -277,7 +277,7 @@ public abstract class AbstractJSONRipper extends AbstractRipper {
             return;
         }
         if (itemsPending.isEmpty()) {
-            super.checkIfComplete();
+            notifyComplete();
         }
     }
 

@@ -538,10 +538,12 @@ public abstract class AbstractRipper
         return 1;
     }
 
+    protected abstract void checkIfComplete();
+
     /**
      * Notifies observers and updates state if all files have been ripped.
      */
-    void checkIfComplete() {
+    protected void notifyComplete() {
         if (observer == null) {
             logger.debug("observer is null");
             return;

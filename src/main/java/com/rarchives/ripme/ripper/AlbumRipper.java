@@ -187,7 +187,7 @@ public abstract class AlbumRipper extends AbstractRipper {
             return;
         }
         if (itemsPending.isEmpty()) {
-            super.checkIfComplete();
+            notifyComplete();
         }
     }
 

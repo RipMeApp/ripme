@@ -475,7 +475,7 @@ public abstract class AbstractHTMLRipper extends AbstractRipper {
             return;
         }
         if (itemsPending.isEmpty()) {
-            super.checkIfComplete();
+            notifyComplete();
         }
     }
 
