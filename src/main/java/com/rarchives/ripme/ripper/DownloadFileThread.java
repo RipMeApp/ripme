@@ -252,17 +252,25 @@ class DownloadFileThread implements Runnable {
                 if (shouldSkipFileDownload) {
                     logger.debug("Not downloading whole file because it is over 10mb and this is a test");
                 } else {
+                    long lastProgressUpdate = 0;
+                    long bytesSinceLastProgressUpdate = 0;
                     while ((bytesRead = bis.read(data)) != -1) {
                         if (observer.isPanicked()) {
                             observer.downloadErrored(url, Utils.getLocalizedString("download.interrupted"));
                             return;
                         }
                         fos.write(data, 0, bytesRead);
-                        observer.sendUpdate(STATUS.CHUNK_BYTES, bytesRead);
-                        if (observer.useByteProgessBar()) {
-                            bytesDownloaded += bytesRead;
-                            observer.setBytesCompleted(bytesDownloaded);
-                            observer.sendUpdate(STATUS.COMPLETED_BYTES, bytesDownloaded);
+                        bytesSinceLastProgressUpdate += bytesRead;
+                        long now = System.currentTimeMillis();
+                        if (now > lastProgressUpdate + 200) {
+                            lastProgressUpdate = now;
+                            observer.sendUpdate(STATUS.CHUNK_BYTES, bytesSinceLastProgressUpdate);
+                            bytesSinceLastProgressUpdate = 0;
+                            if (observer.useByteProgessBar()) {
+                                bytesDownloaded += bytesRead;
+                                observer.setBytesCompleted(bytesDownloaded);
+                                observer.sendUpdate(STATUS.COMPLETED_BYTES, bytesDownloaded);
+                            }
                         }
                     }
                 }
