@@ -1703,6 +1703,8 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         }
     }
 
+    private long lastStatusUpdate = 0;
+
     private synchronized void handleEvent(StatusEvent evt) {
         RipStatusMessage msg = evt.msg;
         RipStatusMessage.STATUS status = msg.getStatus();
@@ -1711,7 +1713,15 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         if (status == RipStatusMessage.STATUS.CHUNK_BYTES) {
             transferRate.addChunk((Long) msg.getObject());
             transferRateValue.setText(transferRate.formatHumanTransferRate());
-            return;
+
+            // Quick hack: ripper.getActiveCount() and dependent values are approximate and the value can be outdated (too large) when it is called when the ripper notifies COMPLETE,
+            // so allow the status info to update too, but throttle it a little.
+            long now = System.currentTimeMillis();
+            boolean allowStatusUpdate = now > lastStatusUpdate + 200;
+            if (!allowStatusUpdate) {
+                return;
+            }
+            lastStatusUpdate = now;
         }
 
         if (evt.ripper.useByteProgessBar()) {
@@ -1733,6 +1743,11 @@ public final class MainWindow implements Runnable, RipStatusHandler {
             erroredValue.setText(String.valueOf(erroredCount));
             totalValue.setText(String.valueOf(totalCount));
             currentlyRippingProgress.setValue(evt.ripper.getCompletionPercentage());
+        }
+
+        // Quick hack finish:
+        if (status == RipStatusMessage.STATUS.CHUNK_BYTES) {
+            return;
         }
 
         switch (status) {

@@ -108,6 +108,9 @@ public class DownloadThreadPool {
         return threadPool.getQueue().size();
     }
 
+    /**
+     * @return The approximate active thread count
+     */
     public int getActiveThreadCount() {
         return threadPool.getActiveCount();
     }

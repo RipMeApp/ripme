@@ -2,6 +2,7 @@ package com.rarchives.ripme.ui;
 
 import javax.swing.JLabel;
 import java.awt.Dimension;
+import java.util.Objects;
 
 /**
  * GridBagLayout does not respect minimum size, only preferred size.
@@ -9,6 +10,7 @@ import java.awt.Dimension;
  */
 public class MinimumWidthLabel extends JLabel {
     private String minimumWidthText;
+    private String currentText;
 
     public MinimumWidthLabel(String minimumWidthText, String defaultText) {
         this.minimumWidthText = minimumWidthText;
@@ -29,5 +31,15 @@ public class MinimumWidthLabel extends JLabel {
 
     public void setMinimumWidthText(String minimumWidthText) {
         this.minimumWidthText = minimumWidthText;
+    }
+
+    @Override
+    public void setText(String text) {
+        // Cache the last text to save cycles,
+        // because this may be called with the same value very often
+        if (!Objects.equals(currentText, text)) {
+            currentText = text;
+            super.setText(text);
+        }
     }
 }
