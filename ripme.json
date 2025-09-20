@@ -1,7 +1,8 @@
 {
-    "latestVersion": "2.1.18-16-1342b621",
-    "currentHash": "204ebb7fb4f822d503f9dd1350a5703eb1f62aaf4a280da37cf3310472170afc",
+    "latestVersion": "2.1.19-16-78ff73fb",
+    "currentHash": "f9d3a3f79b08aabcc3caba1423f8f57bc7c9d0952613e92b97f2e89b5dab51c6",
     "changeList": [
+        "2.1.19-16-78ff73fb: Fixed CfakeRipper, HentaiimageRipper; fix some tests; remove lots more rippers for permanently offline sites; update user-agent to Chrome 134; Supported sites are now a scrollable list",
         "2.1.18-16-1342b621: Implement FapwizRipper; fix ChanRipper video/gif download rate limit issue; new boolean config twitter.exclude_replies; added audio post downloading support for tumblr",
         "2.1.17-32-8f58eb41: Remove lots of rippers for permanently offline sites; add Nude-Gals video support; fixed BatoRipper & FitnakedgirlsRipper; clipboard auto-rip does not break flickr links",
         "2.1.16-4-02372e85: Republishing the build with an updated version number",
