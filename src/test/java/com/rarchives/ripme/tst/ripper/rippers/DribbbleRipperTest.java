@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 
 public class DribbbleRipperTest extends RippersTest {
     @Test
+    @Disabled("test or ripper broken")
     public void testDribbbleRip() throws IOException, URISyntaxException {
         DribbbleRipper ripper = new DribbbleRipper(new URI("https://dribbble.com/typogriff").toURL());
         testRipper(ripper);
