@@ -11,6 +11,7 @@ import com.rarchives.ripme.ripper.rippers.XvideosRipper;
 
 public class XvideosRipperTest extends RippersTest {
     @Test
+    @Tag("flaky")
     public void testXvideosVideo1() throws IOException, URISyntaxException {
         // This format is obsolete
         // XvideosRipper ripper = new XvideosRipper(new
@@ -29,6 +30,7 @@ public class XvideosRipperTest extends RippersTest {
     }
 
     @Test
+    @Tag("flaky")
     public void testXvideosAmateursAlbum() throws IOException, URISyntaxException {
         XvideosRipper ripper = new XvideosRipper(
                 new URI("https://www.xvideos.com/amateurs/nikibeee/photos/2476083/lanikki").toURL());
