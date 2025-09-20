@@ -32,7 +32,7 @@ public class EromeRipper extends AbstractHTMLRipper {
     boolean rippingProfile;
     private HashMap<String, String> cookies = new HashMap<>();
 
-    public EromeRipper (URL url) throws IOException {
+    public EromeRipper(URL url) throws IOException {
         super(url);
     }
 
@@ -94,7 +94,6 @@ public class EromeRipper extends AbstractHTMLRipper {
         return new URI(url.toExternalForm().replaceAll("https?://erome.com", "https://www.erome.com")).toURL();
     }
 
-
     @Override
     public List<String> getURLsFromPage(Document doc) {
         return getMediaFromPage(doc);
@@ -133,7 +132,8 @@ public class EromeRipper extends AbstractHTMLRipper {
         List<String> results = new ArrayList<>();
         for (Element el : doc.select("img.img-front")) {
             if (el.hasAttr("data-src")) {
-                //to add images that are not loaded( as all images are lasyloaded as we scroll).
+                // to add images that are not loaded
+                // (all images are lasy-loaded as we scroll)
                 results.add(el.attr("data-src"));
             } else if (el.hasAttr("src")) {
                 if (el.attr("src").startsWith("https:")) {
@@ -146,16 +146,14 @@ public class EromeRipper extends AbstractHTMLRipper {
         for (Element el : doc.select("source[label=HD]")) {
             if (el.attr("src").startsWith("https:")) {
                 results.add(el.attr("src"));
-            }
-            else {
+            } else {
                 results.add("https:" + el.attr("src"));
             }
         }
         for (Element el : doc.select("source[label=SD]")) {
             if (el.attr("src").startsWith("https:")) {
                 results.add(el.attr("src"));
-            }
-            else {
+            } else {
                 results.add("https:" + el.attr("src"));
             }
         }
