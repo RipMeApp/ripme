@@ -167,6 +167,7 @@ public class MrCongRipper extends AbstractHTMLRipper {
                 if (imageSource == null || imageSource.isEmpty()) {
                     imageSource = el.attr("src");
                 }
+                result.add(imageSource);
             }
 
             System.out.println("\n1.)Printing List: " + result + "\n");
