@@ -5,13 +5,14 @@
 // gradle clean build -PjavacRelease=21
 // gradle clean build -PcustomVersion=1.0.0-10-asdf
 val customVersion = (project.findProperty("customVersion") ?: "") as String
-val javacRelease = (project.findProperty("javacRelease") ?: "17") as String
+val javacRelease = (project.findProperty("javacRelease") ?: "21") as String
 
 plugins {
   id("fr.brouillard.oss.gradle.jgitver") version "0.9.1"
   id("jacoco")
   id("java")
   id("maven-publish")
+  id("com.gradleup.shadow") version "9.0.0-rc1"
 }
 
 repositories {
@@ -23,11 +24,11 @@ dependencies {
   implementation("com.lmax:disruptor:3.4.4")
   implementation("org.java-websocket:Java-WebSocket:1.5.3")
   implementation("org.jsoup:jsoup:1.16.1")
-  implementation("org.json:json:20211205")
+  implementation("org.json:json:20231013")
   implementation("com.j2html:j2html:1.6.0")
   implementation("commons-configuration:commons-configuration:1.10")
   implementation("commons-cli:commons-cli:1.5.0")
-  implementation("commons-io:commons-io:2.13.0")
+  implementation("commons-io:commons-io:2.14.0")
   implementation("org.apache.httpcomponents:httpclient:4.5.14")
   implementation("org.apache.httpcomponents:httpmime:4.5.14")
   implementation("org.apache.logging.log4j:log4j-api:2.20.0")
@@ -36,12 +37,18 @@ dependencies {
   implementation("org.graalvm.js:js:22.3.2")
   testImplementation(enforcedPlatform("org.junit:junit-bom:5.10.0"))
   testImplementation("org.junit.jupiter:junit-jupiter")
+  testImplementation("org.mockito:mockito-core:5.+")
   testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
 group = "com.rarchives.ripme"
 version = "1.7.94"
 description = "ripme"
+
+java {
+  sourceCompatibility = JavaVersion.VERSION_21
+  targetCompatibility = JavaVersion.VERSION_21
+}
 
 jacoco {
   toolVersion = "0.8.12"
@@ -80,6 +87,10 @@ tasks.withType<Jar> {
   })
 }
 
+tasks.shadowJar {
+  transform<com.github.jengelman.gradle.plugins.shadow.transformers.Log4j2PluginsCacheFileTransformer>()
+}
+
 publishing {
   publications {
     create<MavenPublication>("maven") {
@@ -105,6 +116,8 @@ tasks.test {
     includeEngines("junit-vintage")
   }
   finalizedBy(tasks.jacocoTestReport) // report is always generated after tests run
+
+  jvmArgs("-javaagent:${classpath.find { it.name.contains("mockito") }?.absolutePath}")
 }
 
 tasks.register<Test>("testAll") {

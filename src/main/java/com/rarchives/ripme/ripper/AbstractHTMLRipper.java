@@ -13,11 +13,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -36,9 +32,6 @@ public abstract class AbstractHTMLRipper extends AbstractRipper {
 
     private static final Logger logger = LogManager.getLogger(AbstractHTMLRipper.class);
 
-    private final Map<URL, File> itemsPending = Collections.synchronizedMap(new HashMap<>());
-    private final Map<URL, Path> itemsCompleted = Collections.synchronizedMap(new HashMap<>());
-    private final Map<URL, String> itemsErrored = Collections.synchronizedMap(new HashMap<>());
     Document cachedFirstPage;
 
     protected AbstractHTMLRipper(URL url) throws IOException {
@@ -75,10 +68,6 @@ public abstract class AbstractHTMLRipper extends AbstractRipper {
     }
 
     protected abstract void downloadURL(URL url, int index);
-
-    protected DownloadThreadPool getThreadPool() {
-        return null;
-    }
 
     protected boolean keepSortOrder() {
         return true;
@@ -121,7 +110,7 @@ public abstract class AbstractHTMLRipper extends AbstractRipper {
 
     @Override
     public void rip() throws IOException, URISyntaxException {
-        int index = 0;
+        int imageIndex = 0;
         int textindex = 0;
         logger.info("Retrieving " + this.url);
         sendUpdate(STATUS.LOADING_RESOURCE, this.url.toExternalForm());
@@ -176,9 +165,10 @@ public abstract class AbstractHTMLRipper extends AbstractRipper {
                 }
 
                 for (String imageURL : imageURLs) {
-                    index += 1;
-                    logger.debug("Found image url #" + index + ": '" + imageURL + "'");
-                    downloadURL(new URI(imageURL).toURL(), index);
+                    imageIndex += 1;
+                    logger.debug("Found image url #{} of album {}: {}", imageIndex, this.url, imageURL);
+                    setItemsTotal(Math.max(getItemsTotal(), imageIndex));
+                    downloadURL(new URI(imageURL).toURL(), imageIndex);
                     if (isStopped() || isThisATest()) {
                         break;
                     }
@@ -206,7 +196,7 @@ public abstract class AbstractHTMLRipper extends AbstractRipper {
                                 workingDir.getCanonicalPath()
                                         + ""
                                         + File.separator
-                                        + getPrefix(index)
+                                        + getPrefix(imageIndex)
                                         + (tempDesc.length > 1 ? tempDesc[1] : filename)
                                         + ".txt").exists();
 
@@ -236,12 +226,17 @@ public abstract class AbstractHTMLRipper extends AbstractRipper {
             }
         }
 
-        // If they're using a thread pool, wait for it.
-        if (getThreadPool() != null) {
-            logger.debug("Waiting for threadpool " + getThreadPool().getClass().getName());
-            getThreadPool().waitForThreads();
+        logger.info("All items queued; total items: {}; url: {}", imageIndex, url);
+
+        // Final total item count is now known
+        setItemsTotal(imageIndex);
+
+        if (getCrawlerThreadPool() != null) {
+            logger.debug("Waiting for crawler threadpool: {}", url);
+            getCrawlerThreadPool().waitForThreads(imageIndex, shouldStop, url);
         }
-        waitForThreads();
+
+        waitForRipperThreads();
     }
 
     /**
@@ -338,68 +333,6 @@ public abstract class AbstractHTMLRipper extends AbstractRipper {
         return false;
     }
 
-    @Override
-    /*
-      Returns total amount of files attempted.
-     */
-    public int getCount() {
-        return itemsCompleted.size() + itemsErrored.size();
-    }
-
-    @Override
-    /*
-      Queues multiple URLs of single images to download from a single Album URL
-     */
-    public boolean addURLToDownload(URL url, Path saveAs, String referrer, Map<String,String> cookies, Boolean getFileExtFromMIME) {
-        // Only download one file if this is a test.
-        if (isThisATest() && (itemsCompleted.size() > 0 || itemsErrored.size() > 0)) {
-            stop();
-            itemsPending.clear();
-            return false;
-        }
-        if (!allowDuplicates()
-                && ( itemsPending.containsKey(url)
-                  || itemsCompleted.containsKey(url)
-                  || itemsErrored.containsKey(url) )) {
-            // Item is already downloaded/downloading, skip it.
-            logger.info("[!] Skipping " + url + " -- already attempted: " + Utils.removeCWD(saveAs));
-            return false;
-        }
-        if (shouldIgnoreURL(url)) {
-            sendUpdate(STATUS.DOWNLOAD_SKIP, "Skipping " + url.toExternalForm() + " - ignored extension");
-            return false;
-        }
-        if (Utils.getConfigBoolean("urls_only.save", false)) {
-            // Output URL to file
-            Path urlFile = Paths.get(this.workingDir + "/urls.txt");
-            String text = url.toExternalForm() + System.lineSeparator();
-            try {
-                Files.write(urlFile, text.getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
-                itemsCompleted.put(url, urlFile);
-            } catch (IOException e) {
-                logger.error("Error while writing to " + urlFile, e);
-            }
-        }
-        else {
-            itemsPending.put(url, saveAs.toFile());
-            DownloadFileThread dft = new DownloadFileThread(url,  saveAs.toFile(),  this, getFileExtFromMIME);
-            if (referrer != null) {
-                dft.setReferrer(referrer);
-            }
-            if (cookies != null) {
-                dft.setCookies(cookies);
-            }
-            threadPool.addThread(dft);
-        }
-
-        return true;
-    }
-
-    @Override
-    public boolean addURLToDownload(URL url, Path saveAs) {
-        return addURLToDownload(url, saveAs, null, null, false);
-    }
-
     /**
      * Queues image to be downloaded and saved.
      * Uses filename from URL to decide filename.
@@ -411,72 +344,6 @@ public abstract class AbstractHTMLRipper extends AbstractRipper {
     protected boolean addURLToDownload(URL url) {
         // Use empty prefix and empty subdirectory
         return addURLToDownload(url, "", "");
-    }
-
-    @Override
-    /*
-      Cleans up & tells user about successful download
-     */
-    public void downloadCompleted(URL url, Path saveAs) {
-        if (observer == null) {
-            return;
-        }
-        try {
-            String path = Utils.removeCWD(saveAs);
-            RipStatusMessage msg = new RipStatusMessage(STATUS.DOWNLOAD_COMPLETE, path);
-            itemsPending.remove(url);
-            itemsCompleted.put(url, saveAs);
-            observer.update(this, msg);
-
-            checkIfComplete();
-        } catch (Exception e) {
-            logger.error("Exception while updating observer: ", e);
-        }
-    }
-
-    @Override
-    /*
-     * Cleans up & tells user about failed download.
-     */
-    public void downloadErrored(URL url, String reason) {
-        if (observer == null) {
-            return;
-        }
-        itemsPending.remove(url);
-        itemsErrored.put(url, reason);
-        observer.update(this, new RipStatusMessage(STATUS.DOWNLOAD_ERRORED, url + " : " + reason));
-
-        checkIfComplete();
-    }
-
-    @Override
-    /*
-      Tells user that a single file in the album they wish to download has
-      already been downloaded in the past.
-     */
-    public void downloadExists(URL url, Path file) {
-        if (observer == null) {
-            return;
-        }
-
-        itemsPending.remove(url);
-        itemsCompleted.put(url, file);
-        observer.update(this, new RipStatusMessage(STATUS.DOWNLOAD_WARN, url + " already saved as " + file));
-
-        checkIfComplete();
-    }
-
-    /**
-     * Notifies observers and updates state if all files have been ripped.
-     */
-    @Override
-    protected void checkIfComplete() {
-        if (observer == null) {
-            return;
-        }
-        if (itemsPending.isEmpty()) {
-            super.checkIfComplete();
-        }
     }
 
     /**
@@ -515,22 +382,20 @@ public abstract class AbstractHTMLRipper extends AbstractRipper {
      */
     @Override
     public int getCompletionPercentage() {
-        double total = itemsPending.size()  + itemsErrored.size() + itemsCompleted.size();
-        return (int) (100 * ( (total - itemsPending.size()) / total));
+        double total = getTotalCount();
+        if (total == 0) {
+            return 0;
+        }
+        return (int) (100 * ( (itemsCompleted.size() + itemsErrored.size()) / total));
     }
 
-    /**
-     * @return
-     *      Human-readable information on the status of the current rip.
-     */
     @Override
-    public String getStatusText() {
-        return getCompletionPercentage() +
-                "% " +
-                "- Pending: " + itemsPending.size() +
-                ", Completed: " + itemsCompleted.size() +
-                ", Errored: " + itemsErrored.size();
+    public int getPendingCount() {
+        DownloadThreadPool threadPool = getRipperThreadPool();
+        if (threadPool != null) {
+            return threadPool.getPendingThreadCount();
+        }
+        return itemsPending.size();
     }
-
 
 }

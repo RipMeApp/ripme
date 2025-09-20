@@ -78,6 +78,6 @@ public class CliphunterRipper extends VideoRipper {
             }
         }
         addURLToDownload(new URI(vidURL).toURL(), HOST + "_" + getGID(this.url));
-        waitForThreads();
+        waitForRipperThreads();
     }
 }

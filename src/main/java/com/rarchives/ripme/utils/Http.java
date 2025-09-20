@@ -201,6 +201,10 @@ public class Http {
         IOException lastException = null;
         int retries = this.retries;
         while (--retries >= 0) {
+            // TODO uncomment and fix tests
+            //if (!MainWindow.isRipping.get()) {
+            //    throw new IOException("Rip stopped, not making http request");
+            //}
             try {
                 response = connection.execute();
                 return response;

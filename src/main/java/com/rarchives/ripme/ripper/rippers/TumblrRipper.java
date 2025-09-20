@@ -236,7 +236,7 @@ public class TumblrRipper extends AlbumRipper {
             }
         }
 
-        waitForThreads();
+        waitForRipperThreads();
     }
 
     private boolean handleJSON(JSONObject json) {

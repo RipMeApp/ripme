@@ -158,7 +158,7 @@ public class VkRipper extends AbstractJSONRipper {
             for (int index = 0; index < URLs.size(); index ++) {
                 downloadURL(new URI(URLs.get(index)).toURL(), index);
             }
-            waitForThreads();
+            waitForRipperThreads();
         }
         else {
             RIP_TYPE = RipType.IMAGE;

@@ -18,7 +18,6 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import com.rarchives.ripme.ripper.AbstractHTMLRipper;
-import com.rarchives.ripme.ripper.DownloadThreadPool;
 import com.rarchives.ripme.utils.Http;
 import com.rarchives.ripme.utils.Utils;
 
@@ -30,9 +29,6 @@ public class PornhubRipper extends AbstractHTMLRipper {
     private static final int IMAGE_SLEEP_TIME    = 1000;
 
     private static final String DOMAIN = "pornhub.com", HOST = "Pornhub";
-
-    // Thread pool for finding direct image links from "image" pages (html)
-    private DownloadThreadPool pornhubThreadPool = new DownloadThreadPool("pornhub");
 
     public PornhubRipper(URL url) throws IOException {
         super(url);
@@ -82,7 +78,7 @@ public class PornhubRipper extends AbstractHTMLRipper {
     @Override
     protected void downloadURL(URL url, int index) {
         PornhubImageThread t = new PornhubImageThread(url, index, this.workingDir.toPath());
-        pornhubThreadPool.addThread(t);
+        getCrawlerThreadPool().addThread(t);
         try {
             Thread.sleep(IMAGE_SLEEP_TIME);
         } catch (InterruptedException e) {
@@ -117,11 +113,6 @@ public class PornhubRipper extends AbstractHTMLRipper {
                 "Expected pornhub.com album format: "
                         + "http://www.pornhub.com/album/####"
                         + " Got: " + url);
-    }
-
-    @Override
-    public DownloadThreadPool getThreadPool(){
-        return pornhubThreadPool;
     }
 
     public boolean canRip(URL url) {

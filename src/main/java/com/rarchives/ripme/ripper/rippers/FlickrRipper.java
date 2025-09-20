@@ -28,8 +28,6 @@ public class FlickrRipper extends AbstractHTMLRipper {
 
     private static final Logger logger = LogManager.getLogger(FlickrRipper.class);
 
-    private final DownloadThreadPool flickrThreadPool;
-
     private enum UrlType {
         USER,
         PHOTOSET
@@ -46,18 +44,12 @@ public class FlickrRipper extends AbstractHTMLRipper {
     }
 
     @Override
-    public DownloadThreadPool getThreadPool() {
-        return flickrThreadPool;
-    }
-
-    @Override
     public boolean hasASAPRipping() {
         return true;
     }
 
     public FlickrRipper(URL url) throws IOException {
         super(url);
-        flickrThreadPool = new DownloadThreadPool();
     }
 
     @Override
@@ -261,6 +253,8 @@ public class FlickrRipper extends AbstractHTMLRipper {
                 }
 
                 int totalPages = rootData.getInt("pages");
+                int totalFiles = rootData.getInt("total");
+                setItemsTotal(totalFiles);
                 logger.info(jsonData);
                 JSONArray pictures = rootData.getJSONArray("photo");
                 for (int i = 0; i < pictures.length(); i++) {

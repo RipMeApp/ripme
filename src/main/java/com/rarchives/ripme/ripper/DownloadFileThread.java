@@ -2,7 +2,9 @@ package com.rarchives.ripme.ripper;
 
 import java.io.*;
 import java.net.*;
+import java.nio.file.FileStore;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -23,13 +25,14 @@ import com.rarchives.ripme.utils.Utils;
  */
 class DownloadFileThread implements Runnable {
     private static final Logger logger = LogManager.getLogger(DownloadFileThread.class);
+    private final TokenedUrlGetter tokenedUrlGetter; // Some URLs may be valid for a limited time. This should get a fresh url
+    private final RipUrlId ripUrlId;
 
     private String referrer = "";
     private Map<String, String> cookies = new HashMap<>();
 
-    private final URL url;
-    private File saveAs;
-    private final String prettySaveAs;
+    private final Path directory;
+    private String filename;
     private final AbstractRipper observer;
     private final int retries;
     private final Boolean getFileExtFromMIME;
@@ -37,11 +40,13 @@ class DownloadFileThread implements Runnable {
     private final int TIMEOUT;
 
     private final int retrySleep;
-    public DownloadFileThread(URL url, File saveAs, AbstractRipper observer, Boolean getFileExtFromMIME) {
+
+    public DownloadFileThread(TokenedUrlGetter tug, RipUrlId ripUrlId, Path directory, String filename, AbstractRipper observer, Boolean getFileExtFromMIME) {
         super();
-        this.url = url;
-        this.saveAs = saveAs;
-        this.prettySaveAs = Utils.removeCWD(saveAs.toPath());
+        this.tokenedUrlGetter = tug;
+        this.ripUrlId = ripUrlId;
+        this.directory = directory;
+        this.filename = filename;
         this.observer = observer;
         this.retries = Utils.getConfigInteger("download.retries", 1);
         this.TIMEOUT = Utils.getConfigInteger("download.timeout", 60000);
@@ -63,49 +68,86 @@ class DownloadFileThread implements Runnable {
      */
     @Override
     public void run() {
+
+        if (observer.isStopped()) {
+            // TODO add handler for graceful stop
+            observer.downloadErrored(ripUrlId, Utils.getLocalizedString("download.interrupted"));
+            return;
+        }
+
+        URL url = null;
+        try {
+            url = tokenedUrlGetter.getTokenedUrl();
+        } catch (HttpStatusException e) {
+            observer.downloadErrored(ripUrlId, Utils.getLocalizedString("failed.to.get.url.for.0", ripUrlId));
+            logger.error("[!] Failed to get URL for " + ripUrlId);
+            return; // do not retry
+        } catch (IOException | URISyntaxException e) {
+            logger.error("[!] Failed to get URL for " + ripUrlId, e);
+            observer.downloadErrored(ripUrlId, Utils.getLocalizedString("failed.to.get.url.for.0", ripUrlId));
+            return; // do not retry
+        }
+        if (filename == null) {
+            // Strip token query parameters
+            filename = Path.of(url.getPath()).getFileName().toString();
+        }
         // First thing we make sure the file name doesn't have any illegal chars in it
-        saveAs = new File(
-                saveAs.getParentFile().getAbsolutePath() + File.separator + Utils.sanitizeSaveAs(saveAs.getName()));
+        filename = Utils.sanitizeSaveAs(filename);
+        if (AbstractRipper.shouldIgnoreExtension(url)) {
+            observer.sendUpdate(STATUS.DOWNLOAD_SKIP, Utils.getLocalizedString("skipping.ignored.extension") + ": " + url.toExternalForm());
+            return;
+        }
+
+        if (!Files.exists(directory)) {
+            logger.info("[+] Creating directory: " + directory);
+            try {
+                Files.createDirectories(directory);
+            } catch (IOException e) {
+                logger.error("Error creating directory", e);
+                observer.downloadErrored(ripUrlId, Utils.getLocalizedString("error.creating.directory") + ": " + directory + " ; " +  e.getMessage());
+                return;
+            }
+        }
+
+        File saveAs = directory.resolve(filename).toFile();
+        String prettySaveAs = Utils.removeCWD(saveAs.toPath());
+
         long fileSize = 0;
-        int bytesTotal;
-        int bytesDownloaded = 0;
+        long bytesTotal = 0;
+        long bytesDownloaded = 0;
         if (saveAs.exists() && observer.tryResumeDownload()) {
             fileSize = saveAs.length();
         }
-        try {
-            observer.stopCheck();
-        } catch (IOException e) {
-            observer.downloadErrored(url, Utils.getLocalizedString("download.interrupted"));
-            return;
-        }
+
         if (saveAs.exists() && !observer.tryResumeDownload() && !getFileExtFromMIME
                 || Utils.fuzzyExists(Paths.get(saveAs.getParent()), saveAs.getName()) && getFileExtFromMIME
                         && !observer.tryResumeDownload()) {
             if (Utils.getConfigBoolean("file.overwrite", false)) {
-                logger.info("[!] " + Utils.getLocalizedString("deleting.existing.file") + prettySaveAs);
+                logger.info("[!] " + Utils.getLocalizedString("deleting.existing.file") + " " + prettySaveAs);
                 if (!saveAs.delete()) logger.error("could not delete existing file: " + saveAs.getAbsolutePath());
             } else {
                 logger.info("[!] " + Utils.getLocalizedString("skipping") + " " + url + " -- "
                         + Utils.getLocalizedString("file.already.exists") + ": " + prettySaveAs);
-                observer.downloadExists(url, saveAs.toPath());
+                observer.downloadExists(ripUrlId, saveAs.toPath());
                 return;
             }
         }
-        URL urlToDownload = this.url;
         boolean redirected = false;
         int tries = 0; // Number of attempts to download
         do {
             tries += 1;
             try {
-                logger.info("    Downloading file: " + urlToDownload + (tries > 0 ? " Retry #" + tries : ""));
-                observer.sendUpdate(STATUS.DOWNLOAD_STARTED, url.toExternalForm());
+                logger.info("    Downloading file: " + url + (tries > 0 ? " Try #" + tries : ""));
+
+                String urlNoQuery = new URI(url.getProtocol(), url.getAuthority(), url.getPath(), null, null).toURL().toExternalForm();
+                observer.sendUpdate(STATUS.DOWNLOAD_STARTED, urlNoQuery);
 
                 // Setup HTTP request
                 HttpURLConnection huc;
-                if (this.url.toString().startsWith("https")) {
-                    huc = (HttpsURLConnection) urlToDownload.openConnection();
+                if (url.getProtocol().equals("https")) {
+                    huc = (HttpsURLConnection) url.openConnection();
                 } else {
-                    huc = (HttpURLConnection) urlToDownload.openConnection();
+                    huc = (HttpURLConnection) url.openConnection();
                 }
                 huc.setInstanceFollowRedirects(true);
                 // It is important to set both ConnectTimeout and ReadTimeout. If you don't then
@@ -140,46 +182,51 @@ class DownloadFileThread implements Runnable {
                 if (statusCode != 206 && observer.tryResumeDownload() && saveAs.exists()) {
                     // TODO find a better way to handle servers that don't support resuming
                     // downloads then just erroring out
-                    throw new IOException(Utils.getLocalizedString("server.doesnt.support.resuming.downloads"));
+                    observer.downloadErrored(ripUrlId,
+                            Utils.getLocalizedString("server.doesnt.support.resuming.downloads") + ": "
+                                    + Utils.getLocalizedString("0.while.downloading.1", statusCode, url.toExternalForm()));
+                    //throw new IOException(Utils.getLocalizedString("server.doesnt.support.resuming.downloads"));
+                    return;
                 }
                 if (statusCode / 100 == 3) { // 3xx Redirect
+                    // FIXME Should not happen because of above line: huc.setInstanceFollowRedirects(true); ???
                     if (!redirected) {
                         // Don't increment retries on the first redirect
                         tries--;
                         redirected = true;
                     }
                     String location = huc.getHeaderField("Location");
-                    urlToDownload = new URI(location).toURL();
-                    // Throw exception so download can be retried
-                    throw new IOException("Redirect status code " + statusCode + " - redirect to " + location);
+                    url = new URI(location).toURL(); // TODO fix redirect with TokenedUrlGetter
+                    logger.debug("Redirect status code {} - redirect to {}", statusCode, location);
+                    continue; // retry
                 }
                 if (statusCode / 100 == 4) { // 4xx errors
                     logger.error("[!] " + Utils.getLocalizedString("nonretriable.status.code") + " " + statusCode
                             + " while downloading from " + url);
-                    observer.downloadErrored(url, Utils.getLocalizedString("nonretriable.status.code") + " "
-                            + statusCode + " while downloading " + url.toExternalForm());
+                    observer.downloadErrored(ripUrlId, Utils.getLocalizedString("nonretriable.status.code") + " "
+                            + Utils.getLocalizedString("0.while.downloading.1", statusCode, url.toExternalForm()));
                     return; // Not retriable, drop out.
                 }
                 if (statusCode / 100 == 5) { // 5xx errors
-                    observer.downloadErrored(url, Utils.getLocalizedString("retriable.status.code") + " " + statusCode
-                            + " while downloading " + url.toExternalForm());
+                    observer.downloadErrored(ripUrlId, Utils.getLocalizedString("retriable.status.code") + " "
+                            + Utils.getLocalizedString("0.while.downloading.1", statusCode, url.toExternalForm()));
                     // Throw exception so download can be retried
                     throw new IOException(Utils.getLocalizedString("retriable.status.code") + " " + statusCode);
                 }
-                if (huc.getContentLength() == 503 && urlToDownload.getHost().endsWith("imgur.com")) {
+                if (huc.getContentLength() == 503 && url.getHost().endsWith("imgur.com")) {
                     // Imgur image with 503 bytes is "404"
                     logger.error("[!] Imgur image is 404 (503 bytes long): " + url);
-                    observer.downloadErrored(url, "Imgur image is 404: " + url.toExternalForm());
+                    observer.downloadErrored(ripUrlId, "Imgur image is 404: " + url.toExternalForm());
                     return;
                 }
 
                 // If the ripper is using the bytes progress bar set bytesTotal to
                 // huc.getContentLength()
                 if (observer.useByteProgessBar()) {
-                    bytesTotal = huc.getContentLength();
+                    bytesTotal = huc.getContentLengthLong();
                     observer.setBytesTotal(bytesTotal);
                     observer.sendUpdate(STATUS.TOTAL_BYTES, bytesTotal);
-                    logger.debug("Size of file at " + this.url + " = " + bytesTotal + "b");
+                    logger.debug("Size of file at " + url + " = " + bytesTotal + "b");
                 }
 
                 // Save file
@@ -250,18 +297,25 @@ class DownloadFileThread implements Runnable {
                 if (shouldSkipFileDownload) {
                     logger.debug("Not downloading whole file because it is over 10mb and this is a test");
                 } else {
+                    long lastProgressUpdate = 0;
+                    long bytesSinceLastProgressUpdate = 0;
                     while ((bytesRead = bis.read(data)) != -1) {
-                        try {
-                            observer.stopCheck();
-                        } catch (IOException e) {
-                            observer.downloadErrored(url, Utils.getLocalizedString("download.interrupted"));
+                        if (observer.isPanicked()) {
+                            observer.downloadErrored(ripUrlId, Utils.getLocalizedString("download.interrupted"));
                             return;
                         }
                         fos.write(data, 0, bytesRead);
-                        if (observer.useByteProgessBar()) {
-                            bytesDownloaded += bytesRead;
-                            observer.setBytesCompleted(bytesDownloaded);
-                            observer.sendUpdate(STATUS.COMPLETED_BYTES, bytesDownloaded);
+                        bytesSinceLastProgressUpdate += bytesRead;
+                        long now = System.currentTimeMillis();
+                        if (now > lastProgressUpdate + 200) {
+                            lastProgressUpdate = now;
+                            observer.sendUpdate(STATUS.CHUNK_BYTES, bytesSinceLastProgressUpdate);
+                            bytesSinceLastProgressUpdate = 0;
+                            if (observer.useByteProgessBar()) {
+                                bytesDownloaded += bytesRead;
+                                observer.setBytesCompleted(bytesDownloaded);
+                                observer.sendUpdate(STATUS.COMPLETED_BYTES, bytesDownloaded);
+                            }
                         }
                     }
                 }
@@ -275,20 +329,33 @@ class DownloadFileThread implements Runnable {
                 break;
             } catch (HttpStatusException hse) {
                 logger.debug(Utils.getLocalizedString("http.status.exception"), hse);
-                logger.error("[!] HTTP status " + hse.getStatusCode() + " while downloading from " + urlToDownload);
+                logger.error("[!] HTTP status " + hse.getStatusCode() + " while downloading from " + hse.getUrl());
                 if (hse.getStatusCode() == 404 && Utils.getConfigBoolean("errors.skip404", false)) {
-                    observer.downloadErrored(url,
-                            "HTTP status code " + hse.getStatusCode() + " while downloading " + url.toExternalForm());
+                    observer.downloadErrored(ripUrlId,
+                            Utils.getLocalizedString("0.while.downloading.1", "HTTP " + hse.getStatusCode(), url.toExternalForm()));
                     return;
                 }
-            } catch (IOException | URISyntaxException e) {
+            } catch (IOException e) {
+                if (guessIsENOSPC(e, saveAs)) {
+                    logger.debug("IOException", e);
+                    observer.downloadErrored(ripUrlId, Utils.getLocalizedString("no.space.left.on.device")); // TODO cancel all rips
+                    return;
+                }
                 logger.debug("IOException", e);
                 logger.error("[!] " + Utils.getLocalizedString("exception.while.downloading.file") + ": " + url + " - "
                         + e.getMessage());
+                observer.downloadErrored(ripUrlId, e.getMessage());
+                return;
+            } catch (URISyntaxException e) {
+                logger.debug("IOException", e);
+                logger.error("[!] " + Utils.getLocalizedString("exception.while.downloading.file") + ": " + url + " - "
+                        + e.getMessage());
+                observer.downloadErrored(ripUrlId, Utils.getLocalizedString("exception.while.downloading.file"));
+                return;
             } catch (NullPointerException npe){
 
                 logger.error("[!] " + Utils.getLocalizedString("failed.to.download") + " for URL " + url);
-                observer.downloadErrored(url,
+                observer.downloadErrored(ripUrlId,
                         Utils.getLocalizedString("failed.to.download") + " " + url.toExternalForm());
                 return;
 
@@ -296,7 +363,7 @@ class DownloadFileThread implements Runnable {
             if (tries > this.retries) {
                 logger.error("[!] " + Utils.getLocalizedString("exceeded.maximum.retries") + " (" + this.retries
                         + ") for URL " + url);
-                observer.downloadErrored(url,
+                observer.downloadErrored(ripUrlId,
                         Utils.getLocalizedString("failed.to.download") + " " + url.toExternalForm());
                 return;
             } else {
@@ -304,9 +371,42 @@ class DownloadFileThread implements Runnable {
                     Utils.sleep(retrySleep);
                 }
             }
+
+            // get fresh URL for the next attempt
+            try {
+                url = tokenedUrlGetter.getTokenedUrl();
+            } catch (HttpStatusException e) {
+                observer.downloadErrored(ripUrlId, Utils.getLocalizedString("failed.to.get.url.for.0", ripUrlId));
+                logger.error("[!] Failed to get URL for " + ripUrlId);
+                return; // do not retry
+            } catch (IOException | URISyntaxException e) {
+                logger.error("[!] Failed to get URL for " + ripUrlId, e);
+                observer.downloadErrored(ripUrlId, Utils.getLocalizedString("failed.to.get.url.for.0", ripUrlId));
+                return; // do not retry
+            }
+
         } while (true);
-        observer.downloadCompleted(url, saveAs.toPath());
-        logger.info("[+] Saved " + url + " as " + this.prettySaveAs);
+        observer.downloadCompleted(ripUrlId, saveAs.toPath());
+        logger.info("[+] Saved " + url + " as " + prettySaveAs);
+    }
+
+    @SuppressWarnings("UnnecessaryLocalVariable")
+    private boolean guessIsENOSPC(IOException e, File saveAs) {
+        // The ENOSPC IOException message is localized in Java, so this only works on English locale systems.
+        if (e.getMessage().matches("No space left on device")) {
+            return true;
+        }
+        // Fallback: check usable space on the filesystem
+        try {
+            FileStore fs = Files.getFileStore(saveAs.toPath());
+            // could check for 0 bytes, but 256 kilobytes is small enough
+            int downloadBufferSizeBytes = 1024 * 256;
+            boolean notEnoughUsableBytes = fs.getUsableSpace() < downloadBufferSizeBytes;
+            return notEnoughUsableBytes;
+        } catch (IOException ex) {
+            // unable to determine if no space left on device; fall through
+        }
+        return false;
     }
 
 }

@@ -47,6 +47,7 @@ class ClipboardUtils {
 }
 
 class AutoripThread extends Thread {
+    private static final Pattern rippableUrlPattern = Pattern.compile("^(https?|ftp|file)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]");
     volatile boolean isRunning = false;
     private final Set<String> rippedURLs = new HashSet<>();
 
@@ -57,8 +58,7 @@ class AutoripThread extends Thread {
                 // Check clipboard
                 String clipboard = ClipboardUtils.getClipboardString();
                 if (clipboard != null) {
-                    Pattern p = Pattern.compile("^(https?|ftp|file)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]");
-                    Matcher m = p.matcher(clipboard);
+                    Matcher m = rippableUrlPattern.matcher(clipboard);
                     while (m.find()) {
                         String url = m.group();
                         if (!rippedURLs.contains(url)) {
@@ -68,7 +68,7 @@ class AutoripThread extends Thread {
                         }
                     }
                 }
-                Thread.sleep(1000);
+                Thread.sleep(250);
             }
         } catch (InterruptedException e) {
             e.printStackTrace();

@@ -1,6 +1,8 @@
 package com.rarchives.ripme.uiUtils;
 
-import javax.swing.*;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import javax.swing.text.JTextComponent;
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
@@ -10,6 +12,8 @@ import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.IOException;
 
 public class ContextActionProtections {
+    private static final Logger logger = LogManager.getLogger(ContextActionProtections.class);
+
     public static void pasteFromClipboard(JTextComponent textComponent) {
         Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
         Transferable transferable = clipboard.getContents(new Object());
@@ -24,8 +28,8 @@ public class ContextActionProtections {
             // }
             // Set the text in the JTextField
             textComponent.setText(clipboardContent);
-        } catch (UnsupportedFlavorException | IOException unable_to_modify_text_on_paste) {
-            unable_to_modify_text_on_paste.printStackTrace();
+        } catch (UnsupportedFlavorException | IOException e) {
+            logger.error("Unable to paste from clipboard", e);
         }
     }
 }

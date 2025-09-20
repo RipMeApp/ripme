@@ -1,10 +1,9 @@
 package com.rarchives.ripme.ui;
 
 import java.awt.event.ActionEvent;
-import java.awt.event.InputEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.function.Consumer;
+import java.util.List;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -12,6 +11,7 @@ import javax.swing.DefaultListModel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
+import javax.swing.SwingUtilities;
 
 import com.rarchives.ripme.utils.Utils;
 
@@ -19,26 +19,28 @@ class QueueMenuMouseListener extends MouseAdapter {
     private JPopupMenu popup = new JPopupMenu();
     private JList<Object> queueList;
     private DefaultListModel<Object> queueListModel;
-    private Consumer<DefaultListModel<Object>> updateQueue;
+    private boolean mouseDragging = false;
+    private int dragSourceIndex;
 
-    public QueueMenuMouseListener(Consumer<DefaultListModel<Object>> updateQueue) {
-        this.updateQueue = updateQueue;
+    public QueueMenuMouseListener() {
         updateUI();
     }
 
-	@SuppressWarnings("serial")
     public void updateUI() {
         popup.removeAll();
 
         Action removeSelected = new AbstractAction(Utils.getLocalizedString("queue.remove.selected")) {
             @Override
             public void actionPerformed(ActionEvent ae) {
-                Object o = queueList.getSelectedValue();
-                while (o != null) {
-                    queueListModel.removeElement(o);
-                    o = queueList.getSelectedValue();
+                if (JOptionPane.showConfirmDialog(null, Utils.getLocalizedString("queue.remove.selected.validation"), "RipMe",
+                        JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+                    Object o = queueList.getSelectedValue();
+                    while (o != null) {
+                        queueListModel.removeElement(o);
+                        o = queueList.getSelectedValue();
+                    }
+                    updateUI();
                 }
-                updateUI();
             }
         };
         popup.add(removeSelected);
@@ -46,7 +48,7 @@ class QueueMenuMouseListener extends MouseAdapter {
         Action clearQueue = new AbstractAction(Utils.getLocalizedString("queue.remove.all")) {
             @Override
             public void actionPerformed(ActionEvent ae) {
-                if (JOptionPane.showConfirmDialog(null, Utils.getLocalizedString("queue.validation"), "RipMe",
+                if (JOptionPane.showConfirmDialog(null, Utils.getLocalizedString("queue.remove.all.validation"), "RipMe",
                         JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
                     queueListModel.removeAllElements();
                     updateUI();
@@ -55,22 +57,90 @@ class QueueMenuMouseListener extends MouseAdapter {
         };
         popup.add(clearQueue);
 
-        updateQueue.accept(queueListModel);
+        Action moveSelectedToTop = new AbstractAction(Utils.getLocalizedString("queue.move.selected.to.top")) {
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                List<Object> selectedElements = queueList.getSelectedValuesList();
+                for (Object selectedElement : selectedElements) {
+                    queueListModel.removeElement(selectedElement);
+                }
+                queueListModel.addAll(0, selectedElements);
+                queueList.setSelectionInterval(0, selectedElements.size() - 1);
+                updateUI();
+            }
+        };
+        popup.add(moveSelectedToTop);
+
+        Action moveSelectedToBottom = new AbstractAction(Utils.getLocalizedString("queue.move.selected.to.bottom")) {
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                List<Object> selectedElements = queueList.getSelectedValuesList();
+                for (Object selectedElement : selectedElements) {
+                    queueListModel.removeElement(selectedElement);
+                }
+                queueListModel.addAll(selectedElements);
+                queueList.setSelectionInterval(queueListModel.size() - selectedElements.size(), queueListModel.size() - 1);
+                updateUI();
+            }
+        };
+        popup.add(moveSelectedToBottom);
     }
 
     @Override
     public void mousePressed(MouseEvent e) {
         checkPopupTrigger(e);
+        handleDragStart(e);
     }
 
     @Override
     public void mouseReleased(MouseEvent e) {
         checkPopupTrigger(e);
+        handleDragEnd(e);
+    }
+
+    @SuppressWarnings("unchecked")
+    public void handleDragStart(MouseEvent e) {
+        if (!(e.getSource() instanceof JList<?>)) {
+            return;
+        }
+        if (SwingUtilities.isLeftMouseButton(e)) {
+            queueList = (JList<Object>) e.getSource();
+            queueListModel = (DefaultListModel<Object>) queueList.getModel();
+
+            dragSourceIndex = queueList.getSelectedIndex();
+            mouseDragging = true;
+        }
+    }
+
+    public void handleDragEnd(MouseEvent e) {
+        mouseDragging = false;
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public void mouseDragged(MouseEvent e) {
+        if (!(e.getSource() instanceof JList<?>)) {
+            return;
+        }
+        if (mouseDragging) {
+            queueList = (JList<Object>) e.getSource();
+            queueListModel = (DefaultListModel<Object>) queueList.getModel();
+            int currentIndex = queueList.locationToIndex(e.getPoint());
+            if (currentIndex != dragSourceIndex) {
+                int dragTargetIndex = queueList.getSelectedIndex();
+                dragTargetIndex = Math.max(0, dragTargetIndex);
+                dragTargetIndex = Math.min(queueListModel.size() - 1, dragTargetIndex);
+                Object dragElement = queueListModel.get(dragSourceIndex);
+                queueListModel.remove(dragSourceIndex);
+                queueListModel.add(dragTargetIndex, dragElement);
+                dragSourceIndex = currentIndex;
+            }
+        }
     }
 
     @SuppressWarnings("unchecked")
     private void checkPopupTrigger(MouseEvent e) {
-        if (e.getModifiersEx() == InputEvent.BUTTON3_DOWN_MASK) {
+        if (SwingUtilities.isRightMouseButton(e)) {
             if (!(e.getSource() instanceof JList)) {
                 return;
             }

@@ -54,15 +54,6 @@ public class FuraffinityRipper extends AbstractHTMLRipper {
         }
     }
 
-    // Thread pool for finding direct image links from "image" pages (html)
-    private DownloadThreadPool furaffinityThreadPool
-            = new DownloadThreadPool( "furaffinity");
-
-    @Override
-    public DownloadThreadPool getThreadPool() {
-        return furaffinityThreadPool;
-    }
-
     public FuraffinityRipper(URL url) throws IOException {
         super(url);
     }

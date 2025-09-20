@@ -1,5 +1,6 @@
 package com.rarchives.ripme.utils;
 
+import java.awt.Desktop;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -15,6 +16,7 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -38,9 +40,11 @@ import javax.sound.sampled.LineEvent;
 
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.appender.ConsoleAppender;
 import org.apache.logging.log4j.core.appender.RollingFileAppender;
 import org.apache.logging.log4j.core.appender.rolling.DefaultRolloverStrategy;
 import org.apache.logging.log4j.core.appender.rolling.SizeBasedTriggeringPolicy;
@@ -49,6 +53,10 @@ import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.config.LoggerConfig;
 
 import com.rarchives.ripme.ripper.AbstractRipper;
+import org.apache.logging.log4j.core.config.builder.api.ConfigurationBuilder;
+import org.apache.logging.log4j.core.config.builder.api.ConfigurationBuilderFactory;
+import org.apache.logging.log4j.core.config.builder.api.RootLoggerComponentBuilder;
+import org.apache.logging.log4j.core.config.builder.impl.BuiltConfiguration;
 
 /**
  * Common utility functions used in various places throughout the project.
@@ -191,7 +199,12 @@ public class Utils {
 
     public static void saveConfig() {
         try {
-            config.save(getConfigFilePath());
+            // Simple hack: saveConfig is called from debouncedSaveConfig.
+            // Clone the config so we don't get a ConcurrentModificationException
+            // on config.save() if the config is updated between the time
+            // debounceSavedConfig.run() is called and the time saveConfig() is called.
+            PropertiesConfiguration clone = (PropertiesConfiguration) config.clone();
+            clone.save(getConfigFilePath());
             LOGGER.info("Saved configuration to " + getConfigFilePath());
         } catch (ConfigurationException e) {
             LOGGER.error("Error while saving configuration: ", e);
@@ -532,7 +545,7 @@ public class Utils {
      * @param bytes Non-human readable integer.
      * @return Human readable interpretation of a byte.
      */
-    public static String bytesToHumanReadable(int bytes) {
+    public static String bytesToHumanReadable(long bytes) {
         float fbytes = (float) bytes;
         String[] mags = new String[]{"", "K", "M", "G", "T"};
         int magIndex = 0;
@@ -592,36 +605,45 @@ public class Utils {
         }
     }
 
+    public static void configureLogger() {
+        configureLogger(Level.INFO); // default INFO level
+    }
+
     /**
      * Configures root logger, either for FILE output or just console.
      */
-    public static void configureLogger() {
-        LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
-        Configuration config = ctx.getConfiguration();
-        LoggerConfig loggerConfig = config.getLoggerConfig(LogManager.ROOT_LOGGER_NAME);
+    public static void configureLogger(Level level) {
+        ConfigurationBuilder<BuiltConfiguration> builder = ConfigurationBuilderFactory.newConfigurationBuilder();
+
+        //builder.setStatusLevel(Level.DEBUG);
+        final String consoleAppenderName = "stdout";
+        builder.add(builder.newAppender(consoleAppenderName, "CONSOLE")
+                .addAttribute("target", ConsoleAppender.Target.SYSTEM_OUT)
+                .add(builder.newLayout("PatternLayout").addAttribute("pattern", "%-5level %c{1}: %msg%n%xEx"))
+        );
+
+        RootLoggerComponentBuilder rootLogger = builder.newRootLogger(level);
+        rootLogger.add(builder.newAppenderRef(consoleAppenderName));
 
         // write to ripme.log file if checked in GUI
         boolean logSave = getConfigBoolean("log.save", false);
         if (logSave) {
-            LOGGER.debug("add rolling appender ripmelog");
-            TriggeringPolicy tp = SizeBasedTriggeringPolicy.createPolicy("20M");
-            DefaultRolloverStrategy rs = DefaultRolloverStrategy.newBuilder().withMax("2").build();
-            RollingFileAppender rolling = RollingFileAppender.newBuilder()
-                    .setName("ripmelog")
-                    .withFileName("ripme.log")
-                    .withFilePattern("%d{yyyy-MM-dd HH:mm:ss} %p %m%n")
-                    .withPolicy(tp)
-                    .withStrategy(rs)
-                    .build();
-            loggerConfig.addAppender(rolling, null, null);
-        } else {
-            LOGGER.debug("remove rolling appender ripmelog");
-            if (config.getAppender("ripmelog") != null) {
-                config.getAppender("ripmelog").stop();
-            }
-            loggerConfig.removeAppender("ripmelog");
+            final String fileAppenderName = "rolling";
+            builder.add(builder.newAppender(fileAppenderName, "RollingFile")
+                    .addAttribute("fileName", "ripme.log")
+                    .addAttribute("filePattern", "ripme-%d{yyyy-MM-dd}-%i.log.gz")
+                    .add(builder.newLayout("PatternLayout").addAttribute("pattern", "%d %-5level %c{1}: %msg%n%xEx"))
+                    .addComponent(builder.newComponent("Policies")
+                            .addComponent(builder.newComponent("SizeBasedTriggeringPolicy").addAttribute("size", "20M")))
+            );
+            rootLogger.add(builder.newAppenderRef(fileAppenderName));
         }
-        ctx.updateLoggers();  // This causes all Loggers to refetch information from their LoggerConfig.
+
+        builder.add(rootLogger);
+
+        Configuration configuration = builder.build();
+        LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
+        ctx.reconfigure(configuration);
     }
 
     /**
@@ -798,9 +820,16 @@ public class Utils {
     }
 
     public static String getLocalizedString(String key) {
-        LOGGER.debug(String.format("Key %s in %s is: %s", key, getSelectedLanguage(),
-                resourceBundle.getString(key)));
-        return resourceBundle.getString(key);
+        String message = resourceBundle.getString(key);
+        LOGGER.trace("Key {} in {} is: {}", key, getSelectedLanguage(), message);
+        return message;
+    }
+
+    @SuppressWarnings({"JavaExistingMethodCanBeUsed", "LoggingSimilarMessage"})
+    public static String getLocalizedString(String key, Object... args) {
+        String pattern = resourceBundle.getString(key);
+        LOGGER.trace("Key {} in {} is: {}", key, getSelectedLanguage(), pattern);
+        return MessageFormat.format(pattern, args);
     }
 
     /**
@@ -875,5 +904,54 @@ public class Utils {
         } catch (final InterruptedException e1) {
             e1.printStackTrace();
         }
+    }
+
+    /**
+     * Open a File using the default OS handler, but not in a child process, allowing the program to exit without closing all opened windows.
+     * <br>
+     * In comparison, {@link Desktop#open(File)} opens the file manager or browser in a child process, blocking the JVM from exiting.
+     * @param file The File to open.
+     */
+    public static void open(File file) throws IOException {
+        if (isUnix() && which("nohup") && which("xdg-open")) {
+            linuxOpen(file.toURI());
+            return;
+        }
+        Desktop.getDesktop().open(file);
+    }
+
+    /**
+     * Open a URI using the default OS handler, but not in a child process, allowing the program to exit without closing all opened windows.
+     * <br>
+     * In comparison, {@link Desktop#open(File)} opens the file manager or browser in a child process, blocking the JVM from exiting.
+     * @param uri The URI to open.
+     */
+    public static void browse(URI uri) throws IOException {
+        if (isUnix() && which("nohup") && which("xdg-open")) {
+            linuxOpen(uri);
+            return;
+        }
+        Desktop.getDesktop().browse(uri);
+    }
+
+    private static void linuxOpen(URI uri) throws IOException {
+        new ProcessBuilder("nohup", "xdg-open", uri.toString())
+                .redirectOutput(ProcessBuilder.Redirect.DISCARD)
+                .redirectError(ProcessBuilder.Redirect.DISCARD)
+                .start();
+    }
+
+    public static boolean which(String command) {
+        String pathEnv = System.getenv("PATH");
+        if (isWindows()) {
+            command = command + ".exe";
+        }
+        for (String dir : pathEnv.split(File.pathSeparator)) {
+            File file = new File(dir, command);
+            if (file.isFile() && file.canExecute()) {
+                return true;
+            }
+        }
+        return false;
     }
 }
