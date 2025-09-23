@@ -6,12 +6,15 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jsoup.Connection.Response;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
@@ -28,12 +31,15 @@ public class XhamsterRipper extends AbstractHTMLRipper {
     private static final Logger logger = LogManager.getLogger(XhamsterRipper.class);
 
     private int index = 1;
+    private Document albumDoc = null;
+    private Map<String, String> cookies = new HashMap<>();
 
     public XhamsterRipper(URL url) throws IOException {
         super(url);
     }
 
-    @Override public boolean hasASAPRipping() {
+    @Override
+    public boolean hasASAPRipping() {
         return true;
     }
 
@@ -109,6 +115,16 @@ public class XhamsterRipper extends AbstractHTMLRipper {
         logger.info("Checking if page has albums");
         logger.info(m.matches());
         return m.matches();
+    }
+
+    @Override
+    public Document getFirstPage() throws IOException {
+        if (albumDoc == null) {
+            Response resp = Http.url(url).response();
+            cookies.putAll(resp.cookies());
+            albumDoc = resp.parse();
+        }
+        return albumDoc;
     }
 
     @Override
@@ -207,12 +223,12 @@ public class XhamsterRipper extends AbstractHTMLRipper {
 
     @Override
     public void downloadURL(URL url, int index) {
-        addURLToDownload(url, getPrefix(index));
+        addURLToDownload(url, getPrefix(index), "", this.url.toExternalForm(), cookies);
     }
 
     private void downloadFile(String url) {
         try {
-            addURLToDownload(new URI(url).toURL(), getPrefix(index));
+            addURLToDownload(new URI(url).toURL(), getPrefix(index), "", this.url.toExternalForm(), cookies);
             index = index + 1;
         } catch (MalformedURLException | URISyntaxException e) {
             logger.error("The url \"" + url + "\" is malformed");
