@@ -55,39 +55,40 @@ public class DribbbleRipper extends AbstractHTMLRipper {
     @Override
     public List<String> getURLsFromPage(Document doc) {
         List<String> imageURLs = new ArrayList<>();
-        for (Element thumbLink : doc.select("a.dribbble-link")) {
-            // Resolve the absolute shot page URL
-            String shotPage = thumbLink.absUrl("href");
-            if (shotPage.isEmpty()) {
-                continue;
+        for (Element thumb : doc.select("div.shot-thumbnail-base > figure > img")) {
+            String srcset = thumb.attr("data-srcset");
+            String imageURL = getLargestImageURL(srcset);
+            if (imageURL != null) {
+                imageURLs.add(imageURL);
             }
-
-            // Fetch the shot page
-            Document shotDoc;
-            try {
-                shotDoc = Http.url(shotPage).get();
-            } catch (IOException e) {
-                continue;
-            }
-
-            // Grab the first <img> (the full-size image) on that page
-            Element imageEl = shotDoc.selectFirst("div.shot-page-container img");
-            if (imageEl == null) {
-                continue;
-            }
-
-            // Always use absUrl so you get a complete URI or an empty string
-            String imageURL = imageEl.absUrl("src");
-            if (imageURL.isEmpty()) {
-                continue;
-            }
-
-            imageURLs.add(imageURL);
         }
         return imageURLs;
     }
     @Override
     public void downloadURL(URL url, int index) {
         addURLToDownload(url, getPrefix(index));
+    }
+
+    private String getLargestImageURL(String srcset) {
+        int maxWidth = 0;
+        String largestURL = null;
+
+        String[] imageURLs = srcset.split(", ");
+        for (String imageURL : imageURLs) {
+            try {
+                String[] parts = imageURL.trim().split(" ");
+                String url = parts[0];
+                String size = parts[1];
+                int width = Integer.parseInt(size.replace("w", ""));
+
+                if (width > maxWidth) {
+                    maxWidth = width;
+                    largestURL = url;
+                }
+            } catch (ArrayIndexOutOfBoundsException | NumberFormatException e) {
+                continue;
+            }
+        }
+        return largestURL;
     }
 }
