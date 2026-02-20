@@ -12,7 +12,7 @@ public class FreeComicOnlineRipperTest extends RippersTest {
     @Test
     public void testFreeComicOnlineChapterAlbum() throws IOException, URISyntaxException {
         FreeComicOnlineRipper ripper = new FreeComicOnlineRipper(
-                new URI("https://freecomiconline.me/comic/perfect-half-hentai0003/chapter-01/").toURL());
+                new URI("https://freecomiconline.me/comic/dungeon-architect/chapter-01/").toURL());
         testRipper(ripper);
     }
 }

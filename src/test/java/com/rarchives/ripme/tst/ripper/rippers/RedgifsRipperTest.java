@@ -53,7 +53,7 @@ public class RedgifsRipperTest extends RippersTest {
      */
     @Test
     public void testRedgifsTags() throws IOException, URISyntaxException {
-        RedgifsRipper ripper  = new RedgifsRipper(new URI("https://www.redgifs.com/gifs/animation,sfw,funny?order=best&tab=gifs").toURL());
+        RedgifsRipper ripper  = new RedgifsRipper(new URI("https://www.redgifs.com/gifs/animation,sfw,funny?order=latest&tab=gifs").toURL());
         testRipper(ripper);
     }
 
