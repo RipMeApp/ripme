@@ -40,6 +40,12 @@ jobs:
     - name: Build with Gradle
       run: gradle clean build -PjavacRelease=${{ matrix.java }}
 
+    - name: Publish Test Report
+      uses: mikepenz/action-junit-report@v6
+      if: success() || failure() # always run even if the previous step fails
+      with:
+        report_paths: '**/build/test-results/test/TEST-*.xml'
+
     - name: SHA256
       if: matrix.upload
       run: shasum -a 256 build/libs/*.jar
