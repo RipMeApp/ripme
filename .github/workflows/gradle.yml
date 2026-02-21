@@ -52,7 +52,7 @@ jobs:
 
     - name: create pre-release
       id: create-pre-release
-      if: matrix.upload
+      if: matrix.upload && github.ref == 'refs/heads/main'
       uses: "marvinpinto/action-automatic-releases@latest"
       with:
         repo_token: "${{ secrets.GITHUB_TOKEN }}"
