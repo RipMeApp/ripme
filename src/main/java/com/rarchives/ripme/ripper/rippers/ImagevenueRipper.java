@@ -100,8 +100,8 @@ public class ImagevenueRipper extends AbstractHTMLRipper {
                 Document doc = Http.url(url)
                                    .retries(3)
                                    .get();
-                // Find image
-                Elements images = doc.select("a > img");
+                // Find image (select <img> whose src contains "imagevenue")
+                Elements images = doc.select("img[src*=\"imagevenue\"]");
                 if (images.isEmpty()) {
                     logger.warn("Image not found at " + this.url);
                     return;
