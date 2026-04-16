@@ -6,7 +6,6 @@ import java.net.URISyntaxException;
 
 import com.rarchives.ripme.ripper.rippers.FlickrRipper;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 

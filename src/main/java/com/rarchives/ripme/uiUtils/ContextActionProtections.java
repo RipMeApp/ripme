@@ -1,6 +1,5 @@
 package com.rarchives.ripme.uiUtils;
 
-import javax.swing.*;
 import javax.swing.text.JTextComponent;
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;

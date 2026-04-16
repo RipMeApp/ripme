@@ -73,7 +73,6 @@ public class ErofusRipper extends AbstractHTMLRipper {
                         logger.info("Retrieving " + subUrl);
                         sendUpdate(RipStatusMessage.STATUS.LOADING_RESOURCE, subUrl);
                         Document subPage = Http.url(subUrl).get();
-                        List<String> subalbumImages = getURLsFromPage(subPage);
                     } catch (IOException e) {
                         logger.warn("Error while loading subalbum " + subUrl, e);
                     }

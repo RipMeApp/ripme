@@ -17,8 +17,7 @@ import com.rarchives.ripme.utils.Http;
 
 public class SmuttyRipper extends AbstractHTMLRipper {
 
-    private static final String DOMAIN = "smutty.com",
-                                HOST   = "smutty";
+    private static final String DOMAIN = "smutty.com";
 
     public SmuttyRipper(URL url) throws IOException {
         super(url);

@@ -3,12 +3,8 @@ package com.rarchives.ripme.ui;
 import com.rarchives.ripme.uiUtils.ContextActionProtections;
 
 import java.awt.Toolkit;
-import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.Transferable;
-import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.*;
-import java.io.IOException;
 
 import javax.swing.*;
 import javax.swing.text.JTextComponent;

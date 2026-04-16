@@ -45,10 +45,6 @@ public class VideoRippersTest extends RippersTest {
     public void testTwitchVideoRipper() throws IOException, URISyntaxException {
         List<URL> contentURLs = new ArrayList<>();
         contentURLs.add(new URI("https://clips.twitch.tv/FaithfulIncredulousPotTBCheesePull").toURL());
-        for (URL url : contentURLs) {
-            // TwitchVideoRipper ripper = new TwitchVideoRipper(url);
-            // videoTestHelper(ripper);
-        }
     }
 
     @Test

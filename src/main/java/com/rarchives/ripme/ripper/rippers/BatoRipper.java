@@ -117,7 +117,6 @@ public class BatoRipper extends AbstractHTMLRipper {
                 logger.info("Script data: " + s);
 
                 Pattern p = Pattern.compile(".*imgHttps = (\\[\"[^\\];]*\"\\]);.*");
-                Matcher m = p.matcher(s);
                 String json = scanForImageList(p, s);
 
                 logger.info("JSON: " + json);

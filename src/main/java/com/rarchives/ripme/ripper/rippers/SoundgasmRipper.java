@@ -17,7 +17,6 @@ import java.util.regex.Pattern;
 
 public class SoundgasmRipper extends AbstractHTMLRipper {
 
-    private static final String HOST = "soundgasm.net";
 
     public SoundgasmRipper(URL url) throws IOException, URISyntaxException {
         super(new URI(url.toExternalForm()).toURL());

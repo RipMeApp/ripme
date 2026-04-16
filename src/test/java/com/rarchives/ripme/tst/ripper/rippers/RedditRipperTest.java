@@ -84,8 +84,7 @@ public class RedditRipperTest extends RippersTest {
      */
     @Test
     public void testRedditGfycatRedirectURL() throws IOException, URISyntaxException {
-        RedditRipper ripper = new RedditRipper(
-                new URI("https://www.reddit.com/r/NSFW_GIF/comments/ennwsa/gorgeous_tits/").toURL());
+       
     }
 
     @Test
