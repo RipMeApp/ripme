@@ -287,9 +287,17 @@ public class RipUtils {
      */
     public static Map<String, String> getCookiesFromString(String line) {
         Map<String,String> cookies = new HashMap<>();
+        line = SiteCookieStorage.normalizeCookieString(line);
         for (String pair : line.split(";")) {
-            String[] kv = pair.split("=");
-            cookies.put(kv[0].trim(), kv[1]);
+            pair = pair.trim();
+            if (!pair.contains("=")) {
+                continue;
+            }
+            String[] kv = pair.split("=", 2);
+            String name = kv[0].trim();
+            if (!name.isEmpty()) {
+                cookies.put(name, kv[1]);
+            }
         }
         return cookies;
     }

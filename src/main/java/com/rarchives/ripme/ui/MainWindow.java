@@ -119,6 +119,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
     private static JLabel configRetrySleepLabel;
     // This doesn't really belong here but I have no idea where else to put it
     private static JButton configUrlFileChooserButton;
+    private static JButton configCookiesButton;
 
     private static TrayIcon trayIcon;
     private static MenuItem trayMenuMain;
@@ -598,6 +599,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         configSaveDirLabel.setToolTipText(configSaveDirLabel.getText());
         configSaveDirLabel.setHorizontalAlignment(JLabel.RIGHT);
         configSaveDirButton = new JButton(Utils.getLocalizedString("select.save.dir") + "...");
+        configCookiesButton = new JButton(Utils.getLocalizedString("cookies.configure"));
 
         var idx = 0;
         addItemToConfigGridBagConstraints(gbc, idx++, configUpdateLabel, configUpdateButton);
@@ -615,6 +617,14 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         addItemToConfigGridBagConstraints(gbc, idx++, configSSLVerifyOff, configSSLVerifyOff);
         addItemToConfigGridBagConstraints(gbc, idx++, configSelectLangComboBox, configUrlFileChooserButton);
         addItemToConfigGridBagConstraints(gbc, idx++, configSaveDirLabel, configSaveDirButton);
+        addItemToConfigGridBagConstraints(gbc, idx++,
+                new JLabel(Utils.getLocalizedString("cookies.configure"), JLabel.RIGHT), configCookiesButton);
+
+        configCookiesButton.addActionListener(event -> {
+            CookieSettingsDialog dialog = new CookieSettingsDialog(mainFrame);
+            dialog.loadDomain("reddit.com");
+            dialog.setVisible(true);
+        });
 
         emptyPanel = new JPanel();
         emptyPanel.setPreferredSize(new Dimension(0, 0));
