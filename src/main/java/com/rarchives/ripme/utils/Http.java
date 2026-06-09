@@ -90,7 +90,12 @@ public class Http {
                 String domain = String.join(".", parts);
                 // Try to get cookies for this host from config
                 logger.info("Trying to load cookies from config for " + domain);
-                cookieStr = Utils.getConfigString("cookies." + domain, "");
+                try {
+                    cookieStr = SiteCookieStorage.load(domain);
+                } catch (IOException e) {
+                    logger.warn("Failed to load cookies for {}", domain, e);
+                    cookieStr = "";
+                }
                 if (!cookieStr.equals("")) {
                     cookieDomain = domain;
                     // we found something, start parsing
@@ -215,7 +220,7 @@ public class Http {
 
                     int status = ex.getStatusCode();
                     if (status == 401 || status == 403) {
-                        throw new IOException("Failed to load " + url + ": Status Code " + status + ". You might be able to circumvent this error by setting cookies for this domain", e);
+                        throw new IOException("Failed to load " + url + ": Status Code " + status + ". You might be able to circumvent this error by setting cookies for this domain (Configuration → Site cookies...)", e);
                     }
                     if (status == 404) {
                         throw new IOException("File not found " + url + ": Status Code " + status + ". ", e);
