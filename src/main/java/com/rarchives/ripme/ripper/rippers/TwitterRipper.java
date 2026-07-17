@@ -58,7 +58,7 @@ public class TwitterRipper extends AbstractJSONRipper {
     @Override
     public URL sanitizeURL(URL url) throws MalformedURLException {
         // https://twitter.com/search?q=from%3Apurrbunny%20filter%3Aimages&src=typd
-        Pattern p = Pattern.compile("^https?://(m\\.)?twitter\\.com/search\\?(.*)q=(?<search>[a-zA-Z0-9%\\-_]+).*$");
+        Pattern p = Pattern.compile("^https?://(m\\.)?(?:twitter|x)\\.com/search\\?(.*)q=(?<search>[a-zA-Z0-9%\\-_]+).*$");
         Matcher m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             albumType = ALBUM_TYPE.SEARCH;
@@ -74,7 +74,7 @@ public class TwitterRipper extends AbstractJSONRipper {
             }
             return url;
         }
-        p = Pattern.compile("^https?://(m\\.)?twitter\\.com/([a-zA-Z0-9\\-_]+).*$");
+        p = Pattern.compile("^https?://(m\\.)?(?:twitter|x)\\.com/([a-zA-Z0-9\\-_]+).*$");
         m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             albumType = ALBUM_TYPE.ACCOUNT;
@@ -205,6 +205,12 @@ public class TwitterRipper extends AbstractJSONRipper {
     @Override
     protected String getDomain() {
         return DOMAIN;
+    }
+
+    @Override
+    public boolean canRip(URL url) {
+        String host = url.getHost();
+        return host.endsWith("twitter.com") || host.endsWith("x.com");
     }
 
     @Override
