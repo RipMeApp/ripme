@@ -25,4 +25,19 @@ public class TwitterRipperTest extends RippersTest {
         testRipper(ripper);
     }
 
+    @Test
+    @Tag("flaky")
+    public void testXComUserRip() throws IOException, URISyntaxException {
+        TwitterRipper ripper = new TwitterRipper(new URI("https://x.com/danngamber01/media").toURL());
+        testRipper(ripper);
+    }
+
+    @Test
+    @Tag("flaky")
+    public void testXComSearchRip() throws IOException, URISyntaxException {
+        TwitterRipper ripper = new TwitterRipper(
+                new URI("https://x.com/search?f=tweets&q=from%3Aalinalixxx%20filter%3Aimages&src=typd").toURL());
+        testRipper(ripper);
+    }
+
 }
