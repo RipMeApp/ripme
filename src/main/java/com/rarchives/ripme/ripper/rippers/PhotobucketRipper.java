@@ -257,7 +257,7 @@ public class PhotobucketRipper extends AbstractHTMLRipper {
                 metadata.add(new AlbumMetadata(sub));
             }
         }
-        logger.info("Succesfully retrieved and parsed metadata");
+        logger.info("Successfully retrieved and parsed metadata");
         return metadata;
     }
 

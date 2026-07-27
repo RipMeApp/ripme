@@ -742,7 +742,7 @@ public class Utils {
             }
         } else {
             String[] langCode = langSelect.split("-");
-            LOGGER.info("set locale, langcoe: {}, selected langauge: {}, locale: {}", langCode, langSelect, Locale.forLanguageTag(langSelect));
+            LOGGER.info("set locale, langCode: {}, selected language: {}, locale: {}", langCode, langSelect, Locale.forLanguageTag(langSelect));
             return ResourceBundle.getBundle("LabelsBundle", Locale.forLanguageTag(langSelect), new UTF8Control());
         }
         try {
