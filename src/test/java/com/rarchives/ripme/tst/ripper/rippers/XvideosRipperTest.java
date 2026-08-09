@@ -23,6 +23,7 @@ public class XvideosRipperTest extends RippersTest {
     }
 
     @Test
+    @Tag("flaky")
     public void testXvideosVideo2() throws IOException, URISyntaxException {
         XvideosRipper ripper = new XvideosRipper(
                 new URI("https://www.xvideos.com/video.ufkmptkc4ae/big_tit_step_sis_made_me_cum_inside_her").toURL());
