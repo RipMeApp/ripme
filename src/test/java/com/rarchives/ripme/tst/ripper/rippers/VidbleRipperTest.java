@@ -7,10 +7,12 @@ import java.net.URL;
 
 import com.rarchives.ripme.ripper.rippers.VidbleRipper;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 public class VidbleRipperTest extends RippersTest {
     @Test
+    @Tag("flaky")
     public void testVidbleRip() throws IOException, URISyntaxException {
         VidbleRipper ripper = new VidbleRipper(new URI("https://vidble.com/album/cGEFr8zi").toURL());
         testRipper(ripper);

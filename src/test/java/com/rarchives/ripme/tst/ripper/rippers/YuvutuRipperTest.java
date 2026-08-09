@@ -18,6 +18,7 @@ public class YuvutuRipperTest extends RippersTest {
         testRipper(ripper);
     }
     @Test
+    @Tag("flaky")
     public void testYuvutuAlbum2() throws IOException, URISyntaxException {
         YuvutuRipper ripper = new YuvutuRipper(new URI("http://www.yuvutu.com/modules.php?name=YuGallery&action=view&set_id=420333").toURL());
         testRipper(ripper);

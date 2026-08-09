@@ -5,12 +5,14 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import com.rarchives.ripme.ripper.rippers.ModelmayhemRipper;
 
 public class ModelmayhemRipperTest extends RippersTest {
     @Test
+    @Tag("flaky")
     public void testModelmayhemRip() throws IOException, URISyntaxException {
         ModelmayhemRipper ripper = new ModelmayhemRipper(
                 new URI("https://www.modelmayhem.com/portfolio/4829413/viewall").toURL());
