@@ -19,9 +19,9 @@ Download `ripme.jar` from the [latest release](https://github.com/ripmeapp/ripme
 
 ## Minimum Requirements
 
-Requires Java 17 or later to run. RipMe has been tested on and is confirmed working on Windows, Linux, and Mac.
+Requires Java 21 or later to run. RipMe has been tested on and is confirmed working on Windows, Linux, and Mac.
 
-Java 17 is the most modern possible Java version that allows us to support the most platforms. See [thread](https://github.com/RipMeApp/ripme/pull/2057#issuecomment-2571472016).
+Java 21 is the most modern possible Java version that allows us to support the most platforms; it's the default JDK on current Debian stable. See [thread](https://github.com/RipMeApp/ripme/pull/2057#issuecomment-2571472016) and [issue #2055](https://github.com/RipMeApp/ripme/issues/2055).
 
 ## Supported Sites
 
