@@ -13,7 +13,6 @@ import java.util.regex.Pattern;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jsoup.Connection.Response;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
@@ -50,7 +49,7 @@ public class ZizkiRipper extends AbstractHTMLRipper {
     }
 
     @Override
-    public String getAlbumTitle(URL url) throws MalformedURLException, URISyntaxException {
+    public String getAlbumTitle() throws MalformedURLException, URISyntaxException {
         try {
             // Attempt to use album title as GID
             Element titleElement = getCachedFirstPage().select("h1.title").first();
@@ -64,14 +63,12 @@ public class ZizkiRipper extends AbstractHTMLRipper {
             // Fall back to default album naming convention
             logger.info("Unable to find title at " + url);
         }
-        return super.getAlbumTitle(url);
+        return super.getAlbumTitle();
     }
 
     @Override
     public Document getFirstPage() throws IOException {
-        Response resp = Http.url(url).response();
-        cookies.putAll(resp.cookies());
-        return resp.parse();
+        return Http.url(url).collectCookiesInto(cookies).get();
     }
 
     @Override

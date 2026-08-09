@@ -103,7 +103,7 @@ public class XhamsterRipper extends AbstractHTMLRipper {
     }
 
     @Override
-    public boolean pageContainsAlbums(URL url) {
+    public boolean pageContainsAlbums() {
         Pattern p = Pattern.compile("^https?://[\\w\\w.]*xhamster([^<]*)\\.(com|desi)/users/([a-zA-Z0-9_-]+)/(photos|videos)(/\\d+)?");
         Matcher m = p.matcher(url.toExternalForm());
         logger.info("Checking if page has albums");
@@ -220,7 +220,7 @@ public class XhamsterRipper extends AbstractHTMLRipper {
     }
 
     @Override
-    public String getAlbumTitle(URL url) throws MalformedURLException, URISyntaxException {
+    public String getAlbumTitle() throws MalformedURLException, URISyntaxException {
         try {
             // Attempt to use album title and username as GID
             Document doc = getCachedFirstPage();
@@ -235,6 +235,6 @@ public class XhamsterRipper extends AbstractHTMLRipper {
         } catch (IOException | NullPointerException e) {
             // Fall back to default album naming convention
         }
-        return super.getAlbumTitle(url);
+        return super.getAlbumTitle();
     }
 }

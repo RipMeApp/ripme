@@ -57,7 +57,7 @@ public class HentaifoxRipper extends AbstractHTMLRipper {
     }
 
     @Override
-    public String getAlbumTitle(URL url) throws MalformedURLException, URISyntaxException {
+    public String getAlbumTitle() throws MalformedURLException, URISyntaxException {
         try {
             Document doc = getCachedFirstPage();
             String title = doc.select("div.info > h1").first().text();
@@ -66,7 +66,7 @@ public class HentaifoxRipper extends AbstractHTMLRipper {
             // Fall back to default album naming convention
             logger.warn("Failed to get album title from " + url, e);
         }
-        return super.getAlbumTitle(url);
+        return super.getAlbumTitle();
     }
 
     @Override
