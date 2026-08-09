@@ -2,7 +2,7 @@ package com.rarchives.ripme.ripper.rippers;
 
 import com.rarchives.ripme.ripper.AbstractJSONRipper;
 import com.rarchives.ripme.utils.Http;
-import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.text.StringEscapeUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -117,7 +117,7 @@ public class NsfwXxxRipper extends AbstractJSONRipper {
                         Pattern videoHtmlSrcPattern = Pattern.compile("src=\"([^\"]+)\"");
                         Matcher matches = videoHtmlSrcPattern.matcher(o.getString("html"));
                         matches.find();
-                        srcUrl = StringEscapeUtils.unescapeHtml(matches.group(1));
+                        srcUrl = StringEscapeUtils.unescapeHtml4(matches.group(1));
                     }
 
                     return new ApiEntry(srcUrl, o.getString("author"), o.getString("title"));

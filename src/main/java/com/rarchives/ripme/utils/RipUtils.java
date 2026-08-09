@@ -15,7 +15,7 @@ import com.rarchives.ripme.ripper.rippers.ImgurRipper;
 import com.rarchives.ripme.ripper.rippers.RedgifsRipper;
 import com.rarchives.ripme.ripper.rippers.VidbleRipper;
 import com.rarchives.ripme.ripper.rippers.SoundgasmRipper;
-import org.apache.commons.lang.math.NumberUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jsoup.Jsoup;
@@ -214,7 +214,7 @@ public class RipUtils {
         }
         String url = null;
         dir = dir.substring("imagefap_".length());
-        if (NumberUtils.isDigits(dir)) {
+        if (StringUtils.isNumeric(dir)) {
             url = "http://www.imagefap.com/gallery.php?gid=" + dir;
         }
         else {

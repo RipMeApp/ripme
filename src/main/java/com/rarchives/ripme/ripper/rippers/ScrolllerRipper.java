@@ -15,8 +15,8 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.http.NameValuePair;
-import org.apache.http.client.utils.URLEncodedUtils;
+import org.apache.hc.core5.http.NameValuePair;
+import org.apache.hc.core5.net.WWWFormCodec;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.java_websocket.client.WebSocketClient;
@@ -108,7 +108,7 @@ public class ScrolllerRipper extends AbstractJSONRipper {
     public String getParameter(URL url, String parameter) throws MalformedURLException {
         // Gets passed parameters from the URL
         String toReplace = String.format("https://scrolller.com/r/%s?",getGID(url));
-        List<NameValuePair> args= URLEncodedUtils.parse(url.toExternalForm(), Charset.defaultCharset());
+        List<NameValuePair> args= WWWFormCodec.parse(url.toExternalForm(), Charset.defaultCharset());
         for (NameValuePair arg:args) {
             // First parameter contains part of the url so we have to remove it
             // Ex: for the url https://scrolller.com/r/CatsStandingUp?filter=xxxx&sort=yyyy

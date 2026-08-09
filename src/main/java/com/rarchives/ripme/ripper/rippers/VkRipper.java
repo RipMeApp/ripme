@@ -15,7 +15,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.text.StringEscapeUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
@@ -316,7 +316,7 @@ public class VkRipper extends AbstractJSONRipper {
             return null;
         }
         body = body.substring(body.indexOf("<div"));
-        body = StringEscapeUtils.unescapeJavaScript(body);
+        body = StringEscapeUtils.unescapeEcmaScript(body);
         doc = Jsoup.parseBodyFragment(body);
         List<Element> elements = doc.select("a");
         Set<String> photoIDsToGet = new HashSet<>();

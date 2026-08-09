@@ -36,8 +36,9 @@ import javax.sound.sampled.Clip;
 import javax.sound.sampled.Line;
 import javax.sound.sampled.LineEvent;
 
-import org.apache.commons.configuration.ConfigurationException;
-import org.apache.commons.configuration.PropertiesConfiguration;
+import org.apache.commons.configuration2.PropertiesConfiguration;
+import org.apache.commons.configuration2.ex.ConfigurationException;
+import org.apache.commons.configuration2.io.FileHandler;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.LoggerContext;
@@ -80,8 +81,8 @@ public class Utils {
                 configPath = CONFIG_FILE;
             }
 
-            config = new PropertiesConfiguration(configPath);
-            LOGGER.info("Loaded " + config.getPath());
+            config = loadPropertiesConfiguration(configPath);
+            LOGGER.info("Loaded " + configPath);
 
             if (Files.exists(file)) {
                 // Config was loaded from file
@@ -94,8 +95,8 @@ public class Utils {
                     // See https://github.com/4pr0n/ripme/issues/158
                     LOGGER.warn("Config does not contain key fields, deleting old config");
                     Files.delete(file);
-                    config = new PropertiesConfiguration(CONFIG_FILE);
-                    LOGGER.info("Loaded " + config.getPath());
+                    config = loadPropertiesConfiguration(CONFIG_FILE);
+                    LOGGER.info("Loaded " + CONFIG_FILE);
                 }
             }
         } catch (Exception e) {
@@ -103,6 +104,16 @@ public class Utils {
         }
 
         resourceBundle = getResourceBundle(null);
+    }
+
+    /**
+     * Loads a PropertiesConfiguration, falling back to the classpath (e.g. the
+     * copy bundled inside the .jar) when the given fileName can't be found on disk.
+     */
+    private static PropertiesConfiguration loadPropertiesConfiguration(String fileName) throws ConfigurationException {
+        PropertiesConfiguration configuration = new PropertiesConfiguration();
+        new FileHandler(configuration).load(fileName);
+        return configuration;
     }
 
     /**
@@ -191,7 +202,7 @@ public class Utils {
 
     public static void saveConfig() {
         try {
-            config.save(getConfigFilePath());
+            new FileHandler(config).save(getConfigFilePath());
             LOGGER.info("Saved configuration to " + getConfigFilePath());
         } catch (ConfigurationException e) {
             LOGGER.error("Error while saving configuration: ", e);

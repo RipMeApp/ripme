@@ -12,7 +12,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.text.StringEscapeUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jsoup.nodes.Document;
@@ -67,7 +67,7 @@ public class PornhubRipper extends VideoRipper {
         logger.info("    Retrieving " + this.url.toExternalForm());
         Document doc = Http.url(this.url).get();
         String html = doc.body().html();
-        html = StringEscapeUtils.unescapeJavaScript(html);
+        html = StringEscapeUtils.unescapeEcmaScript(html);
         html = html.substring(html.indexOf("var ra"));
         html = html.substring(0, html.indexOf('\n'));
         html = html.replaceAll("\\/\\*([\\S\\s]+?)\\*\\/", ""); // Delete JS comments from the String

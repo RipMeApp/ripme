@@ -1,11 +1,11 @@
 //    the build derives a version with the jgitver plugin out of a tag in the git history. when there is no
 // git repo, the jgitver default would be 0.0.0. one can override this version with a parameter. also, permit
-// to start the build setting the javac release parameter, no parameter means build for java-17:
+// to start the build setting the javac release parameter, no parameter means build for java-25:
 // gradle clean build -PjavacRelease=17
-// gradle clean build -PjavacRelease=21
+// gradle clean build -PjavacRelease=26
 // gradle clean build -PcustomVersion=1.0.0-10-asdf
 val customVersion = (project.findProperty("customVersion") ?: "") as String
-val javacRelease = (project.findProperty("javacRelease") ?: "17") as String
+val javacRelease = (project.findProperty("javacRelease") ?: "25") as String
 
 plugins {
   id("fr.brouillard.oss.gradle.jgitver") version "0.9.1"
@@ -20,21 +20,26 @@ repositories {
 }
 
 dependencies {
-  implementation("com.lmax:disruptor:3.4.4")
-  implementation("org.java-websocket:Java-WebSocket:1.5.3")
-  implementation("org.jsoup:jsoup:1.16.1")
-  implementation("org.json:json:20211205")
+  implementation("com.lmax:disruptor:4.0.0")
+  implementation("org.java-websocket:Java-WebSocket:1.6.0")
+  implementation("org.jsoup:jsoup:1.23.1")
+  implementation("org.json:json:20260719")
   implementation("com.j2html:j2html:1.6.0")
-  implementation("commons-configuration:commons-configuration:1.10")
-  implementation("commons-cli:commons-cli:1.5.0")
-  implementation("commons-io:commons-io:2.13.0")
-  implementation("org.apache.httpcomponents:httpclient:4.5.14")
-  implementation("org.apache.httpcomponents:httpmime:4.5.14")
-  implementation("org.apache.logging.log4j:log4j-api:2.20.0")
-  implementation("org.apache.logging.log4j:log4j-core:2.20.0")
-  implementation("com.squareup.okhttp3:okhttp:4.12.0")
-  implementation("org.graalvm.js:js:22.3.2")
-  testImplementation(enforcedPlatform("org.junit:junit-bom:5.10.0"))
+  implementation("org.apache.commons:commons-configuration2:2.15.1")
+  implementation("org.apache.commons:commons-lang3:3.20.0")
+  implementation("org.apache.commons:commons-text:1.15.0")
+  implementation("commons-cli:commons-cli:1.11.0")
+  implementation("commons-io:commons-io:2.22.0")
+  implementation("org.apache.httpcomponents.client5:httpclient5:5.6.3")
+  implementation("org.apache.logging.log4j:log4j-api:2.26.1")
+  implementation("org.apache.logging.log4j:log4j-core:2.26.1")
+  implementation("com.squareup.okhttp3:okhttp:5.4.0")
+  // org.graalvm.js:js is now a thin POM whose js-language implementation (used for
+  // InstagramRipper's direct com.oracle.js.parser AST access) is runtime-scope only;
+  // depend on js-language directly so the parser classes are visible at compile time too.
+  implementation("org.graalvm.js:js:25.2.4")
+  implementation("org.graalvm.js:js-language:25.2.4")
+  testImplementation(enforcedPlatform("org.junit:junit-bom:6.1.3"))
   testImplementation("org.junit.jupiter:junit-jupiter")
   testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
@@ -44,7 +49,7 @@ version = "1.7.94"
 description = "ripme"
 
 jacoco {
-  toolVersion = "0.8.12"
+  toolVersion = "0.8.15"
 }
 
 jgitver {
@@ -102,7 +107,6 @@ tasks.test {
     // gradle-6.5.1 not yet allows passing this as parameter, so exclude it
     excludeTags("flaky","slow")
     includeEngines("junit-jupiter")
-    includeEngines("junit-vintage")
   }
   finalizedBy(tasks.jacocoTestReport) // report is always generated after tests run
 }
