@@ -63,6 +63,6 @@ public class VidearnRipper extends VideoRipper {
         }
         String vidUrl = mp4s.get(0);
         addURLToDownload(new URI(vidUrl).toURL(), HOST + "_" + getGID(this.url));
-        waitForThreads();
+        waitForRipperThreads();
     }
 }

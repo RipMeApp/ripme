@@ -30,7 +30,6 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import com.rarchives.ripme.ripper.AbstractHTMLRipper;
-import com.rarchives.ripme.ripper.DownloadThreadPool;
 import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
 import com.rarchives.ripme.utils.Http;
 import com.rarchives.ripme.utils.Utils;
@@ -94,7 +93,6 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 	private boolean usingCatPath = false;
 	private int downloadCount = 0;
 	private Map<String, String> cookies = new HashMap<String, String>();
-	private DownloadThreadPool deviantartThreadPool = new DownloadThreadPool("deviantart");
 	private ArrayList<String> names = new ArrayList<String>();
 
 	List<String> allowedCookies = Arrays.asList("agegate_state", "userinfo", "auth", "auth_secure");
@@ -105,11 +103,6 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 	private final String referer = "https://www.deviantart.com/";
 	private final String userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:65.0) Gecko/20100101 Firefox/65.0";
 	private final String utilsKey = "DeviantartLogin.cookies"; //for config file
-
-	@Override
-	public DownloadThreadPool getThreadPool() {
-		return deviantartThreadPool;
-	}
 
 	public DeviantartRipper(URL url) throws IOException {
 		super(url);
@@ -304,7 +297,7 @@ public class DeviantartRipper extends AbstractHTMLRipper {
 
 		// Start Thread and add to pool.
 		DeviantartImageThread t = new DeviantartImageThread(url);
-		deviantartThreadPool.addThread(t);
+		getCrawlerThreadPool().addThread(t);
 
 	}
 

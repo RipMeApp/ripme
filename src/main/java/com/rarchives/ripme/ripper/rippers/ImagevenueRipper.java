@@ -17,20 +17,12 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import com.rarchives.ripme.ripper.AbstractHTMLRipper;
-import com.rarchives.ripme.ripper.DownloadThreadPool;
 import com.rarchives.ripme.utils.Http;
 import com.rarchives.ripme.utils.Utils;
 
 public class ImagevenueRipper extends AbstractHTMLRipper {
 
     private static final Logger logger = LogManager.getLogger(ImagevenueRipper.class);
-
-    // Thread pool for finding direct image links from "image" pages (html)
-    private DownloadThreadPool imagevenueThreadPool = new DownloadThreadPool("imagevenue");
-    @Override
-    public DownloadThreadPool getThreadPool() {
-        return imagevenueThreadPool;
-    }
 
     public ImagevenueRipper(URL url) throws IOException {
         super(url);
@@ -72,7 +64,7 @@ public class ImagevenueRipper extends AbstractHTMLRipper {
 
     public void downloadURL(URL url, int index) {
         ImagevenueImageThread t = new ImagevenueImageThread(url, index);
-        imagevenueThreadPool.addThread(t);
+        getCrawlerThreadPool().addThread(t);
     }
 
     /**

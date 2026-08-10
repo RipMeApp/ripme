@@ -75,6 +75,6 @@ public class TwitchVideoRipper extends VideoRipper {
                 addURLToDownload(new URI(vidUrl).toURL(), HOST + "_" + title);
             }
         }
-        waitForThreads();
+        waitForRipperThreads();
     }
 }

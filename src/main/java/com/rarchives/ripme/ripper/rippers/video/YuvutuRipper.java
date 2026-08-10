@@ -77,6 +77,6 @@ public class YuvutuRipper extends VideoRipper {
                 addURLToDownload(new URI(vidUrl).toURL(), HOST + "_" + getGID(this.url));
             }
         }
-        waitForThreads();
+        waitForRipperThreads();
     }
 }

@@ -61,7 +61,7 @@ public class VkRipper extends VideoRipper {
         logger.info("    Retrieving " + this.url);
         String videoURL = getVideoURLAtPage(this.url.toExternalForm());
         addURLToDownload(new URI(videoURL).toURL(), HOST + "_" + getGID(this.url));
-        waitForThreads();
+        waitForRipperThreads();
     }
 
     public static String getVideoURLAtPage(String url) throws IOException {
