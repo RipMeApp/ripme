@@ -205,7 +205,7 @@ public class ImgurRipper extends AbstractHTMLRipper {
         } catch (URISyntaxException e) {
             throw new IOException("Failed ripping " + this.url, e);
         }
-        waitForThreads();
+        waitForRipperThreads();
     }
 
     private void ripSingleImage(URL url) throws IOException, URISyntaxException {

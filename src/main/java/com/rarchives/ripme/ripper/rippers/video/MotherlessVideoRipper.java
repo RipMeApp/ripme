@@ -70,6 +70,6 @@ public class MotherlessVideoRipper extends VideoRipper {
         }
         String vidUrl = vidUrls.get(0);
         addURLToDownload(new URI(vidUrl).toURL(), HOST + "_" + getGID(this.url));
-        waitForThreads();
+        waitForRipperThreads();
     }
 }

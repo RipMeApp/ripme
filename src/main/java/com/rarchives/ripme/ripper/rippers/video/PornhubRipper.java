@@ -154,6 +154,6 @@ public class PornhubRipper extends VideoRipper {
         }
         addURLToDownload(new URI(vidUrl).toURL(), HOST + "_" + bestQuality + "p_" + getGID(this.url));
 
-        waitForThreads();
+        waitForRipperThreads();
     }
 }

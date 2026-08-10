@@ -68,6 +68,6 @@ public class ViddmeRipper extends VideoRipper {
         String vidUrl = videos.first().attr("content");
         vidUrl = vidUrl.replaceAll("&amp;", "&");
         addURLToDownload(new URI(vidUrl).toURL(), HOST + "_" + getGID(this.url));
-        waitForThreads();
+        waitForRipperThreads();
     }
 }

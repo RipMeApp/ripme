@@ -1,7 +1,6 @@
 package com.rarchives.ripme.ripper.rippers;
 
 import com.rarchives.ripme.ripper.AbstractHTMLRipper;
-import com.rarchives.ripme.ripper.DownloadThreadPool;
 import com.rarchives.ripme.utils.Http;
 import com.rarchives.ripme.utils.Utils;
 import java.io.IOException;
@@ -28,13 +27,6 @@ import org.apache.logging.log4j.Logger;
 public class ImagebamRipper extends AbstractHTMLRipper {
 
     private static final Logger logger = LogManager.getLogger(ImagebamRipper.class);
-
-    // Thread pool for finding direct image links from "image" pages (html)
-    private DownloadThreadPool imagebamThreadPool = new DownloadThreadPool("imagebam");
-    @Override
-    public DownloadThreadPool getThreadPool() {
-        return imagebamThreadPool;
-    }
 
     public ImagebamRipper(URL url) throws IOException {
         super(url);
@@ -90,7 +82,7 @@ public class ImagebamRipper extends AbstractHTMLRipper {
     @Override
     public void downloadURL(URL url, int index) {
         ImagebamImageThread t = new ImagebamImageThread(url, index);
-        imagebamThreadPool.addThread(t);
+        getCrawlerThreadPool().addThread(t);
         sleep(500);
     }
 

@@ -18,6 +18,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -46,6 +47,23 @@ public abstract class AbstractRipper
     protected final Set<RipUrlId> itemsPending = Collections.synchronizedSet(new HashSet<>());
     protected final Map<RipUrlId, Path> itemsCompleted = Collections.synchronizedMap(new HashMap<>());
     protected final Map<RipUrlId, String> itemsErrored = Collections.synchronizedMap(new HashMap<>());
+    protected final Map<RipUrlId, String> itemsSkipped = Collections.synchronizedMap(new HashMap<>());
+
+    /**
+     * Rippers should set itemsTotal to the best known number of total items,
+     * if known at the start of the rip, e.g. in getFirstPage().
+     * The best known number might be indicated on the album page,
+     * or calculated by the number of pages and the number of items per page.
+     * Once the last item is seen by the HTML or JSON crawler, the final value is set.
+     */
+    private final AtomicInteger itemsTotal = new AtomicInteger(0);
+
+    /**
+     * If an album has a duplicate RipUrlId (e.g. the same image linked twice),
+     * duplicates can't be counted by itemsPending, but {@link #waitForRipperThreads()} needs
+     * to know that the ripper has seen each link crawled.
+     */
+    private final AtomicInteger itemsSeen = new AtomicInteger(0);
 
     private final String URLHistoryFile = Utils.getURLHistoryFile();
 
@@ -55,7 +73,8 @@ public abstract class AbstractRipper
 
     protected URL url;
     protected File workingDir;
-    DownloadThreadPool threadPool;
+    private DownloadThreadPool ripperThreadPool;
+    private DownloadThreadPool crawlerThreadPool;
     RipStatusHandler observer = null;
 
     private final AtomicBoolean completed = new AtomicBoolean(false);
@@ -74,8 +93,8 @@ public abstract class AbstractRipper
 
     // Everytime addUrlToDownload skips a already downloaded url this increases by 1
     public int alreadyDownloadedUrls = 0;
-    private final AtomicBoolean shouldStop = new AtomicBoolean(false);
-    private final AtomicBoolean shouldPanic = new AtomicBoolean(false);
+    protected final AtomicBoolean shouldStop = new AtomicBoolean(false);
+    protected final AtomicBoolean shouldPanic = new AtomicBoolean(false);
     private static boolean thisIsATest = false;
 
     public void stop() {
@@ -97,14 +116,27 @@ public abstract class AbstractRipper
         return shouldStop.get();
     }
 
-    public boolean isCompleted() {
-        return completed.get();
-    }
-
     protected void stopCheck() throws IOException {
         if (shouldStop.get()) {
             throw new IOException("Ripping interrupted");
         }
+    }
+
+    /**
+     * Used for file downloads. Used by {@link #addURLToDownload(TokenedUrlGetter, RipUrlId, Path, String, String, Map, Boolean)}
+     */
+    protected DownloadThreadPool getRipperThreadPool() {
+        return ripperThreadPool;
+    }
+
+    /**
+     * Used by Rippers to crawl file pages.<br>
+     * After the last file page is crawled and all threads are queued to the ripper thread pool,
+     * {@link #rip()} terminates the crawler thread pool.<br>
+     * After the crawler thread pool is finished, {@link #rip()} terminates the ripper thread pool.
+     */
+    protected DownloadThreadPool getCrawlerThreadPool() {
+        return crawlerThreadPool;
     }
 
     /**
@@ -234,7 +266,8 @@ public abstract class AbstractRipper
         // ctx.reconfigure();
         // ctx.updateLoggers();
 
-        this.threadPool = new DownloadThreadPool();
+        this.ripperThreadPool = new DownloadThreadPool(getClass().getSimpleName() + "-ripper-" + getGID(url));
+        this.crawlerThreadPool = new DownloadThreadPool(getClass().getSimpleName() + "-crawler");
     }
 
     public void setObserver(RipStatusHandler obs) {
@@ -264,6 +297,7 @@ public abstract class AbstractRipper
      *         False if failed to download
      */
     public boolean addURLToDownload(URL url, Path saveAs, String referrer, Map<String, String> cookies, Boolean getFileExtFromMIME) {
+        itemsSeen.incrementAndGet();
         TokenedUrlGetter tug = () -> url;
         RipUrlId ripUrlId = new RipUrlId(getClass(), getHost(), url);
         Path directory = saveAs.getParent();
@@ -285,6 +319,7 @@ public abstract class AbstractRipper
             itemsPending.clear();
             return false;
         }
+
         if (!allowDuplicates()
                 && ( itemsPending.contains(ripUrlId)
                 || itemsCompleted.containsKey(ripUrlId)
@@ -329,7 +364,7 @@ public abstract class AbstractRipper
             if (cookies != null) {
                 dft.setCookies(cookies);
             }
-            threadPool.addThread(dft);
+            getRipperThreadPool().addThread(dft);
         }
 
         return true;
@@ -393,6 +428,7 @@ public abstract class AbstractRipper
      */
     protected boolean addURLToDownload(URL url, String subdirectory, String referrer, Map<String, String> cookies,
             String prefix, String fileName, String extension, Boolean getFileExtFromMIME) {
+        itemsSeen.incrementAndGet();
         // A common bug is rippers adding urls that are just "http:".
         // This rejects said urls.
         if (url.toExternalForm().equals("http:") || url.toExternalForm().equals("https:")) {
@@ -570,11 +606,24 @@ public abstract class AbstractRipper
     /**
      * Waits for downloading threads to complete.
      */
-    protected void waitForThreads() {
-        logger.debug("Waiting for threads to finish");
-        completed.set(false);
-        threadPool.waitForThreads();
-        checkIfComplete();
+    protected void waitForRipperThreads() {
+        waitForRipperThreads(true);
+    }
+
+    protected void waitForRipperThreads(boolean notifyComplete) {
+        logger.debug("Waiting for threads to finish; url: {}", url);
+        if (!notifyComplete) {
+            setItemsTotal(0);
+        }
+        ripperThreadPool.waitForThreads(() -> {
+            boolean finished = shouldStop.get() || (itemsSeen.get() >= itemsTotal.get() && itemsPending.isEmpty());
+            logger.trace("ripperThreadPool: are threads finished? {} url: {} shouldStop: {}; itemsPending.size(): {}; itemsCompleted.size(): {}; itemsErrored.size(): {}; itemsSkipped.size(): {}; itemsTotal: {}; itemsSeen: {}",
+                    finished, url, shouldStop, itemsPending.size(), itemsCompleted.size(), itemsErrored.size(), itemsSkipped.size(), itemsTotal, itemsSeen);
+            return finished;
+        }, url);
+        if (notifyComplete) {
+            notifyComplete();
+        }
     }
 
     /**
@@ -596,17 +645,17 @@ public abstract class AbstractRipper
      * @param saveAs   Where the downloaded file is stored.
      */
     protected void downloadCompleted(RipUrlId ripUrlId, Path saveAs) {
+        itemsPending.remove(ripUrlId);
+        itemsCompleted.put(ripUrlId, saveAs);
         if (observer == null) {
             return;
         }
         try {
             String path = Utils.removeCWD(saveAs);
             RipStatusMessage msg = new RipStatusMessage(STATUS.DOWNLOAD_COMPLETE, path);
-            itemsPending.remove(ripUrlId);
-            itemsCompleted.put(ripUrlId, saveAs);
             observer.update(this, msg);
 
-            checkIfComplete();
+            //checkIfComplete();
         } catch (Exception e) {
             logger.error("Exception while updating observer: ", e);
         }
@@ -616,14 +665,29 @@ public abstract class AbstractRipper
      * Notifies observers that a file could not be downloaded (includes a reason).
      */
     protected void downloadErrored(RipUrlId ripUrlId, String reason) {
+        itemsPending.remove(ripUrlId);
+        itemsErrored.put(ripUrlId, reason);
         if (observer == null) {
             return;
         }
-        itemsPending.remove(ripUrlId);
-        itemsErrored.put(ripUrlId, reason);
         observer.update(this, new RipStatusMessage(STATUS.DOWNLOAD_ERRORED, ripUrlId + " : " + reason));
 
-        checkIfComplete();
+        //checkIfComplete();
+    }
+
+    /**
+     * Notifies observers that a file could not be downloaded (includes a reason).
+     */
+    protected void downloadSkipped(RipUrlId ripUrlId, String reason) {
+        itemsPending.remove(ripUrlId);
+        //itemsSkipped.put(ripUrlId, reason);
+        itemsCompleted.put(ripUrlId, null); // TODO use itemsSkipped and make the progress bar display it as completed
+        if (observer == null) {
+            return;
+        }
+        observer.update(this, new RipStatusMessage(STATUS.DOWNLOAD_SKIP, ripUrlId + " : " + reason));
+
+        //checkIfComplete();
     }
 
     /**
@@ -631,15 +695,15 @@ public abstract class AbstractRipper
      * but was not technically an "error".
      */
     protected void downloadExists(RipUrlId ripUrlId, Path file) {
+        itemsPending.remove(ripUrlId);
+        itemsCompleted.put(ripUrlId, file);
         if (observer == null) {
             return;
         }
 
-        itemsPending.remove(ripUrlId);
-        itemsCompleted.put(ripUrlId, file);
         observer.update(this, new RipStatusMessage(STATUS.DOWNLOAD_WARN, ripUrlId + " already saved as " + file));
 
-        checkIfComplete();
+        //checkIfComplete();
     }
 
     /**
@@ -647,15 +711,6 @@ public abstract class AbstractRipper
      */
     public int getCount() {
         return itemsCompleted.size() + itemsErrored.size();
-    }
-
-    /**
-     * Checks if complete and notifies observers if complete
-     */
-    protected void checkIfComplete() {
-        if (itemsPending.isEmpty()) { // TODO add itemsActive for current transfers
-            notifyComplete();
-        }
     }
 
     /**
@@ -672,6 +727,7 @@ public abstract class AbstractRipper
 
             RipStatusComplete rsc = new RipStatusComplete(workingDir.toPath(), getCount());
             RipStatusMessage msg = new RipStatusMessage(STATUS.RIP_COMPLETE, rsc);
+            logger.debug("Sending RIP_COMPLETE: url: {}", getURL());
             observer.update(this, msg);
 
             // we do not care if the rollingfileappender is active,
@@ -805,11 +861,11 @@ public abstract class AbstractRipper
             rip();
         } catch (HttpStatusException e) {
             logger.error("Got exception while running ripper:", e);
-            waitForThreads();
+            waitForRipperThreads(false);
             sendUpdate(STATUS.RIP_ERRORED, "HTTP status code " + e.getStatusCode() + " for URL " + e.getUrl());
         } catch (Exception e) {
             logger.error("Got exception while running ripper:", e);
-            waitForThreads();
+            waitForRipperThreads(false);
             sendUpdate(STATUS.RIP_ERRORED, e.getMessage());
         } finally {
             cleanup();
@@ -937,5 +993,23 @@ public abstract class AbstractRipper
             }
         }
         return false;
+    }
+
+    /**
+     * Gets the asserted number of total items, or 0 if unknown.
+     * Possibly useful in rippers.
+     */
+    protected int getItemsTotal() {
+        return itemsTotal.get();
+    }
+
+    /**
+     * For use in rippers to update the best estimate of total items.
+     */
+    protected void setItemsTotal(int itemsTotal) {
+        if (itemsTotal < 0) {
+            throw new IllegalArgumentException("itemsTotal cannot be negative. Use 0 for unknown.");
+        }
+        this.itemsTotal.set(itemsTotal);
     }
 }
