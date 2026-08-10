@@ -16,6 +16,7 @@ public class RipStatusMessage {
         DOWNLOAD_SKIP("Download Skipped"),
         TOTAL_BYTES("Total bytes"),
         COMPLETED_BYTES("Completed bytes"),
+        CHUNK_BYTES("Transferred bytes in last chunk"),
         RIP_ERRORED("Rip Errored"),
         NO_ALBUM_OR_USER("No album or user");
 
