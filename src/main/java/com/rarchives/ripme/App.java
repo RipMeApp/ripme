@@ -88,8 +88,13 @@ public class App {
 
             logger.info("Initialized ripme v" + UpdateUtils.getThisJarVersion());
 
-            MainWindow mw = new MainWindow();
-            SwingUtilities.invokeLater(mw);
+            String gui = System.getProperty("ripme.gui", "swing");
+            if ("compose".equalsIgnoreCase(gui)) {
+                com.rarchives.ripme.ui.compose.ComposeMain.launch();
+            } else {
+                MainWindow mw = new MainWindow();
+                SwingUtilities.invokeLater(mw);
+            }
         }
     }
 

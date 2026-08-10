@@ -13,14 +13,24 @@ plugins {
   id("java")
   id("maven-publish")
   id("com.gradleup.shadow") version "9.0.0-rc1"
+  kotlin("jvm") version "2.4.10"
+  id("org.jetbrains.kotlin.plugin.compose") version "2.4.10"
+  id("org.jetbrains.compose") version "1.11.1"
 }
 
 repositories {
   mavenLocal()
   mavenCentral()
+  google()
 }
 
 dependencies {
+  // Compose Desktop scaffold (RipMe #2082) - runtime deps only, no native packaging.
+  implementation(compose.desktop.currentOs)
+  implementation(compose.runtime)
+  implementation(compose.foundation)
+  implementation(compose.material3)
+  implementation(compose.ui)
   implementation("com.lmax:disruptor:4.0.0")
   implementation("org.java-websocket:Java-WebSocket:1.6.0")
   implementation("org.jsoup:jsoup:1.23.1")
@@ -72,6 +82,12 @@ tasks.compileJava {
   options.release.set(Integer.parseInt(javacRelease))
 }
 
+kotlin {
+  compilerOptions {
+    jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21)
+  }
+}
+
 tasks.withType<Jar> {
   duplicatesStrategy = DuplicatesStrategy.INCLUDE
   manifest {
@@ -91,6 +107,10 @@ tasks.withType<Jar> {
 
 tasks.shadowJar {
   transform<com.github.jengelman.gradle.plugins.shadow.transformers.Log4j2PluginsCacheFileTransformer>()
+  // Compose Desktop (Skiko natives for every supported OS/arch, plus its transitive
+  // AndroidX/Compose jars) pushes the shaded jar's entry count past the 65535 zip
+  // limit; opt into zip64 so shadowJar can still produce a single fat jar.
+  isZip64 = true
 }
 
 publishing {
