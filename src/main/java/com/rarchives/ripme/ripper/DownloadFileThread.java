@@ -153,8 +153,8 @@ class DownloadFileThread implements Runnable {
                     }
                     String location = huc.getHeaderField("Location");
                     urlToDownload = new URI(location).toURL();
-                    // Throw exception so download can be retried
-                    throw new IOException("Redirect status code " + statusCode + " - redirect to " + location);
+                    logger.debug("Redirect status code {} - redirect to {}", statusCode, location);
+                    continue; // retry
                 }
                 if (statusCode / 100 == 4) { // 4xx errors
                     logger.error("[!] " + Utils.getLocalizedString("nonretriable.status.code") + " " + statusCode
@@ -166,8 +166,8 @@ class DownloadFileThread implements Runnable {
                 if (statusCode / 100 == 5) { // 5xx errors
                     observer.downloadErrored(url, Utils.getLocalizedString("retriable.status.code") + " " + statusCode
                             + " while downloading " + url.toExternalForm());
-                    // Throw exception so download can be retried
-                    throw new IOException(Utils.getLocalizedString("retriable.status.code") + " " + statusCode);
+                    logger.debug("Retriable status code {} while downloading {}", statusCode, url);
+                    continue; // retry
                 }
                 if (huc.getContentLength() == 503 && urlToDownload.getHost().endsWith("imgur.com")) {
                     // Imgur image with 503 bytes is "404"
@@ -310,10 +310,14 @@ class DownloadFileThread implements Runnable {
                 logger.debug("IOException", e);
                 logger.error("[!] " + Utils.getLocalizedString("exception.while.downloading.file") + ": " + url + " - "
                         + e.getMessage());
+                observer.downloadErrored(url, e.getMessage());
+                return;
             } catch (URISyntaxException e) {
                 logger.debug("IOException", e);
                 logger.error("[!] " + Utils.getLocalizedString("exception.while.downloading.file") + ": " + url + " - "
                         + e.getMessage());
+                observer.downloadErrored(url, Utils.getLocalizedString("exception.while.downloading.file"));
+                return;
             } catch (NullPointerException npe){
 
                 logger.error("[!] " + Utils.getLocalizedString("failed.to.download") + " for URL " + url);
