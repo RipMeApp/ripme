@@ -2,6 +2,7 @@ package com.rarchives.ripme.ripper;
 
 import java.io.*;
 import java.net.*;
+import java.nio.file.FileStore;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -300,7 +301,16 @@ class DownloadFileThread implements Runnable {
                             "HTTP status code " + hse.getStatusCode() + " while downloading " + url.toExternalForm());
                     return;
                 }
-            } catch (IOException | URISyntaxException e) {
+            } catch (IOException e) {
+                if (guessIsENOSPC(e, saveAs)) {
+                    logger.debug("IOException", e);
+                    observer.downloadErrored(url, Utils.getLocalizedString("device.nospace")); // TODO cancel all rips
+                    return;
+                }
+                logger.debug("IOException", e);
+                logger.error("[!] " + Utils.getLocalizedString("exception.while.downloading.file") + ": " + url + " - "
+                        + e.getMessage());
+            } catch (URISyntaxException e) {
                 logger.debug("IOException", e);
                 logger.error("[!] " + Utils.getLocalizedString("exception.while.downloading.file") + ": " + url + " - "
                         + e.getMessage());
@@ -326,6 +336,25 @@ class DownloadFileThread implements Runnable {
         } while (true);
         observer.downloadCompleted(url, saveAs.toPath());
         logger.info("[+] Saved " + url + " as " + this.prettySaveAs);
+    }
+
+    @SuppressWarnings("UnnecessaryLocalVariable")
+    private boolean guessIsENOSPC(IOException e, File saveAs) {
+        // The ENOSPC IOException message is localized in Java, so this only works on English locale systems.
+        if (e.getMessage() != null && e.getMessage().matches("No space left on device")) {
+            return true;
+        }
+        // Fallback: check usable space on the filesystem
+        try {
+            FileStore fs = Files.getFileStore(saveAs.toPath());
+            // could check for 0 bytes, but 256 kilobytes is small enough
+            int downloadBufferSizeBytes = 1024 * 256;
+            boolean notEnoughUsableBytes = fs.getUsableSpace() < downloadBufferSizeBytes;
+            return notEnoughUsableBytes;
+        } catch (IOException ex) {
+            // unable to determine if no space left on device; fall through
+        }
+        return false;
     }
 
 }
