@@ -19,11 +19,20 @@ data class LogLine(val text: String, val color: Color)
 
 private const val MAX_LOG_LINES = 2000
 
+/** Terminal outcome of a single rip, handed to [RipController.onFinished] (plan §4). */
+sealed interface RipOutcome {
+    /** Successful rip. [ripper] is still valid at this point (for URL/title lookups). */
+    data class Complete(val ripper: AbstractRipper, val rsc: RipStatusComplete) : RipOutcome
+    data class Errored(val message: String) : RipOutcome
+    data class NoAlbumOrUser(val message: String) : RipOutcome
+}
+
 /**
- * State/threading bridge between the Compose UI (MainScreen) and the existing
- * Java ripper business logic (AbstractRipper + friends). Mirrors the proven
- * logic in MainWindow (handleEvent/update/ripAlbum), but drives exactly one
- * URL at a time - no queueing, no history writes (see plan §6, deferred).
+ * State/threading bridge between the Compose UI and the existing Java ripper business logic
+ * (AbstractRipper + friends). Mirrors the proven logic in MainWindow (handleEvent/update/
+ * ripAlbum). Drives exactly one URL at a time - queueing/draining and history writes are owned
+ * by [com.rarchives.ripme.ui.compose.queue.QueueController], which treats [beginRip] as the tail
+ * of its drain loop rather than a direct UI entry point (see plan §4).
  */
 class RipController : RipStatusHandler {
 
@@ -40,15 +49,31 @@ class RipController : RipStatusHandler {
 
     private var ripper: AbstractRipper? = null
 
-    /** Normalizes, resolves a ripper for, and starts ripping [urlText]. No-op while already busy. */
-    fun startRip(urlText: String) {
+    /** The URL currently being ripped, if any - used by QueueController to re-enqueue on stop/panic. */
+    val currentUrl: URL?
+        get() = ripper?.url
+
+    /** Fired exactly once per rip, when it terminally ends (success or failure). */
+    var onFinished: ((RipOutcome) -> Unit)? = null
+
+    /**
+     * Normalizes, resolves a ripper for, and starts ripping [urlText] on a background thread.
+     * Returns true if a rip thread was actually launched (mirrors MainWindow.ripAlbum returning
+     * a non-null Thread); false means the caller (QueueController) should treat this URL as
+     * un-rippable and move on rather than retry it forever. No-op (returns false) while busy.
+     */
+    fun beginRip(urlText: String): Boolean {
         if (busy) {
-            return
+            return false
         }
 
         var normalized = urlText.trim()
         if (normalized.isEmpty()) {
-            return
+            return false
+        }
+        // Mirrors MainWindow.ripAlbum's gonewild: shorthand rewrite.
+        if (normalized.lowercase().startsWith("gonewild:")) {
+            normalized = "http://gonewild.com/user/" + normalized.substring(normalized.indexOf(':') + 1)
         }
         if (!normalized.startsWith("http")) {
             normalized = "http://$normalized"
@@ -60,7 +85,7 @@ class RipController : RipStatusHandler {
         } catch (e: Exception) {
             appendLog("Can't rip this URL: ${e.message}", Color.Red)
             setStatus("Can't rip this URL: ${e.message}", Color.Red)
-            return
+            return false
         }
 
         val newRipper: AbstractRipper
@@ -70,7 +95,7 @@ class RipController : RipStatusHandler {
         } catch (e: Exception) {
             appendLog("Can't find ripper for this URL", Color.Red)
             setStatus("Can't find ripper for this URL", Color.Red)
-            return
+            return false
         }
 
         ripper = newRipper
@@ -80,7 +105,18 @@ class RipController : RipStatusHandler {
         setStatus("Starting rip...", Color.Black)
 
         Thread(newRipper).start()
+        return true
     }
+
+    /**
+     * Appends a log line from outside a rip's own event stream (e.g. QueueController's
+     * "already in queue" / "can't find ripper" messages) - keeps the log a single source of
+     * truth even though QueueController owns the surrounding queue logic.
+     */
+    fun postLog(text: String, color: Color) = appendLog(text, color)
+
+    /** Sets the status line from outside a rip's own event stream (see [postLog]). */
+    fun postStatus(text: String, color: Color) = setStatus(text, color)
 
     /** Gracefully stop the in-progress rip, if any. */
     fun stop() {
@@ -131,15 +167,21 @@ class RipController : RipStatusHandler {
                 appendLog(message.`object`.toString(), Color(0xFFCCCC00))
 
             RipStatusMessage.STATUS.RIP_ERRORED -> {
-                appendLog(message.`object`.toString(), Color.Red)
-                setStatus("Error: " + message.`object`, Color.Red)
+                val text = message.`object`.toString()
+                appendLog(text, Color.Red)
+                setStatus("Error: $text", Color.Red)
                 busy = false
+                ripper = null
+                onFinished?.invoke(RipOutcome.Errored(text))
             }
 
             RipStatusMessage.STATUS.NO_ALBUM_OR_USER -> {
-                appendLog(message.`object`.toString(), Color.Red)
-                setStatus("Error: " + message.`object`, Color.Red)
+                val text = message.`object`.toString()
+                appendLog(text, Color.Red)
+                setStatus("Error: $text", Color.Red)
                 busy = false
+                ripper = null
+                onFinished?.invoke(RipOutcome.NoAlbumOrUser(text))
             }
 
             RipStatusMessage.STATUS.RIP_COMPLETE -> {
@@ -150,6 +192,9 @@ class RipController : RipStatusHandler {
                 }
                 setStatus("Rip complete, saved to " + rsc.dir, Color(0xFF008000))
                 busy = false
+                val finishedRipper = r
+                ripper = null
+                onFinished?.invoke(RipOutcome.Complete(finishedRipper, rsc))
             }
 
             RipStatusMessage.STATUS.TOTAL_BYTES, RipStatusMessage.STATUS.COMPLETED_BYTES -> {

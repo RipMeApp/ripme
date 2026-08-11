@@ -90,8 +90,14 @@ public class App {
 
             String gui = System.getProperty("ripme.gui", "swing");
             if ("compose".equalsIgnoreCase(gui)) {
+                logger.info("Launching Compose GUI (-Dripme.gui=compose)");
                 com.rarchives.ripme.ui.compose.ComposeMain.launch();
             } else {
+                if (!"swing".equalsIgnoreCase(gui)) {
+                    logger.warn("Unrecognized -Dripme.gui value \"" + gui + "\" (expected \"swing\" or \"compose\"); falling back to Swing GUI");
+                } else {
+                    logger.info("Launching Swing GUI");
+                }
                 MainWindow mw = new MainWindow();
                 SwingUtilities.invokeLater(mw);
             }

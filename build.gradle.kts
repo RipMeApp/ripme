@@ -26,11 +26,26 @@ repositories {
 
 dependencies {
   // Compose Desktop scaffold (RipMe #2082) - runtime deps only, no native packaging.
+  // compose.runtime/foundation/material3/ui DSL aliases are deprecated as of the Compose Gradle
+  // plugin used here; specify the underlying artifacts directly instead (compose.desktop.currentOs
+  // isn't deprecated - it does real OS-detection work the alias replacement doesn't).
   implementation(compose.desktop.currentOs)
-  implementation(compose.runtime)
-  implementation(compose.foundation)
-  implementation(compose.material3)
-  implementation(compose.ui)
+  implementation("org.jetbrains.compose.runtime:runtime:1.11.1")
+  implementation("org.jetbrains.compose.foundation:foundation:1.11.1")
+  // material3 is versioned independently of the Compose Multiplatform release train (the alias
+  // resolved it to 1.9.0, not 1.11.1 - verified via `gradlew dependencies`).
+  implementation("org.jetbrains.compose.material3:material3:1.9.0")
+  implementation("org.jetbrains.compose.ui:ui:1.11.1")
+  // Nav for the Compose Desktop GUI (RipMe #2082 GUI parity pass) is a plain hand-rolled
+  // mutableStateOf<Panel> controller (see ui/compose/nav/Panel.kt) rather than a navigation
+  // library: ripme's actual need is 5 mutually-exclusive panel states with no back stack and no
+  // process-death state restoration, desktop-only - Decompose/Navigation-3-style back-stack
+  // machinery would solve problems this app doesn't have, at the cost of a real dependency-
+  // version-compat risk for zero benefit. (An earlier pass evaluated
+  // com.arkivanov.decompose:decompose/extensions-compose:3.5.0 + essenty:lifecycle:2.5.0 against
+  // Compose Multiplatform 1.11.1 and confirmed they resolve/compile/run together with no
+  // NoSuchMethodError, so the library approach was technically viable - it just wasn't the right
+  // tool for this app's needs, per explicit product decision.)
   implementation("com.lmax:disruptor:4.0.0")
   implementation("org.java-websocket:Java-WebSocket:1.6.0")
   implementation("org.jsoup:jsoup:1.23.1")
