@@ -106,15 +106,20 @@ public class VscoRipper extends AbstractHTMLRipper {
 
     private String getUserTkn(String username) {
         String userTokenPage = "https://vsco.co/content/Static";
-        Map<String,String> responseCookies = new HashMap<>();
+        Map<String,String> responseCookies;
         try {
             Response resp = Http.url(userTokenPage).ignoreContentType().response();
             responseCookies = resp.cookies();
-            return responseCookies.get("vs");
         } catch (IOException e) {
-            logger.error("Could not get user tkn");
-            return null;
+            throw new RuntimeException("Could not get VSCO auth token: " + userTokenPage
+                    + " is not reachable. VSCO may be blocking automated requests.", e);
         }
+        String tkn = responseCookies.get("vs");
+        if (tkn == null) {
+            throw new RuntimeException("Could not get VSCO auth token: no 'vs' cookie in the response from "
+                    + userTokenPage + ". VSCO may be blocking automated requests (e.g. via Cloudflare).");
+        }
+        return tkn;
     }
 
     private String getUserName() {
@@ -135,23 +140,23 @@ public class VscoRipper extends AbstractHTMLRipper {
         Map<String,String> cookies = new HashMap<>();
         cookies.put("vs", tkn);
         try {
-            JSONObject j = Http.url(purl).cookies(cookies).getJSON();
-            return j;
+            return Http.url(purl).cookies(cookies).getJSON();
         } catch (IOException e) {
-            logger.error("Could not profile images");
-            return null;
+            throw new RuntimeException("Could not load VSCO media list for " + username + " from " + purl
+                    + ". VSCO may be blocking automated requests.", e);
         }
     }
 
     private String getSiteID(String tkn, String username) {
         Map<String,String> cookies = new HashMap<>();
         cookies.put("vs", tkn);
+        String surl = "https://vsco.co/ajxp/" + tkn + "/2.0/sites?subdomain=" + username;
         try {
-            JSONObject j = Http.url("https://vsco.co/ajxp/" + tkn + "/2.0/sites?subdomain=" + username).cookies(cookies).getJSON();
+            JSONObject j = Http.url(surl).cookies(cookies).getJSON();
             return Integer.toString(j.getJSONArray("sites").getJSONObject(0).getInt("id"));
         } catch (IOException e) {
-            logger.error("Could not get site id");
-            return null;
+            throw new RuntimeException("Could not get VSCO site id for " + username + " from " + surl
+                    + ". VSCO may be blocking automated requests.", e);
         }
     }
 
