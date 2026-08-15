@@ -104,16 +104,12 @@ public class RedgifsRipper extends AbstractJSONRipper {
     @Override
     public JSONObject getFirstPage() throws IOException {
         try {
-            if (authToken == null || authToken.isBlank()) {
-                fetchAuthToken();
-            }
-
             if (isSingleton().matches()) {
                 maxPages = 1;
                 String gifDetailsURL = String.format(GIFS_DETAIL_ENDPOINT, getGID(url));
-                return Http.url(gifDetailsURL).header("Authorization", "Bearer " + authToken).getJSON();
+                return getAuthenticatedJSON(gifDetailsURL);
             } else if (isSearch().matches() || isTags().matches()) {
-                var json = Http.url(getSearchOrTagsURL()).header("Authorization", "Bearer " + authToken).getJSON();
+                var json = getAuthenticatedJSON(getSearchOrTagsURL());
                 maxPages = json.getInt("pages");
                 return json;
             } else {
@@ -122,7 +118,7 @@ public class RedgifsRipper extends AbstractJSONRipper {
                 uri.addParameter("order", "new");
                 uri.addParameter("count", Integer.toString(count));
                 uri.addParameter("page", Integer.toString(currentPage));
-                var json = Http.url(uri.build().toURL()).header("Authorization", "Bearer " + authToken).getJSON();
+                var json = getAuthenticatedJSON(uri.build().toURL());
                 maxPages = json.getInt("pages");
                 return json;
             }
@@ -194,7 +190,7 @@ public class RedgifsRipper extends AbstractJSONRipper {
         }
         currentPage++;
         if (isSearch().matches() || isTags().matches()) {
-            var json = Http.url(getSearchOrTagsURL()).header("Authorization", "Bearer " + authToken).getJSON();
+            var json = getAuthenticatedJSON(getSearchOrTagsURL());
             // Handle rare maxPages change during a rip
             maxPages = json.getInt("pages");
             return json;
@@ -203,7 +199,7 @@ public class RedgifsRipper extends AbstractJSONRipper {
             uri.addParameter("order", "new");
             uri.addParameter("count", Integer.toString(count));
             uri.addParameter("page", Integer.toString(currentPage));
-            var json = Http.url(uri.build().toURL()).header("Authorization", "Bearer " + authToken).getJSON();
+            var json = getAuthenticatedJSON(uri.build().toURL());
             // Handle rare maxPages change during a rip
             maxPages = json.getInt("pages");
             return json;
@@ -254,8 +250,7 @@ public class RedgifsRipper extends AbstractJSONRipper {
             return list;
         }
         try {
-            var json = Http.url(String.format(GALLERY_ENDPOINT, galleryID))
-                    .header("Authorization", "Bearer " + authToken).getJSON();
+            var json = getAuthenticatedJSON(String.format(GALLERY_ENDPOINT, galleryID));
             for (var gif : json.getJSONArray("gifs")) {
                 var hdURL = ((JSONObject) gif).getJSONObject("urls").getString("hd");
                 list.add(hdURL);
@@ -280,12 +275,9 @@ public class RedgifsRipper extends AbstractJSONRipper {
         if (!m.matches()) {
             throw new IOException(String.format("Cannot fetch redgif url %s", url.toExternalForm()));
         }
-        if (authToken == null || authToken.isBlank()) {
-            fetchAuthToken();
-        }
         var gid = m.group(1).split("-")[0];
         var gifDetailsURL = String.format(GIFS_DETAIL_ENDPOINT, gid);
-        var json = Http.url(gifDetailsURL).header("Authorization", "Bearer " + authToken).getJSON();
+        var json = getAuthenticatedJSON(gifDetailsURL);
         var gif = json.getJSONObject("gif");
         if (!gif.isNull("gallery")) {
             // TODO check how to handle a image gallery
@@ -303,7 +295,31 @@ public class RedgifsRipper extends AbstractJSONRipper {
         var json = Http.url(TEMPORARY_AUTH_ENDPOINT).getJSON();
         var token = json.getString("token");
         authToken = token;
-        logger.info("Incase of redgif 401 errors, please restart the app to refresh the auth token");
+    }
+
+    /**
+     * Performs an authenticated GET against the RedGIFs API. The auth token is a
+     * temporary, expiring credential (see fetchAuthToken()); on a 401 (expired
+     * token) this fetches a fresh one and retries once before giving up.
+     */
+    private static JSONObject getAuthenticatedJSON(String requestUrl) throws IOException {
+        if (authToken == null || authToken.isBlank()) {
+            fetchAuthToken();
+        }
+        try {
+            return Http.url(requestUrl).header("Authorization", "Bearer " + authToken).getJSON();
+        } catch (org.jsoup.HttpStatusException e) {
+            if (e.getStatusCode() != 401) {
+                throw e;
+            }
+            logger.warn("RedGIFs auth token expired, fetching a new one and retrying: " + requestUrl);
+            fetchAuthToken();
+            return Http.url(requestUrl).header("Authorization", "Bearer " + authToken).getJSON();
+        }
+    }
+
+    private static JSONObject getAuthenticatedJSON(URL requestUrl) throws IOException {
+        return getAuthenticatedJSON(requestUrl.toExternalForm());
     }
 
     /**
