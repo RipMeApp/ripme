@@ -1,7 +1,8 @@
 package com.rarchives.ripme.ui.compose.config
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -12,12 +13,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.LocalTextStyle
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -26,6 +30,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.unit.dp
 import com.rarchives.ripme.ui.compose.AwtInterop
 import com.rarchives.ripme.ui.compose.tr
@@ -51,7 +56,9 @@ private val CompactButtonPadding = PaddingValues(horizontal = 10.dp, vertical = 
  * Laid out as a two-column grid that mirrors MainWindow's GridBagLayout row-for-row (each
  * addItemToConfigGridBagConstraints(...) call there has a matching SettingsRow(...) call here) -
  * one setting per row stacked full-width made the panel run roughly twice as tall as the Swing
- * equivalent for no layout reason.
+ * equivalent for no layout reason. Each column holds one component (a label, a field, a checkbox,
+ * a button) rather than nesting label+field together in a single column - that's what mirrors
+ * GridBagLayout's actual per-column allocation and keeps each half of the row from being squeezed.
  */
 @Composable
 fun ConfigScreen(component: ConfigComponent) {
@@ -78,16 +85,20 @@ fun ConfigScreen(component: ConfigComponent) {
             right = { LogLevelDropdown(config) },
         )
         SettingsRow(
-            left = { LabeledField(tr("max.download.threads"), config.threadsText, config::onThreadsTextChanged) },
+            left = { Text(tr("max.download.threads")) },
+            right = { CompactTextField(config.threadsText, config::onThreadsTextChanged) },
         )
         SettingsRow(
-            left = { LabeledField(tr("timeout.mill"), config.timeoutText, config::onTimeoutTextChanged) },
+            left = { Text(tr("timeout.mill")) },
+            right = { CompactTextField(config.timeoutText, config::onTimeoutTextChanged) },
         )
         SettingsRow(
-            left = { LabeledField(tr("retry.download.count"), config.retriesText, config::onRetriesTextChanged) },
+            left = { Text(tr("retry.download.count")) },
+            right = { CompactTextField(config.retriesText, config::onRetriesTextChanged) },
         )
         SettingsRow(
-            left = { LabeledField(tr("retry.sleep.mill"), config.retrySleepText, config::onRetrySleepTextChanged) },
+            left = { Text(tr("retry.sleep.mill")) },
+            right = { CompactTextField(config.retrySleepText, config::onRetrySleepTextChanged) },
         )
         SettingsRow(
             left = { LabeledCheckbox(tr("overwrite.existing.files"), config.fileOverwrite, config::onFileOverwriteChanged) },
@@ -206,17 +217,26 @@ private fun LabeledCheckbox(label: String, checked: Boolean, onChange: (Boolean)
     }
 }
 
+/**
+ * A single-line text box sized like Swing's JTextField (just tall enough for one line of text +
+ * a thin border) instead of Material3's OutlinedTextField, whose ~56.dp default height (floating
+ * label + generous padding) is what made the numeric fields look oversized next to MainWindow's
+ * compact fields.
+ */
 @Composable
-private fun LabeledField(label: String, value: String, onChange: (String) -> Unit) {
-    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-        Text(label, modifier = Modifier.width(180.dp))
-        OutlinedTextField(
-            value = value,
-            onValueChange = onChange,
-            singleLine = true,
-            modifier = Modifier.width(100.dp),
-        )
-    }
+private fun CompactTextField(value: String, onChange: (String) -> Unit) {
+    val textColor = MaterialTheme.colorScheme.onSurface
+    BasicTextField(
+        value = value,
+        onValueChange = onChange,
+        singleLine = true,
+        textStyle = LocalTextStyle.current.copy(color = textColor),
+        cursorBrush = SolidColor(textColor),
+        modifier = Modifier
+            .width(80.dp)
+            .border(BorderStroke(1.dp, MaterialTheme.colorScheme.outline), RoundedCornerShape(4.dp))
+            .padding(horizontal = 6.dp, vertical = 4.dp),
+    )
 }
 
 @Composable
