@@ -68,7 +68,7 @@ semver version associated with it.
 
 ## Installation
 
-On macOS, there is a [cask](https://github.com/Homebrew/homebrew-cask/blob/master/Casks/ripme.rb).
+On macOS, there is a [cask](https://github.com/Homebrew/homebrew-cask/blob/main/Casks/r/ripme.rb).
 
 ```
 brew install --cask ripme && xattr -d com.apple.quarantine /Applications/ripme.jar
