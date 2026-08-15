@@ -13,14 +13,43 @@ plugins {
   id("java")
   id("maven-publish")
   id("com.gradleup.shadow") version "9.0.0-rc1"
+  kotlin("jvm") version "2.4.10"
+  id("org.jetbrains.kotlin.plugin.compose") version "2.4.10"
+  id("org.jetbrains.compose") version "1.11.1"
 }
 
 repositories {
   mavenLocal()
   mavenCentral()
+  google()
 }
 
 dependencies {
+  // Compose Desktop scaffold (RipMe #2082) - runtime deps only, no native packaging.
+  // compose.runtime/foundation/material3/ui DSL aliases are deprecated as of the Compose Gradle
+  // plugin used here; specify the underlying artifacts directly instead (compose.desktop.currentOs
+  // isn't deprecated - it does real OS-detection work the alias replacement doesn't).
+  implementation(compose.desktop.currentOs)
+  implementation("org.jetbrains.compose.runtime:runtime:1.11.1")
+  implementation("org.jetbrains.compose.foundation:foundation:1.11.1")
+  // material3 is versioned independently of the Compose Multiplatform release train (the alias
+  // resolved it to 1.9.0, not 1.11.1 - verified via `gradlew dependencies`).
+  implementation("org.jetbrains.compose.material3:material3:1.9.0")
+  // Vector icons (e.g. the Panic button's warning triangle) that don't have a matching PNG in
+  // src/main/resources. Versioned independently of the Compose Multiplatform release train (like
+  // material3 above) - 1.7.3 is the latest published release as of this writing.
+  implementation("org.jetbrains.compose.material:material-icons-core:1.7.3")
+  implementation("org.jetbrains.compose.ui:ui:1.11.1")
+  // Nav for the Compose Desktop GUI (RipMe #2082 GUI parity pass) is a plain hand-rolled
+  // mutableStateOf<Panel> controller (see ui/compose/nav/Panel.kt) rather than a navigation
+  // library: ripme's actual need is 5 mutually-exclusive panel states with no back stack and no
+  // process-death state restoration, desktop-only - Decompose/Navigation-3-style back-stack
+  // machinery would solve problems this app doesn't have, at the cost of a real dependency-
+  // version-compat risk for zero benefit. (An earlier pass evaluated
+  // com.arkivanov.decompose:decompose/extensions-compose:3.5.0 + essenty:lifecycle:2.5.0 against
+  // Compose Multiplatform 1.11.1 and confirmed they resolve/compile/run together with no
+  // NoSuchMethodError, so the library approach was technically viable - it just wasn't the right
+  // tool for this app's needs, per explicit product decision.)
   implementation("com.lmax:disruptor:4.0.0")
   implementation("org.java-websocket:Java-WebSocket:1.6.0")
   implementation("org.jsoup:jsoup:1.23.1")
@@ -72,6 +101,12 @@ tasks.compileJava {
   options.release.set(Integer.parseInt(javacRelease))
 }
 
+kotlin {
+  compilerOptions {
+    jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21)
+  }
+}
+
 tasks.withType<Jar> {
   duplicatesStrategy = DuplicatesStrategy.INCLUDE
   manifest {
@@ -91,6 +126,10 @@ tasks.withType<Jar> {
 
 tasks.shadowJar {
   transform<com.github.jengelman.gradle.plugins.shadow.transformers.Log4j2PluginsCacheFileTransformer>()
+  // Compose Desktop (Skiko natives for every supported OS/arch, plus its transitive
+  // AndroidX/Compose jars) pushes the shaded jar's entry count past the 65535 zip
+  // limit; opt into zip64 so shadowJar can still produce a single fat jar.
+  isZip64 = true
 }
 
 publishing {

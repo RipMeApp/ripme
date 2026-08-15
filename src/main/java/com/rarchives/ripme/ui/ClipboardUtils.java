@@ -7,17 +7,29 @@ import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-class ClipboardUtils {
+public class ClipboardUtils {
 
     private static final Logger logger = LogManager.getLogger(ClipboardUtils.class);
 
     private static AutoripThread autoripThread = new AutoripThread();
+
+    // Dispatch target for autorip'd URLs. Defaults to the Swing entry point so MainWindow's
+    // behavior is unchanged; the Compose GUI's QueueController overrides this at startup
+    // (see plan §11/§4). This is a lazy method reference - it does not touch MainWindow's
+    // static initializer until actually invoked, so running Compose-only never triggers
+    // Swing UI construction.
+    static Consumer<String> ripHandler = MainWindow::ripAlbumStatic;
+
+    public static void setRipHandler(Consumer<String> handler) {
+        ripHandler = handler;
+    }
 
     public static void setClipboardAutoRip(boolean enabled) {
         if (enabled) {
@@ -63,8 +75,7 @@ class AutoripThread extends Thread {
                         String url = m.group();
                         if (!rippedURLs.contains(url)) {
                             rippedURLs.add(url);
-                            // TODO Queue rip instead of just starting it
-                            MainWindow.ripAlbumStatic(url);
+                            ClipboardUtils.ripHandler.accept(url);
                         }
                     }
                 }

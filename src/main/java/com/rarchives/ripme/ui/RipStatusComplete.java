@@ -19,4 +19,8 @@ public class RipStatusComplete {
     public String getDir() {
         return this.dir.toString();
     }
+
+    public int getCount() {
+        return this.count;
+    }
 }
