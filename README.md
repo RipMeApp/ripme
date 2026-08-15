@@ -23,6 +23,27 @@ Requires Java 21 or later to run. RipMe has been tested on and is confirmed work
 
 Java 21 is the most modern possible Java version that allows us to support the most platforms; it's the default JDK on current Debian stable. See [thread](https://github.com/RipMeApp/ripme/pull/2057#issuecomment-2571472016) and [issue #2055](https://github.com/RipMeApp/ripme/issues/2055).
 
+## New Compose GUI (preview)
+
+RipMe is growing a new desktop GUI built with [JetBrains Compose Multiplatform](https://www.jetbrains.com/lp/compose-multiplatform/) (`src/main/kotlin/com/rarchives/ripme/ui/compose`), alongside the existing Swing GUI (`MainWindow`). Swing remains the default; the Compose GUI is opt-in via the `ripme.gui` system property.
+
+**Out of a release jar:**
+
+```bash
+java -Dripme.gui=compose -jar ripme.jar
+```
+
+(Leave the property out, or set `-Dripme.gui=swing`, to get the classic Swing GUI.)
+
+**From source:**
+
+```bash
+./gradlew assemble
+java -Dripme.gui=compose -jar build/libs/ripme-<version>.jar
+```
+
+`./gradlew assemble` builds a self-contained jar (dependencies included) in `build/libs`; substitute the actual filename it produces, or run `./gradlew build` first to also run the tests.
+
 ## Supported Sites
 
 Jump to:
