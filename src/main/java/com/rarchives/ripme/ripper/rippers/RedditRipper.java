@@ -13,14 +13,20 @@ import static j2html.TagCreator.span;
 import static j2html.TagCreator.style;
 import static j2html.TagCreator.title;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+import java.nio.file.StandardOpenOption;
 import java.util.Date;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -33,8 +39,14 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 import org.jsoup.Jsoup;
+import org.mp4parser.Container;
+import org.mp4parser.muxer.Movie;
+import org.mp4parser.muxer.Track;
+import org.mp4parser.muxer.builder.DefaultMp4Builder;
+import org.mp4parser.muxer.container.mp4.MovieCreator;
 
 import com.rarchives.ripme.ripper.AlbumRipper;
+import com.rarchives.ripme.ripper.RipUrlId;
 import com.rarchives.ripme.ui.RipStatusMessage;
 import com.rarchives.ripme.ui.UpdateUtils;
 import com.rarchives.ripme.utils.Http;
@@ -383,29 +395,151 @@ public class RedditRipper extends AlbumRipper {
         return parentDiv;
     }
 
-    private URL parseRedditVideoMPD(String vidURL) {
-        org.jsoup.nodes.Document doc;
+    /** The resolved download URLs for a v.redd.it video's separate DASH tracks. audioURL is null if the video has no audio track. */
+    private static class RedditVideoManifest {
+        final URL videoURL;
+        final URL audioURL;
+
+        RedditVideoManifest(URL videoURL, URL audioURL) {
+            this.videoURL = videoURL;
+            this.audioURL = audioURL;
+        }
+    }
+
+    private RedditVideoManifest parseRedditVideoMPD(String vidURL) {
         try {
-            doc = Http.url(vidURL + "/DASHPlaylist.mpd").ignoreContentType().get();
-            int largestHeight = 0;
-            String baseURL = null;
-            // Loops over all the videos and finds the one with the largest height and sets baseURL to the base url of that video
-            for (org.jsoup.nodes.Element e : doc.select("MPD > Period > AdaptationSet > Representation")) {
-                String height = e.attr("height");
-                if (height.equals("")) {
-                    height = "0";
-                }
-                if (largestHeight < Integer.parseInt(height)) {
-                    largestHeight = Integer.parseInt(height);
-                    baseURL = doc.select("MPD > Period > AdaptationSet > Representation[height=" + height + "]").select("BaseURL").text();
-                }
+            org.jsoup.nodes.Document doc = Http.url(vidURL + "/DASHPlaylist.mpd").ignoreContentType().get();
+
+            // v.redd.it serves video and audio as separate DASH tracks; pick the best-quality
+            // Representation of each (highest height for video, highest bandwidth for audio).
+            String videoBaseURL = selectBestRepresentation(doc, "video", "height");
+            String audioBaseURL = selectBestRepresentation(doc, "audio", "bandwidth");
+            if (videoBaseURL == null) {
+                return null;
             }
-            return new URI(vidURL + "/" + baseURL).toURL();
+
+            URL videoURL = new URI(vidURL + "/" + videoBaseURL).toURL();
+            URL audioURL = audioBaseURL == null ? null : new URI(vidURL + "/" + audioBaseURL).toURL();
+            return new RedditVideoManifest(videoURL, audioURL);
         } catch (IOException | URISyntaxException e) {
             logger.error("[!] Failed to parse DASH manifest for " + vidURL, e);
         }
         return null;
+    }
 
+    /**
+     * Finds the BaseURL of the Representation with the largest value of rankAttr
+     * (e.g. "height" for video, "bandwidth" for audio) within the AdaptationSet
+     * of the given contentType ("video" or "audio"). Returns null if there's no
+     * matching AdaptationSet (e.g. most videos have no separate audio track).
+     */
+    private String selectBestRepresentation(org.jsoup.nodes.Document doc, String contentType, String rankAttr) {
+        int best = -1;
+        String baseURL = null;
+        for (org.jsoup.nodes.Element rep : doc.select(
+                "MPD > Period > AdaptationSet[contenttype=" + contentType + "] > Representation")) {
+            int value;
+            try {
+                value = Integer.parseInt(rep.attr(rankAttr));
+            } catch (NumberFormatException e) {
+                value = 0;
+            }
+            String candidate = rep.select("BaseURL").text();
+            if (!candidate.isEmpty() && value > best) {
+                best = value;
+                baseURL = candidate;
+            }
+        }
+        return baseURL;
+    }
+
+    /**
+     * Downloads a v.redd.it video's video and (if present) audio tracks and muxes them into
+     * a single playable file at savePath. Runs synchronously since it needs to combine two
+     * separate downloads before the file exists, unlike the addURLToDownload()/thread-pool
+     * path used for every other download.
+     */
+    private void downloadRedditVideo(RedditVideoManifest manifest, Path savePath) {
+        RipUrlId ripUrlId = new RipUrlId(getClass(), getHost(), manifest.videoURL);
+        // Mirrors addURLToDownload()'s own "only download one file if this is a test" gate,
+        // since this path doesn't go through addURLToDownload at all.
+        if (isThisATest() && (itemsCompleted.size() > 0 || itemsErrored.size() > 0)) {
+            return;
+        }
+
+        Path videoTemp = null;
+        Path audioTemp = null;
+        try {
+            Files.createDirectories(savePath.getParent());
+            videoTemp = Files.createTempFile("ripme-reddit-video-", ".mp4");
+            downloadToFile(manifest.videoURL, videoTemp);
+
+            if (manifest.audioURL != null) {
+                audioTemp = Files.createTempFile("ripme-reddit-audio-", ".mp4");
+                try {
+                    downloadToFile(manifest.audioURL, audioTemp);
+                    muxVideoAudio(videoTemp, audioTemp, savePath);
+                } catch (Exception e) {
+                    // Muxing is best-effort (e.g. an unusual DASH segment layout mp4parser
+                    // doesn't handle): fall back to the silent video rather than losing the
+                    // download entirely, matching this ripper's pre-audio-muxing behavior.
+                    logger.warn("[!] Failed to mux audio into " + savePath + ", saving video without audio", e);
+                    Files.copy(videoTemp, savePath, StandardCopyOption.REPLACE_EXISTING);
+                }
+            } else {
+                Files.copy(videoTemp, savePath, StandardCopyOption.REPLACE_EXISTING);
+            }
+            downloadCompleted(ripUrlId, savePath);
+        } catch (IOException e) {
+            logger.error("[!] Failed to download reddit video to " + savePath, e);
+            downloadErrored(ripUrlId, e.getMessage());
+        } finally {
+            deleteQuietly(videoTemp);
+            deleteQuietly(audioTemp);
+        }
+    }
+
+    private void downloadToFile(URL url, Path dest) throws IOException {
+        // Uses a raw HttpURLConnection, like DownloadFileThread, rather than Http.java's
+        // jsoup-based wrapper: jsoup's Connection.Response doesn't reliably keep the
+        // underlying connection open for streaming a large body via bodyStream().
+        int timeout = Utils.getConfigInteger("download.timeout", 60000);
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setRequestProperty("User-agent", USER_AGENT);
+        conn.setConnectTimeout(timeout);
+        conn.setReadTimeout(timeout);
+        try (InputStream is = new BufferedInputStream(conn.getInputStream())) {
+            Files.copy(is, dest, StandardCopyOption.REPLACE_EXISTING);
+        } finally {
+            conn.disconnect();
+        }
+    }
+
+    private void muxVideoAudio(Path video, Path audio, Path output) throws IOException {
+        Movie videoMovie = MovieCreator.build(video.toAbsolutePath().toString());
+        Movie audioMovie = MovieCreator.build(audio.toAbsolutePath().toString());
+        Movie result = new Movie();
+        for (Track t : videoMovie.getTracks()) {
+            result.addTrack(t);
+        }
+        for (Track t : audioMovie.getTracks()) {
+            result.addTrack(t);
+        }
+        Container out = new DefaultMp4Builder().build(result);
+        try (FileChannel fc = FileChannel.open(output, StandardOpenOption.CREATE, StandardOpenOption.WRITE,
+                StandardOpenOption.TRUNCATE_EXISTING)) {
+            out.writeContainer(fc);
+        }
+    }
+
+    private void deleteQuietly(Path p) {
+        if (p != null) {
+            try {
+                Files.deleteIfExists(p);
+            } catch (IOException e) {
+                logger.debug("Failed to delete temp file " + p, e);
+            }
+        }
     }
 
     private void handleURL(String theUrl, String id, String title) {
@@ -442,10 +576,10 @@ public class RedditRipper extends AlbumRipper {
                 sleep(3000);
                 String savePath = this.workingDir + "/";
                 savePath += id + "-" + url.split("/")[3] + Utils.filesystemSafe(title) + ".mp4";
-                URL urlToDownload = parseRedditVideoMPD(urls.get(0).toExternalForm());
-                if (urlToDownload != null) {
-                    logger.info("url: " + urlToDownload + " file: " + savePath);
-                    addURLToDownload(urlToDownload, Utils.getPath(savePath));
+                RedditVideoManifest manifest = parseRedditVideoMPD(urls.get(0).toExternalForm());
+                if (manifest != null) {
+                    logger.info("url: " + manifest.videoURL + " audio: " + manifest.audioURL + " file: " + savePath);
+                    downloadRedditVideo(manifest, Utils.getPath(savePath));
                 } else {
                     logger.warn("[!] Skipping video, could not resolve download URL from DASH manifest: " + url);
                 }

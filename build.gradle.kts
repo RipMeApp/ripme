@@ -35,6 +35,9 @@ dependencies {
   implementation("org.apache.logging.log4j:log4j-api:2.26.1")
   implementation("org.apache.logging.log4j:log4j-core:2.26.1")
   implementation("com.squareup.okhttp3:okhttp:5.4.0")
+  // Muxes Reddit's separate video-only and audio-only DASH tracks into a single playable file.
+  implementation("org.mp4parser:isoparser:1.9.56")
+  implementation("org.mp4parser:muxer:1.9.56")
   // org.graalvm.js:js is now a thin POM whose js-language implementation (used for
   // InstagramRipper's direct com.oracle.js.parser AST access) is runtime-scope only;
   // depend on js-language directly so the parser classes are visible at compile time too.
