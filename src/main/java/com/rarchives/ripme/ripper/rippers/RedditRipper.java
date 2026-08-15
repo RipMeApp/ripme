@@ -402,7 +402,7 @@ public class RedditRipper extends AlbumRipper {
             }
             return new URI(vidURL + "/" + baseURL).toURL();
         } catch (IOException | URISyntaxException e) {
-            e.printStackTrace();
+            logger.error("[!] Failed to parse DASH manifest for " + vidURL, e);
         }
         return null;
 
@@ -436,12 +436,18 @@ public class RedditRipper extends AlbumRipper {
                 savePath += id + "-" + m.group(1) + Utils.filesystemSafe(title) + ".jpg";
                 addURLToDownload(urls.get(0), Utils.getPath(savePath));
             } else if (url.contains("v.redd.it")) {
+                // v.redd.it rate limits us if we request DASH manifests/videos too fast,
+                // same as redgifs.com below, and v.redd.it links are common in subreddit
+                // listings with many video posts fetched back-to-back.
+                sleep(3000);
                 String savePath = this.workingDir + "/";
                 savePath += id + "-" + url.split("/")[3] + Utils.filesystemSafe(title) + ".mp4";
                 URL urlToDownload = parseRedditVideoMPD(urls.get(0).toExternalForm());
                 if (urlToDownload != null) {
                     logger.info("url: " + urlToDownload + " file: " + savePath);
                     addURLToDownload(urlToDownload, Utils.getPath(savePath));
+                } else {
+                    logger.warn("[!] Skipping video, could not resolve download URL from DASH manifest: " + url);
                 }
             } else {
                 if (url.contains("redgifs.com")) {
