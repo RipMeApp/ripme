@@ -35,6 +35,10 @@ dependencies {
   // material3 is versioned independently of the Compose Multiplatform release train (the alias
   // resolved it to 1.9.0, not 1.11.1 - verified via `gradlew dependencies`).
   implementation("org.jetbrains.compose.material3:material3:1.9.0")
+  // Vector icons (e.g. the Panic button's warning triangle) that don't have a matching PNG in
+  // src/main/resources. Versioned independently of the Compose Multiplatform release train (like
+  // material3 above) - 1.7.3 is the latest published release as of this writing.
+  implementation("org.jetbrains.compose.material:material-icons-core:1.7.3")
   implementation("org.jetbrains.compose.ui:ui:1.11.1")
   // Nav for the Compose Desktop GUI (RipMe #2082 GUI parity pass) is a plain hand-rolled
   // mutableStateOf<Panel> controller (see ui/compose/nav/Panel.kt) rather than a navigation

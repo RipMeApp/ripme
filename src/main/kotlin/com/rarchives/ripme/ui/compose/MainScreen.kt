@@ -11,6 +11,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
@@ -61,27 +63,34 @@ fun MainScreen(nav: NavController, queueController: QueueController, panels: Pan
                         modifier = Modifier.weight(1f)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Button(onClick = {
+                    // Matches MainWindow: "Rip"/"Stop"/"Panic!" are hardcoded literals, never
+                    // routed through Utils.getLocalizedString. icon.png/stop.png are the same
+                    // icons MainWindow's ripButton/stopButton use. MainWindow's panicButton has
+                    // no icon of its own; Panic does an immediate hard-abort (ripper.stop() +
+                    // ripper.panic(), no graceful finish-current-item like Stop), so it gets a
+                    // warning triangle from Compose's bundled material-icons-core rather than
+                    // reusing an unrelated resource PNG.
+                    IconActionButton("Rip", onClick = {
                         queueController.enqueue(urlText)
                         urlText = ""
                     }) {
-                        // Matches MainWindow: "Rip"/"Stop"/"Panic!" are hardcoded literals, never
-                        // routed through Utils.getLocalizedString.
-                        Text("Rip")
+                        ResourcePngIcon("icon.png")
                     }
                     Spacer(modifier = Modifier.width(8.dp))
-                    Button(
+                    IconActionButton(
+                        "Stop",
                         onClick = { queueController.stop() },
-                        enabled = queueController.busy
+                        enabled = queueController.busy,
                     ) {
-                        Text("Stop")
+                        ResourcePngIcon("stop.png")
                     }
                     Spacer(modifier = Modifier.width(8.dp))
-                    Button(
+                    IconActionButton(
+                        "Panic!",
                         onClick = { queueController.panic() },
-                        enabled = queueController.busy
+                        enabled = queueController.busy,
                     ) {
-                        Text("Panic!")
+                        Icon(imageVector = Icons.Filled.Warning, contentDescription = null, modifier = Modifier.size(20.dp))
                     }
                 }
 
@@ -130,6 +139,28 @@ fun MainScreen(nav: NavController, queueController: QueueController, panels: Pan
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun IconActionButton(
+    label: String,
+    onClick: () -> Unit,
+    enabled: Boolean = true,
+    icon: @Composable () -> Unit,
+) {
+    Button(onClick = onClick, enabled = enabled) {
+        icon()
+        Spacer(modifier = Modifier.width(6.dp))
+        Text(label)
+    }
+}
+
+@Composable
+private fun ResourcePngIcon(resourceName: String) {
+    val painter = rememberResourceIcon(resourceName)
+    if (painter != null) {
+        Icon(painter = painter, contentDescription = null, modifier = Modifier.size(20.dp))
     }
 }
 
