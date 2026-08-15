@@ -2,14 +2,17 @@ package com.rarchives.ripme.ui.compose
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -101,16 +104,17 @@ fun MainScreen(nav: NavController, queueController: QueueController, panels: Pan
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    OptionButton(tr("Log"), activePanel == Panel.Log) { nav.select(Panel.Log) }
+                    OptionButton(tr("Log"), "comment.png", activePanel == Panel.Log) { nav.select(Panel.Log) }
                     Spacer(modifier = Modifier.width(4.dp))
-                    OptionButton(tr("History"), activePanel == Panel.History) { nav.select(Panel.History) }
+                    OptionButton(tr("History"), "time.png", activePanel == Panel.History) { nav.select(Panel.History) }
                     Spacer(modifier = Modifier.width(4.dp))
                     OptionButton(
                         tr("queue") + queueController.queueCountSuffix(),
+                        "list.png",
                         activePanel == Panel.Queue,
                     ) { nav.select(Panel.Queue) }
                     Spacer(modifier = Modifier.width(4.dp))
-                    OptionButton(tr("Configuration"), activePanel == Panel.Configuration) { nav.select(Panel.Configuration) }
+                    OptionButton(tr("Configuration"), "gear.png", activePanel == Panel.Configuration) { nav.select(Panel.Configuration) }
                 }
 
                 Spacer(modifier = Modifier.height(8.dp))
@@ -130,8 +134,16 @@ fun MainScreen(nav: NavController, queueController: QueueController, panels: Pan
 }
 
 @Composable
-private fun OptionButton(label: String, active: Boolean, onClick: () -> Unit) {
-    Button(onClick = onClick) {
+private fun OptionButton(label: String, iconResource: String, active: Boolean, onClick: () -> Unit) {
+    val icon = rememberResourceIcon(iconResource)
+    Button(
+        onClick = onClick,
+        contentPadding = PaddingValues(horizontal = 10.dp, vertical = 6.dp),
+    ) {
+        if (icon != null) {
+            Icon(painter = icon, contentDescription = null, modifier = Modifier.size(16.dp))
+            Spacer(modifier = Modifier.width(4.dp))
+        }
         Text(text = label, fontWeight = if (active) FontWeight.Bold else FontWeight.Normal)
     }
 }

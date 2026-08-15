@@ -2,11 +2,14 @@ package com.rarchives.ripme.ui.compose.config
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -21,6 +24,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.rarchives.ripme.ui.compose.AwtInterop
@@ -33,11 +37,21 @@ import org.apache.logging.log4j.LogManager
 
 private val LOGGER = LogManager.getLogger("ConfigScreen")
 
+// Compact button chrome shared by every button in this screen - Material3's default content
+// padding (16.dp horizontal / 8.dp vertical) is why the panel used to run about 2x taller than
+// MainWindow's equivalent Swing JButtons.
+private val CompactButtonPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp)
+
 /**
  * Every setting MainWindow's configuration panel exposes (plan §6): threads/timeout/retries/
  * retry-sleep numeric fields; the full set of behavior checkboxes; log-level + language combos
  * (feeding [com.rarchives.ripme.ui.compose.LocalStrings.refresh] so `tr(...)` call sites
  * relocalize live); save-dir picker + click-to-open; URL-list file picker; cookies button.
+ *
+ * Laid out as a two-column grid that mirrors MainWindow's GridBagLayout row-for-row (each
+ * addItemToConfigGridBagConstraints(...) call there has a matching SettingsRow(...) call here) -
+ * one setting per row stacked full-width made the panel run roughly twice as tall as the Swing
+ * equivalent for no layout reason.
  */
 @Composable
 fun ConfigScreen(component: ConfigComponent) {
@@ -46,57 +60,101 @@ fun ConfigScreen(component: ConfigComponent) {
     var showCookieDialog by remember { mutableStateOf(false) }
 
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(4.dp)) {
-        Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
-            Text(config.updateStatus)
-            Button(onClick = {
-                config.checkForUpdates { message ->
-                    queueController.postLog(message, androidx.compose.ui.graphics.Color.Black)
+        SettingsRow(
+            left = { Text(config.updateStatus) },
+            right = {
+                Button(
+                    contentPadding = CompactButtonPadding,
+                    onClick = {
+                        config.checkForUpdates { message ->
+                            queueController.postLog(message, androidx.compose.ui.graphics.Color.Black)
+                        }
+                    },
+                ) { Text(tr("check.for.updates")) }
+            },
+        )
+        SettingsRow(
+            left = { LabeledCheckbox(tr("auto.update"), config.autoUpdate, config::onAutoUpdateChanged) },
+            right = { LogLevelDropdown(config) },
+        )
+        SettingsRow(
+            left = { LabeledField(tr("max.download.threads"), config.threadsText, config::onThreadsTextChanged) },
+        )
+        SettingsRow(
+            left = { LabeledField(tr("timeout.mill"), config.timeoutText, config::onTimeoutTextChanged) },
+        )
+        SettingsRow(
+            left = { LabeledField(tr("retry.download.count"), config.retriesText, config::onRetriesTextChanged) },
+        )
+        SettingsRow(
+            left = { LabeledField(tr("retry.sleep.mill"), config.retrySleepText, config::onRetrySleepTextChanged) },
+        )
+        SettingsRow(
+            left = { LabeledCheckbox(tr("overwrite.existing.files"), config.fileOverwrite, config::onFileOverwriteChanged) },
+            right = { LabeledCheckbox(tr("preserve.order"), config.saveOrder, config::onSaveOrderChanged) },
+        )
+        SettingsRow(
+            left = { LabeledCheckbox(tr("sound.when.rip.completes"), config.playSound, config::onPlaySoundChanged) },
+            right = { LabeledCheckbox(tr("save.logs"), config.saveLogs, config::onSaveLogsChanged) },
+        )
+        SettingsRow(
+            left = { LabeledCheckbox(tr("notification.when.rip.starts"), config.showPopup, config::onShowPopupChanged) },
+            right = { LabeledCheckbox(tr("save.urls.only"), config.saveUrlsOnly, config::onSaveUrlsOnlyChanged) },
+        )
+        SettingsRow(
+            left = { LabeledCheckbox(tr("autorip.from.clipboard"), config.clipboardAutorip, config::onClipboardAutoripChanged) },
+            right = { LabeledCheckbox(tr("save.album.titles"), config.saveAlbumTitles, config::onSaveAlbumTitlesChanged) },
+        )
+        SettingsRow(
+            left = { LabeledCheckbox(tr("save.descriptions"), config.saveDescriptions, config::onSaveDescriptionsChanged) },
+            right = { LabeledCheckbox(tr("prefer.mp4.over.gif"), config.preferMp4, config::onPreferMp4Changed) },
+        )
+        SettingsRow(
+            left = { LabeledCheckbox(tr("restore.window.position"), config.windowPosition, config::onWindowPositionChanged) },
+            right = { LabeledCheckbox(tr("remember.url.history"), config.rememberUrlHistory, config::onRememberUrlHistoryChanged) },
+        )
+        SettingsRow(
+            left = { LabeledCheckbox(tr("ssl.verify.off"), config.sslVerifyOff, config::onSslVerifyOffChanged) },
+        )
+        SettingsRow(
+            left = { LanguageDropdown(config) },
+            right = {
+                Button(
+                    contentPadding = CompactButtonPadding,
+                    onClick = {
+                        AwtInterop.chooseFile(Utils.getWorkingDirectory().toAbsolutePath().toString()) { file ->
+                            importUrlList(file, queueController)
+                        }
+                    },
+                ) { Text(tr("download.url.list")) }
+            },
+        )
+        SettingsRow(
+            left = {
+                Text(
+                    text = config.saveDirLabel,
+                    modifier = Modifier.clickable { AwtInterop.openInFileManager(Utils.getWorkingDirectory().toFile()) },
+                )
+            },
+            right = {
+                Button(
+                    contentPadding = CompactButtonPadding,
+                    onClick = {
+                        AwtInterop.chooseDirectory(Utils.getWorkingDirectory().toString()) { dir ->
+                            config.setSaveDir(dir.path)
+                        }
+                    },
+                ) { Text(tr("select.save.dir") + "...") }
+            },
+        )
+        SettingsRow(
+            left = { Text(tr("cookies.configure")) },
+            right = {
+                Button(contentPadding = CompactButtonPadding, onClick = { showCookieDialog = true }) {
+                    Text(tr("cookies.configure"))
                 }
-            }) { Text(tr("check.for.updates")) }
-        }
-
-        LabeledCheckbox(tr("auto.update"), config.autoUpdate, config::onAutoUpdateChanged)
-        LogLevelDropdown(config)
-        LabeledTextField(tr("max.download.threads"), config.threadsText, config::onThreadsTextChanged)
-        LabeledTextField(tr("timeout.mill"), config.timeoutText, config::onTimeoutTextChanged)
-        LabeledTextField(tr("retry.download.count"), config.retriesText, config::onRetriesTextChanged)
-        LabeledTextField(tr("retry.sleep.mill"), config.retrySleepText, config::onRetrySleepTextChanged)
-
-        LabeledCheckbox(tr("overwrite.existing.files"), config.fileOverwrite, config::onFileOverwriteChanged)
-        LabeledCheckbox(tr("preserve.order"), config.saveOrder, config::onSaveOrderChanged)
-        LabeledCheckbox(tr("sound.when.rip.completes"), config.playSound, config::onPlaySoundChanged)
-        LabeledCheckbox(tr("save.logs"), config.saveLogs, config::onSaveLogsChanged)
-        LabeledCheckbox(tr("notification.when.rip.starts"), config.showPopup, config::onShowPopupChanged)
-        LabeledCheckbox(tr("save.urls.only"), config.saveUrlsOnly, config::onSaveUrlsOnlyChanged)
-        LabeledCheckbox(tr("autorip.from.clipboard"), config.clipboardAutorip, config::onClipboardAutoripChanged)
-        LabeledCheckbox(tr("save.album.titles"), config.saveAlbumTitles, config::onSaveAlbumTitlesChanged)
-        LabeledCheckbox(tr("save.descriptions"), config.saveDescriptions, config::onSaveDescriptionsChanged)
-        LabeledCheckbox(tr("prefer.mp4.over.gif"), config.preferMp4, config::onPreferMp4Changed)
-        LabeledCheckbox(tr("restore.window.position"), config.windowPosition, config::onWindowPositionChanged)
-        LabeledCheckbox(tr("remember.url.history"), config.rememberUrlHistory, config::onRememberUrlHistoryChanged)
-        LabeledCheckbox(tr("ssl.verify.off"), config.sslVerifyOff, config::onSslVerifyOffChanged)
-
-        LanguageDropdown(config)
-
-        Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-            Text(
-                text = config.saveDirLabel,
-                modifier = Modifier.clickable { AwtInterop.openInFileManager(Utils.getWorkingDirectory().toFile()) },
-            )
-            Button(onClick = {
-                AwtInterop.chooseDirectory(Utils.getWorkingDirectory().toString()) { dir ->
-                    config.setSaveDir(dir.path)
-                }
-            }) { Text(tr("select.save.dir") + "...") }
-        }
-
-        Button(onClick = {
-            AwtInterop.chooseFile(Utils.getWorkingDirectory().toAbsolutePath().toString()) { file ->
-                importUrlList(file, queueController)
-            }
-        }) { Text(tr("download.url.list")) }
-
-        Button(onClick = { showCookieDialog = true }) { Text(tr("cookies.configure")) }
+            },
+        )
     }
 
     if (showCookieDialog) {
@@ -123,40 +181,61 @@ private fun importUrlList(file: File, queueController: com.rarchives.ripme.ui.co
     }
 }
 
+/**
+ * One line of the settings grid, split into two equal-weight columns - mirrors a single
+ * GridBagLayout row in MainWindow (gridx 0/1). [right] is omitted for rows that only need one
+ * column (e.g. MainWindow's ssl.verify.off row, which duplicates its own component into both
+ * cells - not worth replicating here).
+ */
+@Composable
+private fun SettingsRow(left: @Composable () -> Unit, right: (@Composable () -> Unit)? = null) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.fillMaxWidth().padding(vertical = 1.dp),
+    ) {
+        Box(modifier = Modifier.weight(1f)) { left() }
+        Box(modifier = Modifier.weight(1f)) { right?.invoke() }
+    }
+}
+
 @Composable
 private fun LabeledCheckbox(label: String, checked: Boolean, onChange: (Boolean) -> Unit) {
-    Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-        Checkbox(checked = checked, onCheckedChange = onChange)
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Checkbox(checked = checked, onCheckedChange = onChange, modifier = Modifier.size(32.dp))
         Text(label)
     }
 }
 
 @Composable
-private fun LabeledTextField(label: String, value: String, onChange: (String) -> Unit) {
-    Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-        Text(label, modifier = Modifier.width(220.dp))
-        OutlinedTextField(value = value, onValueChange = onChange, singleLine = true, modifier = Modifier.width(120.dp))
+private fun LabeledField(label: String, value: String, onChange: (String) -> Unit) {
+    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+        Text(label, modifier = Modifier.width(180.dp))
+        OutlinedTextField(
+            value = value,
+            onValueChange = onChange,
+            singleLine = true,
+            modifier = Modifier.width(100.dp),
+        )
     }
 }
 
 @Composable
 private fun LogLevelDropdown(config: ConfigController) {
     val options = listOf("Log level: Error", "Log level: Warn", "Log level: Info", "Log level: Debug")
-    Dropdown(label = "Log level", current = config.logLevel, options = options, onSelected = config::onLogLevelChanged)
+    Dropdown(current = config.logLevel, options = options, onSelected = config::onLogLevelChanged)
 }
 
 @Composable
 private fun LanguageDropdown(config: ConfigController) {
     val options = remember { Utils.getSupportedLanguages().toList() }
-    Dropdown(label = "Language", current = config.language, options = options, onSelected = config::onLanguageChanged)
+    Dropdown(current = config.language, options = options, onSelected = config::onLanguageChanged)
 }
 
 @Composable
-private fun Dropdown(label: String, current: String, options: List<String>, onSelected: (String) -> Unit) {
+private fun Dropdown(current: String, options: List<String>, onSelected: (String) -> Unit) {
     var expanded by remember { mutableStateOf(false) }
-    Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-        Text(label, modifier = Modifier.width(120.dp))
-        Button(onClick = { expanded = true }) { Text(current) }
+    Box {
+        Button(contentPadding = CompactButtonPadding, onClick = { expanded = true }) { Text(current) }
         DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
             options.forEach { option ->
                 DropdownMenuItem(text = { Text(option) }, onClick = {
@@ -167,4 +246,3 @@ private fun Dropdown(label: String, current: String, options: List<String>, onSe
         }
     }
 }
-
