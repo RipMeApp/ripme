@@ -44,6 +44,14 @@ java -Dripme.gui=compose -jar build/libs/ripme-<version>.jar
 
 `./gradlew assemble` builds a self-contained jar (dependencies included) in `build/libs`; substitute the actual filename it produces, or run `./gradlew build` first to also run the tests.
 
+## Android app (preview)
+
+RipMe is also growing a native Android app (`android/`) around the same ripper engine, with a
+Compose Material3 UI covering rip / queue / history / log / settings, a foreground service so rips
+survive backgrounding, and a "copy to Downloads" export so a rip outlives uninstalling the app. It
+is a separate Gradle build the root build above never touches - see [`android/README.md`](android/README.md)
+for prerequisites, build/run instructions, and known gaps.
+
 ## Supported Sites
 
 Jump to:

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  The window's pre-Compose theme: whatever this resolves to briefly shows as the window background
+  during Activity creation, before setContent's first frame draws, and backs the task-switcher
+  thumbnail. RipMeTheme (ui/theme/RipMeTheme.kt) is the real, `isSystemInDarkTheme()`-aware theme
+  for the Compose content itself; this file's job is just to keep that first frame from flashing
+  light in front of a user who's on a dark system theme. values-night/styles.xml overrides this
+  same style name with the platform's built-in dark Material theme for that case.
+-->
+<resources>
+    <style name="Theme.RipMe" parent="@android:style/Theme.Material.Light.NoActionBar" />
+</resources>

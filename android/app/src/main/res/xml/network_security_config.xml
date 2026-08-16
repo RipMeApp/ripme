@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  RipController.beginRip normalizes bare/protocol-less input to http:// (porting
+  MainWindow.ripAlbum's exact behavior - see RipController.kt in the desktop Compose GUI), and a
+  number of rippers themselves talk plain http. Android blocks cleartext traffic by default from
+  API 28 onward; the desktop JVM never had an equivalent restriction, so this config just gets the
+  Android build back to the same "anything goes" baseline the ripper engine was written against.
+-->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="true" />
+</network-security-config>
