@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Dark-mode override of values/styles.xml's Theme.RipMe - see that file's header comment. -->
+<resources>
+    <style name="Theme.RipMe" parent="@android:style/Theme.Material.NoActionBar" />
+</resources>

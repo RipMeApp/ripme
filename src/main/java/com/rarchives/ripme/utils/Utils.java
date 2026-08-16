@@ -281,6 +281,11 @@ public class Utils {
      * Gets the directory of the config directory, for all systems.
      */
     public static String getConfigDir() {
+        // Android has no per-OS config directory below and can't write to $HOME/.config; the app
+        // sets this system property in its bootstrap, before touching any other core class.
+        String override = System.getProperty("ripme.config.dir");
+        if (override != null && !override.isEmpty()) return override;
+
         if (portableMode()) {
             try {
                 return getJarDirectory().toAbsolutePath().toString();
