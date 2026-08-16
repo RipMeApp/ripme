@@ -155,6 +155,59 @@ name rather than re-sanitising a title. Surfaced both on `HistoryScreen`'s per-r
 collection this uses; on API 26-28 the action reports that plainly rather than attempting a legacy
 `WRITE_EXTERNAL_STORAGE` write (out of scope for this preview - see Known Gaps).
 
+## Notable findings
+
+Two things turned up while porting the engine that weren't obvious going in, and are worth
+knowing if you're touching `:core`'s dependencies or `RipService`.
+
+### `log4j-core`: `compileOnly` doesn't work, and here's why
+
+The first pass at `:core/build.gradle.kts` shipped `log4j-core` as `compileOnly`, on the
+reasoning that `Utils` only references `org.apache.logging.log4j.core.*` inside
+`configureLogger()`, and no Android code path ever calls that method. That reasoning is correct
+and the conclusion is still wrong: JVM class verification is a whole-class, link-time step, not
+scoped to the methods that actually run. HotSpot's verifier resolves `configureLogger()`'s
+`ConsoleAppender$Target` reference while verifying `Utils.class` as a whole, the moment `Utils` is
+first loaded - regardless of whether `configureLogger()` ever runs. Since the generated
+`RipperRegistry.getRipper(URL)` reflectively `Class.forName()`s every candidate ripper in turn,
+and nearly every ripper's constructor touches `Utils` (via `AbstractRipper`'s
+`Utils.getURLHistoryFile()` field initialiser), the *first* ripper class loaded threw
+`NoClassDefFoundError` - and because that's an `Error`, not an `Exception`, the registry's
+`catch (Exception e)` didn't swallow it; it killed the whole `getRipper()` call. Confirmed three
+ways before touching the build file: the real `:core:test` failure, a plain `java -cp` run outside
+Gradle's test-worker classloader, and forcing `Class.forName("com.rarchives.ripme.utils.Utils")`
+alone with zero other classes involved.
+
+`:core` now ships `log4j-core` as `implementation` for real (see its `build.gradle.kts`). That
+left an open question for `:app`: ART might verify the same way HotSpot does, in which case the
+APK would need to ship `log4j-core` too. It doesn't - `:app` excludes `log4j-core` again
+(`implementation(project(":core")) { exclude(...) }`) and relies on ART verifying method-by-method
+rather than whole-class, soft-failing only the individual method that references a missing class.
+Confirmed on-device, not assumed: with `log4j-core` absent from the APK, `RipperRegistry.getRipper`
+reflectively constructed on the order of 119 ripper classes end to end - including `E621Ripper`,
+whose `AbstractRipper` superclass field initialiser forces `Utils.class` to load and verify on
+essentially every attempt - with no `VerifyError`/`NoClassDefFoundError`, and that ripper then ran
+a real rip to `RIP_COMPLETE`. `logcat` shows log4j-api's own graceful fallback
+(`Log4j API could not find a logging provider`) rather than a crash.
+
+### `RipService`: a stop-notification race
+
+Early testing surfaced a service that occasionally left a permanently stale, un-stoppable
+notification on screen. Root cause: `QueueController`'s drain loop can go `busy=false` with an
+empty queue for a few milliseconds *between* two rips - most visibly when one URL fails to resolve
+(`beginRip` returns `false` instantly, before ever setting `busy=true`) and the next queued URL
+starts right after. `RipEngine`'s `onRipStarted` hook calls `startForegroundService` for *every*
+rip attempt, including that instantly-failing one. An un-debounced stop decision reacted to that
+momentary idle gap by stopping the freshly created service instance - cancelling its collector in
+`onDestroy` - before the very next rip's `startForegroundService` call could even be delivered,
+orphaning that second rip with no collector left to ever stop its notification.
+
+Reproduced deterministically, then fixed with a `.debounce(500)` on the stop decision only (the
+notification's live content updates stay un-debounced, so progress still looks immediate) - see
+the comment at that call site in `RipService.kt`. A real new rip's `busy=true` arrives well within
+500ms and the stop decision simply never fires; a genuinely idle queue still stops promptly once
+the debounce window elapses.
+
 ## Known Gaps
 
 - **No `InstagramRipper`.** Its dependency on GraalVM's JS engine doesn't dex; excluded from both
