@@ -1,26 +1,23 @@
 package com.rarchives.ripme.ripper.rippers;
 
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
+import com.rarchives.ripme.ripper.AbstractHTMLRipper;
+import com.rarchives.ripme.utils.Http;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.jsoup.Connection;
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 
-import com.rarchives.ripme.ripper.AbstractHTMLRipper;
-import com.rarchives.ripme.utils.Http;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+
+import java.net.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class LusciousRipper extends AbstractHTMLRipper {
 
@@ -28,16 +25,16 @@ public class LusciousRipper extends AbstractHTMLRipper {
 
     private static String albumid;
 
-    private static final Pattern p = Pattern.compile("^https?://(?:www\\.)?(?:members\\.||legacy\\.||old\\.)?luscious\\.net/albums/([-_.0-9a-zA-Z]+).*$");
 
+    private static final Pattern p = Pattern.compile("^https?://(?:(?:www|members|legacy)\\.)?luscious\\.net/albums/([-_.0-9a-zA-Z]+).*$");
     public LusciousRipper(URL url) throws IOException {
         super(url);
     }
 
     @Override
-    public URL sanitizeURL(URL url) throws MalformedURLException, URISyntaxException{
+    public URL sanitizeURL(URL url) throws MalformedURLException, URISyntaxException {
         String URLToReturn = url.toExternalForm();
-        URLToReturn = URLToReturn.replaceAll("https?://(?:www\\.)?luscious\\.", "https://old.luscious.");
+        URLToReturn = URLToReturn.replaceAll("https?://(?:www\\.)?luscious\\.", "https://luscious.");
         URL san_url = new URI(URLToReturn).toURL();
         logger.info("sanitized URL is " + san_url.toExternalForm());
         return san_url;
@@ -55,6 +52,15 @@ public class LusciousRipper extends AbstractHTMLRipper {
 
     @Override
     public List<String> getURLsFromPage(Document page) { // gets urls for all pages through the api
+        try {
+            return getURLsFromAPI();
+        } catch (Exception e) {
+            logger.warn("Luscious API extraction failed, falling back to HTML extraction", e);
+            return getURLsFromHTML(page);
+        }
+    }
+
+    private List<String> getURLsFromAPI() throws IOException {
         List<String> urls = new ArrayList<>();
         int totalPages = 1;
 
@@ -64,12 +70,7 @@ public class LusciousRipper extends AbstractHTMLRipper {
             con.ignoreHttpErrors(true);
             con.ignoreContentType(true);
             con.userAgent("Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/119.0");
-            Connection.Response res;
-            try {
-                res = con.execute();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+            Connection.Response res = con.execute();
             String body = res.body();
 
             JSONObject jsonObject = new JSONObject(body);
@@ -87,6 +88,22 @@ public class LusciousRipper extends AbstractHTMLRipper {
                 urls.add(urlToOriginal);
             }
         }
+
+        return urls;
+    }
+
+    private List<String> getURLsFromHTML(Document page) {
+        List<String> urls = new ArrayList<>();
+
+        for (Element img : page.select("img[src]")) {
+            String imageURL = img.absUrl("src");
+
+            if (imageURL.isEmpty()) continue;
+            if (!imageURL.contains("ah-img.luscious.net/")) continue;
+            urls.add(imageURL);
+        }
+
+        logger.info("Found {} image URLs in album HTML", urls.size());
 
         return urls;
     }
