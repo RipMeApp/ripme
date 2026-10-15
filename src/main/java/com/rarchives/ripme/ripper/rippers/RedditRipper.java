@@ -254,8 +254,9 @@ public class RedditRipper extends AlbumRipper {
             } else if (!data.isNull("gallery_data") && !data.isNull("media_metadata")) {
                 handleGallery(data.getJSONObject("gallery_data").getJSONArray("items"), data.getJSONObject("media_metadata"), data.getString("id"), data.getString("title"));
             } else {
-                // Get link
-                handleURL(data.getString("url"), data.getString("id"), data.getString("title"));
+                // Reddit may set url to a still-image preview for video posts. Prefer
+                // the actual video URL when Reddit exposes it in secure_media.
+                handleURL(getPostMediaURL(data), data.getString("id"), data.getString("title"));
             }
             if (data.has("replies") && data.get("replies") instanceof JSONObject) {
                 JSONArray replies = data.getJSONObject("replies")
@@ -266,6 +267,22 @@ public class RedditRipper extends AlbumRipper {
                 }
             }
         }
+    }
+
+    private String getPostMediaURL(JSONObject data) {
+        if (data.optBoolean("is_video", false)) {
+            JSONObject secureMedia = data.optJSONObject("secure_media");
+            if (secureMedia != null) {
+                JSONObject redditVideo = secureMedia.optJSONObject("reddit_video");
+                if (redditVideo != null) {
+                    String fallbackUrl = redditVideo.optString("fallback_url", "");
+                    if (!fallbackUrl.isEmpty()) {
+                        return fallbackUrl;
+                    }
+                }
+            }
+        }
+        return data.getString("url");
     }
 
     private void handleBody(String body, String id, String title) {

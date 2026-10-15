@@ -9,6 +9,8 @@ import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import org.json.JSONObject;
+
 import com.rarchives.ripme.ripper.rippers.RedditRipper;
 
 import org.junit.jupiter.api.Assertions;
@@ -19,6 +21,35 @@ import org.mp4parser.muxer.Movie;
 import org.mp4parser.muxer.container.mp4.MovieCreator;
 
 public class RedditRipperTest extends RippersTest {
+
+    @Test
+    public void testVideoPostUsesRedditVideoURLInsteadOfPreview() throws Exception {
+        RedditRipper ripper = new RedditRipper(new URI("https://www.reddit.com/r/test/").toURL());
+        Method getPostMediaURL = RedditRipper.class.getDeclaredMethod("getPostMediaURL", JSONObject.class);
+        getPostMediaURL.setAccessible(true);
+
+        JSONObject post = new JSONObject("{" +
+                "\"url\":\"https://preview.redd.it/still-image.jpg\"," +
+                "\"is_video\":true," +
+                "\"secure_media\":{" +
+                "\"reddit_video\":{" +
+                "\"fallback_url\":\"https://v.redd.it/example/DASH_720.mp4?source=fallback\"" +
+                "}}}");
+
+        Assertions.assertEquals("https://v.redd.it/example/DASH_720.mp4?source=fallback",
+                getPostMediaURL.invoke(ripper, post));
+    }
+
+    @Test
+    public void testNonVideoPostKeepsOriginalURL() throws Exception {
+        RedditRipper ripper = new RedditRipper(new URI("https://www.reddit.com/r/test/").toURL());
+        Method getPostMediaURL = RedditRipper.class.getDeclaredMethod("getPostMediaURL", JSONObject.class);
+        getPostMediaURL.setAccessible(true);
+
+        JSONObject post = new JSONObject("{\"url\":\"https://i.imgur.com/image.jpg\"}");
+
+        Assertions.assertEquals("https://i.imgur.com/image.jpg", getPostMediaURL.invoke(ripper, post));
+    }
 
     @Test
     @Tag("flaky") // https://github.com/RipMeApp/ripme/issues/253
