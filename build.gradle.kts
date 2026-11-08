@@ -36,6 +36,8 @@ dependencies {
   implementation("org.apache.logging.log4j:log4j-core:2.26.1")
   implementation("com.squareup.okhttp3:okhttp:5.4.0")
   // Muxes Reddit's separate video-only and audio-only DASH tracks into a single playable file.
+  // reads the cookie databases of Firefox/Chrome/Edge/Brave for "Import from browser"
+  implementation("org.xerial:sqlite-jdbc:3.50.3.0")
   implementation("org.mp4parser:isoparser:1.9.56")
   implementation("org.mp4parser:muxer:1.9.56")
   // org.graalvm.js:js is now a thin POM whose js-language implementation (used for

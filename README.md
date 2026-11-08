@@ -113,6 +113,32 @@ The list of supported rippers includes:
 - xvideos
 - ... and [more](https://github.com/ripmeapp/ripme/wiki/Supported-Sites)!
 
+## Sites Answering "Status Code 403"
+
+Some sites refuse requests that do not carry the session cookies of a logged-in browser. RipMe
+can borrow those cookies from the browser you already use:
+
+1. Log in to the site in Firefox, Edge, Chrome or Brave.
+2. In RipMe open *Configuration → Site cookies...*, enter the domain (for example `reddit.com`)
+   and press **Import from browser**.
+
+RipMe reads only the cookies of that one site, from the browser that is currently running (or any
+installed one), and stores them on your computer next to the manually entered cookies. Tick
+*Automatically import browser cookies when a site answers 401/403* to have RipMe do this by
+itself the first time a site answers 401/403 (off by default).
+
+Support by browser:
+
+| Browser | Support |
+|---|---|
+| Firefox (Windows, macOS, Linux) | Full. |
+| Chrome / Edge / Brave / Chromium on macOS | Works; macOS asks once for keychain access. |
+| Chrome / Edge / Brave / Chromium on Linux | Works for cookies stored with the default key; keyring-protected cookies are skipped. |
+| Chrome / Edge / Brave on Windows | Works for cookies using the classic DPAPI protection. Newer versions with *app-bound encryption* cannot be read by other programs; RipMe tells you so. |
+
+If your browser cannot be read, use Firefox for the login, or copy the `Cookie` request header by
+hand as described in the Site cookies dialog.
+
 ## Site Not Supported?
 
 Request support for more sites by adding a comment to [this Github issue](https://github.com/RipMeApp/ripme/issues/2068).

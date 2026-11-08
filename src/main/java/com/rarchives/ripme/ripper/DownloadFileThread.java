@@ -17,6 +17,7 @@ import org.apache.logging.log4j.Logger;
 import org.jsoup.HttpStatusException;
 
 import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
+import com.rarchives.ripme.utils.Http;
 import com.rarchives.ripme.utils.Utils;
 
 /**
@@ -160,12 +161,16 @@ class DownloadFileThread implements Runnable {
                     huc.setRequestProperty("Referer", referrer); // Sic
                 }
                 huc.setRequestProperty("User-agent", AbstractRipper.USER_AGENT);
+                // Cookies saved under Configuration → Site cookies apply to file downloads too;
+                // cookies set explicitly by the ripper take precedence.
+                Map<String, String> requestCookies = new HashMap<>(Http.cookiesForURL(url.toExternalForm()));
+                requestCookies.putAll(cookies);
                 StringBuilder cookie = new StringBuilder();
-                for (String key : cookies.keySet()) {
+                for (String key : requestCookies.keySet()) {
                     if (!cookie.toString().equals("")) {
                         cookie.append("; ");
                     }
-                    cookie.append(key).append("=").append(cookies.get(key));
+                    cookie.append(key).append("=").append(requestCookies.get(key));
                 }
                 huc.setRequestProperty("Cookie", cookie.toString());
                 if (observer.tryResumeDownload()) {

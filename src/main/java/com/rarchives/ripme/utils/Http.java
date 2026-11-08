@@ -1,6 +1,7 @@
 package com.rarchives.ripme.utils;
 
 import com.rarchives.ripme.ripper.AbstractRipper;
+import com.rarchives.ripme.utils.browser.BrowserCookieImporter;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -73,7 +74,11 @@ public class Http {
         connection.cookies(cookiesForURL(this.url));
     }
 
-    private Map<String, String> cookiesForURL(String u) {
+    /**
+     * Cookies stored for the host of the given URL (or one of its parent domains), as saved
+     * in Configuration → Site cookies.
+     */
+    public static Map<String, String> cookiesForURL(String u) {
         Map<String, String> cookiesParsed = new HashMap<>();
 
         String cookieDomain = "";
@@ -89,7 +94,7 @@ public class Http {
             while (parts.length > 1) {
                 String domain = String.join(".", parts);
                 // Try to get cookies for this host from config
-                logger.info("Trying to load cookies from config for " + domain);
+                logger.debug("Trying to load cookies from config for " + domain);
                 try {
                     cookieStr = SiteCookieStorage.load(domain);
                 } catch (IOException e) {
@@ -205,6 +210,7 @@ public class Http {
         Response response;
         IOException lastException = null;
         int retries = this.retries;
+        boolean browserImportAttempted = false;
         while (--retries >= 0) {
             try {
                 response = connection.execute();
@@ -220,7 +226,15 @@ public class Http {
 
                     int status = ex.getStatusCode();
                     if (status == 401 || status == 403) {
-                        throw new IOException("Failed to load " + url + ": Status Code " + status + ". You might be able to circumvent this error by setting cookies for this domain (Configuration → Site cookies...)", e);
+                        // Optional: borrow the session cookies of the user's own browser and retry once.
+                        if (!browserImportAttempted && Utils.getConfigBoolean(BrowserCookieImporter.CONFIG_AUTO_IMPORT, false)) {
+                            browserImportAttempted = true;
+                            if (importCookiesFromBrowser()) {
+                                retries++; // the import is not a failed attempt
+                                continue;
+                            }
+                        }
+                        throw new IOException("Failed to load " + url + ": Status Code " + status + ". You might be able to circumvent this error by setting cookies for this domain (Configuration → Site cookies... → Import from browser)", e);
                     }
                     if (status == 404) {
                         throw new IOException("File not found " + url + ": Status Code " + status + ". ", e);
@@ -237,6 +251,28 @@ public class Http {
             }
         }
         throw new IOException("Failed to load " + url + " after " + this.retries + " attempts", lastException);
+    }
+
+    /**
+     * Imports this request's site cookies from the browser the user is running, stores them
+     * for later requests and adds them to the current connection.
+     *
+     * @return true if cookies were found and applied
+     */
+    private boolean importCookiesFromBrowser() {
+        BrowserCookieImporter.ImportResult result = BrowserCookieImporter.importFor(url);
+        if (!result.found()) {
+            logger.info("No browser cookies found for {}", result.host());
+            return false;
+        }
+        try {
+            SiteCookieStorage.save(result.host(), result.cookieHeader());
+        } catch (IOException | IllegalArgumentException ex) {
+            logger.warn("Could not store imported cookies for {}", result.host(), ex);
+        }
+        connection.cookies(result.cookies());
+        logger.info("Retrying {} with cookies imported from {}", url, result.browser());
+        return true;
     }
 
     public static void SSLVerifyOff() {
