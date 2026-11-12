@@ -43,6 +43,7 @@ import org.apache.logging.log4j.core.config.LoggerConfig;
 
 import com.rarchives.ripme.ripper.AbstractRipper;
 import com.rarchives.ripme.uiUtils.ContextActionProtections;
+import com.rarchives.ripme.utils.RipStatus;
 import com.rarchives.ripme.utils.RipUtils;
 import com.rarchives.ripme.utils.TransferRate;
 import com.rarchives.ripme.utils.Utils;
@@ -1354,6 +1355,14 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         if (wasGracefulStop || wasPanicStop) {
             // Stop requested
             LOGGER.debug("wasGracefulStop or wasPanicStop");
+            ripFinishCleanup();
+            return;
+        }
+
+        if (RipStatus.consumePanicAll()) {
+            // A download thread hit a disk-full error and asked for the rest
+            // of the queue to be cancelled too (see RipStatus).
+            LOGGER.debug("panicAll requested - cancelling the rest of the queue");
             ripFinishCleanup();
             return;
         }

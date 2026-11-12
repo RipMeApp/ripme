@@ -6,6 +6,7 @@ import com.rarchives.ripme.ui.HistoryEntry;
 import com.rarchives.ripme.ui.MainWindow;
 import com.rarchives.ripme.ui.UpdateUtils;
 import com.rarchives.ripme.utils.Proxy;
+import com.rarchives.ripme.utils.RipStatus;
 import com.rarchives.ripme.utils.RipUtils;
 import com.rarchives.ripme.utils.Utils;
 
@@ -186,6 +187,10 @@ public class App {
                 System.exit(-1);
             }
             for (HistoryEntry entry : HISTORY.toList()) {
+                if (RipStatus.consumePanicAll()) {
+                    logger.error("[!] Cancelling the rest of the re-rip queue (device.nospace or similar)");
+                    break;
+                }
                 try {
                     URL url = new URI(entry.url).toURL();
                      rip(url);
@@ -213,6 +218,10 @@ public class App {
             }
             int added = 0;
             for (HistoryEntry entry : HISTORY.toList()) {
+                if (RipStatus.consumePanicAll()) {
+                    logger.error("[!] Cancelling the rest of the re-rip queue (device.nospace or similar)");
+                    break;
+                }
                 if (entry.selected) {
                     added++;
                     try {
@@ -260,6 +269,10 @@ public class App {
             try (BufferedReader br = Files.newBufferedReader(urlfile)) {
                 String url;
                 while ((url = br.readLine()) != null) {
+                    if (RipStatus.consumePanicAll()) {
+                        logger.error("[!] Cancelling the rest of the URLs in " + urlfile + " (device.nospace or similar)");
+                        break;
+                    }
                     if (url.startsWith("//") || url.startsWith("#")) {
                         logger.debug("Skipping over line \"" + url + "\"because it is a comment");
                     } else {

@@ -17,6 +17,7 @@ import org.apache.logging.log4j.Logger;
 import org.jsoup.HttpStatusException;
 
 import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
+import com.rarchives.ripme.utils.RipStatus;
 import com.rarchives.ripme.utils.Utils;
 
 /**
@@ -346,7 +347,15 @@ class DownloadFileThread implements Runnable {
             } catch (IOException e) {
                 if (guessIsENOSPC(e, saveAs)) {
                     logger.debug("IOException", e);
-                    observer.downloadErrored(ripUrlId, Utils.getLocalizedString("device.nospace")); // TODO cancel all rips
+                    logger.error("[!] Device is out of space, cancelling the rest of this album and the queue");
+                    observer.downloadErrored(ripUrlId, Utils.getLocalizedString("device.nospace"));
+                    // Disk-full is systemic, not specific to this one download: stop the
+                    // rest of the current album immediately (this mechanism already
+                    // existed), and signal that the rest of the queue should be
+                    // cancelled too, whether we're running under the GUI or a headless
+                    // CLI batch rip (-r/-R/-f).
+                    observer.panic();
+                    RipStatus.requestPanicAll();
                     return;
                 }
                 logger.debug("IOException", e);
